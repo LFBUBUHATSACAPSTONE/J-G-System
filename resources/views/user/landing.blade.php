@@ -9,7 +9,32 @@
 
 <div class="overflow-hidden">
   <img src="{{ asset('images/backgrounds/design/landing_bg.webp') }}" alt="" class="position-absolute z-0 w-100 h-100">
-  
+
+  <header class="position-relative z-1">
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <div class="container">
+        <a href="#" class="navbar-brand">
+          <img src="{{ asset('images/logo/logo_rectangular.webp') }}" alt="Business Logo" class="position-relative z-1">
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-controls="nav" aria-expanded="false" aria-label="Expand Navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="nav">
+          <ul class="navbar-nav mx-auto">
+            <li class="nav-item"><a href="#" class="nav-link active" aria-current="page">About</a></li>
+            <li class="nav-item"><a href="#" class="nav-link">Feature</a></li>
+            <li class="nav-item"><a href="#" class="nav-link">Package</a></li>
+          </ul>
+          <div class="d-flex gap-3">
+            <button type="button" class="btn btn-outline-light rounded-3">Sign up</button>
+            <button type="button" class="btn btn-light rounded-3">Login</button>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
 </div>
 
 </html>
