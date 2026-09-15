@@ -6,6 +6,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/user/login', function () {
-    return view('user.login');
-});
+Route::get('/user/landing', function () {
+    return view('user.landing');
+})->name('user.landing');
