@@ -6,6 +6,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/tenant/login', function () {
-    return view('tenant.login');
+Route::get('/user/login', function () {
+    return view('user.login');
 });
