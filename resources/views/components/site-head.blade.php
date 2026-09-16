@@ -40,11 +40,6 @@ $imageUrl = asset($image ?? $page['logo'] ?? config('site.logo'));
 <link rel="icon" type="image/webp" href="{{ $imageUrl }}">
 <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
 
-<!-- Google Font : Poppins-->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-
 @vite(['resources/js/app.js'])
 
 <title>{{ $title }}</title>

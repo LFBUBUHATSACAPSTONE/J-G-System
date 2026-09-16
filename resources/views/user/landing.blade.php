@@ -23,13 +23,13 @@
 
         <div class="collapse navbar-collapse" id="nav">
           <ul class="navbar-nav mx-auto">
-            <li class="nav-item"><a href="#" class="nav-link active" aria-current="page">About</a></li>
-            <li class="nav-item"><a href="#" class="nav-link">Feature</a></li>
-            <li class="nav-item"><a href="#" class="nav-link">Package</a></li>
+            <li class="nav-item"><a href="#" class="nav-link active font-family-base" aria-current="page">About</a></li>
+            <li class="nav-item"><a href="#" class="nav-link font-family-base">Feature</a></li>
+            <li class="nav-item"><a href="#" class="nav-link font-family-base">Package</a></li>
           </ul>
           <div class="d-flex gap-3">
-            <button type="button" class="btn btn-outline-light rounded-3">Sign up</button>
-            <button type="button" class="btn btn-light rounded-3">Login</button>
+            <button type="button" class="btn btn-outline-light rounded-3 font-family-text">Sign up</button>
+            <button type="button" class="btn btn-light rounded-3 font-family-text">Login</button>
           </div>
         </div>
       </div>
