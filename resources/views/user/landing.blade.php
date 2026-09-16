@@ -16,8 +16,17 @@
   }
 </style>
 
-<body class="overflow-hidden">
+<body>
   @include('includes.navigation');
+  <x-coverflow-carousel :items="[
+            ['image' => asset('images/carousel/1.webp'), 'alt' => ''],
+            ['image' => asset('images/carousel/2.webp'), 'alt' => ''],
+            ['image' => asset('images/carousel/3.webp'), 'alt' => ''],
+            ['image' => asset('images/carousel/4.webp'), 'alt' => ''],
+            ['image' => asset('images/carousel/5.webp'), 'alt' => ''],
+            ['image' => asset('images/carousel/6.webp'), 'alt' => ''],
+            ['image' => asset('images/carousel/7.webp'), 'alt' => ''],
+        ]" :interval="3000"/>
 </body>
 
 </html>
