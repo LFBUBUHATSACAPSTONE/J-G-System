@@ -3,6 +3,24 @@ $body-bg: #f8fafc;
 
 // Typography
 $font-family-sans-serif: "Nunito", sans-serif;
+$font-family-text: "Poppins", sans-serif;
 $font-size-base: 0.9rem;
 $line-height-base: 1.6;
-$font-family-text: "Poppins", sans-serif;
+
+// Text Colors
+$text-white: oklch(95.514% 0.00011 271.152);
+$text-black: oklch(19.574% 0.00002 271.152);
+
+// Button Colors
+$button-white: oklch(95.514% 0.00011 271.152);
+$button-black: oklch(19.574% 0.00002 271.152);
+$button-gradient: linear-gradient(
+    90deg,
+    oklch(0.545 0.236 307.3),
+    oklch(0.595 0.234 22.6)
+);
+
+// Displays
+$opacity-high: 0.9;
+$opacity-full: 1.0;
+$opacity-med: 0.8;
