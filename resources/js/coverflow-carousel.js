@@ -1,22 +1,21 @@
-export default class CoverflowCarousel {
+class CoverflowCarousel {
     constructor(root) {
         this.root = root;
         this.slides = Array.from(root.querySelectorAll(".coverflow__slide"));
-        this.restartBtn = root.querySelector("[data-coverflow-restart]");
-        this.interval = parseInt(root.dataset.interval || "3000", 10);
+        this.interval = parseInt(root.dataset.interval || "2000", 10);
         this.currentIndex = 0;
         this.timer = null;
 
         if (this.slides.length === 0) return;
 
         this.render();
+
+        // Snap into place on first paint, then enable transitions for all later moves
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => root.classList.add("coverflow--ready"));
+        });
+
         this.play();
-
-        this.restartBtn?.addEventListener("click", () => this.restart());
-
-        // Pause on hover, resume on leave (nice UX touch, remove if not wanted)
-        root.addEventListener("mouseenter", () => this.pause());
-        root.addEventListener("mouseleave", () => this.play());
     }
 
     render() {
@@ -62,12 +61,6 @@ export default class CoverflowCarousel {
             this.timer = null;
         }
     }
-
-    restart() {
-        this.currentIndex = 0;
-        this.render();
-        this.play();
-    }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -75,3 +68,5 @@ document.addEventListener("DOMContentLoaded", () => {
         .querySelectorAll("[data-coverflow]")
         .forEach((el) => new CoverflowCarousel(el));
 });
+
+export default CoverflowCarousel;

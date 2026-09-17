@@ -8,7 +8,7 @@
 ['image' => asset('images/carousel/6.webp'), 'alt' => ''],
 ['image' => asset('images/carousel/7.webp'), 'alt' => ''],
 ],
-'interval' => 3000,
+'interval' => 2000,
 ])
 
 <div
@@ -18,11 +18,13 @@
   <div class="coverflow__track">
     @foreach ($items as $index => $item)
     <div class="coverflow__slide" data-index="{{ $index }}">
-      <img
-        src="{{ $item['image'] }}"
-        alt="{{ $item['alt'] ?? '' }}"
-        class="coverflow__img"
-        draggable="false">
+      <div class="coverflow__clip">
+        <img
+          src="{{ $item['image'] }}"
+          alt="{{ $item['alt'] ?? '' }}"
+          class="coverflow__img"
+          draggable="false">
+      </div>
     </div>
     @endforeach
   </div>
