@@ -31,7 +31,7 @@
             ['image' => asset('images/carousel/7.webp'), 'alt' => ''],
         ]" :interval="3000" />
 
-  <x-button class="button-white text-black position-relative z-1 rounded-5 px-5 py-3 border-0 font-family-text fw-semibold fs-5">
+  <x-button class="btn-color-gradient--primary button-white position-relative z-1 rounded-5 px-5 py-3 border-0 font-family-text fw-semibold fs-5">
     Book Now
   </x-button>
 </body>

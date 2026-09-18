@@ -1,10 +1,12 @@
+//NAVIGATION BUTTONS
+
 @property --gradient-angle {
     syntax: "<angle>";
     initial-value: 90deg;
     inherits: false;
 }
 
-.btn-color-signup {
+.btn-color-gradient--primary {
     --gradient-angle: 90deg;
     background: linear-gradient(
         var(--gradient-angle),
@@ -36,7 +38,7 @@
     }
 }
 
-.btn-color-login {
+.btn-color-gradient--secondary {
     color: $text-white;
     background: transparent;
     border: none;

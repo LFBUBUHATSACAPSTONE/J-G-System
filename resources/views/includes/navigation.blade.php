@@ -19,8 +19,8 @@
           </ul>
 
           <div class="d-flex gap-3 align-items-center justify-content-center mt-3 mt-md-0">
-            <button type="button" class="rounded-3 font-family-text btn-color-signup px-3 py-2 d-none d-md-block">Sign up</button>
-            <button type="button" class="rounded-3 font-family-text btn-color-login px-3 py-2 d-none d-md-block">Login</button>
+            <button type="button" class="rounded-3 font-family-text btn-color-gradient--primary px-3 py-2 d-none d-md-block">Sign up</button>
+            <button type="button" class="rounded-3 font-family-text btn-color-gradient--secondary px-3 py-2 d-none d-md-block">Login</button>
           </div>
         </div>
       </div>
