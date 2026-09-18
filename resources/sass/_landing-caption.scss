@@ -1,0 +1,11 @@
+.landing-title {
+    font-size: clamp(1.75rem, 4vw + 1rem, 3.5rem);
+    max-width: 800px;
+    width: 100%;
+}
+
+.landing-caption {
+    font-size: clamp(0.95rem, 1vw + 0.7rem, 1.25rem);
+    max-width: 1024px;
+    width: 100%;
+}

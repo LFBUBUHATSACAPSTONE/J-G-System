@@ -18,6 +18,9 @@
 
 <body>
   @include('includes.navigation');
+
+  @include('includes.landing-caption', ["header" => "BRING YOUR EVENT TO LIFE", "caption" => "We're dedicated to making every occasion look and sound its best with reliable equipment and professional service."])
+
   <x-coverflow-carousel :items="[
             ['image' => asset('images/carousel/1.webp'), 'alt' => ''],
             ['image' => asset('images/carousel/2.webp'), 'alt' => ''],
@@ -26,7 +29,7 @@
             ['image' => asset('images/carousel/5.webp'), 'alt' => ''],
             ['image' => asset('images/carousel/6.webp'), 'alt' => ''],
             ['image' => asset('images/carousel/7.webp'), 'alt' => ''],
-        ]" :interval="3000"/>
+        ]" :interval="3000" />
 </body>
 
 </html>
