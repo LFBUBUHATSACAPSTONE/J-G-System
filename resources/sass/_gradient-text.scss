@@ -1,0 +1,15 @@
+@mixin gradient-text(
+    $from: $gradient-text-from,
+    $via: $gradient-text-via,
+    $to: $gradient-text-to
+) {
+    background: linear-gradient(90deg, $from, $via, $to);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
+
+.text-caption-gradient {
+    @include gradient-text();
+}

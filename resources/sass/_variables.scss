@@ -6,14 +6,18 @@ $font-family-sans-serif: "Nunito", sans-serif;
 $font-family-text: "Poppins", sans-serif;
 $font-size-base: 0.9rem;
 $line-height-base: 1.6;
+$font-button--responsive: clamp(1rem, 1.1vw, 1.2rem);
 
 // Text Colors
-$text-white: oklch(95.514% 0.00011 271.152);
-$text-black: oklch(19.574% 0.00002 271.152);
+$text-pale--white: oklch(93.514% 0.00011 271.152);
+$text-pale--black: oklch(19.574% 0.00002 271.152);
+$gradient-text-from: #b0289c !default;
+$gradient-text-via: #e0205a !default;
+$gradient-text-to: #ff3b3b !default;
 
 // Button Colors
-$button-white: oklch(95.514% 0.00011 271.152);
-$button-black: oklch(19.574% 0.00002 271.152);
+$button-color-white: oklch(95.514% 0.00011 271.152);
+$button-color-black: oklch(19.574% 0.00002 271.152);
 $button-gradient: linear-gradient(
     90deg,
     oklch(0.545 0.236 307.3),
@@ -22,5 +26,10 @@ $button-gradient: linear-gradient(
 
 // Displays
 $opacity-high: 0.9;
-$opacity-full: 1.0;
+$opacity-full: 1;
 $opacity-med: 0.8;
+
+// Coverflow Carousel
+$coverflow-height: 420px;
+$coverflow-center-width: 500px;
+$coverflow-side-width: 280px;
