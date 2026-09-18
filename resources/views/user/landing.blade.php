@@ -17,6 +17,8 @@
 </style>
 
 <body>
+  <img src="{{ asset('images/backgrounds/design/landing_bg.webp') }}" alt="" class="position-absolute z-0 w-100 h-100">
+
   @include('includes.navigation');
 
   @include('includes.landing-caption', ["header" => "Bring Your Event to Life", "caption" => "We're dedicated to making every occasion look and sound its best with reliable equipment and professional service."])
@@ -31,7 +33,7 @@
             ['image' => asset('images/carousel/7.webp'), 'alt' => ''],
         ]" :interval="3000" />
 
-  <x-button class="btn-color-gradient--primary text-pale--white position-relative z-1 rounded-5 px-5 py-3 border-0 font-family-text fw-semibold fs-5">
+  <x-button class="btn-color-gradient--primary font-button--responsive text-pale--white position-relative z-1 rounded-5 px-5 py-3 border-0 font-family-text fw-semibold">
     Book Now
   </x-button>
 </body>
