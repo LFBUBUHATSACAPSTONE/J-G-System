@@ -19,7 +19,7 @@
 <body>
   @include('includes.navigation');
 
-  @include('includes.landing-caption', ["header" => "BRING YOUR EVENT TO LIFE", "caption" => "We're dedicated to making every occasion look and sound its best with reliable equipment and professional service."])
+  @include('includes.landing-caption', ["header" => "Bring Your Event to Life", "caption" => "We're dedicated to making every occasion look and sound its best with reliable equipment and professional service."])
 
   <x-coverflow-carousel :items="[
             ['image' => asset('images/carousel/1.webp'), 'alt' => ''],
@@ -31,7 +31,7 @@
             ['image' => asset('images/carousel/7.webp'), 'alt' => ''],
         ]" :interval="3000" />
 
-  <x-button class="btn-color-gradient--primary button-white position-relative z-1 rounded-5 px-5 py-3 border-0 font-family-text fw-semibold fs-5">
+  <x-button class="btn-color-gradient--primary text-pale--white position-relative z-1 rounded-5 px-5 py-3 border-0 font-family-text fw-semibold fs-5">
     Book Now
   </x-button>
 </body>

@@ -8,15 +8,15 @@ $font-size-base: 0.9rem;
 $line-height-base: 1.6;
 
 // Text Colors
-$text-white: oklch(95.514% 0.00011 271.152);
-$text-black: oklch(19.574% 0.00002 271.152);
+$text-pale--white: oklch(93.514% 0.00011 271.152);
+$text-pale--black: oklch(19.574% 0.00002 271.152);
 $gradient-text-from: #b0289c !default;
 $gradient-text-via: #e0205a !default;
 $gradient-text-to: #ff3b3b !default;
 
 // Button Colors
-$button-white: oklch(95.514% 0.00011 271.152);
-$button-black: oklch(19.574% 0.00002 271.152);
+$button-color-white: oklch(95.514% 0.00011 271.152);
+$button-color-black: oklch(19.574% 0.00002 271.152);
 $button-gradient: linear-gradient(
     90deg,
     oklch(0.545 0.236 307.3),

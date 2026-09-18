@@ -14,7 +14,7 @@
         oklch(0.595 0.234 22.6)
     );
     border: none;
-    color: $text-white;
+    color: $text-pale--white;
     transition:
         --gradient-angle 0.3s ease-in-out,
         opacity 0.15s ease-in-out,
@@ -24,22 +24,22 @@
         --gradient-angle: 270deg;
         border: none;
         opacity: $opacity-high;
-        color: $text-white;
+        color: $text-pale--white;
     }
 
     &:active {
-        color: $text-white !important; // to win over Bootstrap's :active color rule
+        color: $text-pale--white !important; // to win over Bootstrap's :active color rule
         opacity: $opacity-med;
     }
 
     &:focus {
         box-shadow: none;
-        color: $text-white;
+        color: $text-pale--white;
     }
 }
 
 .btn-color-gradient--secondary {
-    color: $text-white;
+    color: $text-pale--white;
     background: transparent;
     border: none;
     opacity: 1;
@@ -49,13 +49,13 @@
         opacity 0.3s ease-in-out;
 
     &:hover {
-        color: $text-white;
+        color: $text-pale--white;
         background: $button-gradient;
         opacity: $opacity-high;
     }
 
     &:active {
-        color: $text-white;
+        color: $text-pale--white;
         background: $button-gradient;
         opacity: $opacity-med;
         transition: opacity 0.15s ease-in-out;
