@@ -43,19 +43,19 @@
 <div class="auth-modal__divider">Or register with</div>
 
 <div class="auth-modal__sso">
-  <x-auth.sso-button
+  <x-auth.link-button
     id="google-login-btn"
     :aria-label="'Google Login'"
     icon="images/icons/auth/google.svg"
     icon-alt="Google Icon">
     Google
-  </x-auth.sso-button>
+  </x-auth.link-button>
 
-  <x-auth.sso-button
+  <x-auth.link-button
     id="apple-login-btn"
     :aria-label="'Apple Login'"
     icon="images/icons/auth/apple.svg"
     icon-alt="Apple Icon">
     Apple
-  </x-auth.sso-button>
+  </x-auth.link-button>
 </div>

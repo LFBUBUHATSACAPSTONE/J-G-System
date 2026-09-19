@@ -13,11 +13,9 @@ $classes = [];
 $classString = implode(' ', $classes);
 @endphp
 
-<div class="d-flex justify-content-center">
-  <button
-    type="{{ $type }}"
-    {{ $attributes->merge(['class' => $classString]) }}
-    @if($disabled) disabled @endif>
-    {{ $slot }}
-  </button>
-</div>
+<button
+  type="{{ $type }}"
+  {{ $attributes->merge(['class' => $classString]) }}
+  @if($disabled) disabled @endif>
+  <span>{{ $slot }}</span>
+</button>
