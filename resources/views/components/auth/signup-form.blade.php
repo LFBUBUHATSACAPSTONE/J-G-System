@@ -43,7 +43,9 @@
     </label>
   </div>
 
-  <button type="submit" class="auth-modal__submit">Create account</button>
+  <x-button type="submit" class="auth-modal__submit">
+    Create account
+  </x-button>
 </form>
 
 <div class="auth-modal__divider">Or register with</div>

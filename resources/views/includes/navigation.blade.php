@@ -27,7 +27,7 @@
             data-bs-toggle="modal" data-bs-target="#authModal"
             data-auth-view="signup"
             class=" rounded-3 font-family-text btn-color-gradient--primary px-3 py-2 d-none d-md-block">
-            <span>Sign up</span>
+            Sign up
           </x-button>
 
           <x-button type="button"
@@ -35,7 +35,7 @@
             data-bs-target="#authModal"
             data-auth-view="login"
             class="rounded-3 font-family-text btn-color-gradient--secondary px-3 py-2 d-none d-md-block">
-            <span>Login</span>
+            Login
           </x-button>
 
         </div>

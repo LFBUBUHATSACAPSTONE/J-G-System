@@ -11,5 +11,5 @@
 
   <a href="#" data-auth-view="login">Back to Log in</a>
 
-  <button type="submit" class="auth-modal__submit">Confirm</button>
+  <x-button type="submit" class="auth-modal__submit">Confirm</x-button>
 </form>

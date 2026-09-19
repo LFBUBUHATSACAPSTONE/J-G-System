@@ -19,5 +19,5 @@
 
   <button type="button" id="resend-code-btn">Resend Code</button>
 
-  <button type="submit" class="auth-modal__submit">Confirm</button>
+  <x-button type="submit" class="auth-modal__submit">Confirm</x-button>
 </form>

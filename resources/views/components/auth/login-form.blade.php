@@ -32,7 +32,9 @@
     <a href="#" data-auth-view="forgot-password">Forgot Password?</a>
   </div>
 
-  <button type="submit" class="auth-modal__submit">Login</button>
+  <x-button type="submit" class="auth-modal__submit">
+    Login
+  </x-button>
 </form>
 
 <div class="auth-modal__divider">Or register with</div>
