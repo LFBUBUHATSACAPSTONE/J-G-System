@@ -1,5 +1,3 @@
-// resources/js/auth-modal.js
-
 const AUTH_MODAL_ID = "authModal";
 const VIEW_SELECTOR = ".auth-modal__view";
 const DEFAULT_VIEW = "login";
