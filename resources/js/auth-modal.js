@@ -56,7 +56,15 @@ function togglePasswordVisibility(btn) {
     if (!input) return;
     const show = input.type === "password";
     input.type = show ? "text" : "password";
-    btn.textContent = show ? "Hide" : "Show";
+
+    const icon = btn.querySelector("img");
+
+    if (icon) {
+        icon.src = show
+            ? "/images/icons/auth/hide_password.svg"
+            : "/images/icons/auth/show_password.svg";
+        icon.alt = show ? "Hide Password" : "Show Password";
+    }
     btn.setAttribute("aria-pressed", String(show));
 }
 

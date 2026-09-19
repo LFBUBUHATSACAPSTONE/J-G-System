@@ -27,7 +27,13 @@
   <div class="auth-modal__field">
     <label for="signup-password">Password</label>
     <input type="password" id="signup-password" name="password" required>
-    <button type="button" class="auth-modal__toggle-password" data-target="signup-password">Show</button>
+
+    <x-button type="button" class="auth-modal__toggle-password" data-target="signup-password">
+      <span>
+        <img src="{{ asset('images/icons/auth/show_password.svg')}}" alt="Show Password">
+      </span>
+    </x-button>
+
   </div>
 
   <div class="auth-modal__row">
