@@ -33,13 +33,13 @@
             ['image' => asset('images/carousel/7.webp'), 'alt' => ''],
         ]" :interval="3000" />
 
-  <x-button
+  <x-button-cta
     data-bs-toggle="modal"
     data-bs-target="#authModal"
     data-auth-view="login"
     class="btn-color-gradient--primary font-button--responsive text-pale--white position-relative z-1 rounded-5 px-5 py-3 border-0 font-family-text fw-semibold">
     Book Now
-  </x-button>
+  </x-button-cta>
 
   <x-auth-modal></x-auth-modal>
 </body>
