@@ -5,23 +5,25 @@
   <a href="#" data-auth-view="signup">Sign up</a>
 </p>
 
-<form method="POST" action="{{ route('login') }}">
+<form method="POST" action="{{ route('login') }}" novalidate>
   @csrf
 
   <div class="auth-modal__field">
     <label for="login-identifier">Email or Phone</label>
-    <input type="text" id="login-identifier" name="identifier" required>
+    <input type="text" id="login-identifier" name="identifier" autocomplete="username" required>
+    <small class="auth-modal__field-error d-none" data-field-error="identifier"></small>
   </div>
 
   <div class="auth-modal__field">
     <label for="login-password">Password</label>
-    <input type="password" id="login-password" name="password" required>
+    <input type="password" id="login-password" name="password" autocomplete="current-password" required>
 
     <x-button type="button" class="auth-modal__toggle-password" data-target="login-password">
       <span>
         <img src="{{ asset('images/icons/auth/show_password.svg')}}" alt="Show Password">
       </span>
     </x-button>
+    <small class="auth-modal__field-error d-none" data-field-error="password"></small>
   </div>
 
   <p class="auth-modal__error text-danger d-none" role="alert" data-login-error></p>

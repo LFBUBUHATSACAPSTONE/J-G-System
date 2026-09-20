@@ -5,7 +5,7 @@
   We sent to <span class="auth-modal__masked-destination" data-verification-destination></span>
 </p>
 
-<form method="POST" action="{{ route('verification.confirm') }}">
+<form method="POST" action="{{ route('verification.confirm') }}" novalidate>
   @csrf
 
   <div class="auth-modal__code-inputs">
