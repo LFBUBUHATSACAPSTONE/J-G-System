@@ -12,7 +12,7 @@ Route::get('/user/landing', function () {
     return view('user.landing');
 })->name('user.landing');
 
-// Remove the argument once back-end is connected
+// Remove the argument once back-end is connected (this is use for the active stubs)
 Auth::routes(['reset' => false]);
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
@@ -23,37 +23,107 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 // Route::post('/verification/confirm', fn() => back())->name('verification.confirm');
 // Route::post('/password/update', fn() => back())->name('password.update');
 
-// Front-End Testing Stubs: Removed if backend already exists, let real controllers handles
-Route::post(
-    '/register',
-    fn(Request $r) =>
-    $r->input('identifier') === 'taken@example.com'
-        ? response()->json([
-            'message' => 'That email is already registered.',
-            'errors' => ['identifier' => ['That email is already registered.']],
-        ], 422)
-        : response()->json(['destination' => 'j***@mail.com'])
-)->name('register');
+// Temporary front-end test stubs. Merge into routes/web.php, add
+// `use Illuminate\Http\Request;` at the top, and keep
+// Auth::routes(['reset' => false]) (laravel/ui) while these are in use.
+// Delete each stub as its real controller replaces it.
 
-Route::post(
-    '/login',
-    fn(Request $r) =>
+// 
+// Shared helper: mask an email or phone the way the real back end will
+// eventually do it, so the UI can be tested against realistic destinations
+// instead of one hardcoded string.
+// 
+
+if (!function_exists('jgAuthMaskIdentifier')) {
+    function jgAuthMaskIdentifier(string $identifier): string
+    {
+        if (str_contains($identifier, '@')) {
+            [$local, $domain] = explode('@', $identifier, 2);
+            $visible = mb_substr($local, 0, 1);
+            return $visible . '***@' . $domain;
+        }
+
+        $digits = preg_replace('/\D/', '', $identifier);
+        $last = substr($digits, -3);
+        return str_repeat('*', max(strlen($digits) - 3, 0)) . $last;
+    }
+}
+
+// Test account: test@example.com / password123
+Route::post('/login', fn (Request $r) =>
     $r->input('identifier') === 'test@example.com' && $r->input('password') === 'password123'
         ? response()->json(['ok' => true])
         : response()->json(['message' => 'Invalid credentials.'], 422)
 )->name('login');
 
-Route::post('/password/email', fn() => response()->json(['ok' => true]))->name('password.email');
+// taken@example.com -> 422; anything else -> 200 with a masked destination
+// built from whatever the user actually typed.
+Route::post('/register', function (Request $r) {
+    $identifier = (string) $r->input('identifier');
 
-Route::post(
-    '/verification/confirm',
-    fn(Request $r) =>
-    implode('', (array) $r->input('code')) === '123456'
-        ? response()->json(['token' => 'test-token', 'email' => 'test@example.com'])
-        : response()->json(['message' => 'Invalid verification code.'], 422)
-)->name('verification.confirm');
+    if ($identifier === 'taken@example.com') {
+        return response()->json([
+            'message' => 'That email is already registered.',
+            'errors' => ['identifier' => ['That email is already registered.']],
+        ], 422);
+    }
 
-Route::post('/password/update', fn() => response()->json(['ok' => true]))->name('password.update');
+    return response()->json(['destination' => jgAuthMaskIdentifier($identifier)]);
+})->name('register');
 
-Route::post('/verification/resend', fn() => response()->json(['destination' => 'j***@mail.com']))
-    ->name('verification.resend');
+// Masked destination built from whatever the user typed, so Forgot Password
+// -> Verification shows a realistic value instead of a hardcoded one.
+// unknown@example.com -> 422, to exercise the "account not found" path.
+Route::post('/password/email', function (Request $r) {
+    $identifier = (string) $r->input('identifier');
+
+    if ($identifier === 'unknown@example.com') {
+        return response()->json(['message' => "We couldn't find an account with that email or phone number."], 422);
+    }
+
+    return response()->json(['destination' => jgAuthMaskIdentifier($identifier)]);
+})->name('password.email');
+
+// Test code: 123456. `context` ("signup" | "reset") comes from the request
+// body so both flows can be tested independently — signup just needs a 200,
+// reset needs a token + email for the New Password step.
+Route::post('/verification/confirm', function (Request $r) {
+    $code = implode('', (array) $r->input('code'));
+
+    if ($code !== '123456') {
+        return response()->json(['message' => 'Invalid verification code.'], 422);
+    }
+
+    if ($r->input('context') === 'signup') {
+        return response()->json(['ok' => true]);
+    }
+
+    // reset context (default)
+    return response()->json(['token' => 'test-token', 'email' => 'test@example.com']);
+})->name('verification.confirm');
+
+// Returns a masked destination each time so Resend Code can be checked
+// visually. Append ?throttle=1 to the resend URL in DevTools, or POST with
+// {"context":"throttle"}, to exercise the 429 path from the QA table.
+Route::post('/verification/resend', function (Request $r) {
+    if ($r->input('context') === 'throttle' || $r->query('throttle')) {
+        return response()->json(['message' => 'Too many requests. Please wait before requesting another code.'], 429);
+    }
+
+    return response()->json(['destination' => jgAuthMaskIdentifier((string) $r->input('identifier', 'j***@mail.com'))]);
+})->name('verification.resend');
+
+// weak/short passwords -> 422, so New Password's server-error path (as
+// opposed to the client-side live validation) can also be exercised.
+Route::post('/password/update', function (Request $r) {
+    $password = (string) $r->input('password');
+
+    if (strlen($password) < 8) {
+        return response()->json([
+            'message' => 'Could not update your password.',
+            'errors' => ['password' => ['Password must be at least 8 characters.']],
+        ], 422);
+    }
+
+    return response()->json(['ok' => true]);
+})->name('password.update');
