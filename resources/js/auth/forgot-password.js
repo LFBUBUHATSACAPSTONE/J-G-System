@@ -1,18 +1,19 @@
 /**
- * Forgot Password submit (AJAX)
- *
- * The form used to do a full-page POST, which reloads the page and resets
- * the modal to the login view. This intercepts the submit, posts via fetch,
- * and on success moves the modal to the verification view.
+ * Forgot Password submit (AJAX) + live field feedback
+ * 
+ * Intercepts the submit, validates the identifier live with a message
+ * naming what's wrong, posts via fetch, and on success moves the modal to
+ * the verification view.
  *
  * Expected back-end contract for `password.email`:
- *   200 JSON (optional {"destination": "j***@mail.com"} -> code sent
- *   422 {"message": "…"}                                 -> failed
+ *   200 JSON (optional {"destination": "j***@mail.com"}) -> code sent
+ *   422 {"message": "…"} -> failed
  * If `destination` is omitted, a masked version of the typed value is shown.
  */
 
-import { setAuthView } from "../auth-modal.js";
+import { setAuthView, focusFirstField } from "../auth-modal.js";
 import { setVerificationDestination } from "./verification-code.js";
+import { getIdentifierError, wireLiveField } from "./validation.js";
 
 const AUTH_MODAL_ID = "authModal";
 const VIEW_SELECTOR = '[data-view="forgot-password"]';
@@ -21,21 +22,26 @@ function initForgotPassword() {
     const modalEl = document.getElementById(AUTH_MODAL_ID);
     if (!modalEl) return;
 
+    const form = modalEl.querySelector(`${VIEW_SELECTOR} form`);
+    if (form) {
+        wireLiveField(form, "identifier", getIdentifierError);
+    }
+
     modalEl.addEventListener("submit", (event) => {
-        const form = event.target;
-        if (!form.closest(VIEW_SELECTOR)) return;
+        const target = event.target;
+        if (!target.closest(VIEW_SELECTOR)) return;
         event.preventDefault();
-        submitForgotPassword(modalEl, form);
+        submitForgotPassword(modalEl, target);
     });
 
     modalEl.addEventListener("input", (event) => {
-        const form = event.target.closest("form");
-        if (form?.closest(VIEW_SELECTOR)) clearError(form);
+        const target = event.target.closest("form");
+        if (target?.closest(VIEW_SELECTOR)) clearError(target);
     });
 
     modalEl.addEventListener("hidden.bs.modal", () => {
-        const form = modalEl.querySelector(`${VIEW_SELECTOR} form`);
-        if (form) clearError(form);
+        const target = modalEl.querySelector(`${VIEW_SELECTOR} form`);
+        if (target) clearError(target);
     });
 }
 
@@ -45,6 +51,14 @@ async function submitForgotPassword(modalEl, form) {
     const submitBtn = form.querySelector('[type="submit"]');
 
     clearError(form);
+
+    const identifierError = getIdentifierError(identifier);
+    if (identifierError) {
+        showError(form, identifierError);
+        input.focus();
+        return;
+    }
+
     submitBtn.disabled = true;
 
     try {
@@ -64,7 +78,7 @@ async function submitForgotPassword(modalEl, form) {
             showError(
                 form,
                 data.message ||
-                    "We could not find that account. Please try again.",
+                    "We couldn't find an account with that email or phone number.",
             );
             return;
         }
@@ -74,11 +88,12 @@ async function submitForgotPassword(modalEl, form) {
             data.destination || maskIdentifier(identifier),
         );
         setAuthView(modalEl, "verification");
-        modalEl
-            .querySelector('[data-view="verification"] .auth-modal__code-box')
-            ?.focus();
+        focusFirstField(modalEl);
     } catch {
-        showError(form, "Something went wrong. Please try again.");
+        showError(
+            form,
+            "Something went wrong on our end. Please check your connection and try again.",
+        );
     } finally {
         submitBtn.disabled = false;
     }

@@ -1,25 +1,29 @@
 /**
- * New Password submit (AJAX)
- *
+ * New Password submit (AJAX) + live field feedback
+ * 
  * Intercepts the new-password form so the modal isn't reloaded/reset.
- *  - client-side check: both fields must match
- *  - POSTs { token, email, password, password_confirmation } as JSON (token/email come from the verification step via setResetCredentials)
- *
+ *  - live: password strength (names the missing requirement) + live
+ *    match-check against confirm (as you type either field)
+ *  - POSTs { token, email, password, password_confirmation } as JSON
+ *    (token/email come from the verification step via setResetCredentials)
  *  - success: clears the fields and switches to the login view
  *  - failure: shows the error under the fields
  *
  * Expected back-end contract for `password.update`:
- *   200 JSON
- * -> password updated
- *   422 {"message": "…", "errors": {"password": ["…"]}}
- * -> rejected
- *
+ *   200 JSON -> password updated
+ *   422 {"message": "…", "errors": {"password": ["…"]}} -> rejected
  * `token` and `email` are returned by `verification.confirm` and held in
- *
+ * 
  * memory only; they are cleared on success and when the modal closes.
  */
 
 import { setAuthView } from "../auth-modal.js";
+import {
+    getPasswordError,
+    getMatchError,
+    wireLiveField,
+    setFieldState,
+} from "./validation.js";
 
 const AUTH_MODAL_ID = "authModal";
 const VIEW_SELECTOR = '[data-view="new-password"]';
@@ -34,21 +38,57 @@ function initNewPassword() {
     const modalEl = document.getElementById(AUTH_MODAL_ID);
     if (!modalEl) return;
 
+    const form = modalEl.querySelector(`${VIEW_SELECTOR} form`);
+    if (form) {
+        wireLiveField(form, "password", getPasswordError);
+
+        // Confirm field needs to check equality against the live password
+        // value, so it gets its own listeners rather than going through
+        // wireLiveField (which only sees its own field's value).
+        const passwordInput = form.querySelector('[name="password"]');
+        const confirmInput = form.querySelector(
+            '[name="password_confirmation"]',
+        );
+        const confirmError = form.querySelector(
+            '[data-field-error="password_confirmation"]',
+        );
+        let confirmTouched = false;
+
+        const checkMatch = () => {
+            if (!confirmTouched) return;
+            setFieldState(
+                confirmInput,
+                confirmError,
+                getMatchError(confirmInput.value, passwordInput.value),
+            );
+        };
+        confirmInput?.addEventListener("blur", () => {
+            confirmTouched = true;
+            checkMatch();
+        });
+        confirmInput?.addEventListener("input", checkMatch);
+        // Also re-check confirm as the password itself changes (e.g. user
+        // fixes the password after already filling in confirm), but only
+        // once confirm has been touched — otherwise this would flag confirm
+        // as empty/mismatched before the user has even reached it.
+        passwordInput?.addEventListener("input", checkMatch);
+    }
+
     modalEl.addEventListener("submit", (event) => {
-        const form = event.target;
-        if (!form.closest(VIEW_SELECTOR)) return;
+        const target = event.target;
+        if (!target.closest(VIEW_SELECTOR)) return;
         event.preventDefault();
-        submitNewPassword(modalEl, form);
+        submitNewPassword(modalEl, target);
     });
 
     modalEl.addEventListener("input", (event) => {
-        const form = event.target.closest("form");
-        if (form?.closest(VIEW_SELECTOR)) clearError(form);
+        const target = event.target.closest("form");
+        if (target?.closest(VIEW_SELECTOR)) clearError(target);
     });
 
     modalEl.addEventListener("hidden.bs.modal", () => {
-        const form = modalEl.querySelector(`${VIEW_SELECTOR} form`);
-        if (form) resetForm(form);
+        const target = modalEl.querySelector(`${VIEW_SELECTOR} form`);
+        if (target) resetForm(target);
     });
 }
 
@@ -59,8 +99,16 @@ async function submitNewPassword(modalEl, form) {
 
     clearError(form);
 
-    if (password.value !== confirm.value) {
-        showError(form, "Passwords do not match.", [confirm]);
+    const passwordError = getPasswordError(password.value);
+    if (passwordError) {
+        showError(form, passwordError, [password]);
+        password.focus();
+        return;
+    }
+
+    const matchError = getMatchError(confirm.value, password.value);
+    if (matchError) {
+        showError(form, matchError, [confirm]);
         confirm.focus();
         return;
     }
@@ -90,7 +138,7 @@ async function submitNewPassword(modalEl, form) {
                 form,
                 Object.values(data.errors ?? {})[0]?.[0] ||
                     data.message ||
-                    "Could not update your password. Please try again.",
+                    "We couldn't update your password. Please try again.",
                 [password],
             );
             return;
@@ -99,7 +147,10 @@ async function submitNewPassword(modalEl, form) {
         resetForm(form);
         setAuthView(modalEl, "login");
     } catch {
-        showError(form, "Something went wrong. Please try again.");
+        showError(
+            form,
+            "Something went wrong on our end. Please check your connection and try again.",
+        );
     } finally {
         submitBtn.disabled = false;
     }

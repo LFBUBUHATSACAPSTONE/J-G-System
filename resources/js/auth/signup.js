@@ -1,74 +1,113 @@
-// resources/js/signup.js
-
 /**
- * Sign Up submit (AJAX)
+ * Sign Up submit (AJAX) + live field feedback
  *
- * Intercepts the sign-up form, validates the identifier client-side,
- * posts JSON, and on success opens the Verification view.
- * Required fields and the Terms checkbox are enforced by native
- * `required` attributes before this handler runs.
+ * Intercepts the sign-up form, validates each field live with a message
+ * naming exactly what's missing, posts JSON, and on success opens the
+ * Verification view. The form has `novalidate`, so every required field including the Terms checkbox — is enforced here in JS, not by the browser.
  *
  * Expected back-end contract for `register`:
  *   200 JSON (optional {"destination": "j***@mail.com"}) -> account created, code sent
  *   422 {"message": "…", "errors": {"identifier": ["…"], …}} -> rejected
  */
 
-import { setAuthView } from "../auth-modal.js";
+import { setAuthView, focusFirstField } from "../auth-modal.js";
 import { maskIdentifier } from "./forgot-password.js";
 import {
     setVerificationContext,
     setVerificationDestination,
 } from "./verification-code.js";
+import {
+    getIdentifierError,
+    getPasswordError,
+    getRequiredError,
+    wireLiveField,
+    setFieldState,
+} from "./validation.js";
+
+const TERMS_MESSAGE = "Please agree to the Terms & Conditions to continue.";
 
 const AUTH_MODAL_ID = "authModal";
 const VIEW_SELECTOR = '[data-view="signup"]';
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE_RE = /^\+?[\d\s()-]+$/;
 
 function initSignup() {
     const modalEl = document.getElementById(AUTH_MODAL_ID);
     if (!modalEl) return;
 
+    const form = modalEl.querySelector(`${VIEW_SELECTOR} form`);
+    if (form) {
+        wireLiveField(form, "first_name", (v) =>
+            getRequiredError(v, "First name"),
+        );
+        wireLiveField(form, "last_name", (v) =>
+            getRequiredError(v, "Last name"),
+        );
+        wireLiveField(form, "identifier", getIdentifierError);
+        wireLiveField(form, "password", getPasswordError);
+
+        // Checkboxes don't fit wireLiveField's blur/input pattern (there's
+        // nothing to "type"), so this listens to 'change' directly. Only
+        // clears the error once checked — unchecking after already having
+        // agreed re-flags it immediately, same as any other live field.
+        const termsInput = form.querySelector('[name="terms"]');
+        const termsError = form.querySelector('[data-field-error="terms"]');
+        termsInput?.addEventListener("change", () => {
+            setFieldState(
+                termsInput,
+                termsError,
+                termsInput.checked ? "" : TERMS_MESSAGE,
+            );
+        });
+    }
+
     modalEl.addEventListener("submit", (event) => {
-        const form = event.target;
-        if (!form.closest(VIEW_SELECTOR)) return;
+        const target = event.target;
+        if (!target.closest(VIEW_SELECTOR)) return;
         event.preventDefault();
-        submitSignup(modalEl, form);
+        submitSignup(modalEl, target);
     });
 
     modalEl.addEventListener("input", (event) => {
-        const form = event.target.closest("form");
-        if (form?.closest(VIEW_SELECTOR)) clearError(form);
+        const target = event.target.closest("form");
+        if (target?.closest(VIEW_SELECTOR)) clearError(target);
     });
 
     modalEl.addEventListener("hidden.bs.modal", () => {
-        const form = modalEl.querySelector(`${VIEW_SELECTOR} form`);
-        if (form) resetForm(form);
+        const target = modalEl.querySelector(`${VIEW_SELECTOR} form`);
+        if (target) resetForm(target);
     });
-}
-
-function isValidIdentifier(value) {
-    if (EMAIL_RE.test(value)) return true;
-    const digits = value.replace(/\D/g, "");
-    return PHONE_RE.test(value) && digits.length >= 7 && digits.length <= 15;
 }
 
 async function submitSignup(modalEl, form) {
     const field = (name) => form.querySelector(`[name="${name}"]`);
+    const firstNameInput = field("first_name");
+    const lastNameInput = field("last_name");
     const identifierInput = field("identifier");
-    const identifier = identifierInput.value.trim();
+    const passwordInput = field("password");
+    const termsInput = field("terms");
     const submitBtn = form.querySelector('[type="submit"]');
 
     clearError(form);
 
-    if (!isValidIdentifier(identifier)) {
-        showError(form, "Enter a valid email address or phone number.", [
-            "identifier",
-        ]);
-        identifierInput.focus();
+    const checks = [
+        [firstNameInput, getRequiredError(firstNameInput.value, "First name")],
+        [lastNameInput, getRequiredError(lastNameInput.value, "Last name")],
+        [identifierInput, getIdentifierError(identifierInput.value)],
+        [passwordInput, getPasswordError(passwordInput.value)],
+        [termsInput, termsInput.checked ? "" : TERMS_MESSAGE],
+    ];
+    const firstFailure = checks.find(([, message]) => message);
+    if (firstFailure) {
+        const [input, message] = firstFailure;
+        const errorEl = form.querySelector(
+            `[data-field-error="${input.name}"]`,
+        );
+        setFieldState(input, errorEl, message);
+        showError(form, message, []);
+        input.focus();
         return;
     }
 
+    const identifier = identifierInput.value.trim();
     submitBtn.disabled = true;
 
     try {
@@ -81,10 +120,10 @@ async function submitSignup(modalEl, form) {
                     form.querySelector('input[name="_token"]')?.value ?? "",
             },
             body: JSON.stringify({
-                first_name: field("first_name").value.trim(),
-                last_name: field("last_name").value.trim(),
+                first_name: firstNameInput.value.trim(),
+                last_name: lastNameInput.value.trim(),
                 identifier,
-                password: field("password").value,
+                password: passwordInput.value,
                 terms: field("terms").checked,
             }),
         });
@@ -92,12 +131,15 @@ async function submitSignup(modalEl, form) {
         if (!response.ok) {
             const data = await response.json().catch(() => ({}));
             const errors = data.errors ?? {};
+            const invalidInputs = Object.keys(errors)
+                .map((name) => form.querySelector(`[name="${name}"]`))
+                .filter(Boolean);
             showError(
                 form,
                 Object.values(errors)[0]?.[0] ||
                     data.message ||
-                    "Could not create your account. Please try again.",
-                Object.keys(errors),
+                    "We couldn't create your account. Please review the fields above and try again.",
+                invalidInputs,
             );
             return;
         }
@@ -109,25 +151,24 @@ async function submitSignup(modalEl, form) {
         );
         resetForm(form);
         setAuthView(modalEl, "verification");
-        modalEl
-            .querySelector('[data-view="verification"] .auth-modal__code-box')
-            ?.focus();
+        focusFirstField(modalEl);
     } catch {
-        showError(form, "Something went wrong. Please try again.");
+        showError(
+            form,
+            "Something went wrong on our end. Please check your connection and try again.",
+        );
     } finally {
         submitBtn.disabled = false;
     }
 }
 
-function showError(form, message, invalidNames = []) {
+function showError(form, message, invalidInputs = []) {
     const errorEl = form.querySelector("[data-signup-error]");
     if (errorEl) {
         errorEl.textContent = message;
         errorEl.classList.remove("d-none");
     }
-    invalidNames.forEach((name) =>
-        form.querySelector(`[name="${name}"]`)?.classList.add("is-invalid"),
-    );
+    invalidInputs.forEach((input) => input.classList.add("is-invalid"));
 }
 
 function clearError(form) {
@@ -148,4 +189,4 @@ function resetForm(form) {
 
 document.addEventListener("DOMContentLoaded", initSignup);
 
-export { initSignup, isValidIdentifier };
+export { initSignup };
