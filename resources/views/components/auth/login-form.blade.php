@@ -24,6 +24,8 @@
     </x-button>
   </div>
 
+  <p class="auth-modal__error text-danger d-none" role="alert" data-login-error></p>
+
   <div class="auth-modal__row">
     <label>
       <input type="checkbox" name="remember">

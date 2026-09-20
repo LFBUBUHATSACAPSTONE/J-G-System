@@ -17,14 +17,34 @@ Auth::routes(['reset' => false]);
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-Route::post('/login', fn() => back())->name('login');
-Route::post('/register', fn() => back())->name('register');
+// Route::post('/login', fn() => back())->name('login');
+// Route::post('/register', fn() => back())->name('register');
 // Route::post('/password/email', fn() => back())->name('password.email');
 // Route::post('/verification/confirm', fn() => back())->name('verification.confirm');
 // Route::post('/password/update', fn() => back())->name('password.update');
 
 // Front-End Testing: Removed if backend already exists, let real controllers handles
+Route::post(
+    '/register',
+    fn(Request $r) =>
+    $r->input('identifier') === 'taken@example.com'
+        ? response()->json([
+            'message' => 'That email is already registered.',
+            'errors' => ['identifier' => ['That email is already registered.']],
+        ], 422)
+        : response()->json(['destination' => 'j***@mail.com'])
+)->name('register');
+
+Route::post(
+    '/login',
+    fn(Request $r) =>
+    $r->input('identifier') === 'test@example.com' && $r->input('password') === 'password123'
+        ? response()->json(['ok' => true])
+        : response()->json(['message' => 'Invalid credentials.'], 422)
+)->name('login');
+
 Route::post('/password/email', fn() => response()->json(['ok' => true]))->name('password.email');
+
 Route::post(
     '/verification/confirm',
     fn(Request $r) =>
@@ -32,4 +52,5 @@ Route::post(
         ? response()->json(['token' => 'test-token', 'email' => 'test@example.com'])
         : response()->json(['message' => 'Invalid verification code.'], 422)
 )->name('verification.confirm');
+
 Route::post('/password/update', fn() => response()->json(['ok' => true]))->name('password.update');
