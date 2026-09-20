@@ -13,17 +13,24 @@
  *  - #resend-code-btn
  *  - [data-verification-destination]
  *
- * Confirm: submits the code via fetch (JSON). On success the modal moves to
- * the new-password view; on failure an error is shown under the boxes.
+ * Confirm: submits { code, context } via fetch (JSON). `context` is "reset"
+ * (default) or "signup", set by the caller through setVerificationContext().
+ * On success: "reset" moves to the new-password view, "signup" moves to login.
+ * On failure an error is shown under the boxes.
+ *
  * Expected back-end contract for `verification.confirm`:
- *   200 {"token":"…","email":"…"} -> code valid (passed on to the new-password step)
- *   422 {"message":"…"} -> code invalid (message optional)
+ *   200 {"token":"…","email":"…"}
+ * -> code valid (reset context; token/email go to new-password)
+ *   200 (any JSON)
+ * -> code valid (signup context; body ignored)
+ *   422 {"message":"…"}
+ * -> code invalid (message optional)
  *
  * The Resend AJAX call is back-end dependent: this module only dispatches
  * a bubbling `auth:resend-code` CustomEvent from the button.
  */
 
-import { setAuthView } from "./auth-modal.js";
+import { setAuthView } from "../auth-modal.js";
 import { setResetCredentials } from "./new-password.js";
 
 const AUTH_MODAL_ID = "authModal";
@@ -31,8 +38,14 @@ const BOX_SELECTOR = ".auth-modal__code-box";
 const RESEND_BTN_ID = "resend-code-btn";
 const RESEND_COOLDOWN_SECONDS = 30;
 const CODE_LENGTH = 6;
+const DEFAULT_CONTEXT = "reset";
 
 let cooldownTimer = null;
+let verificationContext = DEFAULT_CONTEXT;
+
+function setVerificationContext(context) {
+    verificationContext = context;
+}
 
 function initVerificationCode() {
     const modalEl = document.getElementById(AUTH_MODAL_ID);
@@ -155,10 +168,15 @@ async function submitVerificationCode(modalEl, form) {
                 "X-CSRF-TOKEN":
                     form.querySelector('input[name="_token"]')?.value ?? "",
             },
-            body: JSON.stringify({ code }),
+            body: JSON.stringify({ code, context: verificationContext }),
         });
 
         if (response.ok) {
+            if (verificationContext === "signup") {
+                setAuthView(modalEl, "login");
+                return;
+            }
+
             const data = await response.json().catch(() => ({}));
             setResetCredentials({ token: data.token, email: data.email });
             setAuthView(modalEl, "new-password");
@@ -236,6 +254,8 @@ function startResendCooldown(seconds = RESEND_COOLDOWN_SECONDS) {
 }
 
 function resetVerificationCode() {
+    verificationContext = DEFAULT_CONTEXT;
+
     document.querySelectorAll(BOX_SELECTOR).forEach((b) => {
         b.value = "";
     });
@@ -256,6 +276,7 @@ document.addEventListener("DOMContentLoaded", initVerificationCode);
 export {
     initVerificationCode,
     getVerificationCode,
+    setVerificationContext,
     setVerificationDestination,
     startResendCooldown,
     resetVerificationCode,

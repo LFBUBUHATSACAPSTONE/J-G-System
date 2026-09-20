@@ -4,22 +4,22 @@
  * Intercepts the new-password form so the modal isn't reloaded/reset.
  *  - client-side check: both fields must match
  *  - POSTs { token, email, password, password_confirmation } as JSON (token/email come from the verification step via setResetCredentials)
- * 
+ *
  *  - success: clears the fields and switches to the login view
  *  - failure: shows the error under the fields
  *
  * Expected back-end contract for `password.update`:
- *   200 JSON 
+ *   200 JSON
  * -> password updated
- *   422 {"message": "…", "errors": {"password": ["…"]}} 
+ *   422 {"message": "…", "errors": {"password": ["…"]}}
  * -> rejected
- * 
+ *
  * `token` and `email` are returned by `verification.confirm` and held in
- * 
+ *
  * memory only; they are cleared on success and when the modal closes.
  */
 
-import { setAuthView } from "./auth-modal.js";
+import { setAuthView } from "../auth-modal.js";
 
 const AUTH_MODAL_ID = "authModal";
 const VIEW_SELECTOR = '[data-view="new-password"]';

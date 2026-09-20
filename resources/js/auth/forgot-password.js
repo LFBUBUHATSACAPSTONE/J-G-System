@@ -11,7 +11,7 @@
  * If `destination` is omitted, a masked version of the typed value is shown.
  */
 
-import { setAuthView } from "./auth-modal.js";
+import { setAuthView } from "../auth-modal.js";
 import { setVerificationDestination } from "./verification-code.js";
 
 const AUTH_MODAL_ID = "authModal";
