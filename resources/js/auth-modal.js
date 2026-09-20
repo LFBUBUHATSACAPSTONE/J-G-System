@@ -16,12 +16,17 @@ function initAuthModal() {
         setAuthView(modalEl, DEFAULT_VIEW);
     });
 
+    modalEl.addEventListener("shown.bs.modal", () => {
+        focusFirstField(modalEl);
+    });
+
     modalEl.addEventListener("click", (event) => {
         const link = event.target.closest("[data-auth-view]");
         if (!link || !modalEl.contains(link)) return;
         if (link.hasAttribute("data-bs-toggle")) return;
         event.preventDefault();
         setAuthView(modalEl, link.getAttribute("data-auth-view"));
+        focusFirstField(modalEl);
     });
 
     initPasswordToggles(modalEl);
@@ -41,6 +46,17 @@ function setAuthView(modalEl, view) {
     if (!matched) {
         setAuthView(modalEl, DEFAULT_VIEW);
     }
+}
+
+// Focuses the first fillable, visible input/textarea/select in the currently active view. Safe to call even if the modal isn't shown yet (it just no-ops when there's nothing focusable).
+function focusFirstField(modalEl) {
+    const activeView = modalEl.querySelector(`${VIEW_SELECTOR}:not(.d-none)`);
+    if (!activeView) return;
+
+    const field = activeView.querySelector(
+        'input:not([type="hidden"]):not([disabled]), textarea:not([disabled]), select:not([disabled])',
+    );
+    field?.focus();
 }
 
 function initPasswordToggles(modalEl) {
@@ -70,4 +86,9 @@ function togglePasswordVisibility(btn) {
 
 document.addEventListener("DOMContentLoaded", initAuthModal);
 
-export { initAuthModal, setAuthView, togglePasswordVisibility };
+export {
+    initAuthModal,
+    setAuthView,
+    togglePasswordVisibility,
+    focusFirstField,
+};
