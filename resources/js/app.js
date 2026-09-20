@@ -9,3 +9,4 @@ import "./auth/verification-code.js";
 import "./auth/new-password.js";
 import "./auth/login.js";
 import "./auth/signup.js";
+import "./auth/resend-code.js";

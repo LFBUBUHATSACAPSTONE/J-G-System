@@ -89,7 +89,10 @@ function initVerificationCode() {
         if (!btn || btn.disabled) return;
 
         btn.dispatchEvent(
-            new CustomEvent("auth:resend-code", { bubbles: true }),
+            new CustomEvent("auth:resend-code", {
+                bubbles: true,
+                detail: { context: verificationContext },
+            }),
         );
         startResendCooldown();
     });

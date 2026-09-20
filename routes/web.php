@@ -23,7 +23,7 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 // Route::post('/verification/confirm', fn() => back())->name('verification.confirm');
 // Route::post('/password/update', fn() => back())->name('password.update');
 
-// Front-End Testing: Removed if backend already exists, let real controllers handles
+// Front-End Testing Stubs: Removed if backend already exists, let real controllers handles
 Route::post(
     '/register',
     fn(Request $r) =>
@@ -54,3 +54,6 @@ Route::post(
 )->name('verification.confirm');
 
 Route::post('/password/update', fn() => response()->json(['ok' => true]))->name('password.update');
+
+Route::post('/verification/resend', fn() => response()->json(['destination' => 'j***@mail.com']))
+    ->name('verification.resend');
