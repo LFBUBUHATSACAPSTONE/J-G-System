@@ -1,3 +1,8 @@
+{{--
+  Reminder: any future CTA that redirects to login should use the same two attributes,
+     e.g. data-bs-toggle="modal" data-bs-target="#authModal" data-auth-view="login"
+--}}
+
 <header class="position-relative z-1 border-bottom border-white border-opacity-25 glass-header">
   <nav class="navbar navbar-expand-md navbar-dark py-3">
     <div class="d-flex align-items-center container px-3 px-md-5">
@@ -17,8 +22,22 @@
         </ul>
 
         <div class="d-flex gap-3 align-items-center justify-content-center mt-3 mt-md-0">
-          <button type="button" class="rounded-3 font-family-text btn-color-gradient--primary px-3 py-2 d-none d-md-block">Sign up</button>
-          <button type="button" class="rounded-3 font-family-text btn-color-gradient--secondary px-3 py-2 d-none d-md-block">Login</button>
+
+          <x-button type="button"
+            data-bs-toggle="modal" data-bs-target="#authModal"
+            data-auth-view="signup"
+            class=" rounded-3 font-family-text btn-color-gradient--primary px-3 py-2 d-none d-md-block">
+            Sign up
+          </x-button>
+
+          <x-button type="button"
+            data-bs-toggle="modal"
+            data-bs-target="#authModal"
+            data-auth-view="login"
+            class="rounded-3 font-family-text btn-color-gradient--secondary px-3 py-2 d-none d-md-block">
+            Login
+          </x-button>
+
         </div>
       </div>
     </div>
