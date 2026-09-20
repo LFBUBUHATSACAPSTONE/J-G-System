@@ -8,7 +8,7 @@
     <input type="password" id="new-password" name="password" required>
 
     <x-button type="button" class="auth-modal__toggle-password" data-target="new-password">
-        <img src="{{ asset('images/icons/auth/show_password.svg')}}" alt="Show Password">
+      <img src="{{ asset('images/icons/auth/show_password.svg')}}" alt="Show Password">
     </x-button>
 
   </div>
@@ -18,10 +18,12 @@
     <input type="password" id="new-password-confirm" name="password_confirmation" required>
 
     <x-button type="button" class="auth-modal__toggle-password" data-target="new-password-confirm">
-        <img src="{{ asset('images/icons/auth/show_password.svg')}}" alt="Show Password">
+      <img src="{{ asset('images/icons/auth/show_password.svg')}}" alt="Show Password">
     </x-button>
 
   </div>
+
+  <p class="auth-modal__error text-danger d-none" role="alert" data-new-password-error></p>
 
   <a href="#" data-auth-view="login">Back to Log in</a>
 

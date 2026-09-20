@@ -17,6 +17,8 @@
     <input type="text" maxlength="1" inputmode="numeric" name="code[]" class="auth-modal__code-box" required>
   </div>
 
+  <p class="auth-modal__error text-danger d-none" role="alert" data-verification-error></p>
+
   <button type="button" id="resend-code-btn">Resend Code</button>
 
   <x-button type="submit" class="auth-modal__submit">Confirm</x-button>

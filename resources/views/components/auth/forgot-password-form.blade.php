@@ -9,6 +9,8 @@
     <input type="text" id="forgot-identifier" name="identifier" required>
   </div>
 
+  <p class="auth-modal__error text-danger d-none" role="alert" data-forgot-error></p>
+
   <a href="#" data-auth-view="login">Back to Log in</a>
 
   <x-button type="submit" class="auth-modal__submit">Confirm</x-button>
