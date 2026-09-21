@@ -15,6 +15,7 @@ import { maskIdentifier } from "./forgot-password.js";
 import {
     setVerificationContext,
     setVerificationDestination,
+    setVerificationToken,
 } from "./verification-code.js";
 import {
     getIdentifierError,
@@ -146,6 +147,7 @@ async function submitSignup(modalEl, form) {
 
         const data = await response.json().catch(() => ({}));
         setVerificationContext("signup");
+        setVerificationToken(data.verification_token);
         setVerificationDestination(
             data.destination || maskIdentifier(identifier),
         );
