@@ -31,7 +31,6 @@
                             <button type="button" data-bs-target="#authCarousel" data-bs-slide-to="2"></button>
                         </div>
                     </div>
-                    <a href="{{ url('/user/landing') }}" class="auth-modal__back-link">Back to Website</a>
                 </div>
 
                 {{-- Right panel: swappable form views --}}
