@@ -20,3 +20,8 @@
 // Landing Caption Gradient and Text Stylings
 @import "gradient-text";
 @import "landing-caption";
+@import "auth-modal";
+
+* {
+    font-family: $font-family-text;
+}
