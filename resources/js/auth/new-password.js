@@ -1,6 +1,6 @@
 /**
  * New Password submit (AJAX) + live field feedback
- * 
+ *
  * Intercepts the new-password form so the modal isn't reloaded/reset.
  *  - live: password strength (names the missing requirement) + live
  *    match-check against confirm (as you type either field)
@@ -13,7 +13,7 @@
  *   200 JSON -> password updated
  *   422 {"message": "…", "errors": {"password": ["…"]}} -> rejected
  * `token` and `email` are returned by `verification.confirm` and held in
- * 
+ *
  * memory only; they are cleared on success and when the modal closes.
  */
 
@@ -42,9 +42,8 @@ function initNewPassword() {
     if (form) {
         wireLiveField(form, "password", getPasswordError);
 
-        // Confirm field needs to check equality against the live password
-        // value, so it gets its own listeners rather than going through
-        // wireLiveField (which only sees its own field's value).
+        /* Confirm field needs to check equality against the live password value, so it gets its own listeners rather than going through wireLiveField (which only sees its own field's value).
+        */
         const passwordInput = form.querySelector('[name="password"]');
         const confirmInput = form.querySelector(
             '[name="password_confirmation"]',
@@ -67,10 +66,8 @@ function initNewPassword() {
             checkMatch();
         });
         confirmInput?.addEventListener("input", checkMatch);
-        // Also re-check confirm as the password itself changes (e.g. user
-        // fixes the password after already filling in confirm), but only
-        // once confirm has been touched — otherwise this would flag confirm
-        // as empty/mismatched before the user has even reached it.
+        /* Also re-check confirm as the password itself changes (e.g. user fixes the password after already filling in confirm), but only once confirm has been touched — otherwise this would flag confirm as empty/mismatched before the user has even reached it.
+        */
         passwordInput?.addEventListener("input", checkMatch);
     }
 
@@ -101,14 +98,18 @@ async function submitNewPassword(modalEl, form) {
 
     const passwordError = getPasswordError(password.value);
     if (passwordError) {
-        showError(form, passwordError, [password]);
+        const errorEl = form.querySelector('[data-field-error="password"]');
+        setFieldState(password, errorEl, passwordError);
         password.focus();
         return;
     }
 
     const matchError = getMatchError(confirm.value, password.value);
     if (matchError) {
-        showError(form, matchError, [confirm]);
+        const errorEl = form.querySelector(
+            '[data-field-error="password_confirmation"]',
+        );
+        setFieldState(confirm, errorEl, matchError);
         confirm.focus();
         return;
     }

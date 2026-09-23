@@ -16,7 +16,11 @@ import {
     setVerificationDestination,
     setVerificationToken,
 } from "./verification-code.js";
-import { getIdentifierError, wireLiveField } from "./validation.js";
+import {
+    getIdentifierError,
+    wireLiveField,
+    setFieldState,
+} from "./validation.js";
 
 const AUTH_MODAL_ID = "authModal";
 const VIEW_SELECTOR = '[data-view="forgot-password"]';
@@ -57,7 +61,8 @@ async function submitForgotPassword(modalEl, form) {
 
     const identifierError = getIdentifierError(identifier);
     if (identifierError) {
-        showError(form, identifierError);
+        const errorEl = form.querySelector('[data-field-error="identifier"]');
+        setFieldState(input, errorEl, identifierError);
         input.focus();
         return;
     }

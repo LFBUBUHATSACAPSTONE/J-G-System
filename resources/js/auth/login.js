@@ -14,6 +14,7 @@ import {
     getIdentifierError,
     getRequiredError,
     wireLiveField,
+    setFieldState,
 } from "./validation.js";
 
 const AUTH_MODAL_ID = "authModal";
@@ -26,7 +27,7 @@ function initLogin() {
     const form = modalEl.querySelector(`${VIEW_SELECTOR} form`);
     if (form) {
         wireLiveField(form, "identifier", getIdentifierError);
-        // No format rule on login — just flag if it's left empty.
+        // No format rule on login, just a flag if it's left empty.
         wireLiveField(form, "password", (v) => getRequiredError(v, "Password"));
     }
 
@@ -63,14 +64,16 @@ async function submitLogin(form) {
 
     const identifierError = getIdentifierError(identifier);
     if (identifierError) {
-        showError(form, identifierError, [identifierInput]);
+        const errorEl = form.querySelector('[data-field-error="identifier"]');
+        setFieldState(identifierInput, errorEl, identifierError);
         identifierInput.focus();
         return;
     }
 
     const passwordError = getRequiredError(password, "Password");
     if (passwordError) {
-        showError(form, passwordError, [passwordInput]);
+        const errorEl = form.querySelector('[data-field-error="password"]');
+        setFieldState(passwordInput, errorEl, passwordError);
         passwordInput.focus();
         return;
     }
@@ -91,10 +94,8 @@ async function submitLogin(form) {
 
         if (!response.ok) {
             const data = await response.json().catch(() => ({}));
-            // The stub/back end can't say *which* field is wrong for security
-            // reasons (avoids confirming whether the account exists), so this
-            // stays a combined message — but it's still specific about what
-            // to check rather than a bare "error".
+            /* The stub/back end can't say *which* field is wrong for security reasons (avoids confirming whether the account exists), so this stays a combined message — but it's still specific about what to check rather than a bare "error".
+            */
             showError(
                 form,
                 data.message ||
