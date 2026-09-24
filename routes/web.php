@@ -13,6 +13,10 @@ Route::get('/user/landing', function () {
     return view('user.landing');
 })->name('user.landing');
 
+Route::get('/user/payment-processing', function () {
+    return view('user.payment-processing');
+})->name('user.payment-processing');
+
 // Remove the argument once back-end is connected (this is use for the active stubs)
 Auth::routes(['reset' => false]);
 

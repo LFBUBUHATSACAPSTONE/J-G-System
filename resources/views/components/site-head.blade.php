@@ -5,6 +5,7 @@
 'ogDescription' => null,
 'author' => null,
 'image' => null,
+'noindex' => null
 ])
 
 @php
@@ -17,8 +18,12 @@ $ogTitle = $ogTitle ?? $page['og_title'] ?? $title;
 $ogDescription = $ogDescription ?? $page['og_description'] ?? $description;
 $author = $author ?? config('site.author');
 $imageUrl = asset($image ?? $page['logo'] ?? config('site.logo'));
+$noindex = $noindex ?? $page['noindex'] ?? false;
 @endphp
 
+@if($noindex)
+<meta name="robots" content="noindex, nofollow">
+@endif
 <!-- Primary Meta Tags -->
 <meta name="title" content="{{ $title }}">
 <meta name="description" content="{{ $description }}">
