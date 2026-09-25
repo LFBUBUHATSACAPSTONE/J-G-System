@@ -14,4 +14,5 @@ import "./auth/resend-code.js";
 import "./booking/package.js";
 
 /* BOOKING */
-import "./booking/client-information";
+import "./booking/client-information.js";
+import "./booking/event-information.js";
