@@ -7,6 +7,7 @@
 
 <form method="POST" action="{{ route('verification.confirm') }}" novalidate>
   @csrf
+  <input type="hidden" name="verification_token" value="">
 
   <div class="auth-modal__code-inputs">
     <input type="text" maxlength="1" inputmode="numeric" name="code[]" class="auth-modal__code-box" required>
