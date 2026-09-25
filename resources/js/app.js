@@ -12,3 +12,6 @@ import "./auth/login.js";
 import "./auth/signup.js";
 import "./auth/resend-code.js";
 import "./booking/package.js";
+
+/* BOOKING */
+import "./booking/client-information";

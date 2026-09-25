@@ -20,9 +20,16 @@
 // Landing Caption Gradient and Text Stylings
 @import "gradient-text";
 @import "landing-caption";
+
+// Modal and Forms
 @import "auth-modal";
+<<<<<<< HEAD
 @import "package";
 @import "features";
+=======
+@import "client-information";
+
+>>>>>>> 9546bbc (style: added stylings for the personal information booking form)
 * {
     font-family: $font-family-text;
 }
