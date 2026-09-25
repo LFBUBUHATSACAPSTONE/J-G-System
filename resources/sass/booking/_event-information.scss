@@ -1,0 +1,270 @@
+.event-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: flex-start;
+
+    @media (min-width: 768px) {
+        flex-direction: row;
+    }
+
+    &__card {
+        position: relative;
+        flex: 1;
+        width: 100%;
+        background: $auth-surface;
+        border-radius: $auth-radius-xl;
+        padding: 2rem 2.25rem 2.5rem;
+        color: $auth-text-primary;
+        isolation: isolate;
+        overflow: hidden;
+
+        &::before {
+            content: "";
+            position: absolute;
+            inset: -20% -20% auto auto;
+            width: 70%;
+            height: 60%;
+            background: radial-gradient(
+                circle at top right,
+                $auth-glow-violet 0%,
+                $auth-glow-rose 45%,
+                transparent 75%
+            );
+            opacity: 0.35;
+            filter: blur(60px);
+            z-index: -1;
+            pointer-events: none;
+        }
+    }
+
+    &__title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 1.75rem;
+    }
+
+    &__field {
+        position: relative;
+        margin-bottom: 1.4rem;
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: $auth-text-primary;
+        }
+
+        label span:nth-of-type(2) {
+            color: $auth-danger;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            background: $auth-field-bg;
+            border: 1px solid transparent;
+            border-radius: $auth-radius-md;
+            padding: 0.85rem 1rem;
+            color: $auth-text-primary;
+            font-size: 0.9rem;
+
+            &::placeholder {
+                color: $auth-text-muted;
+            }
+
+            &:focus {
+                outline: none;
+                border-color: $auth-accent;
+                box-shadow: 0 0 0 3px $auth-focus-ring-soft;
+            }
+
+            &.is-invalid {
+                border-color: $auth-danger;
+            }
+        }
+    }
+
+    &__optional-tag {
+        font-weight: 400;
+        font-style: italic;
+        color: $auth-text-muted;
+        margin-left: 0.25rem;
+    }
+
+    &__field-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+
+        @media (min-width: 480px) {
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 1.5rem;
+
+            .event-info__field--guests {
+                flex: 1;
+                max-width: 220px;
+            }
+        }
+    }
+
+    &__field-error {
+        display: block;
+        margin-top: 0.35rem;
+        color: $auth-danger;
+        font-size: 0.78rem;
+    }
+
+    &__error {
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+    }
+
+    // Custom select — a button that opens a listbox, a hidden input
+    // carries the actual form value.
+    &__select-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        background: $auth-field-bg;
+        border: 1px solid transparent;
+        border-radius: $auth-radius-md;
+        padding: 0.85rem 1rem;
+        color: $auth-text-primary;
+        font-size: 0.9rem;
+        text-align: left;
+        cursor: pointer;
+
+        &:focus-visible,
+        &[aria-expanded="true"] {
+            outline: none;
+            border-color: $auth-accent;
+            box-shadow: 0 0 0 3px $auth-focus-ring-soft;
+        }
+
+        &.is-invalid {
+            border-color: $auth-danger;
+        }
+    }
+
+    &__select-value {
+        &[data-placeholder-active] {
+            color: $auth-text-muted;
+        }
+    }
+
+    &__select-chevron {
+        flex-shrink: 0;
+        color: $auth-text-secondary;
+        transition: transform 0.15s ease-in-out;
+
+        .event-info__select-btn[aria-expanded="true"] & {
+            transform: rotate(180deg);
+        }
+    }
+
+    &__select-options {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 5;
+        margin-top: 0.4rem;
+        max-height: 240px;
+        overflow-y: auto;
+        list-style: none;
+        padding: 0.4rem;
+        background: $auth-surface;
+        border: 1px solid $auth-border;
+        border-radius: $auth-radius-md;
+        box-shadow: 0 12px 32px $auth-shadow-black;
+
+        li {
+            padding: 0.6rem 0.75rem;
+            border-radius: $auth-radius-md - 4px;
+            font-size: 0.9rem;
+            color: $auth-text-primary;
+            cursor: pointer;
+
+            &:hover,
+            &.is-active {
+                background: $auth-overlay-white-soft;
+            }
+
+            &[aria-selected="true"] {
+                color: $auth-accent;
+                font-weight: 600;
+            }
+        }
+    }
+
+    // Indoor / Outdoor / Both — same checkbox look as
+    // .auth-modal__row input[type="checkbox"], mutually exclusive via JS.
+    &__venue-type {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        flex-wrap: wrap;
+        border: none;
+        margin: 0;
+        padding: 0.9rem 0 0;
+
+        @media (min-width: 480px) {
+            padding-top: 2rem;
+        }
+
+        &.is-invalid .event-info__checkbox input[type="checkbox"] {
+            border-color: $auth-danger;
+        }
+    }
+
+    &__checkbox {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0;
+        font-size: 0.9rem;
+        color: $auth-text-primary;
+        cursor: pointer;
+
+        input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            flex-shrink: 0;
+            width: 16px;
+            height: 16px;
+            margin: 0;
+            background: $auth-field-bg;
+            border: 1px solid $auth-border;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+
+            &:checked {
+                background: $auth-accent-strong;
+                border-color: $auth-accent-strong;
+
+                &::after {
+                    content: "";
+                    position: absolute;
+                    left: 4px;
+                    top: 1px;
+                    width: 4px;
+                    height: 8px;
+                    border: solid $auth-white;
+                    border-width: 0 2px 2px 0;
+                    transform: rotate(45deg);
+                }
+            }
+
+            &:focus-visible {
+                outline: none;
+                box-shadow: 0 0 0 3px $auth-focus-ring-soft;
+            }
+        }
+    }
+}
