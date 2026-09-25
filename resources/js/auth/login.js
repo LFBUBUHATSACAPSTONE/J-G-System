@@ -52,6 +52,8 @@ function initLogin() {
     });
 }
 
+const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || document.querySelector('input[name="_token"]')?.value || "";
+
 async function submitLogin(form) {
     const identifierInput = form.querySelector('input[name="identifier"]');
     const passwordInput = form.querySelector('input[name="password"]');
@@ -83,11 +85,12 @@ async function submitLogin(form) {
     try {
         const response = await fetch(form.action, {
             method: "POST",
+            credentials: "same-origin",
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN":
-                    form.querySelector('input[name="_token"]')?.value ?? "",
+                "X-CSRF-TOKEN": csrfToken,
+                "X-XSRF-TOKEN": csrfToken,
             },
             body: JSON.stringify({ identifier, password, remember }),
         });
