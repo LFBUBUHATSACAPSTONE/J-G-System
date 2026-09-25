@@ -19,7 +19,7 @@
 
   <p class="auth-modal__error text-danger d-none" role="alert" data-verification-error></p>
 
-  <button type="button" id="resend-code-btn" data-resend-url="{{ route('verification.resend') }}">Resend Code</button>
+  <x-button type="button" id="resend-code-btn" data-resend-url="{{ route('verification.resend') }}">Resend Code</x-button>
 
-  <x-button type="submit" class="auth-modal__submit">Confirm</x-button>
+  <x-button type="submit" class="auth-modal__submit btn-color-gradient--primary">Confirm</x-button>
 </form>

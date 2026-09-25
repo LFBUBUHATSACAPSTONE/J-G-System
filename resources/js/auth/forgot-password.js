@@ -1,6 +1,6 @@
 /**
  * Forgot Password submit (AJAX) + live field feedback
- * 
+ *
  * Intercepts the submit, validates the identifier live with a message
  * naming what's wrong, posts via fetch, and on success moves the modal to
  * the verification view.
@@ -12,8 +12,15 @@
  */
 
 import { setAuthView, focusFirstField } from "../auth-modal.js";
-import { setVerificationDestination } from "./verification-code.js";
-import { getIdentifierError, wireLiveField } from "./validation.js";
+import {
+    setVerificationDestination,
+    setVerificationToken,
+} from "./verification-code.js";
+import {
+    getIdentifierError,
+    wireLiveField,
+    setFieldState,
+} from "./validation.js";
 
 const AUTH_MODAL_ID = "authModal";
 const VIEW_SELECTOR = '[data-view="forgot-password"]';
@@ -54,7 +61,8 @@ async function submitForgotPassword(modalEl, form) {
 
     const identifierError = getIdentifierError(identifier);
     if (identifierError) {
-        showError(form, identifierError);
+        const errorEl = form.querySelector('[data-field-error="identifier"]');
+        setFieldState(input, errorEl, identifierError);
         input.focus();
         return;
     }
@@ -84,6 +92,7 @@ async function submitForgotPassword(modalEl, form) {
         }
 
         const data = await response.json().catch(() => ({}));
+        setVerificationToken(data.verification_token);
         setVerificationDestination(
             data.destination || maskIdentifier(identifier),
         );

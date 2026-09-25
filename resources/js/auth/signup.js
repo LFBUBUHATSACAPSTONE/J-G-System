@@ -15,6 +15,7 @@ import { maskIdentifier } from "./forgot-password.js";
 import {
     setVerificationContext,
     setVerificationDestination,
+    setVerificationToken,
 } from "./verification-code.js";
 import {
     getIdentifierError,
@@ -44,10 +45,8 @@ function initSignup() {
         wireLiveField(form, "identifier", getIdentifierError);
         wireLiveField(form, "password", getPasswordError);
 
-        // Checkboxes don't fit wireLiveField's blur/input pattern (there's
-        // nothing to "type"), so this listens to 'change' directly. Only
-        // clears the error once checked — unchecking after already having
-        // agreed re-flags it immediately, same as any other live field.
+        /* Checkboxes don't fit wireLiveField's blur/input pattern (there's nothing to "type"), so this listens to 'change' directly. Only clears the error once checked — unchecking after already having agreed re-flags it immediately, same as any other live field.
+        */
         const termsInput = form.querySelector('[name="terms"]');
         const termsError = form.querySelector('[data-field-error="terms"]');
         termsInput?.addEventListener("change", () => {
@@ -102,7 +101,6 @@ async function submitSignup(modalEl, form) {
             `[data-field-error="${input.name}"]`,
         );
         setFieldState(input, errorEl, message);
-        showError(form, message, []);
         input.focus();
         return;
     }
@@ -146,6 +144,7 @@ async function submitSignup(modalEl, form) {
 
         const data = await response.json().catch(() => ({}));
         setVerificationContext("signup");
+        setVerificationToken(data.verification_token);
         setVerificationDestination(
             data.destination || maskIdentifier(identifier),
         );

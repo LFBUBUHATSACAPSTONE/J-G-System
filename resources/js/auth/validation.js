@@ -12,8 +12,7 @@ const PASSWORD_REGEX =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 
 const PHONE_CHARS_REGEX = /^\+?[\d\s()-]+$/;
-const PHONE_MIN_DIGITS = 7;
-const PHONE_MAX_DIGITS = 15;
+const PHONE_DIGITS = 11;
 
 function isValidEmail(value) {
     return EMAIL_REGEX.test(value.trim());
@@ -21,11 +20,7 @@ function isValidEmail(value) {
 
 function isValidPhone(value) {
     const digits = value.replace(/\D/g, "");
-    return (
-        PHONE_CHARS_REGEX.test(value) &&
-        digits.length >= PHONE_MIN_DIGITS &&
-        digits.length <= PHONE_MAX_DIGITS
-    );
+    return PHONE_CHARS_REGEX.test(value) && digits.length === PHONE_DIGITS;
 }
 
 function isValidIdentifier(value) {
@@ -37,11 +32,8 @@ function isValidPassword(value) {
     return PASSWORD_REGEX.test(value);
 }
 
-/**
- * Returns '' if the identifier is valid, or a message naming exactly what's
- * wrong with it. Branches on what the user *appears* to be typing (email vs
- * phone) so the message matches their intent instead of listing both formats
- * every time.
+/*
+ Returns '' if the identifier is valid, or a message naming exactly what's wrong with it. Branches on what the user *appears* to be typing (email vs phone) so the message matches their intent instead of listing both formats every time.
  */
 function getIdentifierError(value) {
     const v = value.trim();
@@ -59,19 +51,18 @@ function getIdentifierError(value) {
     const looksLikePhone = /^[\d\s()+-]+$/.test(v);
     if (looksLikePhone) {
         const digits = v.replace(/\D/g, "");
-        if (digits.length < PHONE_MIN_DIGITS)
-            return `Phone number is too short (needs at least ${PHONE_MIN_DIGITS} digits).`;
-        if (digits.length > PHONE_MAX_DIGITS)
-            return `Phone number is too long (max ${PHONE_MAX_DIGITS} digits).`;
+        if (digits.length < PHONE_DIGITS)
+            return `Phone number must be exactly ${PHONE_DIGITS} digits (${digits.length} entered).`;
+        if (digits.length > PHONE_DIGITS)
+            return `Phone number must be exactly ${PHONE_DIGITS} digits (${digits.length} entered).`;
         return isValidPhone(v) ? "" : "Enter a valid phone number.";
     }
 
     return "Enter a valid email address or phone number.";
 }
 
-/**
- * Returns '' if the password meets all requirements, or a message listing
- * only the requirement(s) still unmet.
+/*
+ Returns '' if the password meets all requirements, or a message listing only the requirement(s) still unmet.
  */
 function getPasswordError(value) {
     if (!value) return "Enter a password.";
@@ -100,13 +91,11 @@ function getMatchError(value, otherValue) {
     return value === otherValue ? "" : "Passwords do not match.";
 }
 
-/**
- * Wires a single field for live feedback:
- *  - `errorFn(value)` returns '' when valid, or a specific message when not
- *  - checks on 'blur' (first time the field is left) and on every 'input'
- *    after that first blur, so the user isn't scolded before they've
- *    finished typing anything
- *  - toggles .is-invalid and a per-field <small data-field-error="NAME">
+/*
+ Wires a single field for live feedback:
+   - `errorFn(value)` returns '' when valid, or a specific message when not
+   - checks on 'blur' (first time the field is left) and on every 'input' after that first blur, so the user isn't scolded before they've finished typing anything
+   - toggles .is-invalid and a per-field <small data-field-error="NAME">
  */
 function wireLiveField(form, fieldName, errorFn) {
     const input = form.querySelector(`[name="${fieldName}"]`);

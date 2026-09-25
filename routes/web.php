@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 // Front-End Verification Testing
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 
 Route::get('/', function () {
     return view('welcome');
@@ -50,7 +51,9 @@ if (!function_exists('jgAuthMaskIdentifier')) {
 }
 
 // Test account: test@example.com / password123
-Route::post('/login', fn (Request $r) =>
+Route::post(
+    '/login',
+    fn(Request $r) =>
     $r->input('identifier') === 'test@example.com' && $r->input('password') === 'password123'
         ? response()->json(['ok' => true])
         : response()->json(['message' => 'Invalid credentials.'], 422)
@@ -68,7 +71,10 @@ Route::post('/register', function (Request $r) {
         ], 422);
     }
 
-    return response()->json(['destination' => jgAuthMaskIdentifier($identifier)]);
+    return response()->json([
+        'destination' => jgAuthMaskIdentifier($identifier),
+        'verification_token' => Crypt::encryptString($identifier),
+    ]);
 })->name('register');
 
 // Masked destination built from whatever the user typed, so Forgot Password
@@ -81,7 +87,10 @@ Route::post('/password/email', function (Request $r) {
         return response()->json(['message' => "We couldn't find an account with that email or phone number."], 422);
     }
 
-    return response()->json(['destination' => jgAuthMaskIdentifier($identifier)]);
+    return response()->json([
+        'destination' => jgAuthMaskIdentifier($identifier),
+        'verification_token' => Crypt::encryptString($identifier),
+    ]);
 })->name('password.email');
 
 // Test code: 123456. `context` ("signup" | "reset") comes from the request
@@ -102,15 +111,22 @@ Route::post('/verification/confirm', function (Request $r) {
     return response()->json(['token' => 'test-token', 'email' => 'test@example.com']);
 })->name('verification.confirm');
 
-// Returns a masked destination each time so Resend Code can be checked
-// visually. Append ?throttle=1 to the resend URL in DevTools, or POST with
-// {"context":"throttle"}, to exercise the 429 path from the QA table.
+// Decrypts the identifier from `verification_token` (issued by register / password.email) and returns a fresh masked destination plus the token. Append ?throttle=1 to the resend URL in DevTools, or POST with{"context":"throttle"}, to exercise the 429 path. A missing or tampered token returns 422.
 Route::post('/verification/resend', function (Request $r) {
     if ($r->input('context') === 'throttle' || $r->query('throttle')) {
         return response()->json(['message' => 'Too many requests. Please wait before requesting another code.'], 429);
     }
 
-    return response()->json(['destination' => jgAuthMaskIdentifier((string) $r->input('identifier', 'j***@mail.com'))]);
+    try {
+        $identifier = Crypt::decryptString((string) $r->input('verification_token'));
+    } catch (\Throwable) {
+        return response()->json(['message' => 'Verification session expired. Please start over.'], 422);
+    }
+
+    return response()->json([
+        'destination' => jgAuthMaskIdentifier($identifier),
+        'verification_token' => $r->input('verification_token'),
+    ]);
 })->name('verification.resend');
 
 // weak/short passwords -> 422, so New Password's server-error path (as

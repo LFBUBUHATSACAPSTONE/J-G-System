@@ -11,9 +11,9 @@ $font-button--responsive: clamp(1rem, 1.1vw, 1.2rem);
 // Text Colors
 $text-pale--white: oklch(93.514% 0.00011 271.152);
 $text-pale--black: oklch(19.574% 0.00002 271.152);
-$gradient-text-from: #b0289c !default;
-$gradient-text-via: #e0205a !default;
-$gradient-text-to: #ff3b3b !default;
+$gradient-text-from: oklch(53.617% 0.20836 334.959) !default;
+$gradient-text-via: oklch(58.895% 0.22055 11.639) !default;
+$gradient-text-to: oklch(65.526% 0.23087 26.386) !default;
 
 // Button Colors
 $button-color-white: oklch(95.514% 0.00011 271.152);
@@ -33,3 +33,43 @@ $opacity-med: 0.8;
 $coverflow-height: 420px;
 $coverflow-center-width: 500px;
 $coverflow-side-width: 280px;
+
+// Auth Modal
+$auth-bg: oklch(14.735% 0.01949 294.184);
+$auth-surface: oklch(16.992% 0.0233 300.626);
+
+$auth-glow-violet: oklch(54.134% 0.24669 293.012);
+$auth-glow-rose: oklch(57.393% 0.18161 350.703);
+
+$auth-accent: oklch(60.563% 0.21902 292.718);
+$auth-accent-strong: oklch(54.134% 0.24669 293.012);
+$auth-accent-strong-hover: oklch(49.067% 0.24133 292.584);
+
+$auth-text-primary: oklch(100% 0.00011 271.152);
+$auth-text-secondary: oklch(70.649% 0.02539 301.692);
+$auth-text-muted: oklch(54.263% 0.02711 301.499);
+
+$auth-field-bg: oklch(24.604% 0.02682 297.481);
+$auth-border: oklch(31.377% 0.03071 298.068);
+$auth-danger: oklch(64.414% 0.17253 7.592);
+
+$auth-white: oklch(100% 0 0);
+$auth-black: oklch(0% 0 0);
+
+$auth-overlay-white-soft: oklch(100% 0 0 / 0.12);
+$auth-overlay-white-faint: oklch(100% 0 0 / 0.35);
+
+$auth-scrim-black: oklch(0% 0 0 / 0.65);
+$auth-scrim-black-transparent: oklch(0% 0 0 / 0);
+$auth-shadow-black: oklch(0% 0 0 / 0.55);
+
+$auth-back-link-bg: oklch(18% 0.015 300 / 0.55);
+$auth-back-link-bg-hover: oklch(18% 0.015 300 / 0.75);
+
+$auth-focus-ring: oklch(60.563% 0.21902 292.718 / 0.45);
+$auth-focus-ring-soft: oklch(60.563% 0.21902 292.718 / 0.25);
+
+$auth-radius-xl: 28px;
+$auth-radius-lg: 20px;
+$auth-radius-md: 12px;
+$auth-radius-pill: 999px;
