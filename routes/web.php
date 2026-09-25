@@ -151,9 +151,9 @@ Route::post('/password/update', function (Request $r) {
 
 
 /* -----------------BOOKING---------------------- */
-// Temporary front-end test stub for the Personal Information step. Merge
-// into routes/web.php alongside auth-stub-routes.php. Delete once a real
-// controller replaces it.
+// Temporary front-end test stubs for the booking steps. Merge into
+// routes/web.php alongside auth-stub-routes.php. Delete once real
+// controllers replace them.
 
 // taken@example.com -> 422 (exercises the field-error path); anything
 // else -> 200.
@@ -167,5 +167,18 @@ Route::post('/booking/personal-information', function (Request $r) {
 
     return response()->json(['ok' => true]);
 })->name('booking.personal-information');
+
+// Event Information step. "Others" as the event type -> 422 (exercises
+// the field-error path on the custom select); anything else -> 200.
+Route::post('/booking/event-information', function (Request $r) {
+    if ($r->input('event_type') === 'Others') {
+        return response()->json([
+            'message' => 'Please contact us directly for custom event types.',
+            'errors' => ['event_type' => ['Please contact us directly for custom event types.']],
+        ], 422);
+    }
+
+    return response()->json(['ok' => true]);
+})->name('booking.event-information');
 
 Route::view('/pricing', 'pricing');
