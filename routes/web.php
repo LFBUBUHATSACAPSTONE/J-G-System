@@ -13,9 +13,9 @@ Route::get('/user/landing', function () {
     return view('user.landing');
 })->name('user.landing');
 
-Route::get('/user/payment-processing', function () {
-    return view('user.payment-processing');
-})->name('user.payment-processing');
+Route::get('/user/booking', function () {
+    return view('user.booking');
+})->name('user.booking');
 
 // Remove the argument once back-end is connected (this is use for the active stubs)
 Auth::routes(['reset' => false]);
@@ -147,5 +147,25 @@ Route::post('/password/update', function (Request $r) {
 
     return response()->json(['ok' => true]);
 })->name('password.update');
+
+
+
+/* -----------------BOOKING---------------------- */
+// Temporary front-end test stub for the Personal Information step. Merge
+// into routes/web.php alongside auth-stub-routes.php. Delete once a real
+// controller replaces it.
+
+// taken@example.com -> 422 (exercises the field-error path); anything
+// else -> 200.
+Route::post('/booking/personal-information', function (Request $r) {
+    if ($r->input('email') === 'taken@example.com') {
+        return response()->json([
+            'message' => 'That email is already associated with a booking.',
+            'errors' => ['email' => ['That email is already associated with a booking.']],
+        ], 422);
+    }
+
+    return response()->json(['ok' => true]);
+})->name('booking.personal-information');
 
 Route::view('/pricing', 'pricing');
