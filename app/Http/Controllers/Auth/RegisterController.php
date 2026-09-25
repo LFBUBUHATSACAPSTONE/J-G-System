@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
@@ -66,5 +68,26 @@ class RegisterController extends Controller
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
         ]);
+    }
+
+    public function register(RegisterRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $user = User::create([
+            'first_name' => $validated['first_name'],
+            'last_name'  => $validated['last_name'],
+            'email'      => $validated['email'] ?? null,
+            'phone'      => $validated['phone'] ?? null,
+            'password'   => Hash::make($validated['password']),
+        ]);
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Registration successful.',
+            'user'    => $user,
+            'token'   => $token,
+        ], 201);
     }
 }
