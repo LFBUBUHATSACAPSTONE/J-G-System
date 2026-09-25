@@ -15,7 +15,7 @@
             <span>First Name</span>
             <span class="field-required__identifier">*</span>
           </label>
-          <input type="text" id="pi-first-name" name="first_name" autocomplete="given-name" placeholder="Juan" required>
+          <input type="text" id="pi-first-name" name="first_name" autocomplete="given-name" placeholder="Juan" required autofocus>
           <small class="client-info__field-error d-none" data-field-error="first_name"></small>
         </div>
         <div class="client-info__field">
