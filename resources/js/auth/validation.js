@@ -135,9 +135,35 @@ function clearFieldState(input, errorEl) {
     }
 }
 
+/*
+ Single-purpose counterparts to getIdentifierError, for forms that have a dedicated Email field and a dedicated Contact Number field rather than one
+ combined identifier field.
+ */
+function getEmailError(value) {
+    const v = value.trim();
+    if (!v) return "Enter your email address.";
+    if (!/^[^\s@]+@/.test(v)) return "Enter the part before the @ symbol.";
+    if (!/@[^\s@]+\./.test(v))
+        return "Email is missing a domain, e.g. name@example.com.";
+    return isValidEmail(v)
+        ? ""
+        : "That doesn't look like a valid email address.";
+}
+
+function getPhoneError(value) {
+    const v = value.trim();
+    if (!v) return "Enter your contact number.";
+    const digits = v.replace(/\D/g, "");
+    if (!PHONE_CHARS_REGEX.test(v)) return "Enter a valid phone number.";
+    if (digits.length !== PHONE_DIGITS)
+        return `Phone number must be exactly ${PHONE_DIGITS} digits (${digits.length} entered).`;
+    return isValidPhone(v) ? "" : "Enter a valid phone number.";
+}
+
 export {
     EMAIL_REGEX,
     PASSWORD_REGEX,
+    PHONE_DIGITS,
     isValidEmail,
     isValidPhone,
     isValidIdentifier,
@@ -145,6 +171,8 @@ export {
     getIdentifierError,
     getPasswordError,
     getRequiredError,
+    getEmailError,
+    getPhoneError,
     getMatchError,
     wireLiveField,
     setFieldState,
