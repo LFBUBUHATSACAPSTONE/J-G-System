@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Carbon;
@@ -92,31 +93,78 @@ class ModalAuthController extends Controller
         $code = preg_replace('/\D+/', '', (string) $validated['code']);
         $context = (string) ($validated['context'] ?? 'reset');
 
-        if ($verification->context !== $context
-            || $verification->used_at
-            || $verification->expires_at->isPast()
-            || ! Hash::check($code, $verification->code_hash)) {
+        $result = DB::transaction(function () use ($verification, $code, $context): array {
+            $verification = VerificationCode::whereKey($verification->id)->lockForUpdate()->first();
+
+            if (! $verification
+                || $verification->context !== $context
+                || $verification->used_at
+                || $verification->expires_at->isPast()
+                || ! Hash::check($code, $verification->code_hash)) {
+                return ['error' => 'Invalid or expired verification code.'];
+            }
+
+            if ($context === 'signup') {
+                if ($verification->pending_data !== null) {
+                    try {
+                        $registration = json_decode(
+                            Crypt::decryptString($verification->pending_data),
+                            true,
+                            512,
+                            JSON_THROW_ON_ERROR,
+                        );
+                    } catch (\Throwable) {
+                        return ['error' => 'Registration data expired. Please start over.'];
+                    }
+
+                    $user = $verification->user_id
+                        ? User::whereKey($verification->user_id)->lockForUpdate()->first()
+                        : User::whereRaw('LOWER(email) = ?', [strtolower($registration['email'])])->first();
+
+                    if ($user && $user->email_verified_at) {
+                        return ['error' => 'This email is already registered. Please log in or use Forgot Password.'];
+                    }
+
+                    if (! $user) {
+                        $user = new User;
+                    }
+
+                    $user->name = $registration['name'];
+                    $user->email = $registration['email'];
+                    $user->phone = $registration['phone'];
+                    $user->password = $registration['password'];
+                    $user->email_verified_at = now();
+                    $user->save();
+
+                    $verification->user_id = $user->id;
+                    $verification->pending_data = null;
+                } elseif ($verification->user_id) {
+                    User::whereKey($verification->user_id)->update([
+                        'email_verified_at' => now(),
+                    ]);
+                }
+            }
+
+            $verification->used_at = now();
+            $verification->save();
+
+            return ['ok' => true, 'identifier' => $verification->identifier];
+        });
+
+        if (isset($result['error'])) {
             return response()->json([
-                'message' => 'Invalid or expired verification code.',
+                'message' => $result['error'],
             ], 422);
         }
 
-        $verification->update(['used_at' => now()]);
-
         if ($context === 'signup') {
-            if ($verification->user_id) {
-                User::whereKey($verification->user_id)->update([
-                    'email_verified_at' => now(),
-                ]);
-            }
-
             return response()->json(['ok' => true]);
         }
 
-        $email = $this->resolveEmailFromIdentifier($verification->identifier);
+        $email = $this->resolveEmailFromIdentifier($result['identifier']);
 
         return response()->json([
-            'token' => Crypt::encryptString((string) $verification->identifier),
+            'token' => Crypt::encryptString((string) $result['identifier']),
             'email' => $email,
         ]);
     }
@@ -139,24 +187,47 @@ class ModalAuthController extends Controller
             ], 422);
         }
 
-        $resendUser = $oldVerification->user_id ? User::find($oldVerification->user_id) : null;
-
         try {
-            $verification = $this->issueVerification(
-            $resendUser,
-                $oldVerification->identifier,
-                $oldVerification->context === 'signup' ? 'account registration' : 'password reset',
-            );
+            if ($oldVerification->context === 'signup' && $oldVerification->pending_data !== null) {
+                $registration = json_decode(
+                    Crypt::decryptString($oldVerification->pending_data),
+                    true,
+                    512,
+                    JSON_THROW_ON_ERROR,
+                );
+                $code = (string) random_int(100000, 999999);
+                $verification = VerificationCode::create([
+                    'user_id' => $oldVerification->user_id,
+                    'identifier' => $oldVerification->identifier,
+                    'context' => 'signup',
+                    'code_hash' => Hash::make($code),
+                    'pending_data' => $oldVerification->pending_data,
+                    'expires_at' => now()->addMinutes(10),
+                ]);
+                Mail::to($registration['email'])->send(new VerificationCodeMail($code, 'account registration'));
+                $destination = $this->maskIdentifier($registration['email']);
+            } else {
+                $resendUser = $oldVerification->user_id ? User::find($oldVerification->user_id) : null;
+                $verification = $this->issueVerification(
+                    $resendUser,
+                    $oldVerification->identifier,
+                    $oldVerification->context === 'signup' ? 'account registration' : 'password reset',
+                );
+                $destination = $this->maskIdentifier((string) $resendUser?->email);
+            }
         } catch (\Throwable) {
             return response()->json([
                 'message' => 'We could not resend the verification code. Please check the delivery configuration and try again.',
             ], 503);
         }
         $oldVerification->update(['used_at' => now()]);
+        $verificationToken = $verification instanceof VerificationCode
+            ? Crypt::encryptString(json_encode(['id' => $verification->id]))
+            : $verification['token'];
 
         return response()->json([
-            'destination' => $this->maskIdentifier((string) $resendUser?->email),
-            'verification_token' => $verification['token'],
+            'destination' => $destination,
+            'verification_token' => $verificationToken,
         ]);
     }
 

@@ -16,7 +16,7 @@ class RegisterWebTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_register_route_creates_user_from_identifier_payload(): void
+    public function test_register_route_creates_user_only_after_code_verification(): void
     {
         Mail::fake();
 
@@ -35,10 +35,7 @@ class RegisterWebTest extends TestCase
                 'verification_token',
             ]);
 
-        $this->assertDatabaseHas('users', [
-            'email' => 'ana@example.com',
-            'name' => 'Ana Cruz',
-        ]);
+        $this->assertDatabaseMissing('users', ['email' => 'ana@example.com']);
 
         $code = null;
         Mail::assertSent(VerificationCodeMail::class, function (VerificationCodeMail $mail) use (&$code): bool {
@@ -54,6 +51,77 @@ class RegisterWebTest extends TestCase
         ]);
 
         $response->assertOk()->assertJsonPath('ok', true);
+        $this->assertDatabaseHas('users', [
+            'email' => 'ana@example.com',
+            'name' => 'Ana Cruz',
+        ]);
+        $user = User::where('email', 'ana@example.com')->firstOrFail();
+        $this->assertNotNull($user->email_verified_at);
+        $this->assertTrue(Hash::check('StrongPass1!', $user->password));
+    }
+
+    public function test_invalid_signup_code_does_not_create_user(): void
+    {
+        Mail::fake();
+
+        $signup = $this->postJson('/register', [
+            'first_name' => 'Ana',
+            'last_name' => 'Cruz',
+            'identifier' => 'ana@example.com',
+            'password' => 'StrongPass1!',
+            'terms' => true,
+        ]);
+
+        $signup->assertStatus(201);
+
+        $confirmation = $this->postJson('/verification/confirm', [
+            'code' => '000000',
+            'context' => 'signup',
+            'verification_token' => $signup->json('verification_token'),
+        ]);
+
+        $confirmation->assertStatus(422);
+        $this->assertDatabaseMissing('users', ['email' => 'ana@example.com']);
+    }
+
+    public function test_resending_signup_code_keeps_account_pending_until_latest_code_is_confirmed(): void
+    {
+        Mail::fake();
+
+        $signup = $this->postJson('/register', [
+            'first_name' => 'Ana',
+            'last_name' => 'Cruz',
+            'identifier' => 'ana@example.com',
+            'password' => 'StrongPass1!',
+            'terms' => true,
+        ]);
+        $signup->assertStatus(201);
+
+        $firstCode = Mail::sent(VerificationCodeMail::class)->first()->code;
+        $resend = $this->postJson('/verification/resend', [
+            'context' => 'signup',
+            'verification_token' => $signup->json('verification_token'),
+        ]);
+
+        $resend->assertOk();
+        $this->assertDatabaseMissing('users', ['email' => 'ana@example.com']);
+        $this->assertSame(2, Mail::sent(VerificationCodeMail::class)->count());
+        $latestCode = Mail::sent(VerificationCodeMail::class)->last()->code;
+
+        $oldCodeResponse = $this->postJson('/verification/confirm', [
+            'code' => $firstCode,
+            'context' => 'signup',
+            'verification_token' => $signup->json('verification_token'),
+        ]);
+        $oldCodeResponse->assertStatus(422);
+
+        $newCodeResponse = $this->postJson('/verification/confirm', [
+            'code' => $latestCode,
+            'context' => 'signup',
+            'verification_token' => $resend->json('verification_token'),
+        ]);
+
+        $newCodeResponse->assertOk()->assertJsonPath('ok', true);
         $this->assertNotNull(User::where('email', 'ana@example.com')->value('email_verified_at'));
     }
 

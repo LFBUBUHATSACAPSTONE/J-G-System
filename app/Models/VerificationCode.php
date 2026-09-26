@@ -11,6 +11,7 @@ class VerificationCode extends Model
         'identifier',
         'context',
         'code_hash',
+        'pending_data',
         'expires_at',
         'used_at',
     ];

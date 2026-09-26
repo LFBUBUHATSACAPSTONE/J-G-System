@@ -88,39 +88,30 @@ class RegisterController extends Controller
         }
 
         try {
-            [, $verification] = DB::transaction(function () use ($validated, $identifier): array {
+            $verification = DB::transaction(function () use ($validated, $identifier): VerificationCode {
                 $user = User::where('email', $validated['email'])->first();
-
-                if ($user) {
-                    $user->update([
-                        'name' => trim($validated['first_name'] . ' ' . $validated['last_name']),
-                        'phone' => $validated['phone'] ?? null,
-                        'password' => Hash::make($validated['password']),
-                    ]);
-                    VerificationCode::where('user_id', $user->id)
-                        ->where('context', 'signup')
-                        ->delete();
-                } else {
-                    $user = User::create([
-                        'name'  => trim($validated['first_name'] . ' ' . $validated['last_name']),
-                        'email' => $validated['email'],
-                        'phone' => $validated['phone'] ?? null,
-                        'password' => Hash::make($validated['password']),
-                    ]);
-                }
+                VerificationCode::where('identifier', $identifier)
+                    ->where('context', 'signup')
+                    ->delete();
 
                 $code = (string) random_int(100000, 999999);
                 $verification = VerificationCode::create([
-                    'user_id' => $user->id,
+                    'user_id' => $user?->id,
                     'identifier' => $identifier,
                     'context' => 'signup',
                     'code_hash' => Hash::make($code),
+                    'pending_data' => Crypt::encryptString(json_encode([
+                        'name' => trim($validated['first_name'] . ' ' . $validated['last_name']),
+                        'email' => $validated['email'],
+                        'phone' => $validated['phone'] ?? null,
+                        'password' => Hash::make($validated['password']),
+                    ], JSON_THROW_ON_ERROR)),
                     'expires_at' => now()->addMinutes(10),
                 ]);
 
-                Mail::to($user->email)->send(new VerificationCodeMail($code, 'account registration'));
+                Mail::to($validated['email'])->send(new VerificationCodeMail($code, 'account registration'));
 
-                return [$user, $verification];
+                return $verification;
             });
         } catch (\Throwable $exception) {
             Log::error('Registration verification email failed.', [
