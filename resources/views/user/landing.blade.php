@@ -32,7 +32,21 @@
             ['image' => asset('images/carousel/6.webp'), 'alt' => ''],
             ['image' => asset('images/carousel/7.webp'), 'alt' => ''],
         ]" :interval="3000" />
+        
+<div class="packages-heading text-center py-5 position-relative">
+    <h2 class="packages-title">
+        PACKAG<span class="packages-title-accent">ES</span>
+    </h2>
+</div>
 
+<div class="container p-4">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @foreach($packages as $package)
+            ...
+        @endforeach
+    </div>
+  </div>
+  
   <div class="d-flex justify-content-center">
     <x-button
       data-bs-toggle="modal"
