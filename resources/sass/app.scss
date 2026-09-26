@@ -27,12 +27,13 @@
 @import "features";
 
 
-// Booking 
+// Booking
 @import "./booking/client-information";
 @import "./booking/event-information";
 @import "./booking/event-schedule";
 @import "./booking/booking-summary";
 @import "./booking/booking-confirmation";
+@import "./progress-tracker";
 
 * {
     font-family: $font-family-text;

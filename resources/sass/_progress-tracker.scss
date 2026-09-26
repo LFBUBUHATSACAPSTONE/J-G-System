@@ -1,0 +1,124 @@
+.progress-tracker {
+    position: relative;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 1.5rem;
+
+    &__track {
+        position: absolute;
+        top: calc(2.5rem + 17px); // vertical center of the 36px circles
+        left: 10%; // half a step-column (5 steps), so it starts/ends at the dot centers
+        right: 10%;
+        height: 2px;
+        background: $auth-border;
+        border-radius: $auth-radius-pill;
+        overflow: hidden;
+    }
+
+    &__track-fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 0%;
+        background: $auth-accent;
+        transition: width 0.45s ease;
+    }
+
+    &__list {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    &__step {
+        display: flex;
+        flex: 1 1 0;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.65rem;
+        min-width: 0;
+    }
+
+    &__circle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+        border-radius: $auth-radius-pill;
+        border: 2px solid $auth-border;
+        background: $auth-surface;
+        color: $auth-text-muted;
+        font-size: 0.85rem;
+        font-weight: 700;
+        padding: 0;
+        cursor: not-allowed;
+        transition:
+            background-color 0.3s ease,
+            border-color 0.3s ease,
+            color 0.3s ease,
+            transform 0.3s ease;
+
+        &:not(:disabled) {
+            cursor: pointer;
+        }
+
+        &:not(:disabled):hover {
+            transform: translateY(-1px);
+        }
+    }
+
+    &__icon-lock {
+        display: none;
+    }
+
+    &__number {
+        display: none;
+    }
+
+    &__label {
+        font-size: 0.8rem;
+        color: $auth-text-secondary;
+        text-align: center;
+        transition:
+            color 0.3s ease,
+            font-weight 0.3s ease;
+    }
+
+    // Locked — lock icon, muted, not reachable yet
+    &__step.is-locked {
+        .progress-tracker__icon-lock {
+            display: block;
+        }
+    }
+
+    // Open — visited via forward progress, currently behind the active
+    // step (reached again by clicking Previous). Filled, no icon/number.
+    &__step.is-open .progress-tracker__circle {
+        background: $auth-accent;
+        border-color: $auth-accent;
+        color: $auth-white;
+    }
+
+    // Numbered — current step, or a step fully completed and behind the
+    // current one. Filled, shows its step number, bold label.
+    &__step.is-numbered {
+        .progress-tracker__circle {
+            background: $auth-accent;
+            border-color: $auth-accent;
+            color: $auth-white;
+        }
+
+        .progress-tracker__number {
+            display: block;
+        }
+
+        .progress-tracker__label {
+            color: $auth-text-primary;
+            font-weight: 700;
+        }
+    }
+}
