@@ -1,0 +1,353 @@
+.booking-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: stretch;
+
+    // Card — same surface/radius/glow language as .modal-content /
+    // .client-info__card / .event-info__card / .event-schedule__card.
+    // This is the ONLY card in the component; the two columns inside it
+    // share this single surface rather than each getting their own.
+    &__card {
+        position: relative;
+        width: 100%;
+        background: $auth-surface;
+        border-radius: $auth-radius-xl;
+        padding: 2rem 2.25rem 2.5rem;
+        color: $auth-text-primary;
+        isolation: isolate;
+        overflow: hidden;
+
+        &::before {
+            content: "";
+            position: absolute;
+            inset: -20% -20% auto auto;
+            width: 70%;
+            height: 60%;
+            background: radial-gradient(
+                circle at top right,
+                $auth-glow-violet 0%,
+                $auth-glow-rose 45%,
+                transparent 75%
+            );
+            opacity: 0.35;
+            filter: blur(60px);
+            z-index: -1;
+            pointer-events: none;
+        }
+    }
+
+    &__grid {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+
+        @media (min-width: 992px) {
+            flex-direction: row;
+            align-items: stretch;
+        }
+    }
+
+    &__column {
+        flex: 1;
+        min-width: 0;
+
+        // Vertical divider between the two columns, desktop only —
+        // same $auth-border token _event-schedule.scss / this file's
+        // own __divider rule already use.
+        @media (min-width: 992px) {
+            &:not(:first-child) {
+                padding-left: 2rem;
+                border-left: 1px solid $auth-border;
+            }
+        }
+    }
+
+    &__title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 1.75rem;
+    }
+
+    // Read-only recap fields — same shape as .client-info__field, but
+    // labels sit inline above a disabled-looking (not danger-marked)
+    // input, since nothing here is editable or required.
+    &__field {
+        position: relative;
+        margin-bottom: 1.1rem;
+
+        label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: $auth-text-secondary;
+        }
+
+        input {
+            width: 100%;
+            background: $auth-field-bg;
+            border: 1px solid transparent;
+            border-radius: $auth-radius-md;
+            padding: 0.75rem 1rem;
+            color: $auth-text-primary;
+            font-size: 0.9rem;
+            cursor: default;
+
+            &:focus {
+                outline: none;
+                border-color: $auth-accent;
+                box-shadow: 0 0 0 3px $auth-focus-ring-soft;
+            }
+        }
+    }
+
+    &__field-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+
+        @media (min-width: 480px) {
+            flex-direction: row;
+            gap: 1rem;
+
+            .booking-summary__field {
+                flex: 1;
+            }
+        }
+    }
+
+    &__divider {
+        height: 1px;
+        background: $auth-border;
+        margin: 0.25rem 0 1.4rem;
+    }
+
+    // Payment card's three sub-panels
+    &__payment-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+
+        @media (min-width: 640px) {
+            flex-direction: row;
+            align-items: flex-start;
+        }
+    }
+
+    &__payment-panel {
+        flex: 1;
+        min-width: 0;
+        background: $auth-field-bg;
+        border: 1px solid $auth-border;
+        border-radius: $auth-radius-lg;
+        padding: 1.25rem;
+
+        &--qr {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: left;
+        }
+    }
+
+    &__payment-heading {
+        font-size: 1rem;
+        font-weight: 700;
+        color: $auth-accent;
+        margin-bottom: 1rem;
+    }
+
+    &__ref {
+        font-weight: 400;
+        color: $auth-text-secondary;
+        font-size: 0.85rem;
+    }
+
+    // Payment Option toggle buttons
+    &__option-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    &__option-btn {
+        width: 100%;
+        background: $auth-surface;
+        border: 1px solid $auth-border;
+        border-radius: $auth-radius-md;
+        color: $auth-text-primary;
+        font-weight: 700;
+        padding: 0.75rem;
+        text-align: center;
+        cursor: pointer;
+        transition:
+            border-color 0.15s ease-in-out,
+            background 0.15s ease-in-out;
+
+        &:hover {
+            border-color: $auth-accent;
+        }
+
+        &[aria-checked="true"] {
+            background: $auth-accent-strong;
+            border-color: $auth-accent-strong;
+        }
+
+        &:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px $auth-focus-ring-soft;
+        }
+    }
+
+    &__option-hint {
+        font-size: 0.78rem;
+        color: $auth-text-muted;
+        margin: 0.35rem 0 1rem;
+        line-height: 1.5;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    &__reminder-list {
+        list-style: disc;
+        padding-left: 1.1rem;
+        margin: 1.25rem 0 0;
+        font-size: 0.78rem;
+        color: $auth-text-secondary;
+        line-height: 1.6;
+
+        strong {
+            color: $auth-accent;
+        }
+    }
+
+    // Payment Summary key/value rows
+    &__summary-list {
+        margin: 0;
+    }
+
+    &__summary-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.55rem 0;
+        border-bottom: 1px solid $auth-border;
+
+        dt {
+            color: $auth-text-secondary;
+            font-size: 0.85rem;
+        }
+
+        dd {
+            margin: 0;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        &--total {
+            border-top: 1px solid $auth-border;
+            border-bottom: none;
+            margin-top: 0.25rem;
+            padding-top: 0.85rem;
+
+            dt,
+            dd {
+                font-weight: 700;
+                font-size: 1rem;
+                color: $auth-text-primary;
+            }
+        }
+    }
+
+    // QR panel
+    &__qr-code {
+        width: 100%;
+        max-width: 220px;
+        aspect-ratio: 1 / 1;
+        background: $auth-white;
+        border-radius: $auth-radius-md;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        overflow: hidden;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        span {
+            color: $auth-black;
+            font-weight: 700;
+        }
+    }
+
+    &__qr-steps {
+        list-style: none;
+        counter-reset: qr-step;
+        padding: 0;
+        margin: 0;
+        font-size: 0.78rem;
+        color: $auth-text-secondary;
+        line-height: 1.6;
+
+        li {
+            counter-increment: qr-step;
+            margin-bottom: 0.5rem;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+
+        li::before {
+            content: counter(qr-step) ". ";
+            font-weight: 700;
+            color: $auth-accent;
+        }
+
+        strong {
+            color: $auth-accent;
+            font-weight: 700;
+        }
+    }
+
+    &__field-error {
+        display: block;
+        margin-top: 0.35rem;
+        color: $auth-danger;
+        font-size: 0.78rem;
+    }
+
+    &__error {
+        font-size: 0.85rem;
+        margin-top: 1rem;
+    }
+
+    // Actions row — full width, side by side (this step has no side
+    // column to dock actions into, unlike the earlier steps).
+    &__actions {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+
+        @media (min-width: 480px) {
+            flex-direction: row;
+
+            .client-info__btn--cancel {
+                flex: 1;
+            }
+        }
+    }
+}

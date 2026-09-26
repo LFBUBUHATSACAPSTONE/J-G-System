@@ -28,7 +28,8 @@
 
 @import "./booking/client-information";
 @import "./booking/event-information";
-@import "./booking/event-schedule.scss";
+@import "./booking/event-schedule";
+@import "./booking/booking-summary";
 
 * {
     font-family: $font-family-text;
