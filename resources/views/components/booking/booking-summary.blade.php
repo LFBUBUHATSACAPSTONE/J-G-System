@@ -6,58 +6,65 @@
       <div class="booking-summary__column">
         <h2 class="booking-summary__title">Booking Summary</h2>
 
-        <div class="booking-summary__field">
-          <label>Full Name</label>
-          <input type="text" value="{{ $fullName ?? '' }}" readonly tabindex="-1">
-        </div>
+        <div class="booking-summary__receipt">
+          <h3 class="booking-summary__section">Personal Information</h3>
 
-        <div class="booking-summary__field">
-          <label>Email</label>
-          <input type="text" value="{{ $email ?? '' }}" readonly tabindex="-1">
-        </div>
-
-        <div class="booking-summary__field">
-          <label>Contact Number</label>
-          <input type="text" value="{{ $contactNumber ?? '' }}" readonly tabindex="-1">
-        </div>
-
-        <div class="booking-summary__divider" role="separator"></div>
-
-        <div class="booking-summary__field">
-          <label>Event Name</label>
-          <input type="text" value="{{ $eventName ?? '' }}" readonly tabindex="-1">
-        </div>
-
-        <div class="booking-summary__field">
-          <label>Event Type</label>
-          <input type="text" value="{{ $eventType ?? '' }}" readonly tabindex="-1">
-        </div>
-
-        <div class="booking-summary__field">
-          <label>Event Location</label>
-          <input type="text" value="{{ $eventLocation ?? '' }}" readonly tabindex="-1">
-        </div>
-
-        <div class="booking-summary__field">
-          <label>Event Contact Person</label>
-          <input type="text" value="{{ $eventContactPerson ?? '' }}" readonly tabindex="-1">
-        </div>
-
-        <div class="booking-summary__divider" role="separator"></div>
-
-        <div class="booking-summary__field">
-          <label>Event Date</label>
-          <input type="text" value="{{ $eventDate ?? '' }}" readonly tabindex="-1">
-        </div>
-
-        <div class="booking-summary__field-row">
-          <div class="booking-summary__field">
-            <label>Start In</label>
-            <input type="text" value="{{ $startTime ?? '' }}" readonly tabindex="-1">
+          <div class="booking-summary__row">
+            <span class="booking-summary__label">Full Name</span>
+            <span class="booking-summary__value">{{ $fullName ?? '' }}</span>
           </div>
-          <div class="booking-summary__field">
-            <label>End In</label>
-            <input type="text" value="{{ $endTime ?? '' }}" readonly tabindex="-1">
+
+          <div class="booking-summary__row">
+            <span class="booking-summary__label">Email</span>
+            <span class="booking-summary__value">{{ $email ?? '' }}</span>
+          </div>
+
+          <div class="booking-summary__row">
+            <span class="booking-summary__label">Contact Number</span>
+            <span class="booking-summary__value">{{ $contactNumber ?? '' }}</span>
+          </div>
+
+          <div class="booking-summary__divider" role="separator"></div>
+
+          <h3 class="booking-summary__section">Event Details</h3>
+
+          <div class="booking-summary__row">
+            <span class="booking-summary__label">Event Name</span>
+            <span class="booking-summary__value">{{ $eventName ?? '' }}</span>
+          </div>
+
+          <div class="booking-summary__row">
+            <span class="booking-summary__label">Event Type</span>
+            <span class="booking-summary__value">{{ $eventType ?? '' }}</span>
+          </div>
+
+          <div class="booking-summary__row">
+            <span class="booking-summary__label">Event Location</span>
+            <span class="booking-summary__value">{{ $eventLocation ?? '' }}</span>
+          </div>
+
+          <div class="booking-summary__row">
+            <span class="booking-summary__label">Event Contact Person</span>
+            <span class="booking-summary__value">{{ $eventContactPerson ?? '' }}</span>
+          </div>
+
+          <div class="booking-summary__divider" role="separator"></div>
+
+          <h3 class="booking-summary__section">Schedule</h3>
+
+          <div class="booking-summary__row">
+            <span class="booking-summary__label">Event Date</span>
+            <span class="booking-summary__value">{{ $eventDate ?? '' }}</span>
+          </div>
+
+          <div class="booking-summary__row">
+            <span class="booking-summary__label">Start In</span>
+            <span class="booking-summary__value">{{ $startTime ?? '' }}</span>
+          </div>
+
+          <div class="booking-summary__row">
+            <span class="booking-summary__label">End In</span>
+            <span class="booking-summary__value">{{ $endTime ?? '' }}</span>
           </div>
         </div>
       </div>

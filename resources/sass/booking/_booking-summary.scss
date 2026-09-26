@@ -69,58 +69,73 @@
         margin-bottom: 1.75rem;
     }
 
-    // Read-only recap fields — same shape as .client-info__field, but
-    // labels sit inline above a disabled-looking (not danger-marked)
-    // input, since nothing here is editable or required.
-    &__field {
-        position: relative;
-        margin-bottom: 1.1rem;
+    // Receipt-style recap — plain label/value text rows, no input
+    // chrome, since nothing here is editable. Uses the same
+    // $auth-text-secondary / $auth-text-primary pairing
+    // .booking-summary__summary-row (Payment Summary, further down)
+    // already establishes, so both "receipts" on this step read the
+    // same way.
+    //
+    // A grid, not flex: .booking-summary__row is display:contents so its
+    // label/value pair flows straight into this grid instead of forming
+    // its own two-column box. That's what makes every value line up at
+    // the same x position across ALL rows (including across dividers),
+    // regardless of how long "Event Contact Person" is next to "Email" —
+    // a per-row flex/space-between only aligns within that one row.
+    &__receipt {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        column-gap: 1.5rem;
+        row-gap: 0.7rem;
+        align-items: baseline;
+    }
 
-        label {
-            display: block;
-            margin-bottom: 0.4rem;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: $auth-text-secondary;
-        }
+    &__row {
+        display: contents;
+    }
 
-        input {
-            width: 100%;
-            background: $auth-field-bg;
-            border: 1px solid transparent;
-            border-radius: $auth-radius-md;
-            padding: 0.75rem 1rem;
-            color: $auth-text-primary;
-            font-size: 0.9rem;
-            cursor: default;
+    &__label {
+        grid-column: 1;
+        color: $auth-text-secondary;
+        font-size: 0.85rem;
+        font-weight: 600;
+        white-space: nowrap;
 
-            &:focus {
-                outline: none;
-                border-color: $auth-accent;
-                box-shadow: 0 0 0 3px $auth-focus-ring-soft;
-            }
+        // Colon lives here, not in the Blade markup, so a value can be
+        // dropped in later without anyone having to remember to type it.
+        &::after {
+            content: ":";
         }
     }
 
-    &__field-row {
-        display: flex;
-        flex-direction: column;
-        gap: 0;
+    &__value {
+        grid-column: 2;
+        color: $auth-text-primary;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-align: left;
+    }
 
-        @media (min-width: 480px) {
-            flex-direction: row;
-            gap: 1rem;
+    &__section {
+        grid-column: 1 / -1;
+        font-size: 1rem;
+        font-weight: 700;
+        color: $auth-accent;
+        margin: 0 0 0.2rem;
 
-            .booking-summary__field {
-                flex: 1;
-            }
+        // First section sits right under the card title with no divider
+        // above it, so it doesn't need the same breathing room the two
+        // later sections get after a __divider.
+        &:first-child {
+            margin-top: 0;
         }
     }
 
     &__divider {
+        grid-column: 1 / -1;
         height: 1px;
         background: $auth-border;
-        margin: 0.25rem 0 1.4rem;
+        margin: 0.25rem 0 0.75rem;
     }
 
     // Payment card's three sub-panels
