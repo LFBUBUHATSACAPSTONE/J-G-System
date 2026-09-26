@@ -28,10 +28,16 @@ const FORM_ID = "payment-form";
 
 function initBookingSummary() {
     initPaymentOptionToggle();
-    wireActionButtons();
 
     const form = document.getElementById(FORM_ID);
     if (!form) return;
+
+    // Scoped to this step's own wrapper — every step's markup now
+    // coexists in the DOM (toggled via d-none by booking-flow.js), so an
+    // unscoped query would grab another step's Previous/Cancel button
+    // instead of this one's.
+    const step = form.closest(".booking-flow__view") || document;
+    wireActionButtons(step);
 
     form.addEventListener("submit", (event) => {
         event.preventDefault();
@@ -63,8 +69,8 @@ function initPaymentOptionToggle() {
     });
 }
 
-function wireActionButtons() {
-    document.querySelectorAll("[data-booking-previous]").forEach((btn) => {
+function wireActionButtons(scope = document) {
+    scope.querySelectorAll("[data-booking-previous]").forEach((btn) => {
         btn.addEventListener("click", () => {
             btn.dispatchEvent(
                 new CustomEvent("booking:previous", { bubbles: true }),
@@ -72,7 +78,7 @@ function wireActionButtons() {
         });
     });
 
-    document.querySelectorAll("[data-booking-cancel]").forEach((btn) => {
+    scope.querySelectorAll("[data-booking-cancel]").forEach((btn) => {
         btn.addEventListener("click", () => {
             btn.dispatchEvent(
                 new CustomEvent("booking:cancel", { bubbles: true }),

@@ -59,7 +59,11 @@ function initEventSchedule() {
     form.addEventListener("input", () => clearError(form));
     form.addEventListener("change", () => clearError(form));
 
-    const previousBtn = document.querySelector("[data-booking-previous]");
+    // Scoped to this step's own wrapper — see the matching note in
+    // client-information.js for why (every step's markup now coexists
+    // in the DOM, toggled via d-none by booking-flow.js).
+    const step = form.closest(".booking-flow__view") || document;
+    const previousBtn = step.querySelector("[data-booking-previous]");
     previousBtn?.addEventListener("click", () => {
         previousBtn.dispatchEvent(
             new CustomEvent("booking:previous", { bubbles: true }),

@@ -48,7 +48,13 @@ function initPersonalInformation() {
 
     form.addEventListener("input", () => clearError(form));
 
-    const cancelBtn = document.querySelector("[data-booking-cancel]");
+    // Scoped to this step's own wrapper (.booking-flow__view) so that,
+    // now every step's markup coexists in the DOM at once (toggled via
+    // d-none by booking-flow.js), this doesn't accidentally grab another
+    // step's Cancel button. Falls back to a document-wide query so this
+    // still works if the component is ever rendered standalone.
+    const step = form.closest(".booking-flow__view") || document;
+    const cancelBtn = step.querySelector("[data-booking-cancel]");
     cancelBtn?.addEventListener("click", () => {
         cancelBtn.dispatchEvent(
             new CustomEvent("booking:cancel", { bubbles: true }),
