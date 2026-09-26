@@ -14,6 +14,14 @@
     @include gradient-text();
 }
 
+
+.packages-title-accent {
+    background: linear-gradient(90deg, #ec4899, #f472b6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
 .packages-title-accent {
     @include gradient-text($from: #ec4899, $to: #f472b6);
 }
