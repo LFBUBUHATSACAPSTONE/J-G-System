@@ -143,3 +143,5 @@ Route::post('/password/update', function (Request $r) {
 
     return response()->json(['ok' => true]);
 })->name('password.update');
+
+Route::view('/pricing', 'pricing');
