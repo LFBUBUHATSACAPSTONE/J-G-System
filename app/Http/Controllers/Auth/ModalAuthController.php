@@ -57,10 +57,16 @@ class ModalAuthController extends Controller
         }
 
         $user = $this->findUserByIdentifier($identifier);
-        $verification = $this->issueVerification($user, $identifier, 'password reset');
+        try {
+            $verification = $this->issueVerification($user, $identifier, 'password reset');
+        } catch (\Throwable) {
+            return response()->json([
+                'message' => 'We could not send the verification code. Please try again later.',
+            ], 503);
+        }
 
         return response()->json([
-            'destination' => $this->maskIdentifier($identifier),
+            'destination' => $this->maskIdentifier((string) $user->email),
             'verification_token' => $verification['token'],
         ]);
     }
@@ -133,14 +139,23 @@ class ModalAuthController extends Controller
             ], 422);
         }
 
-        $verification = $this->issueVerification(
-            $oldVerification->user_id ? User::find($oldVerification->user_id) : null,
-            $oldVerification->identifier,
-            $oldVerification->context === 'signup' ? 'account registration' : 'password reset',
-        );
+        $resendUser = $oldVerification->user_id ? User::find($oldVerification->user_id) : null;
+
+        try {
+            $verification = $this->issueVerification(
+            $resendUser,
+                $oldVerification->identifier,
+                $oldVerification->context === 'signup' ? 'account registration' : 'password reset',
+            );
+        } catch (\Throwable) {
+            return response()->json([
+                'message' => 'We could not resend the verification code. Please check the delivery configuration and try again.',
+            ], 503);
+        }
+        $oldVerification->update(['used_at' => now()]);
 
         return response()->json([
-            'destination' => $this->maskIdentifier($oldVerification->identifier),
+            'destination' => $this->maskIdentifier((string) $resendUser?->email),
             'verification_token' => $verification['token'],
         ]);
     }

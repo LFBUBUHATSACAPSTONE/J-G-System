@@ -200,12 +200,14 @@ async function submitVerificationCode(modalEl, form) {
 
         if (response.ok) {
             if (verificationContext === "signup") {
+                resetVerificationCode();
                 setAuthView(modalEl, "login");
                 return;
             }
 
             const data = await response.json().catch(() => ({}));
             setResetCredentials({ token: data.token, email: data.email });
+            resetVerificationCode();
             setAuthView(modalEl, "new-password");
             return;
         }
@@ -282,11 +284,12 @@ function startResendCooldown(seconds = RESEND_COOLDOWN_SECONDS) {
 
 function resetVerificationCode() {
     verificationContext = DEFAULT_CONTEXT;
-    verificationToken = "";
+    setVerificationToken("");
 
     document.querySelectorAll(BOX_SELECTOR).forEach((b) => {
         b.value = "";
     });
+    setVerificationDestination("");
     document
         .querySelectorAll("[data-verification-error]")
         .forEach((el) => clearVerificationError(el.closest("form")));
