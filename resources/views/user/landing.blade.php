@@ -42,7 +42,13 @@
 <div class="container p-4">
     <div class="row row-cols-1 row-cols-md-3 g-4">
         @foreach($packages as $package)
-            ...
+            <div class="col">
+                <x-package-card
+                    :name="$package['name']"
+                    :price="$package['price']"
+                    :features="$package['features']"
+                />
+            </div>
         @endforeach
     </div>
   </div>
