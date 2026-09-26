@@ -17,9 +17,14 @@
     data-cancel-url="{{ route('user.landing') }}"
     data-continue-url="{{ route('user.landing') }}">
 
-    <div class="booking-flow__view" data-view="package">
-      @include('components.booking.package')
-    </div>
+    {{--
+      Step: Package — NOT YET BUILT.
+
+        <div class="booking-flow__view" data-view="package">
+          @include('components.booking.package')
+        </div>
+
+        -}}
 
     {{-- Step: Client Information (currently the flow's entry point,
          until Package exists above) --}}
