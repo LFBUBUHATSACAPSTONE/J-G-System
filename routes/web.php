@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\GoogleAuthController;
 use Illuminate\Support\Facades\Route;
 
 // Front-End Verification Testing
@@ -26,3 +27,6 @@ Route::post('/password/email', [App\Http\Controllers\Auth\ModalAuthController::c
 Route::post('/verification/confirm', [App\Http\Controllers\Auth\ModalAuthController::class, 'verificationConfirm'])->name('verification.confirm');
 Route::post('/verification/resend', [App\Http\Controllers\Auth\ModalAuthController::class, 'verificationResend'])->name('verification.resend');
 Route::post('/password/update', [App\Http\Controllers\Auth\ModalAuthController::class, 'passwordUpdate'])->name('password.update');
+
+Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('auth.google.redirect');
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('auth.google.callback');
