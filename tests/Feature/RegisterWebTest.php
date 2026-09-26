@@ -206,10 +206,12 @@ class RegisterWebTest extends TestCase
             'verified_email' => true,
         ]);
         $provider = \Mockery::mock(GoogleProvider::class);
+        $provider->shouldReceive('stateless')->once()->andReturnSelf();
         $provider->shouldReceive('user')->once()->andReturn($googleUser);
         Socialite::shouldReceive('driver')->once()->with('google')->andReturn($provider);
 
-        $response = $this->get('/auth/google/callback');
+        $response = $this->withCookie('google_oauth_state', 'test-oauth-state')
+            ->get('/auth/google/callback?state=test-oauth-state');
 
         $response->assertRedirect(route('home'));
         $this->assertAuthenticated();
@@ -220,12 +222,15 @@ class RegisterWebTest extends TestCase
         $this->assertNotNull(User::where('email', 'google-user@example.com')->value('email_verified_at'));
     }
 
-    public function test_google_redirect_stores_oauth_state_in_session(): void
+    public function test_google_redirect_stores_oauth_state_in_cookie(): void
     {
         $response = $this->get('/auth/google/redirect');
+        $redirectQuery = [];
+        parse_str(parse_url((string) $response->headers->get('Location'), PHP_URL_QUERY), $redirectQuery);
 
         $response->assertRedirect()
-            ->assertSessionHas('state');
+            ->assertCookie('google_oauth_state', $redirectQuery['state'] ?? null);
+        $this->assertNotEmpty($redirectQuery['state'] ?? null);
     }
 
 }

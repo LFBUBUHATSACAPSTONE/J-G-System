@@ -10,23 +10,56 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
-use Laravel\Socialite\Two\InvalidStateException;
+use Laravel\Socialite\Two\GoogleProvider;
 use Throwable;
 
 class GoogleAuthController extends Controller
 {
     public function redirect(): RedirectResponse
     {
-        $response = Socialite::driver('google')->redirect();
-        request()->session()->save();
+        $callbackUrl = (string) config('services.google.redirect');
+        $callbackHost = parse_url($callbackUrl, PHP_URL_HOST);
 
-        return $response;
+        if ($callbackHost && strcasecmp(request()->getHost(), $callbackHost) !== 0) {
+            $redirectUrl = preg_replace('~/callback(?:\?.*)?$~', '/redirect', $callbackUrl);
+
+            return redirect()->away($redirectUrl);
+        }
+
+        $state = Str::random(40);
+        /** @var GoogleProvider $provider */
+        $provider = Socialite::driver('google');
+        $response = $provider
+            ->stateless()
+            ->with(['state' => $state])
+            ->redirect();
+
+        return $response->withCookie(cookie(
+            'google_oauth_state',
+            $state,
+            10,
+            '/',
+            null,
+            request()->isSecure(),
+            true,
+            false,
+            'lax',
+        ));
     }
 
     public function callback(): RedirectResponse
     {
         try {
-            $googleUser = Socialite::driver('google')->user();
+            $stateCookie = (string) request()->cookie('google_oauth_state', '');
+            $stateParameter = (string) request()->query('state', '');
+
+            if ($stateCookie === '' || $stateParameter === '' || ! hash_equals($stateCookie, $stateParameter)) {
+                return $this->failure('Your Google sign-in session expired. Return to this site and start sign-in again in the same browser.');
+            }
+
+            /** @var GoogleProvider $provider */
+            $provider = Socialite::driver('google');
+            $googleUser = $provider->stateless()->user();
             $googleId = (string) $googleUser->getId();
             $email = strtolower(trim((string) $googleUser->getEmail()));
             $isEmailVerified = (bool) ($googleUser->user['verified_email'] ?? false);
@@ -63,11 +96,7 @@ class GoogleAuthController extends Controller
             Auth::login($user, true);
             request()->session()->regenerate();
 
-            return redirect()->intended(route('home'));
-        } catch (InvalidStateException) {
-            Log::warning('Google sign-in state was missing or did not match the session.');
-
-            return $this->failure('Your Google sign-in session expired. Return to this site and start sign-in again in the same browser.');
+            return redirect()->intended(route('home'))->withCookie(cookie()->forget('google_oauth_state'));
         } catch (Throwable $exception) {
             Log::warning('Google sign-in failed.', [
                 'exception' => $exception::class,
@@ -80,6 +109,8 @@ class GoogleAuthController extends Controller
 
     private function failure(string $message): RedirectResponse
     {
-        return redirect()->route('user.landing')->with('auth_error', $message);
+        return redirect()->route('user.landing')
+            ->with('auth_error', $message)
+            ->withCookie(cookie()->forget('google_oauth_state'));
     }
 }
