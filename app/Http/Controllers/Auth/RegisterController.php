@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
@@ -121,7 +122,12 @@ class RegisterController extends Controller
 
                 return [$user, $verification];
             });
-        } catch (\Throwable) {
+        } catch (\Throwable $exception) {
+            Log::error('Registration verification email failed.', [
+                'exception' => $exception::class,
+                'message' => $exception->getMessage(),
+            ]);
+
             return response()->json([
                 'message' => 'We could not send the verification email. Please check the mail configuration and try again.',
             ], 503);

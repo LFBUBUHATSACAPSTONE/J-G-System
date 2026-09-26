@@ -71,6 +71,7 @@ class RegisterRequest extends FormRequest
         return [
             'email.required_without' => 'Please provide an email or a phone number.',
             'phone.required_without' => 'Please provide an email or a phone number.',
+            'email.unique' => 'An account with this email is already verified. Please log in or use Forgot Password.',
         ];
     }
 }

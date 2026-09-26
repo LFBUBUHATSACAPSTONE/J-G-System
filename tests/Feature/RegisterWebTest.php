@@ -7,6 +7,9 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\GoogleProvider;
+use Laravel\Socialite\Two\User as GoogleUser;
 use Tests\TestCase;
 
 class RegisterWebTest extends TestCase
@@ -168,6 +171,61 @@ class RegisterWebTest extends TestCase
             ->assertJsonStructure(['destination', 'verification_token']);
 
         Mail::assertSent(VerificationCodeMail::class);
+    }
+
+    public function test_verified_email_cannot_register_again(): void
+    {
+        Mail::fake();
+
+        User::factory()->create([
+            'email' => 'verified@example.com',
+            'email_verified_at' => now(),
+        ]);
+
+        $response = $this->postJson('/register', [
+            'first_name' => 'Existing',
+            'last_name' => 'User',
+            'identifier' => 'verified@example.com',
+            'password' => 'StrongPass1!',
+            'terms' => true,
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors('email')
+            ->assertJsonPath('errors.email.0', 'An account with this email is already verified. Please log in or use Forgot Password.');
+
+        Mail::assertNothingOutgoing();
+    }
+
+    public function test_google_callback_creates_and_authenticates_verified_user(): void
+    {
+        $googleUser = GoogleUser::fake([
+            'id' => 'google-user-123',
+            'name' => 'Google User',
+            'email' => 'google-user@example.com',
+            'verified_email' => true,
+        ]);
+        $provider = \Mockery::mock(GoogleProvider::class);
+        $provider->shouldReceive('user')->once()->andReturn($googleUser);
+        Socialite::shouldReceive('driver')->once()->with('google')->andReturn($provider);
+
+        $response = $this->get('/auth/google/callback');
+
+        $response->assertRedirect(route('home'));
+        $this->assertAuthenticated();
+        $this->assertDatabaseHas('users', [
+            'email' => 'google-user@example.com',
+            'google_id' => 'google-user-123',
+        ]);
+        $this->assertNotNull(User::where('email', 'google-user@example.com')->value('email_verified_at'));
+    }
+
+    public function test_google_redirect_stores_oauth_state_in_session(): void
+    {
+        $response = $this->get('/auth/google/redirect');
+
+        $response->assertRedirect()
+            ->assertSessionHas('state');
     }
 
 }

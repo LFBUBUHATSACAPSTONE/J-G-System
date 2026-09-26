@@ -20,6 +20,12 @@
 
   @include('includes.navigation');
 
+  @if (session('auth_error'))
+    <div class="alert alert-danger position-relative z-1 mx-auto mt-3" role="alert" style="max-width: 36rem;">
+      {{ session('auth_error') }}
+    </div>
+  @endif
+
   @include('includes.landing-caption', ["header" => "Bring Your Event to Life", "caption" => "We're dedicated to making every occasion look and sound its best with reliable equipment and professional service."])
 
   <x-coverflow-carousel :items="[
