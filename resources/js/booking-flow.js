@@ -128,4 +128,4 @@ function setBookingView(root, view) {
 
 document.addEventListener("DOMContentLoaded", initBookingFlow);
 
-export { initBookingFlow, setBookingView };
+export { initBookingFlow, setBookingView, STEP_ORDER };

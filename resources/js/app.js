@@ -19,4 +19,5 @@ import "./booking/event-information.js";
 import "./booking/event-schedule.js";
 import "./booking/booking-summary.js";
 import "./booking/booking-confirmation.js";
-import ".//booking-flow.js";
+import "./booking-flow.js";
+import "./booking/progress-tracker.js";

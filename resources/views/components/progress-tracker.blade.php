@@ -1,11 +1,10 @@
 @php
 $trackerSteps = [
-['key' => 'package', 'label' => 'Package', 'number' => 1, 'permalocked' => true],
-['key' => 'client-information', 'label' => 'Client Information', 'number' => 2],
-['key' => 'event-information', 'label' => 'Event Information', 'number' => 3],
-['key' => 'event-schedule', 'label' => 'Event Schedule', 'number' => 4],
-['key' => 'booking-summary', 'label' => 'Payment', 'number' => 5],
-['key' => 'booking-confirmation', 'label' => 'Confirmation', 'number' => 6],
+['key' => 'client-information', 'label' => 'Client Information', 'number' => 1],
+['key' => 'event-information', 'label' => 'Event Information', 'number' => 2],
+['key' => 'event-schedule', 'label' => 'Event Schedule', 'number' => 3],
+['key' => 'booking-summary', 'label' => 'Payment', 'number' => 4],
+['key' => 'booking-confirmation', 'label' => 'Confirmation', 'number' => 5],
 ];
 @endphp
 
@@ -16,10 +15,7 @@ $trackerSteps = [
 
   <ol class="progress-tracker__list">
     @foreach ($trackerSteps as $step)
-    <li
-      class="progress-tracker__step is-locked{{ !empty($step['permalocked']) ? ' progress-tracker__step--permalocked' : '' }}"
-      data-step="{{ $step['key'] }}"
-      @if (!empty($step['permalocked'])) data-permalocked @endif>
+    <li class="progress-tracker__step is-locked" data-step="{{ $step['key'] }}">
       <button type="button" class="progress-tracker__circle" @disabled(true)>
         <svg class="progress-tracker__icon-lock" viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true">
           <rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2" />

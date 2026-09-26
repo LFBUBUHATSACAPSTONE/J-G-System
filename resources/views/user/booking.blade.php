@@ -10,7 +10,7 @@
 <body>
   <img src="{{ asset('images/backgrounds/design/landing_bg.webp') }}" alt="" class="position-absolute z-0 w-100 h-100">
 
-  @include('components.progress-tracker');
+  @include('components.progress-tracker')
 
   <div
     id="bookingFlow"
@@ -18,15 +18,6 @@
     data-current-view="client-information"
     data-cancel-url="{{ route('user.landing') }}"
     data-continue-url="{{ route('user.landing') }}">
-
-    {{--
-      Step: Package — NOT YET BUILT.
-
-        <div class="booking-flow__view" data-view="package">
-          @include('components.booking.package')
-        </div>
-
-        -}}
 
     {{-- Step: Client Information (currently the flow's entry point,
          until Package exists above) --}}
