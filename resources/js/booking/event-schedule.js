@@ -1,0 +1,407 @@
+/**
+ * Event Schedule step (booking flow) — submit (AJAX) + live field
+ * feedback. Same shell as event-information.js: novalidate on the form,
+ * fetch() on submit, inline errors under each field.
+ *
+ * Two custom controls unique to this step:
+ *   - a month calendar (data-calendar) built entirely in JS. Clicking a
+ *     day selects it as a one-day event (start and end both land on that
+ *     date); clicking a later day extends it into a multi-day range;
+ *     clicking again after a range is set starts a new one-day selection.
+ *     Only today and later are selectable — the Previous-month arrow is
+ *     hidden while viewing the earliest navigable month.
+ *   - a time field (data-time-input) paired with an AM/PM toggle
+ *     (data-ampm-group) for Start In / End In.
+ *
+ * The Continue button lives outside <form> (in the aside action column)
+ * and is wired via form="event-schedule-form". The Previous button only
+ * dispatches a bubbling `booking:previous` CustomEvent, same as
+ * event-information.js.
+ *
+ * Expected back-end contract for `booking.event-schedule`:
+ *   200 JSON -> saved, caller advances to the next step
+ *   422 {"message": "…", "errors": {"event_start_date": ["…"], …}} -> rejected
+ */
+
+import { setFieldState } from "../auth/validation.js";
+
+const FORM_ID = "event-schedule-form";
+const WEEKDAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+const MONTH_LABELS = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+];
+
+function initEventSchedule() {
+    const form = document.getElementById(FORM_ID);
+    if (!form) return;
+
+    initCalendar(form);
+    form.querySelectorAll("[data-time-input]").forEach((input) =>
+        initTimeField(input),
+    );
+
+    form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        submitEventSchedule(form);
+    });
+
+    form.addEventListener("input", () => clearError(form));
+    form.addEventListener("change", () => clearError(form));
+
+    const previousBtn = document.querySelector("[data-booking-previous]");
+    previousBtn?.addEventListener("click", () => {
+        previousBtn.dispatchEvent(
+            new CustomEvent("booking:previous", { bubbles: true }),
+        );
+    });
+}
+
+/*
+ Calendar: renders a month grid into [data-calendar-days] from scratch
+ on every render() call. `view` tracks the currently displayed month;
+ `selection` tracks the chosen start/end dates (as local YYYY-MM-DD
+ strings, so there's no timezone drift between the grid and the hidden
+ inputs). Only today-or-later dates are selectable.
+*/
+function initCalendar(form) {
+    const root = form.querySelector("[data-calendar]");
+    if (!root) return;
+
+    const label = root.querySelector("[data-calendar-label]");
+    const daysEl = root.querySelector("[data-calendar-days]");
+    const prevBtn = root.querySelector("[data-calendar-prev]");
+    const nextBtn = root.querySelector("[data-calendar-next]");
+    const startInput = root.querySelector("[data-start-date-input]");
+    const endInput = root.querySelector("[data-end-date-input]");
+    const rangeLabel = form.querySelector("[data-selected-range]");
+
+    const today = startOfDay(new Date());
+    const minView = { year: today.getFullYear(), month: today.getMonth() };
+    const view = { ...minView };
+    const selection = { start: null, end: null };
+
+    const render = () => {
+        label.textContent = `${MONTH_LABELS[view.month]} ${view.year}`;
+        prevBtn.classList.toggle(
+            "is-invisible",
+            view.year === minView.year && view.month === minView.month,
+        );
+
+        daysEl.innerHTML = "";
+        const firstDay = new Date(view.year, view.month, 1);
+        const daysInMonth = new Date(view.year, view.month + 1, 0).getDate();
+
+        for (let i = 0; i < firstDay.getDay(); i++) {
+            daysEl.appendChild(document.createElement("span"));
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(view.year, view.month, day);
+            const iso = toIso(date);
+            const weekday = date.getDay();
+
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "event-schedule__day";
+            btn.textContent = day;
+            btn.dataset.date = iso;
+            if (weekday === 0 || weekday === 6) btn.classList.add("is-weekend");
+            if (iso === selection.start || iso === selection.end) {
+                btn.classList.add("is-selected");
+            }
+            if (date < today) btn.disabled = true;
+
+            btn.addEventListener("click", () => selectDate(iso));
+            daysEl.appendChild(btn);
+        }
+
+        updateRangeLabel();
+    };
+
+    const updateRangeLabel = () => {
+        if (!rangeLabel) return;
+        if (!selection.start) {
+            rangeLabel.textContent = "Select a date on the calendar.";
+            rangeLabel.classList.remove("has-value");
+            return;
+        }
+        rangeLabel.textContent =
+            selection.start === selection.end
+                ? formatDisplayDate(selection.start)
+                : `${formatDisplayDate(selection.start)} – ${formatDisplayDate(selection.end)}`;
+        rangeLabel.classList.add("has-value");
+    };
+
+    const selectDate = (iso) => {
+        if (!selection.start || selection.start !== selection.end) {
+            // Nothing picked yet, or a full multi-day range was already
+            // picked — start a fresh selection. A single click alone is
+            // enough to book a one-day event: start and end both land on
+            // the same date.
+            selection.start = iso;
+            selection.end = iso;
+        } else if (iso < selection.start) {
+            // Earlier than the currently-picked day — move the whole
+            // (still single-day) selection there.
+            selection.start = iso;
+            selection.end = iso;
+        } else {
+            // Same day again (no-op) or a later day — extend into a
+            // multi-day range.
+            selection.end = iso;
+        }
+        startInput.value = selection.start ?? "";
+        endInput.value = selection.end ?? "";
+        startInput.dispatchEvent(new Event("change", { bubbles: true }));
+        render();
+    };
+
+    prevBtn.addEventListener("click", () => {
+        view.month -= 1;
+        if (view.month < 0) {
+            view.month = 11;
+            view.year -= 1;
+        }
+        render();
+    });
+
+    nextBtn.addEventListener("click", () => {
+        view.month += 1;
+        if (view.month > 11) {
+            view.month = 0;
+            view.year += 1;
+        }
+        render();
+    });
+
+    render();
+}
+
+function startOfDay(date) {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d;
+}
+
+function toIso(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+}
+
+// "2026-12-22" -> "December 22, 2026", for the selected-range label.
+function formatDisplayDate(iso) {
+    const [y, m, d] = iso.split("-").map(Number);
+    return `${MONTH_LABELS[m - 1]} ${d}, ${y}`;
+}
+
+/*
+ Time field: masks the input to a strict HH:MM shape as the user types —
+ strips anything but digits, auto-inserts the colon, and clamps the hour
+ to 1-12 and the minutes to 00-59 so it's impossible to type anything
+ that isn't a valid 12-hour time. Also wires the paired AM/PM buttons as
+ a two-state toggle (aria-pressed).
+*/
+function initTimeField(input) {
+    input.addEventListener("input", () => {
+        input.value = formatTimeDigits(input.value);
+    });
+
+    const group = input
+        .closest(".event-schedule__time-field")
+        ?.querySelector("[data-ampm-group]");
+    if (!group) return;
+
+    const buttons = [...group.querySelectorAll("[data-ampm]")];
+    buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+            buttons.forEach((b) => b.setAttribute("aria-pressed", "false"));
+            btn.setAttribute("aria-pressed", "true");
+            group.dispatchEvent(new Event("change", { bubbles: true }));
+        });
+    });
+}
+
+/*
+ Turns raw keystrokes into a masked H:MM / HH:MM string. Only "10", "11"
+ and "12" ever use two hour digits — typing "9" then "3" reads as 9:03,
+ not the impossible 09/3 — and the minute is clamped a digit at a time
+ (tens digit capped at 5, full pair capped at 59).
+*/
+function formatTimeDigits(raw) {
+    const digits = raw.replace(/\D/g, "").slice(0, 4);
+    if (!digits) return "";
+
+    const hourLen =
+        digits.length >= 2 && ["10", "11", "12"].includes(digits.slice(0, 2))
+            ? 2
+            : 1;
+
+    let hour = digits.slice(0, hourLen);
+    let minute = digits.slice(hourLen, hourLen + 2);
+
+    const hourNum = Number(hour);
+    if (hourNum === 0) hour = "";
+    else if (hourNum > 12) hour = "12";
+
+    if (minute.length === 1 && Number(minute) > 5) minute = "5";
+    if (minute.length === 2 && Number(minute) > 59) minute = "59";
+
+    return minute ? `${hour}:${minute}` : hour;
+}
+
+function getTimeError(value, label) {
+    if (!value.trim()) return `${label} is required.`;
+    if (!/^([1-9]|1[0-2]):[0-5][0-9]$/.test(value.trim()))
+        return `Enter a valid time as HH:MM, e.g. 9:00.`;
+    return "";
+}
+
+function getPeriod(group) {
+    return group.querySelector('[aria-pressed="true"]')?.dataset.ampm ?? "AM";
+}
+
+async function submitEventSchedule(form) {
+    const field = (name) => form.querySelector(`[name="${name}"]`);
+    const startDateInput = field("event_start_date");
+    const endDateInput = field("event_end_date");
+    const startTimeInput = field("start_time");
+    const endTimeInput = field("end_time");
+    const startAmpmGroup = startTimeInput
+        .closest(".event-schedule__field")
+        .querySelector("[data-ampm-group]");
+    const endAmpmGroup = endTimeInput
+        .closest(".event-schedule__field")
+        .querySelector("[data-ampm-group]");
+    const calendar = form.querySelector("[data-calendar]");
+    const submitBtn = document.querySelector(
+        `[form="${form.id}"][type="submit"]`,
+    );
+
+    clearError(form);
+
+    const checks = [
+        [
+            calendar,
+            startDateInput.value && endDateInput.value
+                ? ""
+                : "Select a start and end date on the calendar.",
+            "event_start_date",
+        ],
+        [
+            startTimeInput.closest(".event-schedule__time-field"),
+            getTimeError(startTimeInput.value, "Start time"),
+            "start_time",
+        ],
+        [
+            endTimeInput.closest(".event-schedule__time-field"),
+            getTimeError(endTimeInput.value, "End time"),
+            "end_time",
+        ],
+    ];
+    const firstFailure = checks.find(([, message]) => message);
+    if (firstFailure) {
+        const [input, message, fieldName] = firstFailure;
+        const errorEl = form.querySelector(`[data-field-error="${fieldName}"]`);
+        setFieldState(input, errorEl, message);
+        return;
+    }
+
+    if (submitBtn) submitBtn.disabled = true;
+
+    try {
+        const response = await fetch(form.action, {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN":
+                    form.querySelector('input[name="_token"]')?.value ?? "",
+            },
+            body: JSON.stringify({
+                event_start_date: startDateInput.value,
+                event_end_date: endDateInput.value,
+                start_time: `${startTimeInput.value.trim()} ${getPeriod(startAmpmGroup)}`,
+                end_time: `${endTimeInput.value.trim()} ${getPeriod(endAmpmGroup)}`,
+            }),
+        });
+
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            const errors = data.errors ?? {};
+            const invalidInputs = Object.keys(errors)
+                .map((name) => {
+                    if (
+                        name === "event_start_date" ||
+                        name === "event_end_date"
+                    )
+                        return calendar;
+                    if (name === "start_time")
+                        return startTimeInput.closest(
+                            ".event-schedule__time-field",
+                        );
+                    if (name === "end_time")
+                        return endTimeInput.closest(
+                            ".event-schedule__time-field",
+                        );
+                    return form.querySelector(`[name="${name}"]`);
+                })
+                .filter(Boolean);
+            showError(
+                form,
+                Object.values(errors)[0]?.[0] ||
+                    data.message ||
+                    "We couldn't save the schedule. Please review the fields above and try again.",
+                invalidInputs,
+            );
+            return;
+        }
+
+        form.dispatchEvent(
+            new CustomEvent("booking:event-schedule-saved", { bubbles: true }),
+        );
+    } catch {
+        showError(
+            form,
+            "Something went wrong on our end. Please check your connection and try again.",
+        );
+    } finally {
+        if (submitBtn) submitBtn.disabled = false;
+    }
+}
+
+function showError(form, message, invalidInputs = []) {
+    const errorEl = form.querySelector("[data-event-schedule-error]");
+    if (errorEl) {
+        errorEl.textContent = message;
+        errorEl.classList.remove("d-none");
+    }
+    invalidInputs.forEach((input) => input?.classList.add("is-invalid"));
+}
+
+function clearError(form) {
+    const errorEl = form.querySelector("[data-event-schedule-error]");
+    if (errorEl) {
+        errorEl.textContent = "";
+        errorEl.classList.add("d-none");
+    }
+    form.querySelectorAll(
+        ".event-schedule__time-field, [data-calendar]",
+    ).forEach((el) => el.classList.remove("is-invalid"));
+}
+
+document.addEventListener("DOMContentLoaded", initEventSchedule);
+
+export { initEventSchedule };
