@@ -181,4 +181,17 @@ Route::post('/booking/event-information', function (Request $r) {
     return response()->json(['ok' => true]);
 })->name('booking.event-information');
 
+// Event Schedule step. Missing end date -> 422 (exercises the
+// field-error path on the calendar); anything else -> 200.
+Route::post('/booking/event-schedule', function (Request $r) {
+    if ($r->input('event_start_date') && ! $r->input('event_end_date')) {
+        return response()->json([
+            'message' => 'Select an end date on the calendar.',
+            'errors' => ['event_end_date' => ['Select an end date on the calendar.']],
+        ], 422);
+    }
+
+    return response()->json(['ok' => true]);
+})->name('booking.event-schedule');
+
 Route::view('/pricing', 'pricing');
