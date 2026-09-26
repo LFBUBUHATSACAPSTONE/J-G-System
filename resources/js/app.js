@@ -17,3 +17,4 @@ import "./booking/package.js";
 import "./booking/client-information.js";
 import "./booking/event-information.js";
 import "./booking/event-schedule.js";
+import "./booking/booking-summary.js";
