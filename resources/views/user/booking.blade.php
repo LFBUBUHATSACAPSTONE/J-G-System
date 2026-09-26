@@ -10,6 +10,8 @@
 <body>
   <img src="{{ asset('images/backgrounds/design/landing_bg.webp') }}" alt="" class="position-absolute z-0 w-100 h-100">
 
+  @include('components.progress-tracker');
+
   <div
     id="bookingFlow"
     class="booking-flow"
