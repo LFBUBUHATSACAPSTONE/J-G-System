@@ -14,22 +14,6 @@
     @include gradient-text();
 }
 
-.packages-heading {
-    background: radial-gradient(circle at center, rgba(219, 39, 119, 0.35) 0%, rgba(88, 28, 60, 0.15) 40%, transparent 70%);
-    padding: 4rem 0;
-}
-
-.packages-title {
-    font-size: 3rem;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-    color: #9c8b93; /* muted grayish-pink for "PACKAG" */
-    margin: 0;
-}
-
 .packages-title-accent {
-    background: linear-gradient(90deg, #ec4899, #f472b6);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    @include gradient-text($from: #ec4899, $to: #f472b6);
 }
