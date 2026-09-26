@@ -4,6 +4,7 @@ namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -21,7 +22,13 @@ class VerificationCodeMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your ' . $this->purpose . ' verification code',
+            from: new Address(
+                address: (string) config('mail.from.address'),
+                name: 'J&G Audio Lights and Sounds',
+            ),
+            subject: $this->purpose === 'account registration'
+                ? 'Verify your email address | J&G Audio Lights and Sounds'
+                : 'Password reset code | J&G Audio Lights and Sounds',
         );
     }
 
