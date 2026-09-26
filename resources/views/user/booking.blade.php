@@ -12,7 +12,8 @@
 
   <!-- @include('components/booking/client-information'); -->
   <!-- @include('components/booking/event-information'); -->
-  @include('components/booking/event-schedule');
+  <!-- @include('components/booking/event-schedule'); -->
+  @include('components/booking/booking-summary');
 </body>
 
 

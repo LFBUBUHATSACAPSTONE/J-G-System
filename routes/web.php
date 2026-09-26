@@ -194,4 +194,18 @@ Route::post('/booking/event-schedule', function (Request $r) {
     return response()->json(['ok' => true]);
 })->name('booking.event-schedule');
 
+// Booking Summary / Payment step. Missing payment_option -> 422
+// (exercises the field-error path on the payment-option toggle);
+// anything else -> 200.
+Route::post('/booking/payment', function (Request $r) {
+    if (! $r->input('payment_option')) {
+        return response()->json([
+            'message' => 'Please select a payment option.',
+            'errors' => ['payment_option' => ['Please select a payment option.']],
+        ], 422);
+    }
+
+    return response()->json(['ok' => true]);
+})->name('booking.payment');
+
 Route::view('/pricing', 'pricing');
