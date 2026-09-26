@@ -87,7 +87,7 @@ class RegisterController extends Controller
         }
 
         try {
-            [$user, $verification] = DB::transaction(function () use ($validated, $identifier): array {
+            [, $verification] = DB::transaction(function () use ($validated, $identifier): array {
                 $user = User::where('email', $validated['email'])->first();
 
                 if ($user) {

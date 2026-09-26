@@ -48,7 +48,10 @@ function initForgotPassword() {
 
     modalEl.addEventListener("hidden.bs.modal", () => {
         const target = modalEl.querySelector(`${VIEW_SELECTOR} form`);
-        if (target) clearError(target);
+        if (target) {
+            target.reset();
+            clearError(target);
+        }
     });
 }
 
@@ -99,6 +102,7 @@ async function submitForgotPassword(modalEl, form) {
         setVerificationDestination(
             data.destination || maskIdentifier(identifier),
         );
+        input.value = "";
         setAuthView(modalEl, "verification");
         focusFirstField(modalEl);
     } catch {

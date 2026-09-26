@@ -169,4 +169,5 @@ class RegisterWebTest extends TestCase
 
         Mail::assertSent(VerificationCodeMail::class);
     }
+
 }
