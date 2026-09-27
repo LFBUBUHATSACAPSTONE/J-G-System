@@ -1,4 +1,4 @@
-<div class="booking-summary position-absolute z-1">
+<div class="booking-summary position-relative z-1">
   <div class="booking-summary__card">
     <div class="booking-summary__grid">
 

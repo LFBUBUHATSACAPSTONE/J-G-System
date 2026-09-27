@@ -1,4 +1,4 @@
-<div class="event-schedule position-absolute z-1">
+<div class="event-schedule position-relative z-1">
   <div class="event-schedule__card">
     <h2 class="event-schedule__title">Event Schedule</h2>
 

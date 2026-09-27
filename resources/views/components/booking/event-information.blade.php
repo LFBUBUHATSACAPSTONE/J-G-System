@@ -1,4 +1,4 @@
-<div class="event-info position-absolute z-1">
+<div class="event-info position-relative z-1">
   <div class="event-info__card">
     <h2 class="event-info__title">Event Information</h2>
 

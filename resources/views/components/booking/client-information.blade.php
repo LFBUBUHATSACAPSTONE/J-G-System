@@ -1,4 +1,4 @@
-<div class="client-info position-absolute z-1">
+<div class="client-info position-relative z-1">
   <div class="client-info__card">
     <h2 class="client-info__title">Personal Information</h2>
 

@@ -69,13 +69,6 @@
         margin-bottom: 1.75rem;
     }
 
-    // Receipt-style recap — plain label/value text rows, no input
-    // chrome, since nothing here is editable. Uses the same
-    // $auth-text-secondary / $auth-text-primary pairing
-    // .booking-summary__summary-row (Payment Summary, further down)
-    // already establishes, so both "receipts" on this step read the
-    // same way.
-    //
     // A grid, not flex: .booking-summary__row is display:contents so its
     // label/value pair flows straight into this grid instead of forming
     // its own two-column box. That's what makes every value line up at
@@ -138,16 +131,24 @@
         margin: 0.25rem 0 0.75rem;
     }
 
-    // Payment card's three sub-panels
+    // Payment card's three sub-panels.
+    //
+    // This intentionally never switches to flex-direction: row. The
+    // Payment column here is capped well below the viewport — it's at
+    // most ~half of .booking-summary__card, and that card itself is
+    // capped at .booking-flow's 1040px max-width, so this column tops
+    // out around 400-450px no matter how wide the screen gets. Fitting
+    // three panels (buttons, a label/value list, a QR box) across that
+    // isn't a "needs a wider screen" problem — there's no screen width
+    // this component will ever render at where that's enough room, so a
+    // min-width breakpoint here only produces the exact overlap this was
+    // written to fix (dt/dd text bleeding into the neighboring panel).
+    // Stacked, each panel gets the column's full width instead of a
+    // third of it.
     &__payment-grid {
         display: flex;
         flex-direction: column;
         gap: 1.25rem;
-
-        @media (min-width: 640px) {
-            flex-direction: row;
-            align-items: flex-start;
-        }
     }
 
     &__payment-panel {
@@ -252,6 +253,21 @@
         padding: 0.55rem 0;
         border-bottom: 1px solid $auth-border;
 
+        // Flex items default to min-width: auto, which refuses to shrink
+        // a child below its own content's intrinsic width — even though
+        // .booking-summary__payment-panel above it has min-width: 0 and
+        // is willing to shrink. At the narrow width three panels leaves
+        // each column (see the Payment Summary panel in particular),
+        // that mismatch meant dt/dd refused to shrink or wrap, so the
+        // row rendered wider than its panel and visually bled into the
+        // QR panel next to it — the "not spanning"-looking cut/overlap
+        // in the Payment column. min-width: 0 here lets them actually
+        // wrap/shrink to the panel's real width instead.
+        dt,
+        dd {
+            min-width: 0;
+        }
+
         dt {
             color: $auth-text-secondary;
             font-size: 0.85rem;
@@ -261,6 +277,7 @@
             margin: 0;
             font-weight: 600;
             text-align: right;
+            overflow-wrap: break-word;
         }
 
         &:last-child {

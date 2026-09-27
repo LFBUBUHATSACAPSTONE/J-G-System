@@ -1,4 +1,4 @@
-<div class="booking-confirmation position-absolute z-1">
+<div class="booking-confirmation position-relative z-1">
   <div class="booking-confirmation__card">
     <svg class="booking-confirmation__check" width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <circle cx="32" cy="32" r="29" stroke="currentColor" stroke-width="3" />
