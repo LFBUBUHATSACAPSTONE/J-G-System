@@ -81,8 +81,8 @@
   </div>
 
   <div class="client-info__actions">
+    <x-button type="button" class="btn-color-gradient--secondary client-info__btn--cancel text-pale--white rounded-2" data-booking-previous>Previous</x-button>
     <x-button type="submit" form="event-schedule-form" class="client-info__btn--confirm
     btn-color-gradient--primary font-button--responsive text-pale--white rounded-2">Continue</x-button>
-    <x-button type="button" class="btn-color-gradient--secondary client-info__btn--cancel text-pale--white rounded-2" data-booking-previous>Previous</x-button>
   </div>
 </div>
