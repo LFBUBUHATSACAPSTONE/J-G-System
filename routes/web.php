@@ -168,13 +168,16 @@ Route::post('/booking/personal-information', function (Request $r) {
     return response()->json(['ok' => true]);
 })->name('booking.personal-information');
 
-// Event Information step. "Others" as the event type -> 422 (exercises
-// the field-error path on the custom select); anything else -> 200.
+// Event Information step. Real validation only — "Others" is a normal,
+// allowed event type as long as the user filled in "Please specify"
+// (event_type_other); the frontend already requires that field when
+// Others is selected, but this stub double-checks it server-side rather
+// than rejecting every "Others" submission outright.
 Route::post('/booking/event-information', function (Request $r) {
-    if ($r->input('event_type') === 'Others') {
+    if ($r->input('event_type') === 'Others' && ! trim((string) $r->input('event_type_other'))) {
         return response()->json([
-            'message' => 'Please contact us directly for custom event types.',
-            'errors' => ['event_type' => ['Please contact us directly for custom event types.']],
+            'message' => 'Please specify your event type.',
+            'errors' => ['event_type_other' => ['Please specify your event type.']],
         ], 422);
     }
 
