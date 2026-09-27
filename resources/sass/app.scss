@@ -35,6 +35,12 @@
 @import "./booking/booking-confirmation";
 @import "./booking/progress-tracker";
 
+.booking-flow {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 0 1.5rem 3rem;
+}
+
 * {
     font-family: $font-family-text;
 }

@@ -4,6 +4,10 @@
     margin: 0 auto;
     padding: 2.5rem 1.5rem 1.5rem;
 
+    @media (max-width: 575.98px) {
+        padding: 1.75rem 0.75rem 1rem;
+    }
+
     &__track {
         position: absolute;
         top: calc(2.5rem + 17px); // vertical center of the 36px circles
@@ -13,6 +17,10 @@
         background: $auth-border;
         border-radius: $auth-radius-pill;
         overflow: hidden;
+
+        @media (max-width: 575.98px) {
+            top: calc(1.75rem + 13px); // recentered for the 28px circles below
+        }
     }
 
     &__track-fill {
@@ -38,7 +46,21 @@
         flex-direction: column;
         align-items: center;
         gap: 0.65rem;
+        // The step column is only as wide as the track slice it sits in
+        // (parent's justify-content: space-between splits 100% five ways).
+        // Without a hard width cap, align-items: center lets the circle
+        // and label size to their own content instead of the column, so
+        // a two-word label like "Client Information" renders at its full
+        // intrinsic width and visually bleeds into the next step's column
+        // on narrow screens — that's the "sticks on top of each other"
+        // overlap. min-width: 0 lets the column actually shrink below
+        // that content width so the cap below can take effect.
         min-width: 0;
+        max-width: 100%;
+
+        @media (max-width: 575.98px) {
+            gap: 0.4rem;
+        }
     }
 
     &__circle {
@@ -62,6 +84,12 @@
             color 0.3s ease,
             transform 0.3s ease;
 
+        @media (max-width: 575.98px) {
+            width: 28px;
+            height: 28px;
+            font-size: 0.7rem;
+        }
+
         &:not(:disabled) {
             cursor: pointer;
         }
@@ -80,12 +108,24 @@
     }
 
     &__label {
+        // Fill the step column instead of sizing to content — this is
+        // the fix that actually stops the overlap (see the comment on
+        // &__step above). Wrapping rules keep a long single word from
+        // forcing the column wider than its column share.
+        width: 100%;
         font-size: 0.8rem;
         color: $auth-text-secondary;
         text-align: center;
+        overflow-wrap: break-word;
+        word-break: break-word;
         transition:
             color 0.3s ease,
             font-weight 0.3s ease;
+
+        @media (max-width: 575.98px) {
+            font-size: 0.65rem;
+            line-height: 1.2;
+        }
     }
 
     // Locked — lock icon, muted, not reachable yet
