@@ -4,10 +4,6 @@
     gap: 1.5rem;
     align-items: flex-start;
 
-    @media (min-width: 768px) {
-        flex-direction: row;
-    }
-
     // Card — same surface/radius/glow language as .modal-content
     &__card {
         position: relative;
@@ -122,9 +118,15 @@
         gap: 1rem;
         width: 100%;
 
-        @media (min-width: 768px) {
-            width: 220px;
-            flex-shrink: 0;
+        // Side by side once there's room for two buttons at a readable
+        // width (same breakpoint .booking-summary__actions already uses).
+        @media (min-width: 480px) {
+            flex-direction: row;
+
+            .client-info__btn--confirm,
+            .client-info__btn--cancel {
+                flex: 1;
+            }
         }
     }
 

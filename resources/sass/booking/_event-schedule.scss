@@ -4,10 +4,6 @@
     gap: 1.5rem;
     align-items: flex-start;
 
-    @media (min-width: 768px) {
-        flex-direction: row;
-    }
-
     &__card {
         position: relative;
         flex: 1;
@@ -265,7 +261,7 @@
             cursor: pointer;
 
             &[aria-pressed="true"] {
-                background: $event-schedule-selected-bg;
+                background: $auth-accent-strong;
                 color: $auth-text-primary;
             }
 

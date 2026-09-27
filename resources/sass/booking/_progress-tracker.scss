@@ -8,6 +8,15 @@
         padding: 1.75rem 0.75rem 1rem;
     }
 
+    // Keeps side padding in step with .booking-flow below it (same
+    // breakpoint, same values) so both containers' edges stay aligned
+    // rather than the tracker looking narrower once .booking-flow gains
+    // its own extra breathing room on larger screens.
+    @media (min-width: 992px) {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+
     &__track {
         position: absolute;
         top: calc(2.5rem + 17px); // vertical center of the 36px circles
@@ -46,15 +55,6 @@
         flex-direction: column;
         align-items: center;
         gap: 0.65rem;
-        // The step column is only as wide as the track slice it sits in
-        // (parent's justify-content: space-between splits 100% five ways).
-        // Without a hard width cap, align-items: center lets the circle
-        // and label size to their own content instead of the column, so
-        // a two-word label like "Client Information" renders at its full
-        // intrinsic width and visually bleeds into the next step's column
-        // on narrow screens — that's the "sticks on top of each other"
-        // overlap. min-width: 0 lets the column actually shrink below
-        // that content width so the cap below can take effect.
         min-width: 0;
         max-width: 100%;
 

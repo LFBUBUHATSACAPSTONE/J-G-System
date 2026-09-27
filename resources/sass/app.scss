@@ -38,7 +38,15 @@
 .booking-flow {
     max-width: 1040px;
     margin: 0 auto;
-    padding: 0 1.5rem 3rem;
+    padding: 0 0.75rem 2.5rem;
+
+    @media (min-width: 576px) {
+        padding: 0 1.5rem 3rem;
+    }
+
+    @media (min-width: 992px) {
+        padding: 0 2rem 3rem;
+    }
 }
 
 * {
