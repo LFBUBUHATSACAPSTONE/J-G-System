@@ -45,6 +45,7 @@
   <x-auth-modal></x-auth-modal>
   @include('components.features')
   @include('components.booking.package')
+  @include('components.footer')
 </body>
 
 </html>
