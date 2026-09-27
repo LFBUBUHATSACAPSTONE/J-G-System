@@ -25,7 +25,6 @@ import {
     getRequiredError,
     getEmailError,
     getContactNumberError,
-    normalizeContactNumberInput,
     getNameError,
     wireLiveField,
     wireLiveFieldImmediate,
@@ -45,15 +44,16 @@ function initPersonalInformation() {
     // Email and Contact Number give feedback from the very first keystroke
     // rather than waiting for a first blur, since a malformed email/phone
     // is cheap to flag early and the user is about to repeat the same
-    // mistake across every character they type. Contact Number must also
-    // be a PH mobile number starting with 09.
+    // mistake across every character they type. Contact Number must be a
+    // PH mobile number starting with 09 — the user types it in fully
+    // themselves; nothing auto-inserts or locks the prefix for them.
     wireLiveFieldImmediate(form, "email", getEmailError);
     wireLiveFieldImmediate(form, "contact_number", getContactNumberError);
     wireLiveField(form, "address", (v) => getRequiredError(v, "Address"));
 
     initNameFilter(form, "first_name");
     initNameFilter(form, "last_name");
-    initContactNumberField(form, "contact_number");
+    initDigitsOnlyFilter(form, "contact_number");
 
     form.addEventListener("submit", (event) => {
         event.preventDefault();
@@ -77,22 +77,6 @@ function initPersonalInformation() {
 }
 
 /*
- Pre-fills a Contact Number-style field with "09" so the user only has to
- type the remaining 9 digits, and keeps it locked to that prefix — digits
- only, always starting with 09 — as they type, paste, or backspace.
-*/
-function initContactNumberField(form, fieldName) {
-    const input = form.querySelector(`[name="${fieldName}"]`);
-    if (!input) return;
-
-    if (!input.value.trim()) input.value = "09";
-
-    input.addEventListener("input", () => {
-        input.value = normalizeContactNumberInput(input.value);
-    });
-}
-
-/*
  Blocks digits/symbols from ever being typed into First/Last Name — same
  approach as guest_count in event-information.js (filter on "input"
  rather than only flagging it after the fact). getNameError still runs
@@ -102,6 +86,20 @@ function initNameFilter(form, fieldName) {
     const input = form.querySelector(`[name="${fieldName}"]`);
     input?.addEventListener("input", () => {
         input.value = input.value.replace(/[^A-Za-z\s]/g, "");
+    });
+}
+
+/*
+ Blocks anything but digits from ever being typed into a Contact
+ Number-style field — same "filter on input" approach as
+ initNameFilter/guest_count. getContactNumberError still runs via
+ wireLiveFieldImmediate as a backstop (e.g. for pasted text with
+ stray characters).
+*/
+function initDigitsOnlyFilter(form, fieldName) {
+    const input = form.querySelector(`[name="${fieldName}"]`);
+    input?.addEventListener("input", () => {
+        input.value = input.value.replace(/\D/g, "");
     });
 }
 

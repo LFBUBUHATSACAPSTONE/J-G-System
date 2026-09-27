@@ -30,7 +30,6 @@
 import {
     getRequiredError,
     getContactNumberError,
-    normalizeContactNumberInput,
     isContactNumberUntouched,
     wireLiveField,
     wireLiveFieldImmediate,
@@ -51,8 +50,8 @@ function initEventInformation() {
     // (which waits for a first blur before validating), this checks from
     // the very first keystroke, same as Email/Contact Number in
     // client-information.js. Same "must start with 09" PH mobile rule
-    // as Contact Number — pre-filled with "09" below, so "empty" here
-    // means "still just the prefix", not literally blank.
+    // as Contact Number — the user types it in fully themselves; nothing
+    // auto-inserts or locks the prefix for them.
     wireLiveFieldImmediate(
         form,
         "venue_contact_person",
@@ -69,7 +68,7 @@ function initEventInformation() {
     initEventTypeSelect(form);
     initGuestCountFilter(form);
     initVenueType(form);
-    initContactNumberField(form, "venue_contact_person");
+    initDigitsOnlyFilter(form, "venue_contact_person");
 
     form.addEventListener("submit", (event) => {
         event.preventDefault();
@@ -180,21 +179,15 @@ function initGuestCountFilter(form) {
 }
 
 /*
- Pre-fills Venue Contact Person with "09" so the user only has to type the
- remaining 9 digits, and keeps it locked to that prefix — digits only,
- always starting with 09 — as they type, paste, or backspace. Same
- behavior as Contact Number in client-information.js; duplicated here
- rather than imported since it's a DOM-wiring function, not a pure
- validator, and each step's JS is its own module/entry.
+ Blocks anything but digits from ever being typed into Venue Contact
+ Person — same "filter on input" approach as initGuestCountFilter.
+ getContactNumberError still runs via wireLiveFieldImmediate as a
+ backstop (e.g. for pasted text with stray characters).
 */
-function initContactNumberField(form, fieldName) {
+function initDigitsOnlyFilter(form, fieldName) {
     const input = form.querySelector(`[name="${fieldName}"]`);
-    if (!input) return;
-
-    if (!input.value.trim()) input.value = "09";
-
-    input.addEventListener("input", () => {
-        input.value = normalizeContactNumberInput(input.value);
+    input?.addEventListener("input", () => {
+        input.value = input.value.replace(/\D/g, "");
     });
 }
 
@@ -232,8 +225,8 @@ async function submitEventInformation(form) {
         `[form="${form.id}"][type="submit"]`,
     );
     const isOthers = eventTypeInput.value === "Others";
-    // "09" with nothing added is the pre-filled default, not a real value
-    // the user entered — treat it the same as a blank field.
+    // A bare "09" (or literally blank) counts as "not filled in" for this
+    // optional field.
     const venueContactIsEmpty = isContactNumberUntouched(
         venueContactInput.value,
     );
@@ -260,8 +253,7 @@ async function submitEventInformation(form) {
             getRequiredError(eventLocationInput.value, "Event location"),
         ],
         // Venue Contact Person is optional — only validated as a phone
-        // number if the user actually typed something past the "09"
-        // prefix it's pre-filled with.
+        // number if the user actually typed something into it.
         [
             venueContactInput,
             venueContactIsEmpty

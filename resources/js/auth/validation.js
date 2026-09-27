@@ -194,18 +194,21 @@ function getPhoneError(value) {
  reused here since it has no notion of a required prefix; kept as a
  separate function rather than changing getPhoneError/isValidPhone so the
  more permissive auth identifier field (which accepts phone numbers in
- general) is unaffected.
+ general) is unaffected. No "Enter a valid phone number" character-format
+ fallback here — these fields are digit-filtered on input (see
+ initDigitsOnlyFilter in client-information.js/event-information.js), so
+ non-digit characters can never reach this validator and that message
+ could never actually fire.
  */
 function getContactNumberError(value) {
     const v = value.trim();
     if (!v) return "Enter a contact number.";
-    if (!PHONE_CHARS_REGEX.test(v)) return "Enter a valid phone number.";
     const digits = v.replace(/\D/g, "");
     if (!digits.startsWith("09"))
         return "Contact number must start with 09, e.g. 09XXXXXXXXX.";
     if (digits.length !== PHONE_DIGITS)
         return `Phone number must be exactly ${PHONE_DIGITS} digits (${digits.length} entered).`;
-    return isValidPhone(v) ? "" : "Enter a valid phone number.";
+    return "";
 }
 
 const CONTACT_NUMBER_PREFIX = "09";
