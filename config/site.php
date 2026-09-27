@@ -31,8 +31,8 @@ return [
       'logo' => 'images/logo/logo_square.webp',
     ],
 
-    'user.payment-processing' => [
-      'title' => 'Payment Processing - J&G Audio Lights and Sounds',
+    'user.booking' => [
+      'title' => 'Booking Portal - J&G Audio Lights and Sounds',
       'description' => 'Securely manage and complete payments for your event bookings with J&G Audio Lights and Sounds.',
       'og_title' => 'J&G Audio Lights and Sounds',
       'og_description' => 'Securely manage and complete payments for your event bookings with J&G Audio Lights and Sounds.',
