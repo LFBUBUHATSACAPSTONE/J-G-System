@@ -43,7 +43,7 @@
   </div>
 
   <x-auth-modal></x-auth-modal>
-
+  @include('components.features')
   @include('components.booking.package')
 </body>
 
