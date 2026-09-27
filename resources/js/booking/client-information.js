@@ -26,6 +26,7 @@ import {
     getEmailError,
     getPhoneError,
     wireLiveField,
+    wireLiveFieldImmediate,
     setFieldState,
 } from "../auth/validation.js";
 
@@ -37,8 +38,9 @@ function initPersonalInformation() {
 
     wireLiveField(form, "first_name", (v) => getRequiredError(v, "First name"));
     wireLiveField(form, "last_name", (v) => getRequiredError(v, "Last name"));
-    wireLiveField(form, "email", getEmailError);
-    wireLiveField(form, "contact_number", getPhoneError);
+    // Email and Contact Number give feedback from the very first keystroke rather than waiting for a first blur, since a malformed email/phone is cheap to flag early and the user is about to repeat the same mistake across every character they type.
+    wireLiveFieldImmediate(form, "email", getEmailError);
+    wireLiveFieldImmediate(form, "contact_number", getPhoneError);
     wireLiveField(form, "address", (v) => getRequiredError(v, "Address"));
 
     form.addEventListener("submit", (event) => {

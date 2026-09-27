@@ -30,6 +30,7 @@ import {
     getRequiredError,
     getPhoneError,
     wireLiveField,
+    wireLiveFieldImmediate,
     setFieldState,
 } from "../auth/validation.js";
 
@@ -45,8 +46,11 @@ function initEventInformation() {
     );
     // Optional field, so no error while empty — but unlike wireLiveField
     // (which waits for a first blur before validating), this checks from
-    // the very first keystroke, same as the auth modal's identifier field.
-    initVenueContactLive(form);
+    // the very first keystroke, same as Email/Contact Number in
+    // client-information.js.
+    wireLiveFieldImmediate(form, "venue_contact_person", getPhoneError, {
+        allowEmpty: true,
+    });
 
     initEventTypeSelect(form);
     initGuestCountFilter(form);
@@ -124,26 +128,6 @@ function initEventTypeSelect(form) {
 
     toggle.addEventListener("keydown", (event) => {
         if (event.key === "Escape") close();
-    });
-}
-
-/*
- Venue Contact Person is optional, so it can't use wireLiveField as-is
- (that gates every field's live check behind a first blur). This runs the
- same getPhoneError check on every keystroke from the first character —
- matching the auth modal's Email or Phone field — while still showing no
- error for an empty, untouched field.
-*/
-function initVenueContactLive(form) {
-    const input = form.querySelector('[name="venue_contact_person"]');
-    const errorEl = form.querySelector(
-        '[data-field-error="venue_contact_person"]',
-    );
-    if (!input) return;
-
-    input.addEventListener("input", () => {
-        const message = input.value.trim() ? getPhoneError(input.value) : "";
-        setFieldState(input, errorEl, message);
     });
 }
 

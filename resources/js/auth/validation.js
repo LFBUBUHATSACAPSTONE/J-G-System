@@ -119,6 +119,27 @@ function wireLiveField(form, fieldName, errorFn) {
     });
 }
 
+/*
+ Same contract as wireLiveField, but for fields that should give feedback on the very first keystroke instead of waiting for a first blur — e.g. a field where mistakes are cheap to point out immediately (contact
+ details typed in the booking flow). errorFn still receives the raw value, so an errorFn that treats an empty value as invalid (a required field) will only ever surface that once the field has been touched, since 'input' cannot fire on an untouched field.
+ */
+function wireLiveFieldImmediate(
+    form,
+    fieldName,
+    errorFn,
+    { allowEmpty = false } = {},
+) {
+    const input = form.querySelector(`[name="${fieldName}"]`);
+    const errorEl = form.querySelector(`[data-field-error="${fieldName}"]`);
+    if (!input) return;
+
+    input.addEventListener("input", () => {
+        const message =
+            allowEmpty && !input.value.trim() ? "" : errorFn(input.value);
+        setFieldState(input, errorEl, message);
+    });
+}
+
 function setFieldState(input, errorEl, message) {
     const valid = !message;
     input.classList.toggle("is-invalid", !valid);
@@ -175,6 +196,7 @@ export {
     getPhoneError,
     getMatchError,
     wireLiveField,
+    wireLiveFieldImmediate,
     setFieldState,
     clearFieldState,
 };

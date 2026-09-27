@@ -14,7 +14,7 @@
           <span>Event Name</span>
           <span class="field-required__identifier">*</span>
         </label>
-        <input type="text" id="ei-event-name" name="event_name" placeholder="e.g. 60th Birthday of my Grandmother" required autofocus>
+        <input type="text" id="ei-event-name" name="event_name" placeholder="e.g. 60th Birthday of my Grandmother" required>
         <small class="event-info__field-error d-none" data-field-error="event_name"></small>
       </div>
 
@@ -64,7 +64,7 @@
           <span>Venue Contact Person</span>
           <span class="event-info__optional-tag">(Optional)</span>
         </label>
-        <input type="text" id="ei-venue-contact-person" name="venue_contact_person" autocomplete="tel" placeholder="09XX-XXX-XXXX">
+        <input type="text" id="ei-venue-contact-person" name="venue_contact_person" autocomplete="tel" placeholder="(+63) XXX XXX XXXX">
         <small class="event-info__field-error d-none" data-field-error="venue_contact_person"></small>
       </div>
 
