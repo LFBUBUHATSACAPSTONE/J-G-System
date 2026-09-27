@@ -50,6 +50,15 @@
         <small class="event-info__field-error d-none" data-field-error="event_type"></small>
       </div>
 
+      <div class="event-info__field d-none" data-event-type-other-field>
+        <label for="ei-event-type-other">
+          <span>Please specify</span>
+          <span class="field-required__identifier">*</span>
+        </label>
+        <input type="text" id="ei-event-type-other" name="event_type_other" placeholder="e.g. Anniversary Celebration">
+        <small class="event-info__field-error d-none" data-field-error="event_type_other"></small>
+      </div>
+
       <div class="event-info__field">
         <label for="ei-event-location">
           <span>Event Location</span>
@@ -64,22 +73,25 @@
           <span>Venue Contact Person</span>
           <span class="event-info__optional-tag">(Optional)</span>
         </label>
-        <input type="text" id="ei-venue-contact-person" name="venue_contact_person" autocomplete="tel" placeholder="(+63) XXX XXX XXXX">
+        <input type="text" id="ei-venue-contact-person" name="venue_contact_person" autocomplete="tel" placeholder="09XXX-XXX-XXXX">
         <small class="event-info__field-error d-none" data-field-error="venue_contact_person"></small>
       </div>
 
-      <div class="event-info__field-row">
-        <div class="event-info__field event-info__field--guests">
-          <label for="ei-guest-count">
-            <span>Number of Guests</span>
-            <span class="event-info__optional-tag">(Optional)</span>
-          </label>
-          <input type="text" id="ei-guest-count" name="guest_count" inputmode="numeric" pattern="[0-9]*" placeholder="0">
-          <small class="event-info__field-error d-none" data-field-error="guest_count"></small>
-        </div>
+      <div class="event-info__field event-info__field--guests">
+        <label for="ei-guest-count">
+          <span>Number of Guests</span>
+          <span class="event-info__optional-tag">(Optional)</span>
+        </label>
+        <input type="text" id="ei-guest-count" name="guest_count" inputmode="numeric" pattern="[0-9]*" placeholder="0">
+        <small class="event-info__field-error d-none" data-field-error="guest_count"></small>
+      </div>
 
-        <fieldset class="event-info__venue-type" data-venue-type tabindex="-1" aria-required="true">
-          <legend class="visually-hidden">Venue type<span class="field-required__identifier">*</span></legend>
+      <fieldset class="event-info__field event-info__venue-type-field" data-venue-type tabindex="-1" aria-required="true">
+        <legend>
+          <span>Venue Type</span>
+          <span class="field-required__identifier">*</span>
+        </legend>
+        <div class="event-info__venue-type">
           <label class="event-info__checkbox">
             <input type="checkbox" name="venue_type" value="Indoor" data-venue-type-option required>
             <span>Indoor</span>
@@ -92,9 +104,9 @@
             <input type="checkbox" name="venue_type" value="Both" data-venue-type-option required>
             <span>Both</span>
           </label>
-          <small class="event-info__field-error d-none" data-field-error="venue_type"></small>
-        </fieldset>
-      </div>
+        </div>
+        <small class="event-info__field-error d-none" data-field-error="venue_type"></small>
+      </fieldset>
 
       <p class="event-info__error text-danger d-none" role="alert" data-event-info-error></p>
     </form>

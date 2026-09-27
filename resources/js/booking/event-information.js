@@ -6,7 +6,8 @@
  *
  * Two things this step has that client-information.js doesn't:
  *   - a custom Event Type select (button + listbox, backed by a hidden
- *     input so it posts like any other form field)
+ *     input so it posts like any other form field) — picking "Others"
+ *     reveals a required "Please specify" text field (event_type_other)
  *   - the Indoor/Outdoor/Both checkboxes, which are mutually exclusive
  *     (checking one unchecks the others) rather than a real radio group,
  *     to match the provided design
@@ -28,7 +29,9 @@
 
 import {
     getRequiredError,
-    getPhoneError,
+    getContactNumberError,
+    normalizeContactNumberInput,
+    isContactNumberUntouched,
     wireLiveField,
     wireLiveFieldImmediate,
     setFieldState,
@@ -47,14 +50,26 @@ function initEventInformation() {
     // Optional field, so no error while empty — but unlike wireLiveField
     // (which waits for a first blur before validating), this checks from
     // the very first keystroke, same as Email/Contact Number in
-    // client-information.js.
-    wireLiveFieldImmediate(form, "venue_contact_person", getPhoneError, {
-        allowEmpty: true,
-    });
+    // client-information.js. Same "must start with 09" PH mobile rule
+    // as Contact Number — pre-filled with "09" below, so "empty" here
+    // means "still just the prefix", not literally blank.
+    wireLiveFieldImmediate(
+        form,
+        "venue_contact_person",
+        getContactNumberError,
+        { allowEmpty: true, isEmpty: isContactNumberUntouched },
+    );
+    // "Please specify" only appears/matters once Event Type is "Others";
+    // wireLiveField is harmless to wire up regardless since the field is
+    // never focused while hidden.
+    wireLiveField(form, "event_type_other", (v) =>
+        getRequiredError(v, "Event type"),
+    );
 
     initEventTypeSelect(form);
     initGuestCountFilter(form);
     initVenueType(form);
+    initContactNumberField(form, "venue_contact_person");
 
     form.addEventListener("submit", (event) => {
         event.preventDefault();
@@ -80,7 +95,10 @@ function initEventInformation() {
  Custom Event Type select: a button (data-select-toggle) opens a listbox
  (data-select-options); picking an <li> sets its text on the button
  (data-select-value) and its value on a hidden input (data-select-input),
- which is what actually gets posted as `event_type`.
+ which is what actually gets posted as `event_type`. Picking "Others"
+ also reveals a "Please specify" text field (event_type_other) so the
+ event type isn't just the generic word "Others" — every other choice
+ keeps it hidden and clears whatever was typed into it.
 */
 function initEventTypeSelect(form) {
     const wrapper = form.querySelector("[data-select]");
@@ -92,6 +110,11 @@ function initEventTypeSelect(form) {
     const hiddenInput = wrapper.querySelector("[data-select-input]");
     const items = [...wrapper.querySelectorAll("[data-value]")];
     const errorEl = wrapper.querySelector('[data-field-error="event_type"]');
+    const otherField = form.querySelector("[data-event-type-other-field]");
+    const otherInput = form.querySelector('[name="event_type_other"]');
+    const otherErrorEl = form.querySelector(
+        '[data-field-error="event_type_other"]',
+    );
 
     const close = () => {
         options.classList.add("d-none");
@@ -110,8 +133,20 @@ function initEventTypeSelect(form) {
         valueEl.removeAttribute("data-placeholder-active");
         hiddenInput.value = item.dataset.value;
         setFieldState(toggle, errorEl, "");
+
+        const isOthers = item.dataset.value === "Others";
+        otherField?.classList.toggle("d-none", !isOthers);
+        if (!isOthers && otherInput) {
+            otherInput.value = "";
+            setFieldState(otherInput, otherErrorEl, "");
+        }
+
         close();
-        toggle.focus();
+        if (isOthers && otherInput) {
+            otherInput.focus();
+        } else {
+            toggle.focus();
+        }
     };
 
     toggle.addEventListener("click", () => {
@@ -145,6 +180,25 @@ function initGuestCountFilter(form) {
 }
 
 /*
+ Pre-fills Venue Contact Person with "09" so the user only has to type the
+ remaining 9 digits, and keeps it locked to that prefix — digits only,
+ always starting with 09 — as they type, paste, or backspace. Same
+ behavior as Contact Number in client-information.js; duplicated here
+ rather than imported since it's a DOM-wiring function, not a pure
+ validator, and each step's JS is its own module/entry.
+*/
+function initContactNumberField(form, fieldName) {
+    const input = form.querySelector(`[name="${fieldName}"]`);
+    if (!input) return;
+
+    if (!input.value.trim()) input.value = "09";
+
+    input.addEventListener("input", () => {
+        input.value = normalizeContactNumberInput(input.value);
+    });
+}
+
+/*
  Indoor/Outdoor/Both are plain checkboxes in the markup (not a native
  radio group) but behave like one: checking any of them unchecks the
  other two. At least one is required — enforced in submitEventInformation.
@@ -166,6 +220,7 @@ async function submitEventInformation(form) {
     const field = (name) => form.querySelector(`[name="${name}"]`);
     const eventNameInput = field("event_name");
     const eventTypeInput = field("event_type");
+    const eventTypeOtherInput = field("event_type_other");
     const eventLocationInput = field("event_location");
     const venueContactInput = field("venue_contact_person");
     const guestCountInput = field("guest_count");
@@ -175,6 +230,12 @@ async function submitEventInformation(form) {
     const eventTypeToggle = form.querySelector("[data-select-toggle]");
     const submitBtn = document.querySelector(
         `[form="${form.id}"][type="submit"]`,
+    );
+    const isOthers = eventTypeInput.value === "Others";
+    // "09" with nothing added is the pre-filled default, not a real value
+    // the user entered — treat it the same as a blank field.
+    const venueContactIsEmpty = isContactNumberUntouched(
+        venueContactInput.value,
     );
 
     clearError(form);
@@ -186,17 +247,26 @@ async function submitEventInformation(form) {
             eventTypeInput.value ? "" : "Select an event type.",
             "event_type",
         ],
+        // Only required once "Others" is the selected Event Type.
+        [
+            eventTypeOtherInput,
+            isOthers
+                ? getRequiredError(eventTypeOtherInput.value, "Event type")
+                : "",
+            "event_type_other",
+        ],
         [
             eventLocationInput,
             getRequiredError(eventLocationInput.value, "Event location"),
         ],
         // Venue Contact Person is optional — only validated as a phone
-        // number if the user actually typed something in it.
+        // number if the user actually typed something past the "09"
+        // prefix it's pre-filled with.
         [
             venueContactInput,
-            venueContactInput.value.trim()
-                ? getPhoneError(venueContactInput.value)
-                : "",
+            venueContactIsEmpty
+                ? ""
+                : getContactNumberError(venueContactInput.value),
         ],
         [
             form.querySelector("[data-venue-type]"),
@@ -229,8 +299,13 @@ async function submitEventInformation(form) {
             body: JSON.stringify({
                 event_name: eventNameInput.value.trim(),
                 event_type: eventTypeInput.value,
+                event_type_other: isOthers
+                    ? eventTypeOtherInput.value.trim()
+                    : null,
                 event_location: eventLocationInput.value.trim(),
-                venue_contact_person: venueContactInput.value.trim() || null,
+                venue_contact_person: venueContactIsEmpty
+                    ? null
+                    : venueContactInput.value.trim(),
                 guest_count: guestCountInput.value
                     ? Number(guestCountInput.value)
                     : null,

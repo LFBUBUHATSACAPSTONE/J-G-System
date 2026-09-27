@@ -48,15 +48,18 @@
         position: relative;
         margin-bottom: 1.4rem;
 
-        label {
+        label,
+        legend {
             display: block;
             margin-bottom: 0.5rem;
             font-size: 0.9rem;
             font-weight: 600;
             color: $auth-text-primary;
+            padding: 0;
         }
 
-        label span:nth-of-type(2) {
+        label span:nth-of-type(2),
+        legend span:nth-of-type(2) {
             color: $auth-danger;
         }
 
@@ -90,23 +93,6 @@
         font-style: italic;
         color: $auth-text-muted;
         margin-left: 0.25rem;
-    }
-
-    &__field-row {
-        display: flex;
-        flex-direction: column;
-        gap: 0;
-
-        @media (min-width: 480px) {
-            flex-direction: row;
-            align-items: flex-start;
-            gap: 1.5rem;
-
-            .event-info__field--guests {
-                flex: 1;
-                max-width: 220px;
-            }
-        }
     }
 
     &__field-error {
@@ -201,6 +187,15 @@
         }
     }
 
+    // The fieldset wrapping the whole Venue Type field (legend + checkbox
+    // row + error) — reuses .event-info__field for title/spacing (a
+    // <fieldset> has no default margin/border reset otherwise) and only
+    // adds what's specific to a fieldset here.
+    &__venue-type-field {
+        border: none;
+        padding: 0;
+    }
+
     // Indoor / Outdoor / Both — same checkbox look as
     // .auth-modal__row input[type="checkbox"], mutually exclusive via JS.
     &__venue-type {
@@ -209,17 +204,12 @@
         align-items: center;
         gap: 1.25rem;
         flex-wrap: wrap;
-        border: none;
-        margin: 0;
-        padding: 0.9rem 0 0;
+    }
 
-        @media (min-width: 480px) {
-            padding-top: 2rem;
-        }
-
-        &.is-invalid .event-info__checkbox input[type="checkbox"] {
-            border-color: $auth-danger;
-        }
+    &__venue-type-field.is-invalid
+        .event-info__checkbox
+        input[type="checkbox"] {
+        border-color: $auth-danger;
     }
 
     &__checkbox {
