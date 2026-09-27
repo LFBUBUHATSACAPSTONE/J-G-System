@@ -229,10 +229,27 @@ function initTimeField(input) {
     if (!group) return;
 
     const buttons = [...group.querySelectorAll("[data-ampm]")];
+
+    // Sliding pill behind the buttons — one div, moved with
+    // translateX() to whichever button is active, so AM/PM glides
+    // instead of the highlight jumping.
+    const thumb = document.createElement("div");
+    thumb.className = "event-schedule__ampm-thumb";
+    group.prepend(thumb);
+
+    const moveThumb = () => {
+        const activeIndex = buttons.findIndex(
+            (b) => b.getAttribute("aria-pressed") === "true",
+        );
+        thumb.style.transform = `translateX(${Math.max(activeIndex, 0) * 100}%)`;
+    };
+    moveThumb();
+
     buttons.forEach((btn) => {
         btn.addEventListener("click", () => {
             buttons.forEach((b) => b.setAttribute("aria-pressed", "false"));
             btn.setAttribute("aria-pressed", "true");
+            moveThumb();
             group.dispatchEvent(new Event("change", { bubbles: true }));
         });
     });
@@ -277,6 +294,18 @@ function getPeriod(group) {
     return group.querySelector('[aria-pressed="true"]')?.dataset.ampm ?? "AM";
 }
 
+// Minutes since midnight for a masked "H:MM"/"HH:MM" value + AM/PM period.
+// Returns null if the value isn't a complete, parseable time.
+function toMinutes(value, period) {
+    const match = /^([1-9]|1[0-2]):([0-5][0-9])$/.exec(value.trim());
+    if (!match) return null;
+    let hour = Number(match[1]);
+    const minute = Number(match[2]);
+    if (period === "AM" && hour === 12) hour = 0;
+    if (period === "PM" && hour !== 12) hour += 12;
+    return hour * 60 + minute;
+}
+
 async function submitEventSchedule(form) {
     const field = (name) => form.querySelector(`[name="${name}"]`);
     const startDateInput = field("event_start_date");
@@ -312,6 +341,21 @@ async function submitEventSchedule(form) {
         [
             endTimeInput.closest(".event-schedule__time-field"),
             getTimeError(endTimeInput.value, "End time"),
+            "end_time",
+        ],
+        [
+            endTimeInput.closest(".event-schedule__time-field"),
+            // Only a same-day event has a strict, checkable ordering —
+            // a multi-day range can legitimately end earlier in the
+            // clock than it starts (it just spans into the next day).
+            startDateInput.value &&
+            startDateInput.value === endDateInput.value &&
+            !getTimeError(startTimeInput.value, "Start time") &&
+            !getTimeError(endTimeInput.value, "End time") &&
+            toMinutes(endTimeInput.value, getPeriod(endAmpmGroup)) <=
+                toMinutes(startTimeInput.value, getPeriod(startAmpmGroup))
+                ? "End time must be later than start time."
+                : "",
             "end_time",
         ],
     ];
