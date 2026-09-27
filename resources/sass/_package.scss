@@ -1,0 +1,188 @@
+// Package selection (booking step 0 / standalone pricing section).
+//
+// .package-selection is the section wrapper: full-bleed red-gradient
+// backdrop (package_red_gradient.webp) behind a centered title and a
+// responsive grid of .package-card tiers.
+//
+// .package-card reuses the same surface/radius/glow language every
+// other booking-step card already uses ($auth-surface, $auth-radius-xl,
+// the top-right radial glow) — see _client-information.scss /
+// _event-information.scss / _event-schedule.scss / _booking-summary.scss
+// for the identical recipe. No new surface/radius tokens are introduced
+// here; the only new pieces are the two button colors already reserved
+// for this ($button-color-white / $button-color-black — unused until
+// now) since "Book Now" here is a plain light button, not the
+// btn-color-gradient--primary/--secondary pair the rest of the flow
+// uses for Continue/Cancel.
+
+.package-selection {
+    position: relative;
+    isolation: isolate;
+    padding: 3rem 1rem 3.5rem;
+    background-image: url("/images/backgrounds/design/package_red_gradient.webp");
+    background-size: cover;
+    background-position: center;
+
+    @media (min-width: 576px) {
+        padding: 3.5rem 1.5rem 4rem;
+    }
+
+    @media (min-width: 992px) {
+        padding: 4rem 2rem 4.5rem;
+    }
+
+    &__title {
+        text-align: center;
+        letter-spacing: 0.15em;
+        font-size: clamp(1.75rem, 3vw + 1rem, 2.75rem);
+        margin-bottom: 2.5rem;
+    }
+
+    &__grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        max-width: 1200px;
+        margin: 0 auto;
+
+        @media (min-width: 768px) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media (min-width: 992px) {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+    }
+}
+
+.package-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: $auth-surface;
+    border-radius: $auth-radius-xl;
+    padding: 2rem 1.75rem 2.25rem;
+    color: $auth-text-primary;
+    isolation: isolate;
+    overflow: hidden;
+
+    // Same top-right glow every other step's card uses.
+    &::before {
+        content: "";
+        position: absolute;
+        inset: -20% -20% auto auto;
+        width: 70%;
+        height: 60%;
+        background: radial-gradient(
+            circle at top right,
+            $auth-glow-violet 0%,
+            $auth-glow-rose 45%,
+            transparent 75%
+        );
+        opacity: 0.35;
+        filter: blur(60px);
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    // Reserved for a "most popular" tier — one accent border, no
+    // separate color language.
+    &--featured {
+        border: 1px solid $auth-accent;
+        box-shadow: 0 0 0 3px $auth-focus-ring-soft;
+    }
+
+    &__name {
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+    }
+
+    &__price {
+        font-size: 1.9rem;
+        font-weight: 800;
+        margin-bottom: 1.25rem;
+    }
+
+    &__cta {
+        display: block;
+        width: 100%;
+        text-align: center;
+        text-decoration: none;
+        border: none;
+        border-radius: $auth-radius-md;
+        padding: 0.85rem;
+        font-weight: 700;
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+        transition:
+            opacity 0.15s ease-in-out,
+            transform 0.15s ease-in-out;
+
+        &:hover {
+            opacity: $opacity-high;
+        }
+
+        &:active {
+            opacity: $opacity-med;
+        }
+    }
+
+    &__divider {
+        height: 1px;
+        background: $auth-border;
+        margin-bottom: 1.5rem;
+    }
+
+    &__features {
+        flex: 1;
+    }
+
+    &__features-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        margin-bottom: 0.85rem;
+    }
+
+    &__features-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        font-size: 0.85rem;
+        color: $auth-text-secondary;
+
+        li {
+            position: relative;
+            padding-left: 1rem;
+
+            &::before {
+                content: "";
+                position: absolute;
+                left: 0;
+                top: 0.5em;
+                width: 4px;
+                height: 4px;
+                border-radius: 50%;
+                background: $auth-text-secondary;
+            }
+        }
+    }
+}
+
+// "Book Now" button color — plain light button (not the gradient
+// Continue/Cancel pair), reserved for this from the start via
+// $button-color-white / $button-color-black in _variables.scss.
+.btn-color-white {
+    background: $button-color-white;
+    color: $button-color-black;
+
+    &:hover,
+    &:focus,
+    &:active {
+        color: $button-color-black;
+    }
+}

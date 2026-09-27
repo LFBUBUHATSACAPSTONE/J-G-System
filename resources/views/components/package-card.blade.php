@@ -1,28 +1,38 @@
 @props([
-    'name',
-    'price',
-    'features' => [],
+'name',
+'price',
+'features' => [],
+'featured' => false,
+'href' => null,
 ])
 
-<div {{ $attributes->merge(['class' => 'package-card bg-dark rounded-4 p-4']) }}>
-    <h3 class="text-white fw-semibold fs-5 mb-4">{{ $name }}</h3>
-    <p class="text-white fw-bold display-6 mb-4">Php {{ number_format($price) }}</p>
+<div
+  class="package-card{{ $featured ? ' package-card--featured' : '' }}"
+  data-package-card
+  data-package-name="{{ $name }}"
+  data-package-cost="{{ $price }}">
 
-    <x-button
-        class="w-100 btn-light fw-semibold py-3 rounded-3"
-        data-bs-toggle="modal"
-        data-bs-target="#authModal"
-        data-auth-view="login"
-    >
-        Book Now
-    </x-button>
+  <h3 class="package-card__name">{{ $name }}</h3>
+  <p class="package-card__price">Php {{ number_format((float) $price) }}</p>
 
-    <hr class="border-secondary my-4">
+  @if ($href)
+  <a href="{{ $href }}" class="package-card__cta btn-color-white" data-package-select>
+    Book Now
+  </a>
+  @else
+  <button type="button" class="package-card__cta btn-color-white" data-package-select>
+    Book Now
+  </button>
+  @endif
 
-    <h4 class="text-white fw-semibold mb-2">Features</h4>
-    <ul class="list-unstyled text-light small">
-        @foreach($features as $feature)
-            <li class="mb-2">• {{ $feature }}</li>
-        @endforeach
+  <div class="package-card__divider"></div>
+
+  <div class="package-card__features">
+    <h4 class="package-card__features-title">Features</h4>
+    <ul class="package-card__features-list">
+      @foreach ($features as $feature)
+      <li>{{ $feature }}</li>
+      @endforeach
     </ul>
+  </div>
 </div>
