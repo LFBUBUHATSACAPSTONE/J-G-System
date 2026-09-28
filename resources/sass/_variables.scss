@@ -100,3 +100,9 @@ $feature-name-fluid: #{"clamp(1.05rem, 0.98rem + 0.3vw, 1.2rem)"};
 $feature-name-card-fit: #{"min(1.05rem, 6cqw)"};
 // Description is always this fraction of the card name (name = 1.25x description).
 $feature-desc-ratio: 0.8;
+
+// Footer (neutral greys; same values as the previous hex colors)
+$footer-bg: oklch(13.979% 0 0); // was #090909
+$footer-text: oklch(92.494% 0 0); // was #e6e6e6
+$footer-text-link: oklch(85.451% 0 0); // was #cfcfcf
+$footer-text-muted: oklch(68.622% 0 0); // was #9a9a9a

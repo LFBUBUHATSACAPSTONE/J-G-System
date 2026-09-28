@@ -1,0 +1,161 @@
+.jg-footer {
+    background-color: $footer-bg;
+    color: $footer-text;
+    width: 100%;
+    padding: 2.5rem 1.25rem 1.75rem;
+    font-family: inherit;
+    box-sizing: border-box;
+    flex-shrink: 0;
+
+    @media (min-width: 576px) {
+        padding: 2.5rem 1.5rem 1.75rem;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    // Phone/tablet: one stacked column, in DOM order:
+    // Logo/copyright -> Explore -> Follow us -> Information.
+    // 992px and up: three columns side by side.
+    &__inner {
+        max-width: 1280px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 2.25rem;
+
+        @media (min-width: 992px) {
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+    }
+
+    &__col {
+        min-width: 0;
+    }
+
+    // ---- Column widths (desktop only) ----
+    &__brand {
+        @media (min-width: 992px) {
+            flex: 1 1 32%;
+            max-width: 32%;
+        }
+    }
+
+    &__explore {
+        @media (min-width: 992px) {
+            flex: 1 1 20%;
+            max-width: 20%;
+        }
+    }
+
+    // "Follow us" + "Information": stacked on phones, side by side from
+    // 640px (narrower than that, the email/address text has no room).
+    &__right {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+
+        @media (min-width: 640px) {
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 2.5rem;
+        }
+
+        @media (min-width: 992px) {
+            flex: 1 1 40%;
+            max-width: 48%;
+        }
+    }
+
+    &__right-section {
+        min-width: 0;
+
+        @media (min-width: 640px) {
+            flex: 1 1 50%;
+        }
+    }
+
+    &__copyright {
+        display: block;
+        font-size: 0.8rem;
+        color: $footer-text-muted;
+        margin: 0.35rem 0 0;
+    }
+
+    // ---- Headings ----
+    &__heading {
+        font-size: 1rem;
+        font-weight: 700;
+        color: $auth-text-primary;
+        margin: 0 0 1.1rem;
+    }
+
+    // ---- Links ----
+    &__links {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.7rem;
+
+        a {
+            color: $footer-text-link;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            transition:
+                color 0.2s ease,
+                opacity 0.2s ease;
+
+            &:hover {
+                color: $auth-text-primary;
+                opacity: $opacity-full;
+            }
+        }
+
+        &--icon a:hover .jg-footer__icon {
+            color: $auth-text-primary;
+        }
+    }
+
+    // Non-link row (the address) styled to match the links.
+    &__static {
+        color: $footer-text-link;
+        text-decoration: none;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    &__icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: $footer-text-link;
+        flex-shrink: 0;
+        transition: color 0.2s ease;
+    }
+}
+
+// ---- Sticky footer: fills leftover space on short pages ----
+html,
+body {
+    min-height: 100%;
+}
+
+#app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+
+    > main {
+        flex: 1 0 auto;
+    }
+}
