@@ -3,7 +3,7 @@
      e.g. data-bs-toggle="modal" data-bs-target="#authModal" data-auth-view="login"
 --}}
 
-<header class="position-relative z-1 border-bottom border-white border-opacity-25 glass-header">
+<header class="sticky-top border-bottom border-white border-opacity-25 glass-header">
   <nav class="navbar navbar-expand-md navbar-dark py-3">
     <div class="d-flex align-items-center container px-3 px-md-5">
       <a href="#" class="navbar-brand d-none d-md-block">
