@@ -4,6 +4,7 @@ $body-bg: #f8fafc;
 // Typography
 $font-family-sans-serif: "Nunito", sans-serif;
 $font-family-text: "Poppins", sans-serif;
+$font-landing-heading-text: "Montserrat", sans-serif;
 $font-size-base: 0.9rem;
 $line-height-base: 1.6;
 $font-button--responsive: clamp(1rem, 1.1vw, 1.2rem);
@@ -77,5 +78,25 @@ $auth-radius-pill: 999px;
 // Booking
 $event-schedule-selected-bg: oklch(54.134% 0.24669 293.012deg);
 
-// Features Section Background 
+// Features Section Background
 $features-bg-base: #131313;
+
+// Glassmorphism (feature cards)
+$glass-bg: oklch(100% 0 0 / 0.07);
+$glass-bg-hover: oklch(100% 0 0 / 0.1);
+$glass-border: oklch(100% 0 0 / 0.18);
+$glass-highlight: oklch(100% 0 0 / 0.22);
+$glass-shadow: oklch(0% 0 0 / 0.35);
+$glass-blur: 10px;
+$glass-text-title: oklch(100% 0 0);
+$glass-text-body: oklch(100% 0 0 / 0.88);
+
+// Features heading (muted lavender-gray)
+$features-title-color: oklch(62% 0.018 310);
+$features-title-shadow: oklch(0% 0 0 / 0.45);
+
+// Feature card type scale
+$feature-name-fluid: #{"clamp(1.05rem, 0.98rem + 0.3vw, 1.2rem)"};
+$feature-name-card-fit: #{"min(1.05rem, 6cqw)"};
+// Description is always this fraction of the card name (name = 1.25x description).
+$feature-desc-ratio: 0.8;

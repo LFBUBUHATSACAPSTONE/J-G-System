@@ -5,7 +5,7 @@
     isolation: isolate;
     overflow: hidden;
 
-    
+    // Red gradient sits on the background layer only: above the base color, below the section content (cards, title). 
     &__image {
         position: absolute;
         inset: 0;
@@ -25,20 +25,24 @@
 
 .features-section {
     position: relative;
-    padding: 3rem 1rem 3.5rem;
+    padding: 8rem 1rem;
 
     @media (min-width: 576px) {
-        padding: 3.5rem 1.5rem 4rem;
+        padding: 13rem 1.5rem;
     }
 
     @media (min-width: 992px) {
-        padding: 4rem 2rem 4.5rem;
+        padding: 18rem 2rem;
     }
 
     &__title {
         text-align: center;
         letter-spacing: 0.15em;
         text-transform: uppercase;
+        font-family: $font-landing-heading-text;
+        font-weight: 800;
+        color: $features-title-color;
+        text-shadow: 0 2px 12px $features-title-shadow;
         font-size: clamp(1.75rem, 3vw + 1rem, 2.75rem);
         margin-bottom: 2.5rem;
     }
@@ -47,14 +51,16 @@
         display: grid;
         grid-template-columns: 1fr;
         gap: 1.5rem;
-        max-width: 1200px;
+        max-width: 1280px;
         margin: 0 auto;
 
         @media (min-width: 576px) {
             grid-template-columns: repeat(2, 1fr);
         }
 
-        @media (min-width: 992px) {
+        // 4 columns only when each card is wide enough to hold the
+        // one-line title at a readable size.
+        @media (min-width: 1200px) {
             grid-template-columns: repeat(4, 1fr);
             gap: 1.5rem;
         }
@@ -65,55 +71,79 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
-    min-height: 220px;
-    background: $auth-surface;
+    align-items: stretch;
+    text-align: left;
+    padding: 1.5rem;
+    color: $glass-text-title;
     border-radius: $auth-radius-xl;
-    padding: 1.75rem;
-    color: $auth-text-primary;
-    isolation: isolate;
-    overflow: hidden;
 
-    // Same top-right glow every other card in this codebase uses.
-    &::before {
-        content: "";
-        position: absolute;
-        inset: -20% -20% auto auto;
-        width: 70%;
-        height: 60%;
-        background: radial-gradient(
-            circle at top right,
-            $auth-glow-violet 0%,
-            $auth-glow-rose 45%,
-            transparent 75%
-        );
-        opacity: 0.35;
-        filter: blur(60px);
-        z-index: -1;
-        pointer-events: none;
+    // Glass surface: translucent white + blur of whatever is behind the card
+    background: $glass-bg;
+    -webkit-backdrop-filter: blur($glass-blur) saturate(140%);
+    backdrop-filter: blur($glass-blur) saturate(140%);
+    border: 1px solid $glass-border;
+    box-shadow:
+        inset 0 1px 0 $glass-highlight,
+        0 8px 32px $glass-shadow;
+    transition:
+        background 0.25s ease,
+        transform 0.25s ease;
+
+    &:hover {
+        background: $glass-bg-hover;
+        transform: translateY(-2px);
     }
 
+    // Lets the type scale with the card's own width (cqw units below).
+    container-type: inline-size;
+
+    @media (min-width: 1200px) {
+        padding: 1.25rem;
+    }
+
+    // ---- Type scale -------------------------------------------------
+    // Hierarchy (largest -> smallest):
+    //   section title  >  card name  >  card description
+    // The description is ALWAYS derived from the card name
+    // (name x 0.8, i.e. name is 1.25x the description), so the two can
+    // never invert or collapse together at any screen width.
+    // Below 1200px: fluid with viewport width.
+    // 1200px and up: fluid with the card's width so the name fits on one line.
     &__name {
-        font-size: 1.05rem;
+        font-size: $feature-name-fluid;
+        line-height: 1.25;
         font-weight: 700;
+        color: $glass-text-title;
         margin-bottom: 0.75rem;
+
+        @media (min-width: 1200px) {
+            white-space: nowrap;
+            font-size: $feature-name-card-fit;
+        }
     }
 
     &__description {
-        font-size: 0.85rem;
-        line-height: 1.6;
-        color: $auth-text-secondary;
+        font-size: calc(#{$feature-name-fluid} * #{$feature-desc-ratio});
+        line-height: 1.55;
+        font-weight: 300;
+        color: $glass-text-body;
         margin-bottom: 0;
+
+        @media (min-width: 1200px) {
+            font-size: calc(#{$feature-name-card-fit} * #{$feature-desc-ratio});
+        }
+    }
+
+    &__body {
+        flex: 1;
     }
 
     &__icon {
         display: flex;
         align-self: center;
         margin-top: auto;
-        padding-top: 1.5rem;
-        color: $auth-text-primary;
-        opacity: $opacity-high;
+        padding-top: 2rem; // minimum text-to-icon gap; icon is pinned to the card bottom
+        color: $glass-text-title;
 
         svg {
             width: 26px;
