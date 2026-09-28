@@ -11,9 +11,9 @@ import "./auth/new-password.js";
 import "./auth/login.js";
 import "./auth/signup.js";
 import "./auth/resend-code.js";
-import "./booking/package.js";
 
 /* BOOKING */
+import "./booking/package.js";
 import "./booking/client-information.js";
 import "./booking/event-information.js";
 import "./booking/event-schedule.js";

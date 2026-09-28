@@ -1,10 +1,22 @@
+{{--
+  Booking progress tracker — sits above #bookingFlow in booking.blade.php.
+  Purely presentational on the server side: every step renders "locked"
+  except its data-number, and resources/js/booking/progress-tracker.js
+  does all the state switching by watching #bookingFlow's
+  data-current-view attribute (the same one booking-flow.js already
+  writes to on every step change) and toggling classes here — same
+  read-only-root pattern progress-tracker.js has to booking-flow.js.
+
+  Every key below must also exist in STEP_ORDER in booking-flow.js.
+--}}
 @php
 $trackerSteps = [
-['key' => 'client-information', 'label' => 'Client Information', 'number' => 1],
-['key' => 'event-information', 'label' => 'Event Information', 'number' => 2],
-['key' => 'event-schedule', 'label' => 'Event Schedule', 'number' => 3],
-['key' => 'booking-summary', 'label' => 'Payment', 'number' => 4],
-['key' => 'booking-confirmation', 'label' => 'Confirmation', 'number' => 5],
+['key' => 'package', 'label' => 'Package', 'number' => 1],
+['key' => 'client-information', 'label' => 'Client Information', 'number' => 2],
+['key' => 'event-information', 'label' => 'Event Information', 'number' => 3],
+['key' => 'event-schedule', 'label' => 'Event Schedule', 'number' => 4],
+['key' => 'booking-summary', 'label' => 'Payment', 'number' => 5],
+['key' => 'booking-confirmation', 'label' => 'Confirmation', 'number' => 6],
 ];
 @endphp
 

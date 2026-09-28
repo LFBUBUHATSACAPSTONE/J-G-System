@@ -20,8 +20,10 @@
     &__track {
         position: absolute;
         top: calc(2.5rem + 17px); // vertical center of the 36px circles
-        left: 10%; // half a step-column (5 steps), so it starts/ends at the dot centers
-        right: 10%;
+        left: calc(
+            100% / 12
+        ); // half a step-column (6 steps), so it starts/ends at the dot centers
+        right: calc(100% / 12);
         height: 2px;
         background: $auth-border;
         border-radius: $auth-radius-pill;
@@ -55,6 +57,15 @@
         flex-direction: column;
         align-items: center;
         gap: 0.65rem;
+        // The step column is only as wide as the track slice it sits in
+        // (parent's justify-content: space-between splits 100% five ways).
+        // Without a hard width cap, align-items: center lets the circle
+        // and label size to their own content instead of the column, so
+        // a two-word label like "Client Information" renders at its full
+        // intrinsic width and visually bleeds into the next step's column
+        // on narrow screens — that's the "sticks on top of each other"
+        // overlap. min-width: 0 lets the column actually shrink below
+        // that content width so the cap below can take effect.
         min-width: 0;
         max-width: 100%;
 

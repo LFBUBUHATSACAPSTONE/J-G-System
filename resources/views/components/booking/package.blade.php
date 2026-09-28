@@ -63,7 +63,7 @@
 ],
 ])
 
-<div class="package-selection position-relative z-1" data-package-selection>
+<div id="packages" class="package-selection position-relative z-1" data-package-selection>
     <h1 class="package-selection__title fw-bold font-family-text text-caption-gradient">
         Packages
     </h1>

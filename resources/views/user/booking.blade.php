@@ -10,17 +10,33 @@
 <body>
   <img src="{{ asset('images/backgrounds/design/landing_bg.webp') }}" alt="" class="position-absolute z-0 w-100 h-100">
 
+  {{--
+    Booking flow container — booking-flow.js reads/writes
+    data-current-view on this element and toggles d-none on each
+    .booking-flow__view child, the same relationship auth-modal.js has
+    to #authModal's .auth-modal__view children.
+
+    data-cancel-url / data-continue-url: where booking-flow.js sends the
+    person when they Cancel out of the flow, or hit Continue on the
+    final Confirmation step. Both point at the landing page for now —
+    swap either independently once there's somewhere more specific for
+    it to go (e.g. a user dashboard for "continue").
+  --}}
   @include('components.progress-tracker')
 
   <div
     id="bookingFlow"
     class="booking-flow"
     data-current-view="client-information"
+    data-package-url="{{ route('user.landing') }}#packages"
     data-cancel-url="{{ route('user.landing') }}"
     data-continue-url="{{ route('user.landing') }}">
 
-    {{-- Step: Client Information (currently the flow's entry point,
-         until Package exists above) --}}
+    {{-- Package is chosen on the landing page (its "Book Now" links here),
+         so the flow starts at Client Information. The tracker still lists
+         Package as step 1; clicking it goes back to data-package-url. --}}
+
+    {{-- Step: Client Information (entry point) --}}
     <div class="booking-flow__view" data-view="client-information">
       @include('components.booking.client-information')
     </div>
@@ -46,5 +62,6 @@
     </div>
   </div>
 </body>
+
 
 </html>

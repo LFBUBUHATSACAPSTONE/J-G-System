@@ -1,6 +1,19 @@
 /**
  * Progress tracker — read-only observer of #bookingFlow's
- * data-current-view attribute, the same one booking-flow.js already maintains. Doesn't dispatch or listen for any booking:* events itself; it only reacts to the attribute (via MutationObserver) and, on click, calls booking-flow.js's exported setBookingView() directly to jump to an already-unlocked step.
+ * data-current-view attribute, the same one booking-flow.js already
+ * maintains. Doesn't dispatch or listen for any booking:* events itself;
+ * it only reacts to the attribute (via MutationObserver) and, on click,
+ * calls booking-flow.js's exported setBookingView() directly to jump
+ * to an already-unlocked step.
+ *
+ * States per step (see resources/sass/_progress-tracker.scss):
+ *   is-locked    — index is ahead of the furthest step reached; lock icon
+ *   is-open      — reached before via forward progress, currently behind
+ *                  the active step (i.e. you clicked Previous back past
+ *                  it); filled circle, no number
+ *   is-numbered  — the current step, or a step fully completed and
+ *                  behind current; filled circle with its number, bold
+ *                  label
  */
 
 import { setBookingView, STEP_ORDER } from "../booking-flow.js";
@@ -49,6 +62,16 @@ function initProgressTracker() {
         const circle = el.querySelector(".progress-tracker__circle");
         circle.addEventListener("click", () => {
             if (circle.hasAttribute("disabled")) return;
+
+            // A step with no view in this flow (Package, picked on the
+            // landing page) sends the person to that page instead, via
+            // data-<step>-url on #bookingFlow (e.g. data-package-url).
+            if (!root.querySelector(`[data-view="${el.dataset.step}"]`)) {
+                const url = root.dataset[`${el.dataset.step}Url`];
+                if (url) window.location.href = url;
+                return;
+            }
+
             setBookingView(root, el.dataset.step);
         });
     });
