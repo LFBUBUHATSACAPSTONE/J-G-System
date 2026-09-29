@@ -1,5 +1,4 @@
 @props([
-'href' => null,
 'packages' => [
 [
 'name' => 'Budget Lite',
@@ -81,8 +80,7 @@
             :name="$package['name']"
             :price="$package['price']"
             :features="$package['features']"
-            :featured="$package['featured'] ?? false"
-            :href="$package['href'] ?? $href" />
+            :featured="$package['featured'] ?? false" />
         @endforeach
     </div>
 </div>

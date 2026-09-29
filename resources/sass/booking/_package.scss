@@ -1,10 +1,10 @@
+
 // MOBILE FIRST: every rule below is the phone layout; larger screens
 // only add/override inside `min-width` media queries.
 //   base     : 1 column, compact cards
 //   >= 576px : a little more padding
 //   >= 768px : 2 columns
 //   >= 992px : 3 columns
-
 .package-selection {
     position: relative;
     isolation: isolate;
@@ -128,8 +128,16 @@
         margin: 0 0 1.25rem;
     }
 
-    // "Book Now": light button with a soft vertical sheen.
+    // "Book Now": light button with a soft vertical sheen. On hover it
+    // fades into the same purple -> red gradient as the navbar Sign up
+    // button, sweeping the angle 90deg -> 270deg like .btn-color-gradient--primary.
+    // (A gradient can't be transitioned directly, so the brand gradient
+    // lives on ::before and its opacity + angle are what animate.)
     &__cta {
+        --gradient-angle: 90deg; // @property registered in _pseudo.scss
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
         display: block;
         width: 100%;
         min-height: 2.75rem; // comfortable touch target
@@ -141,16 +149,73 @@
         font-weight: 600;
         font-size: 0.95rem;
         margin-bottom: 1.5rem;
+        background: linear-gradient(
+            180deg,
+            $button-color-white 0%,
+            oklch(85% 0 0) 100%
+        );
+        color: $button-color-black;
         transition:
-            opacity 0.15s ease-in-out,
-            transform 0.15s ease-in-out;
+            color 0.3s ease-in-out,
+            opacity 0.15s ease-in-out;
 
-        &:hover {
-            opacity: $opacity-high;
+        &::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            background: linear-gradient(
+                var(--gradient-angle),
+                $package-cta-from,
+                $package-cta-to
+            );
+            opacity: 0;
+            transition:
+                opacity 0.3s ease-in-out,
+                --gradient-angle 0.3s ease-in-out;
+        }
+
+        &:focus {
+            box-shadow: none;
+        }
+
+        &:focus-visible {
+            outline: 2px solid $auth-accent;
+            outline-offset: 2px;
         }
 
         &:active {
             opacity: $opacity-med;
+        }
+
+        // Hover state also applies on keyboard focus; on touch devices
+        // (no hover) it only shows while pressed, so it never sticks.
+        @media (hover: hover) {
+            &:hover {
+                color: $text-pale--white;
+
+                &::before {
+                    --gradient-angle: 270deg;
+                    opacity: 1;
+                }
+            }
+        }
+
+        &:focus-visible,
+        &:active {
+            color: $text-pale--white;
+
+            &::before {
+                --gradient-angle: 270deg;
+                opacity: 1;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            &,
+            &::before {
+                transition: none;
+            }
         }
     }
 
@@ -203,22 +268,5 @@
                 background: $glass-text-body;
             }
         }
-    }
-}
-
-// "Book Now" button color — light button with a subtle top-to-bottom
-// sheen (not the gradient Continue/Cancel pair used elsewhere).
-.btn-color-white {
-    background: linear-gradient(
-        180deg,
-        $button-color-white 0%,
-        oklch(85% 0 0) 100%
-    );
-    color: $button-color-black;
-
-    &:hover,
-    &:focus,
-    &:active {
-        color: $button-color-black;
     }
 }
