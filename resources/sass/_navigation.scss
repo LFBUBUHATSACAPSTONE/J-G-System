@@ -4,8 +4,8 @@ html {
     scroll-padding-top: $nav-header-offset;
 }
 
-.navbar-brand img{
-  width: 5rem;
+.navbar-brand img {
+    width: 5rem;
 }
 
 .glass-header .navbar-nav .nav-link {
@@ -49,5 +49,20 @@ html {
     .glass-header .navbar-nav .nav-link,
     .glass-header .navbar-nav .nav-link::after {
         transition: none;
+    }
+}
+
+// Mobile: the expanded menu overlays the page instead of pushing it down.
+@include media-breakpoint-down(md) {
+    .glass-header .navbar-collapse {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        padding: 0.5rem 1.5rem 1.25rem;
+        background: oklch(19.306% 0.00802 285.593 / 0.92);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid oklch(100% 0.00011 271.152 / 0.25);
     }
 }
