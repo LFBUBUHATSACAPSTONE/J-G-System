@@ -8,6 +8,8 @@
 'Ideal for small and intimate events',
 'Basic yet clear sound setup',
 'Simple lighting for ambience',
+'Good for meetings and mini gatherings',
+'Easy and quick installation',
 ],
 ],
 [
@@ -16,6 +18,9 @@
 'features' => [
 'Perfect for birthdays and school programs',
 'Brighter party lighting',
+'Improved sound coverage',
+'Great for corporate events',
+'Fun and lively atmosphere',
 ],
 ],
 [
@@ -25,6 +30,8 @@
 'Best for simple weddings',
 'LED wall with live feed',
 'Clean and elegant audio',
+'For church or reception setups',
+'Balanced sound and lighting',
 ],
 ],
 [
@@ -63,10 +70,10 @@
 ],
 ])
 
-<div class="package-selection position-relative z-1" data-package-selection>
-    <h1  id="packages" class="package-selection__title fw-bold font-family-text text-caption-gradient">
+<div id="packages" class="package-selection position-relative z-1" data-package-selection>
+    <h2 class="package-selection__title">
         Packages
-    </h1>
+    </h2>
 
     <div class="package-selection__grid">
         @foreach ($packages as $package)

@@ -1,57 +1,61 @@
-// Package selection (booking step 0 / standalone pricing section).
-//
-// .package-selection is the section wrapper: full-bleed red-gradient
-// backdrop (package_red_gradient.webp) behind a centered title and a
-// responsive grid of .package-card tiers.
-//
-// .package-card reuses the same surface/radius/glow language every
-// other booking-step card already uses ($auth-surface, $auth-radius-xl,
-// the top-right radial glow) — see _client-information.scss /
-// _event-information.scss / _event-schedule.scss / _booking-summary.scss
-// for the identical recipe. No new surface/radius tokens are introduced
-// here; the only new pieces are the two button colors already reserved
-// for this ($button-color-white / $button-color-black — unused until
-// now) since "Book Now" here is a plain light button, not the
-// btn-color-gradient--primary/--secondary pair the rest of the flow
-// uses for Continue/Cancel.
+// MOBILE FIRST: every rule below is the phone layout; larger screens
+// only add/override inside `min-width` media queries.
+//   base     : 1 column, compact cards
+//   >= 576px : a little more padding
+//   >= 768px : 2 columns
+//   >= 992px : 3 columns
 
 .package-selection {
     position: relative;
     isolation: isolate;
-    padding: 3rem 1rem 3.5rem;
+    padding: 2.5rem 1rem 3rem;
+    background-color: $features-bg-base;
     background-image: url("/images/backgrounds/design/package_red_gradient.webp");
     background-size: cover;
     background-position: center;
+    background-repeat: no-repeat;
 
     @media (min-width: 576px) {
-        padding: 3.5rem 1.5rem 4rem;
+        padding: 3rem 1.5rem 3.5rem;
     }
 
     @media (min-width: 992px) {
-        padding: 4rem 2rem 4.5rem;
+        padding: 3.5rem 2rem 4rem;
     }
 
     &__title {
         text-align: center;
-        letter-spacing: 0.15em;
-        font-size: clamp(1.75rem, 3vw + 1rem, 2.75rem);
-        margin-bottom: 2.5rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-family: $font-landing-heading-text;
+        font-weight: 800;
+        color: $features-title-color;
+        text-shadow: 0 2px 12px $features-title-shadow;
+        font-size: clamp(1.4rem, 1rem + 2vw, 2.25rem);
+        margin-bottom: 1.75rem;
+
+        @media (min-width: 768px) {
+            margin-bottom: 2.25rem;
+        }
     }
 
     &__grid {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 1.5rem;
-        max-width: 1200px;
+        gap: 1rem;
+        max-width: 26rem; // single column stays a comfortable card width on big phones
         margin: 0 auto;
 
         @media (min-width: 768px) {
             grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+            max-width: 46rem;
         }
 
         @media (min-width: 992px) {
             grid-template-columns: repeat(3, 1fr);
-            gap: 2rem;
+            gap: 1.5rem;
+            max-width: 1100px;
         }
     }
 }
@@ -60,60 +64,81 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    background: $auth-surface;
-    border-radius: $auth-radius-xl;
-    padding: 2rem 1.75rem 2.25rem;
-    color: $auth-text-primary;
-    isolation: isolate;
-    overflow: hidden;
+    padding: 1.25rem 1.25rem 1.5rem;
+    color: $glass-text-title;
+    border-radius: $auth-radius-lg;
 
-    // Same top-right glow every other step's card uses.
-    &::before {
-        content: "";
-        position: absolute;
-        inset: -20% -20% auto auto;
-        width: 70%;
-        height: 60%;
-        background: radial-gradient(
-            circle at top right,
-            $auth-glow-violet 0%,
-            $auth-glow-rose 45%,
-            transparent 75%
-        );
-        opacity: 0.35;
-        filter: blur(60px);
-        z-index: -1;
-        pointer-events: none;
+    // Glass surface (same recipe as .feature-card)
+    background: $glass-bg;
+    -webkit-backdrop-filter: blur($glass-blur) saturate(140%);
+    backdrop-filter: blur($glass-blur) saturate(140%);
+    border: 1px solid $glass-border;
+    box-shadow:
+        inset 0 1px 0 $glass-highlight,
+        0 8px 32px $glass-shadow;
+    transition:
+        background 0.25s ease,
+        transform 0.25s ease;
+
+    @media (min-width: 576px) {
+        padding: 1.5rem 1.5rem 1.75rem;
     }
 
-    // Reserved for a "most popular" tier — one accent border, no
-    // separate color language.
+    @media (min-width: 992px) {
+        padding: 1.5rem 1.5rem 1.75rem;
+        border-radius: $auth-radius-xl;
+    }
+
+    // Hover lift only where hover exists (avoids sticky hover on touch).
+    @media (hover: hover) {
+        &:hover {
+            background: $glass-bg-hover;
+            transform: translateY(-2px);
+        }
+    }
+
+    // Reserved for a "most popular" tier — one accent border.
     &--featured {
-        border: 1px solid $auth-accent;
-        box-shadow: 0 0 0 3px $auth-focus-ring-soft;
+        border-color: $auth-accent;
+        box-shadow:
+            inset 0 1px 0 $glass-highlight,
+            0 0 0 3px $auth-focus-ring-soft,
+            0 8px 32px $glass-shadow;
     }
 
+    // Small name on top, larger price below it.
     &__name {
-        font-size: 1.15rem;
-        font-weight: 700;
-        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        line-height: 1.3;
+        color: $glass-text-title;
+        margin: 0 0 1.25rem;
+
+        @media (min-width: 768px) {
+            font-size: 1rem;
+            margin-bottom: 1.75rem;
+        }
     }
 
     &__price {
-        font-size: 1.9rem;
-        font-weight: 800;
-        margin-bottom: 1.25rem;
+        font-size: clamp(1.6rem, 1.3rem + 1vw, 2.1rem);
+        font-weight: 700;
+        line-height: 1.1;
+        color: $glass-text-title;
+        margin: 0 0 1.25rem;
     }
 
+    // "Book Now": light button with a soft vertical sheen.
     &__cta {
         display: block;
         width: 100%;
+        min-height: 2.75rem; // comfortable touch target
         text-align: center;
         text-decoration: none;
         border: none;
         border-radius: $auth-radius-md;
-        padding: 0.85rem;
-        font-weight: 700;
+        padding: 0.7rem 1rem;
+        font-weight: 600;
         font-size: 0.95rem;
         margin-bottom: 1.5rem;
         transition:
@@ -131,8 +156,8 @@
 
     &__divider {
         height: 1px;
-        background: $auth-border;
-        margin-bottom: 1.5rem;
+        background: $glass-border;
+        margin-bottom: 1.25rem;
     }
 
     &__features {
@@ -140,9 +165,10 @@
     }
 
     &__features-title {
-        font-size: 0.95rem;
-        font-weight: 700;
-        margin-bottom: 0.85rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: $glass-text-title;
+        margin: 0 0 0.75rem;
     }
 
     &__features-list {
@@ -153,7 +179,14 @@
         flex-direction: column;
         gap: 0.65rem;
         font-size: 0.85rem;
-        color: $auth-text-secondary;
+        font-weight: 300;
+        line-height: 1.45;
+        color: $glass-text-body;
+
+        @media (min-width: 768px) {
+            gap: 0.75rem;
+            font-size: 0.875rem;
+        }
 
         li {
             position: relative;
@@ -162,22 +195,25 @@
             &::before {
                 content: "";
                 position: absolute;
-                left: 0;
-                top: 0.5em;
-                width: 4px;
-                height: 4px;
+                left: 0.1rem;
+                top: 0.6em;
+                width: 3px;
+                height: 3px;
                 border-radius: 50%;
-                background: $auth-text-secondary;
+                background: $glass-text-body;
             }
         }
     }
 }
 
-// "Book Now" button color — plain light button (not the gradient
-// Continue/Cancel pair), reserved for this from the start via
-// $button-color-white / $button-color-black in _variables.scss.
+// "Book Now" button color — light button with a subtle top-to-bottom
+// sheen (not the gradient Continue/Cancel pair used elsewhere).
 .btn-color-white {
-    background: $button-color-white;
+    background: linear-gradient(
+        180deg,
+        $button-color-white 0%,
+        oklch(85% 0 0) 100%
+    );
     color: $button-color-black;
 
     &:hover,
