@@ -48,6 +48,18 @@ function initNavigation() {
 
     const header = navEl.closest("header");
 
+    // Expose the real sticky-header height so the hero background can
+    // extend exactly that far up behind it (see .landing-hero__bg).
+    if (header) {
+        const syncHeaderHeight = () =>
+            document.documentElement.style.setProperty(
+                "--landing-header-h",
+                `${header.offsetHeight}px`,
+            );
+        syncHeaderHeight();
+        new ResizeObserver(syncHeaderHeight).observe(header);
+    }
+
     // target name -> section element (Home has no element: it's page top).
     const sections = links
         .map((link) => link.dataset.navTarget)

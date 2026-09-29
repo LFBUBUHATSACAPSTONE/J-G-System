@@ -1,0 +1,17 @@
+.landing-hero {
+    position: relative;
+    isolation: isolate;
+    padding-bottom: 2rem;
+    background-color: $features-bg-base;
+
+    &__bg {
+        position: absolute;
+        top: calc(-1 * var(--landing-header-h, #{$nav-header-offset}));
+        left: 0;
+        width: 100%;
+        height: calc(100% + var(--landing-header-h, #{$nav-header-offset}));
+        object-fit: cover;
+        z-index: -1;
+        pointer-events: none;
+    }
+}
