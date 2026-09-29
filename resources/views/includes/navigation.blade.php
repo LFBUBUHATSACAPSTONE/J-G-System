@@ -16,7 +16,7 @@
 
       <div class="collapse navbar-collapse" id="nav">
         <ul class="navbar-nav mx-auto gap-md-5 gap-2 mt-3 mt-md-0">
-          <li class="nav-item"><a href="#" class="nav-link active font-family-text" aria-current="page">Home</a></li>
+          <li class="nav-item"><a href="{{ route('user.landing') }}#" class="nav-link active font-family-text" aria-current="page">Home</a></li>
           <li class="nav-item"><a href="{{ route('user.landing') }}#features" class="nav-link font-family-text">Feature</a></li>
           <li class="nav-item"><a href="{{ route('user.landing') }}#packages" class="nav-link font-family-text">Package</a></li>
         </ul>
