@@ -44,46 +44,48 @@
 ],
 ])
 
-<section class="pcmp position-relative z-1">
-  <h2 class="pcmp__title">{{ $title }}</h2>
+<div class="pcmp-bg position-relative z-1">
+  <section class="pcmp" aria-labelledby="pcmp-title">
+    <h2 class="pcmp__title" id="pcmp-title">{{ $title }}</h2>
 
-  @foreach ($sections as $section)
-  <div class="pcmp__section">
-    <h3 class="pcmp__section-title">{{ $section['title'] }}</h3>
+    @foreach ($sections as $section)
+    <div class="pcmp__section">
+      <h3 class="pcmp__section-title">{{ $section['title'] }}</h3>
 
-    <div class="pcmp__scroll">
-      <table class="pcmp__table">
-        <thead>
-          <tr>
-            <th class="pcmp__label">Features / Equipment</th>
-            @foreach ($packages as $package)
-            <th>
-              <span class="pcmp__pkg">{{ $package['name'] }}</span>
-              <span class="pcmp__pkg">Php {{ number_format((float) $package['price']) }}</span>
-            </th>
+      <div class="pcmp__scroll">
+        <table class="pcmp__table">
+          <thead>
+            <tr>
+              <th scope="col" class="pcmp__label">Features / Equipment</th>
+              @foreach ($packages as $package)
+              <th scope="col">
+                <span class="pcmp__pkg">{{ $package['name'] }}</span>
+                <span class="pcmp__price">Php {{ number_format((float) $package['price']) }}</span>
+              </th>
+              @endforeach
+            </tr>
+          </thead>
+          <tbody>
+            @foreach ($section['rows'] as [$label, $values])
+            <tr>
+              <th scope="row" class="pcmp__label">{{ $label }}</th>
+              @foreach ($values as $value)
+              <td>
+                @if ($value === true)
+                <svg class="pcmp__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Included">
+                  <path d="M5 12.5l4.5 4.5L19 7.5" />
+                </svg>
+                @elseif ($value)
+                {{ $value }}
+                @endif
+              </td>
+              @endforeach
+            </tr>
             @endforeach
-          </tr>
-        </thead>
-        <tbody>
-          @foreach ($section['rows'] as [$label, $values])
-          <tr>
-            <th class="pcmp__label">{{ $label }}</th>
-            @foreach ($values as $value)
-            <td>
-              @if ($value === true)
-              <svg class="pcmp__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M5 12.5l4.5 4.5L19 7.5" />
-              </svg>
-              @elseif ($value)
-              {{ $value }}
-              @endif
-            </td>
-            @endforeach
-          </tr>
-          @endforeach
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div>
-  @endforeach
-</section>
+    @endforeach
+  </section>
+</div>
