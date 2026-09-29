@@ -29,6 +29,16 @@ const LINK_SELECTOR = "a.nav-link[data-nav-target]";
 const HOME_TARGET = "home";
 const LOCK_FALLBACK_MS = 1200;
 
+// Refresh should always land on Home: drop the #hash and ignore the browser's restored scroll position. Only applies to reloads, so opening a shared /user/landing#packages link still works.
+const navEntry = performance.getEntriesByType("navigation")[0];
+if (navEntry?.type === "reload") {
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    if (location.hash) {
+        history.replaceState(null, "", location.pathname + location.search);
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+}
+
 function initNavigation() {
     const navEl = document.getElementById(NAV_ID);
     if (!navEl) return;
