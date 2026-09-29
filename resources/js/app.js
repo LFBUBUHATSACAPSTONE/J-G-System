@@ -2,10 +2,9 @@ import "./bootstrap";
 import * as bootstrap from "bootstrap"; //Bootstrap's JS
 import "../sass/app.scss"; //CSS
 
-import Carousel from "./coverflow-carousel.js"; //Coverflow Carousel JS
-
-// NAV
-import "./navigation.js";
+// LANDING
+import Carousel from "./landing/coverflow-carousel.js"; 
+import "./landing/navigation.js";
 
 // AUTH
 import "./auth/validation.js";

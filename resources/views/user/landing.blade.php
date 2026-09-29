@@ -20,7 +20,7 @@
 
     @include('includes.landing-caption', ["header" => "Bring Your Event to Life", "caption" => "We're dedicated to making every occasion look and sound its best with reliable equipment and professional service."])
 
-    <x-coverflow-carousel :items="[
+    <x-landing.coverflow-carousel :items="[
             ['image' => asset('images/carousel/1.webp'), 'alt' => ''],
             ['image' => asset('images/carousel/2.webp'), 'alt' => ''],
             ['image' => asset('images/carousel/3.webp'), 'alt' => ''],
@@ -42,10 +42,10 @@
   </section>
 
   <x-auth-modal></x-auth-modal>
-  @include('components.features')
-  @include('components.booking.package', ['href' => route('user.booking')])
-  @include('components.booking.package-comparison')
-  @include('components.footer')
+  @include('components.landing.features')
+  @include('components.booking.package')
+  @include('components.landing.package-comparison')
+  @include('components.landing.footer')
 </body>
 
 </html>

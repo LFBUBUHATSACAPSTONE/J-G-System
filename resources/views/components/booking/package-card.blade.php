@@ -5,6 +5,7 @@
 'featured' => false,
 ])
 
+{{--Individual Package Cards Contents--}} 
 <div
   class="package-card{{ $featured ? ' package-card--featured' : '' }}"
   data-package-card

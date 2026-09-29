@@ -21,6 +21,6 @@ class PackageCard extends Component
      */
     public function render(): View|Closure|string
     {
-        return view('components.package-card');
+        return view('components.booking.package-card');
     }
 }

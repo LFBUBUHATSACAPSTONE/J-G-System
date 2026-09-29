@@ -12,27 +12,22 @@
 // Utilities
 @import "utilities";
 
-// Header Navigation
-@import "navigation";
-
-// Pseudo Classes and Elements
-@import "pseudo";
-
-// Coverflow Carousel
-@import "coverflow-carousel";
-
-// Landing & Landing Caption Gradient and Text Stylings
+// Gradient Button and Text
+@import "gradient-button";
 @import "gradient-text";
-@import "landing-caption";
-@import "landing-hero";
-@import "features";
-@import "package-comparison-table";
 
 // Modal and Forms
 @import "auth-modal";
 
-//Footer
-@import "footer";
+// Landing & Landing Caption Gradient and Text Stylings
+// Header Navigation
+@import "./landing/navigation";
+@import "./landing/coverflow-carousel";
+@import "./landing/landing-caption";
+@import "./landing/landing-hero";
+@import "./landing/features";
+@import "./landing/package-comparison-table";
+@import "./landing/footer";
 
 // Booking
 @import "./booking/package";
