@@ -7,7 +7,7 @@
   <nav class="navbar navbar-expand-md navbar-dark py-3">
     <div class="d-flex align-items-center container px-3 px-md-5">
       <a href="{{ route('user.landing') }}#" class="navbar-brand d-none d-md-block">
-        <img src="{{ asset('images/logo/logo_rectangular.webp') }}" alt="Business Logo" class="position-relative z-1 max-h-10">
+        <img src="{{ asset('images/logo/J&G_official_logo.webp') }}" alt=" Business Logo" class="position-relative z-1 max-h-10">
       </a>
 
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-controls="nav" aria-expanded="false" aria-label="Expand Navigation">
@@ -16,9 +16,10 @@
 
       <div class="collapse navbar-collapse" id="nav">
         <ul class="navbar-nav mx-auto gap-md-5 gap-2 mt-3 mt-md-0">
-          <li class="nav-item"><a href="{{ route('user.landing') }}#" class="nav-link active font-family-text" data-nav-target="home" aria-current="location">Home</a></li>
-          <li class="nav-item"><a href="{{ route('user.landing') }}#features" class="nav-link font-family-text" data-nav-target="features">Feature</a></li>
-          <li class="nav-item"><a href="{{ route('user.landing') }}#packages" class="nav-link font-family-text" data-nav-target="packages">Package</a></li>
+          <li class="nav-item"><a href="{{ route('user.landing') }}#" class="nav-link active" data-nav-target="home" aria-current="location">Home</a></li>
+          <li class="nav-item"><a href="{{ route('user.landing') }}#features" class="nav-link" data-nav-target="features">Feature</a></li>
+          <li class="nav-item"><a href="{{ route('user.landing') }}#packages" class="nav-link" data-nav-target="packages">Package</a></li>
+          <li class="nav-item"><a href="{{ route('user.landing') }}#about" class="nav-link" data-nav-target="about">About</a></li>
         </ul>
 
         <div class="d-flex gap-3 align-items-center justify-content-center mt-3 mt-md-0">

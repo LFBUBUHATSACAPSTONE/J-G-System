@@ -4,6 +4,10 @@ html {
     scroll-padding-top: $nav-header-offset;
 }
 
+.navbar-brand img{
+  width: 5rem;
+}
+
 .glass-header .navbar-nav .nav-link {
     position: relative;
     display: inline-block;

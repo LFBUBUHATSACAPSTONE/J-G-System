@@ -1,9 +1,11 @@
-<footer class="jg-footer">
+<footer id="about" class="jg-footer">
     <div class="jg-footer__inner">
 
         {{-- LEFT: Logo + copyright --}}
         <div class="jg-footer__col jg-footer__brand">
-            <img src="{{ asset('images/logo/logo_rectangular.svg') }}" alt="J&amp;G Audio Lights and Sounds" class="jg-footer__logo-img">
+            <a href="{{ route('user.landing') }}#">
+                <img src="{{ asset('images/logo/J&G_official_logo.webp') }}" alt="J&amp;G Audio Lights and Sounds" class="jg-footer__logo-img">
+            </a>
 
             <p class="jg-footer__copyright">
                 &copy; {{ date('Y') }} J&amp;G Audio Lights and Sounds. All Rights Reserved.
@@ -17,6 +19,7 @@
                 <li><a href="{{ route('user.landing') }}#">Home</a></li>
                 <li><a href="{{ route('user.landing') }}#features">Features</a></li>
                 <li><a href="{{ route('user.landing') }}#packages">Packages</a></li>
+                <li><a href="{{ route('user.landing') }}#about">About</a></li>
             </ul>
         </div>
 

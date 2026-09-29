@@ -1,3 +1,4 @@
+// ---- Sticky footer: fills leftover space on short pages ----
 .jg-footer {
     background-color: $footer-bg;
     color: $footer-text;
@@ -34,6 +35,10 @@
 
     &__col {
         min-width: 0;
+
+         img {
+            width: 10rem;
+        }
     }
 
     // ---- Column widths (desktop only) ----
@@ -141,21 +146,5 @@
         color: $footer-text-link;
         flex-shrink: 0;
         transition: color 0.2s ease;
-    }
-}
-
-// ---- Sticky footer: fills leftover space on short pages ----
-html,
-body {
-    min-height: 100%;
-}
-
-#app {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-
-    > main {
-        flex: 1 0 auto;
     }
 }
