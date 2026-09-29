@@ -44,7 +44,7 @@
 ],
 ])
 
-<div class="pcmp-bg position-relative z-1">
+<div id="inclusions" class="pcmp-bg position-relative z-1">
   <section class="pcmp" aria-labelledby="pcmp-title">
     <h2 class="pcmp__title" id="pcmp-title">{{ $title }}</h2>
 
