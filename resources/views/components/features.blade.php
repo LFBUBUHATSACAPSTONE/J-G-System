@@ -49,7 +49,7 @@ $featuresSectionIcons = [
 
 <div class="features-bg position-relative z-1">
   <img src="{{ asset('images/backgrounds/design/features_red_gradient.webp') }}" alt="" aria-hidden="true" class="features-bg__image">
-  <section class="features-section position-relative z-1" data-features-section>
+  <section id="features" class="features-section position-relative z-1" data-features-section>
     <h2 class="features-section__title">
       {{ $title }}
     </h2>

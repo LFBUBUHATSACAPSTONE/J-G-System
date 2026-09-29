@@ -14,9 +14,9 @@
         <div class="jg-footer__col jg-footer__explore">
             <h4 class="jg-footer__heading">Explore</h4>
             <ul class="jg-footer__links">
-                <li><a href="{{ url('/about') }}">About</a></li>
-                <li><a href="{{ url('/features') }}">Features</a></li>
-                <li><a href="{{ url('/packages') }}">Packages</a></li>
+                <li><a href="{{ route('user.landing') }}#">Home</a></li>
+                <li><a href="{{ route('user.landing') }}#features">Features</a></li>
+                <li><a href="{{ route('user.landing') }}#packages">Packages</a></li>
             </ul>
         </div>
 
