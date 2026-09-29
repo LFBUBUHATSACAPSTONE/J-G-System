@@ -1,0 +1,49 @@
+// Navbar in-page links (Home / Feature / Package).
+// navigation.js moves `.active` (and aria-current) to the link whose section is in view or that was just clicked. Only one link is ever active.
+html {
+    scroll-padding-top: $nav-header-offset;
+}
+
+.glass-header .navbar-nav .nav-link {
+    position: relative;
+    display: inline-block;
+    color: rgb(255 255 255 / 0.6);
+    font-weight: 400;
+    transition: color 0.2s ease-in-out;
+
+    // Gradient underline, hidden until the link is active.
+    &::after {
+        content: "";
+        position: absolute;
+        left: var(--bs-nav-link-padding-x, 0.5rem);
+        right: var(--bs-nav-link-padding-x, 0.5rem);
+        bottom: 0.15rem;
+        height: 2px;
+        border-radius: 2px;
+        background: $button-gradient;
+        transform: scaleX(0);
+        transform-origin: left center;
+        transition: transform 0.25s ease-in-out;
+    }
+
+    &:hover,
+    &:focus-visible {
+        color: rgb(255 255 255 / 0.9);
+    }
+
+    &.active {
+        color: #fff;
+        font-weight: 600;
+
+        &::after {
+            transform: scaleX(1);
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .glass-header .navbar-nav .nav-link,
+    .glass-header .navbar-nav .nav-link::after {
+        transition: none;
+    }
+}
