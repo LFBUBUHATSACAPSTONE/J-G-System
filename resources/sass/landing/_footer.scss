@@ -3,33 +3,47 @@
     border-top: 1px solid $glass-border; // thin divider so it reads as its own block against the Packages section
     color: $footer-text;
     width: 100%;
-    padding: 2.5rem 1.25rem 1.75rem;
+    padding: 3.5rem 1.25rem 2.5rem;
     font-family: inherit;
     box-sizing: border-box;
     flex-shrink: 0;
 
     @media (min-width: 576px) {
-        padding: 2.5rem 1.5rem 1.75rem;
+        padding: 3.75rem 1.5rem 2.75rem;
+    }
+
+    @media (min-width: 992px) {
+        padding: 4.5rem 2rem 3.25rem;
     }
 
     * {
         box-sizing: border-box;
     }
 
-    // Phone/tablet: one stacked column, in DOM order:
-    // Logo/copyright -> Explore -> Follow us -> Information.
-    // 992px and up: three columns side by side.
+    // < 992px : one stacked column, in DOM order:
+    //           Logo/copyright -> Explore -> Follow us -> Information.
+    // 992-1199: 2-column grid; Logo | Explore, then Follow us + Information
+    //           spanning the full width underneath.
+    // >= 1200 : 3-column grid; Logo | Explore | Follow us + Information.
     &__inner {
         max-width: 1280px;
         margin: 0 auto;
         display: flex;
         flex-direction: column;
-        gap: 2.25rem;
+        gap: 2.75rem;
 
         @media (min-width: 992px) {
-            flex-direction: row;
-            flex-wrap: wrap;
-            gap: 2rem;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 2.75rem 2.5rem;
+        }
+
+        @media (min-width: 1200px) {
+            grid-template-columns:
+                minmax(0, 1.1fr)
+                minmax(0, 0.6fr)
+                minmax(0, 1.9fr);
+            gap: 2.5rem;
         }
     }
 
@@ -37,24 +51,15 @@
         min-width: 0;
 
         img {
-            width: 10rem;
+            width: 12rem;
+
+            @media (min-width: 992px) {
+                width: 14rem;
+            }
         }
     }
 
-    // ---- Column widths (desktop only) ----
-    &__brand {
-        @media (min-width: 992px) {
-            flex: 1 1 32%;
-            max-width: 32%;
-        }
-    }
-
-    &__explore {
-        @media (min-width: 992px) {
-            flex: 1 1 20%;
-            max-width: 20%;
-        }
-    }
+    // ---- Column placement (desktop only) is handled by the grid above ----
 
     // "Follow us" + "Information": stacked on phones, side by side from
     // 640px (narrower than that, the email/address text has no room).
@@ -69,9 +74,13 @@
             gap: 2.5rem;
         }
 
+        // 992-1199: span both grid columns (own row under Logo | Explore).
         @media (min-width: 992px) {
-            flex: 1 1 40%;
-            max-width: 48%;
+            grid-column: 1 / -1;
+        }
+
+        @media (min-width: 1200px) {
+            grid-column: auto;
         }
     }
 
@@ -85,17 +94,17 @@
 
     &__copyright {
         display: block;
-        font-size: 0.8rem;
+        font-size: 0.9rem;
         color: $footer-text-muted;
-        margin: 0.35rem 0 0;
+        margin: 0.6rem 0 0;
     }
 
     // ---- Headings ----
     &__heading {
-        font-size: 1rem;
+        font-size: 1.15rem;
         font-weight: 700;
         color: $auth-text-primary;
-        margin: 0 0 1.1rem;
+        margin: 0 0 1.4rem;
     }
 
     // ---- Links ----
@@ -105,15 +114,16 @@
         padding: 0;
         display: flex;
         flex-direction: column;
-        gap: 0.7rem;
+        gap: 1rem;
 
         a {
             color: $footer-text-link;
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 1rem;
             display: inline-flex;
             align-items: center;
             gap: 0.6rem;
+            overflow-wrap: anywhere;
             transition:
                 color 0.2s ease,
                 opacity 0.2s ease;
@@ -133,7 +143,7 @@
     &__static {
         color: $footer-text-link;
         text-decoration: none;
-        font-size: 0.9rem;
+        font-size: 1rem;
         display: inline-flex;
         align-items: center;
         gap: 0.6rem;
@@ -146,5 +156,10 @@
         color: $footer-text-link;
         flex-shrink: 0;
         transition: color 0.2s ease;
+
+        svg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
     }
 }

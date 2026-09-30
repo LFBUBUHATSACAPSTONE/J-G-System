@@ -85,7 +85,7 @@
                                     <circle cx="12" cy="9.5" r="2.3" />
                                 </svg>
                             </span>
-                            <span>San Ildefonso, Bulacan, Philippines</span>
+                            <span>Anyatam, San Ildefonso, Bulacan, Philippines</span>
                         </span>
                     </li>
                     <li>
