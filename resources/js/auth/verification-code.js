@@ -53,6 +53,11 @@ function setVerificationContext(context) {
 
 function setVerificationToken(token) {
     verificationToken = token || "";
+    document
+        .querySelectorAll('input[name="verification_token"]')
+        .forEach((input) => {
+            input.value = verificationToken;
+        });
 }
 
 function initVerificationCode() {
@@ -159,6 +164,8 @@ function fillBoxes(startBox, text) {
     boxes[Math.min(start + digits.length, boxes.length - 1)].focus();
 }
 
+const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || document.querySelector('input[name="_token"]')?.value || "";
+
 async function submitVerificationCode(modalEl, form) {
     const code = getVerificationCode(form);
     if (code.length < CODE_LENGTH) {
@@ -167,17 +174,22 @@ async function submitVerificationCode(modalEl, form) {
     }
 
     const submitBtn = form.querySelector('[type="submit"]');
+    const hiddenTokenInput = form.querySelector('input[name="verification_token"]');
+    if (hiddenTokenInput) {
+        hiddenTokenInput.value = verificationToken;
+    }
     clearVerificationError(form);
     submitBtn.disabled = true;
 
     try {
         const response = await fetch(form.action, {
             method: "POST",
+            credentials: "same-origin",
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN":
-                    form.querySelector('input[name="_token"]')?.value ?? "",
+                "X-CSRF-TOKEN": csrfToken,
+                "X-XSRF-TOKEN": csrfToken,
             },
             body: JSON.stringify({
                 code,
@@ -188,12 +200,14 @@ async function submitVerificationCode(modalEl, form) {
 
         if (response.ok) {
             if (verificationContext === "signup") {
+                resetVerificationCode();
                 setAuthView(modalEl, "login");
                 return;
             }
 
             const data = await response.json().catch(() => ({}));
             setResetCredentials({ token: data.token, email: data.email });
+            resetVerificationCode();
             setAuthView(modalEl, "new-password");
             return;
         }
@@ -270,11 +284,12 @@ function startResendCooldown(seconds = RESEND_COOLDOWN_SECONDS) {
 
 function resetVerificationCode() {
     verificationContext = DEFAULT_CONTEXT;
-    verificationToken = "";
+    setVerificationToken("");
 
     document.querySelectorAll(BOX_SELECTOR).forEach((b) => {
         b.value = "";
     });
+    setVerificationDestination("");
     document
         .querySelectorAll("[data-verification-error]")
         .forEach((el) => clearVerificationError(el.closest("form")));

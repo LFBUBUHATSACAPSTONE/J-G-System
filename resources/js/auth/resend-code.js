@@ -32,6 +32,8 @@ function initResendCode() {
     });
 }
 
+const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || document.querySelector('input[name="_token"]')?.value || "";
+
 async function resendCode(btn, context, verificationToken) {
     const form = btn.closest("form");
     const errorEl = form.querySelector("[data-verification-error]");
@@ -39,11 +41,12 @@ async function resendCode(btn, context, verificationToken) {
     try {
         const response = await fetch(btn.dataset.resendUrl, {
             method: "POST",
+            credentials: "same-origin",
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN":
-                    form.querySelector('input[name="_token"]')?.value ?? "",
+                "X-CSRF-TOKEN": csrfToken,
+                "X-XSRF-TOKEN": csrfToken,
             },
             body: JSON.stringify({
                 context,

@@ -7,6 +7,24 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Google Sign-In
+
+Google sign-in uses Laravel Socialite. Create a Web application OAuth client in Google Cloud Console, configure the consent screen, and add this authorized redirect URI:
+
+```text
+http://localhost/auth/google/callback
+```
+
+Add the OAuth client values to the local `.env` file:
+
+```env
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_REDIRECT_URI=http://localhost/auth/google/callback
+```
+
+If the app is served from a different host or subdirectory, use that exact base URL in both Google Cloud Console and `GOOGLE_REDIRECT_URI`. Keep the client secret private, then run `php artisan config:clear`.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
