@@ -65,8 +65,8 @@ html {
     }
 }
 
-// Mobile: the expanded menu overlays the page instead of pushing it down.
-@include media-breakpoint-down(md) {
+// Mobile + tablet (< lg): the expanded menu overlays the page instead of pushing it down.
+@include media-breakpoint-down(lg) {
     .glass-header .navbar-collapse {
         position: absolute;
         top: 100%;
