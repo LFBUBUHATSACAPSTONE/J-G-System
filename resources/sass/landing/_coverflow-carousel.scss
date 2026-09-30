@@ -1,24 +1,32 @@
 .coverflow {
-    --coverflow-side-width: #{$coverflow-side-width};
+    // Caps for the slide sizes; the real sizes also follow the carousel's own
+    // height (cqh) so the photos keep a natural ~3:2 shape when the hero
+    // shrinks to fit short screens, instead of turning into wide strips.
+    --coverflow-center-cap: #{$coverflow-center-width};
+    --coverflow-side-cap: #{$coverflow-side-width};
+    container-type: size;
+    user-select: none;
+    -webkit-user-select: none;
 
     position: relative;
     width: 100%;
     height: clamp(260px, 45vw, #{$coverflow-height});
     overflow: hidden;
-    border-radius: clamp(0.75rem, 4vw, 2.5rem);
 
     &__track {
         position: relative;
         width: 100%;
         height: 100%;
+        --coverflow-center-width: min(var(--coverflow-center-cap), 148cqh);
+        --coverflow-side-width: min(var(--coverflow-side-cap), 74cqh);
     }
 
     &__slide {
         position: absolute;
         top: 50%;
         left: 50%;
-        width: $coverflow-center-width;
-        height: 80%;
+        width: var(--coverflow-center-width);
+        height: 92%;
         transform: translate(-50%, -50%) scale(0.8);
         opacity: 0;
         filter: blur(2px) brightness(0.6);
@@ -77,9 +85,9 @@
     }
 
     &__clip {
+        position: relative;
         width: 100%;
         height: 100%;
-        border-radius: min(clamp(0.75rem, 4vw, 2.5rem), 8vh);
         overflow: hidden;
     }
 
@@ -94,29 +102,31 @@
             filter 0.6s ease;
     }
 
-    &__img {
+    // The photo is pinned to all four edges of the clip, so it always fills
+    // the slide exactly (square corners), whatever the photo's own aspect ratio or any
+    // global img reset (Tailwind preflight etc.) says about width/height.
+    &__clip &__img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
         height: 100%;
+        max-width: none;
         object-fit: cover;
         display: block;
         pointer-events: none;
+        -webkit-user-drag: none;
     }
 
     @media (max-width: 992px) {
-        --coverflow-side-width: 200px;
-
-        &__slide {
-            width: 400px;
-        }
+        --coverflow-side-cap: 230px;
+        --coverflow-center-cap: 460px;
     }
 
     @media (max-width: 768px) {
-        --coverflow-side-width: 130px;
+        --coverflow-side-cap: 130px;
+        --coverflow-center-cap: 270px;
 
-        &__slide {
-            width: 260px;
-        }
-
-        &__img{
+        &__img {
             width: 100%;
         }
 

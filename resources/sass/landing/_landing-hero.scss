@@ -1,8 +1,52 @@
 .landing-hero {
     position: relative;
     isolation: isolate;
-    padding-bottom: 2rem;
     background-color: $features-bg-base;
+
+    // Text sits near the top of the hero (a little above the old centred
+    // position); Book Now is pinned near the bottom. Everything freed in
+    // between goes to the carousel so the photos are the focal point.
+    padding: clamp(1.5rem, 5vh, 2.5rem) $section-pad-x
+        clamp(2rem, 6.5vh, 3.25rem);
+
+    // Fills exactly the screen below the sticky header (Home scrolls to the
+    // page top, so no tuck-under offset like Features needs). If content is
+    // taller than the screen (phones) it just grows.
+    min-height: calc(
+        100vh - var(--landing-header-h, #{$nav-header-offset + 1.5rem})
+    );
+    min-height: calc(
+        100svh - var(--landing-header-h, #{$nav-header-offset + 1.5rem})
+    );
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.75rem, 2.5vh, 2rem);
+
+    // Carousel absorbs all spare height, up to its size cap. Auto margins
+    // split any leftover space evenly above/below it on very tall screens.
+    --hero-carousel-min: 220px;
+
+    .coverflow {
+        flex: 1 1 0;
+        height: auto;
+        min-height: var(--hero-carousel-min);
+        max-height: min(65vw, #{$coverflow-height});
+        margin-block: auto;
+
+        // Phones/small tablets: slides are width-capped (see the coverflow
+        // breakpoints), so keep the carousel from getting tall and narrow.
+        @media (max-width: 768px) {
+            max-height: 300px;
+        }
+    }
+
+    // Short landscape screens (phones on their side, small windows).
+    @media (max-height: 500px) and (orientation: landscape) {
+        --hero-carousel-min: 80px;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+        gap: 0;
+    }
 
     &__bg {
         position: absolute;
@@ -13,8 +57,17 @@
         object-fit: cover;
         z-index: -1;
         pointer-events: none;
-        // Dissolve the bottom of the artwork into the base colour so the hero has no hard edge; the Features background continues from here.
-        -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 12rem), transparent 100%);
-        mask-image: linear-gradient(to bottom, #000 calc(100% - 12rem), transparent 100%);
+        // Dissolve the bottom of the artwork into the base colour so the hero
+        // has no hard edge; the Features background continues from here.
+        -webkit-mask-image: linear-gradient(
+            to bottom,
+            #000 calc(100% - 12rem),
+            transparent 100%
+        );
+        mask-image: linear-gradient(
+            to bottom,
+            #000 calc(100% - 12rem),
+            transparent 100%
+        );
     }
 }
