@@ -17,8 +17,8 @@
       <div class="collapse navbar-collapse" id="nav">
         <ul class="navbar-nav mx-auto gap-2 gap-lg-3 gap-xl-5 mt-3 mt-lg-0">
           <li class="nav-item"><a href="{{ route('user.landing') }}#" class="nav-link active" data-nav-target="home" aria-current="location">Home</a></li>
-          <li class="nav-item"><a href="{{ route('user.landing') }}#features" class="nav-link" data-nav-target="features">Feature</a></li>
-          <li class="nav-item"><a href="{{ route('user.landing') }}#packages" class="nav-link" data-nav-target="packages">Package</a></li>
+          <li class="nav-item"><a href="{{ route('user.landing') }}#features" class="nav-link" data-nav-target="features">Features</a></li>
+          <li class="nav-item"><a href="{{ route('user.landing') }}#packages" class="nav-link" data-nav-target="packages">Packages</a></li>
           <li class="nav-item"><a href="{{ route('user.landing') }}#inclusions" class="nav-link" data-nav-target="inclusions">Inclusions</a></li>
           <li class="nav-item"><a href="{{ route('user.landing') }}#about" class="nav-link" data-nav-target="about">About</a></li>
         </ul>
