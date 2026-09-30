@@ -1,9 +1,39 @@
+// Package Comparison Table: same dark base, heading style and glass surface
+// as the Features and Packages sections.
 // MOBILE FIRST: base = phone; wider screens only add inside `min-width`.
 .pcmp-bg {
     position: relative;
     width: 100%;
     background-color: $features-bg-base;
     isolation: isolate;
+    // Clip the bottom (star cut flat) and sides, but let the top overflow so the side star can extend into the Packages section above.
+    clip-path: inset(-100vh 0 0 0);
+
+    &__image,
+    &__side-image {
+        position: absolute;
+        width: 100%;
+        pointer-events: none;
+    }
+
+    &__image {
+        bottom: 0;
+        left: 50%;
+        transform: translate(-50%, $pcmp-star-clip);
+        opacity: $pcmp-star-opacity;
+    }
+
+    &__side-image {
+        top: $pcmp-side-top;
+        left: 0;
+        transform: translateY($pcmp-side-shift);
+        opacity: $pcmp-side-opacity;
+    }
+
+    > .pcmp {
+        position: relative;
+        z-index: 1;
+    }
 }
 
 .pcmp {
@@ -12,6 +42,7 @@
     padding: $section-pad-top $section-pad-x $section-pad-bottom;
     color: $glass-text-title;
 
+    // Same heading recipe as .package-selection__title
     &__title {
         text-align: center;
         letter-spacing: 0.12em;
@@ -54,7 +85,7 @@
         }
     }
 
-    // Glass surface
+    // Glass surface (same recipe as .feature-card / .package-card)
     &__scroll {
         border-radius: $auth-radius-lg;
         padding: 0.25rem 0.75rem 0.5rem;

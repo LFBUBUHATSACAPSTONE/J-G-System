@@ -14,6 +14,21 @@
     background-position: center;
     background-repeat: no-repeat;
 
+    // Lower half of the Features star, continuing across the seam.
+    // star_full.webp is 1409x1432, so half its height is 716px.
+    &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        aspect-ratio: 1409 / 592;
+        background: url("/images/backgrounds/design/star_full.webp") center
+            bottom / 100% auto no-repeat;
+        z-index: -1;
+        pointer-events: none;
+    }
+
     &__title {
         text-align: center;
         letter-spacing: 0.12em;
@@ -119,9 +134,6 @@
         margin: 0 0 1.25rem;
     }
 
-    // "Book Now": light button with a soft vertical sheen. On hover it
-    // fades into the same purple -> red gradient as the navbar Sign up
-    // button, sweeping the angle 90deg -> 270deg like .btn-color-gradient--primary.
     // (A gradient can't be transitioned directly, so the brand gradient
     // lives on ::before and its opacity + angle are what animate.)
     &__cta {

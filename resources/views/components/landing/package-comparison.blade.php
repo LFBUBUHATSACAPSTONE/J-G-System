@@ -45,6 +45,8 @@
 ])
 
 <div id="inclusions" class="pcmp-bg position-relative z-1">
+  <img src="{{ asset('images/backgrounds/design/sides_star.webp') }}" alt="" aria-hidden="true" class="pcmp-bg__side-image">
+  <img src="{{ asset('images/backgrounds/design/star_tall.webp') }}" class="pcmp-bg__image" alt="" aria-hidden="true">
   <section class="pcmp" aria-labelledby="pcmp-title">
     <h2 class="pcmp__title" id="pcmp-title">{{ $title }}</h2>
 

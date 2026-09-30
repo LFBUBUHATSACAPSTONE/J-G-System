@@ -13,5 +13,8 @@
         object-fit: cover;
         z-index: -1;
         pointer-events: none;
+        // Dissolve the bottom of the artwork into the base colour so the hero has no hard edge; the Features background continues from here.
+        -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 12rem), transparent 100%);
+        mask-image: linear-gradient(to bottom, #000 calc(100% - 12rem), transparent 100%);
     }
 }

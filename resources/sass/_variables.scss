@@ -119,3 +119,17 @@ $section-pad-x: #{"clamp(1rem, 0.39rem + 2.59vw, 2rem)"};
 //Package Book Now Button
 $package-cta-from: oklch(0.545 0.236 307.3);
 $package-cta-to: oklch(0.595 0.234 22.6);
+
+// Star Tall Clip (Package Comparison Deco Img)
+$pcmp-star-clip: 13%;
+$pcmp-star-opacity: 0.6;
+
+// Side Star Img (Package Comparison Deco Img)
+$pcmp-side-top: -8%;
+$pcmp-side-shift: -40%;
+$pcmp-side-opacity: 0.6;
+
+$features-star-opacity: 1;
+
+// How far the Features background bleeds UP into the hero, so the hero's bottom edge dissolves into it instead of ending in a hard line.
+$features-bleed: 10rem;
