@@ -19,6 +19,7 @@
                 <li><a href="{{ route('user.landing') }}#">Home</a></li>
                 <li><a href="{{ route('user.landing') }}#features">Features</a></li>
                 <li><a href="{{ route('user.landing') }}#packages">Packages</a></li>
+                <li><a href="{{ route('user.landing') }}#inclusions">Inclusions</a></li>
                 <li><a href="{{ route('user.landing') }}#about">About</a></li>
             </ul>
         </div>
