@@ -5,7 +5,7 @@
     isolation: isolate;
     overflow: hidden;
 
-    // Red gradient sits on the background layer only: above the base color, below the section content (cards, title). 
+    // Red gradient sits on the background layer only: above the base color, below the section content (cards, title).
     &__image {
         position: absolute;
         inset: 0;
@@ -25,15 +25,24 @@
 
 .features-section {
     position: relative;
-    padding: 8rem 1rem;
+    // Shared fluid spacing (see $section-pad-* in _variables.scss).
+    padding: $section-pad-top $section-pad-x $section-pad-bottom;
 
-    @media (min-width: 576px) {
-        padding: 13rem 1.5rem;
-    }
-
-    @media (min-width: 992px) {
-        padding: 18rem 2rem;
-    }
+    // Features fills the screen below the header, so clicking the nav link
+    // shows only this section (Packages starts below the fold). The section
+    // top sits 1.5rem under the header (see scroll-padding-top in
+    // _navigation.scss), hence the + 1.5rem. Content is centered vertically;
+    // if it is taller than the screen (phones) it just grows.
+    min-height: calc(
+        100vh - var(--landing-header-h, #{$nav-header-offset + 1.5rem}) + 1.5rem
+    );
+    min-height: calc(
+        100svh - var(--landing-header-h, #{$nav-header-offset + 1.5rem}) +
+            1.5rem
+    );
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 
     &__title {
         text-align: center;
@@ -51,6 +60,7 @@
         display: grid;
         grid-template-columns: 1fr;
         gap: 1.5rem;
+        width: 100%;
         max-width: 1280px;
         margin: 0 auto;
 

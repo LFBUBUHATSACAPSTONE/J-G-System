@@ -1,14 +1,20 @@
-// Navbar in-page links (Home / Feature / Package).
+// Navbar in-page links (Home / Feature / Package / Inclusions).
 // navigation.js moves `.active` (and aria-current) to the link whose section is in view or that was just clicked. Only one link is ever active.
+// Follows the real header height (set by navigation.js as --landing-header-h)
+// so nav links land sections the same distance below the header on phone and
+// desktop. The 1.5rem tucks the section's top edge under the header, which is
+// what the previous fixed 5rem did on desktop (header ~6.5rem).
 html {
-    scroll-padding-top: $nav-header-offset;
+    scroll-padding-top: calc(
+        var(--landing-header-h, #{$nav-header-offset + 1.5rem}) - 1.5rem
+    );
 }
 
 .glass-header {
     background-color: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-  } //Safari Support
+} //Safari Support
 
 .navbar-brand img {
     width: 5rem;
@@ -17,6 +23,7 @@ html {
 .glass-header .navbar-nav .nav-link {
     position: relative;
     display: inline-block;
+    white-space: nowrap;
     color: rgb(255 255 255 / 0.6);
     font-weight: 400;
     transition: color 0.2s ease-in-out;

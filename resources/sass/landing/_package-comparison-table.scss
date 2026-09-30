@@ -1,3 +1,4 @@
+// MOBILE FIRST: base = phone; wider screens only add inside `min-width`.
 .pcmp-bg {
     position: relative;
     width: 100%;
@@ -8,16 +9,8 @@
 .pcmp {
     max-width: 1100px;
     margin: 0 auto;
-    padding: 2.5rem 1rem 3rem;
+    padding: $section-pad-top $section-pad-x $section-pad-bottom;
     color: $glass-text-title;
-
-    @media (min-width: 576px) {
-        padding: 3rem 1.5rem 3.5rem;
-    }
-
-    @media (min-width: 992px) {
-        padding: 3.5rem 2rem 4rem;
-    }
 
     &__title {
         text-align: center;
