@@ -48,9 +48,14 @@ function initForgotPassword() {
 
     modalEl.addEventListener("hidden.bs.modal", () => {
         const target = modalEl.querySelector(`${VIEW_SELECTOR} form`);
-        if (target) clearError(target);
+        if (target) {
+            target.reset();
+            clearError(target);
+        }
     });
 }
+
+const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || document.querySelector('input[name="_token"]')?.value || "";
 
 async function submitForgotPassword(modalEl, form) {
     const input = form.querySelector('input[name="identifier"]');
@@ -72,11 +77,12 @@ async function submitForgotPassword(modalEl, form) {
     try {
         const response = await fetch(form.action, {
             method: "POST",
+            credentials: "same-origin",
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN":
-                    form.querySelector('input[name="_token"]')?.value ?? "",
+                "X-CSRF-TOKEN": csrfToken,
+                "X-XSRF-TOKEN": csrfToken,
             },
             body: JSON.stringify({ identifier }),
         });
@@ -96,6 +102,7 @@ async function submitForgotPassword(modalEl, form) {
         setVerificationDestination(
             data.destination || maskIdentifier(identifier),
         );
+        input.value = "";
         setAuthView(modalEl, "verification");
         focusFirstField(modalEl);
     } catch {

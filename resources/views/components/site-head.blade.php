@@ -41,6 +41,7 @@ $noTracking = $noTracking
 <meta name="title" content="{{ $title }}">
 <meta name="description" content="{{ $description }}">
 <meta name="author" content="{{ $author }}">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content="website">

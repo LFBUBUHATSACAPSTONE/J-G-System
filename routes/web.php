@@ -1,10 +1,14 @@
 <?php
 
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\GoogleAuthController;
+use App\Http\Controllers\Auth\ModalAuthController;
+use App\Http\Controllers\Auth\ModalPasswordController;
+use App\Http\Controllers\Auth\ModalVerificationController;
 use Illuminate\Support\Facades\Route;
 
 // Front-End Verification Testing
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
     return view('welcome');
@@ -22,11 +26,12 @@ Auth::routes(['reset' => false]);
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-// Route::post('/login', fn() => back())->name('login');
-// Route::post('/register', fn() => back())->name('register');
-// Route::post('/password/email', fn() => back())->name('password.email');
-// Route::post('/verification/confirm', fn() => back())->name('verification.confirm');
-// Route::post('/password/update', fn() => back())->name('password.update');
+Route::post('/login', [ModalAuthController::class, 'login'])->name('login');
+Route::post('/register', [RegisterController::class, 'register'])->name('register');
+Route::post('/password/email', [ModalPasswordController::class, 'forgotPassword'])->name('password.email');
+Route::post('/verification/confirm', [ModalVerificationController::class, 'verificationConfirm'])->name('verification.confirm');
+Route::post('/verification/resend', [ModalVerificationController::class, 'verificationResend'])->name('verification.resend');
+Route::post('/password/update', [ModalPasswordController::class, 'passwordUpdate'])->name('password.update');
 
 // Temporary front-end test stubs. Merge into routes/web.php, add
 // `use Illuminate\Http\Request;` at the top, and keep
@@ -212,3 +217,5 @@ Route::post('/booking/payment', function (Request $r) {
 })->name('booking.payment');
 
 Route::view('/pricing', 'pricing');
+Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('auth.google.redirect');
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('auth.google.callback');

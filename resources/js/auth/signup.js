@@ -76,6 +76,8 @@ function initSignup() {
     });
 }
 
+const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || document.querySelector('input[name="_token"]')?.value || "";
+
 async function submitSignup(modalEl, form) {
     const field = (name) => form.querySelector(`[name="${name}"]`);
     const firstNameInput = field("first_name");
@@ -111,11 +113,12 @@ async function submitSignup(modalEl, form) {
     try {
         const response = await fetch(form.action, {
             method: "POST",
+            credentials: "same-origin",
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN":
-                    form.querySelector('input[name="_token"]')?.value ?? "",
+                "X-CSRF-TOKEN": csrfToken,
+                "X-XSRF-TOKEN": csrfToken,
             },
             body: JSON.stringify({
                 first_name: firstNameInput.value.trim(),

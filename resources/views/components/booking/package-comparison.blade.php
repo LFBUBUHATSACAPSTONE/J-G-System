@@ -14,7 +14,7 @@
         'rows' => [
             ['Audio System',              ['Basic', 'Mid Setup', 'Premium', 'Full Band Ready', 'Full Band Ready', 'Full Band + Stage']],
             ['Main Speaker (FOH)',        ['2 Units', '2 Units + Subwoofer', '2 Units', '4 Units + Subwoofer', '2 Units + Subwoofer', '4 Units + Subwoofer']],
-            ['Wireless Microphones',      ['2', '4', '4', '4', '4', '4']],
+            ['Wireless Microphones',      ['2', '2', '4', '4', '4', '4']],
             ['Wired Microphones',         [null, '2', '2', '4', '4', '4']],
             ['Mixer',                     ['Mackie ProFX16', 'Mackie ProFX16', 'Mackie ProFX16', 'Mackie DL16SE', 'Mackie DL16SE', 'Mackie DL16SE']],
             ['DJ Controller + Laptop',    [true, true, true, true, true, true]],
