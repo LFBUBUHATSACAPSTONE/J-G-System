@@ -1,0 +1,171 @@
+.features-bg {
+    position: relative;
+    width: 100%;
+    background-color: $features-bg-base;
+    // Top is open by the bleed amount; sides and bottom are cut flat. The lower half of the star is drawn by .package-selection::before (see _package.scss).
+    clip-path: inset(-#{$features-bleed} 0 0 0);
+
+    // Red gradient sits on the background layer only: above the base color,
+    // below the star and the section content (cards, title). It starts
+    // $features-bleed above the section and its own top edge is transparent,
+    // so it fades in over the bottom of the hero.
+    &__image {
+        position: absolute;
+        top: -#{$features-bleed};
+        left: 0;
+        width: 100%;
+        height: calc(100% + #{$features-bleed});
+        object-fit: cover;
+        pointer-events: none;
+    }
+
+    // Glow centre sits on the seam with Packages: this is the TOP half; the
+    // bottom half is drawn inside the Packages section.
+    &__star {
+        position: absolute;
+        top: 80%;
+        left: 50%;
+        width: 100%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+    }
+
+    > .features-section {
+        position: relative;
+        z-index: 1;
+    }
+}
+
+.features-section {
+    // Shared fluid spacing (see $section-pad-* in _variables.scss).
+    padding: $section-pad-top $section-pad-x $section-pad-bottom;
+
+    // Features fills the screen below the header, so clicking the nav link
+    // shows only this section (Packages starts below the fold). The section
+    // top sits 1.5rem under the header (see scroll-padding-top in
+    // _navigation.scss), hence the + 1.5rem. Content is centered vertically;
+    // if it is taller than the screen (phones) it just grows.
+    min-height: calc(
+        100vh - var(--landing-header-h, #{$nav-header-offset + 1.5rem}) + 1.5rem
+    );
+    min-height: calc(
+        100svh - var(--landing-header-h, #{$nav-header-offset + 1.5rem}) +
+            1.5rem
+    );
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    &__title {
+        text-align: center;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        font-family: $font-landing-heading-text;
+        font-weight: 800;
+        color: $features-title-color;
+        text-shadow: 0 2px 12px $features-title-shadow;
+        font-size: clamp(1.75rem, 3vw + 1rem, 2.75rem);
+        margin-bottom: 2.5rem;
+    }
+
+    &__grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        width: 100%;
+        max-width: 1280px;
+        margin: 0 auto;
+
+        @media (min-width: 576px) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        // 4 columns only when each card is wide enough to hold the
+        // one-line title at a readable size.
+        @media (min-width: 1200px) {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+}
+
+.feature-card {
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    color: $glass-text-title;
+    border-radius: $auth-radius-xl;
+
+    // Glass surface: translucent white + blur of whatever is behind the card
+    background: $glass-bg;
+    -webkit-backdrop-filter: blur($glass-blur) saturate(140%);
+    backdrop-filter: blur($glass-blur) saturate(140%);
+    border: 1px solid $glass-border;
+    box-shadow:
+        inset 0 1px 0 $glass-highlight,
+        0 8px 32px $glass-shadow;
+    transition:
+        background 0.25s ease,
+        transform 0.25s ease;
+
+    &:hover {
+        background: $glass-bg-hover;
+        transform: translateY(-2px);
+    }
+
+    // Lets the type scale with the card's own width (cqw units below).
+    container-type: inline-size;
+
+    @media (min-width: 1200px) {
+        padding: 1.25rem;
+    }
+
+    // ---- Type scale -------------------------------------------------
+    // Hierarchy (largest -> smallest):
+    //   section title  >  card name  >  card description
+    // The description is ALWAYS derived from the card name
+    // (name x 0.8, i.e. name is 1.25x the description), so the two can
+    // never invert or collapse together at any screen width.
+    // Below 1200px: fluid with viewport width.
+    // 1200px and up: fluid with the card's width so the name fits on one line.
+    &__name {
+        font-size: $feature-name-fluid;
+        line-height: 1.25;
+        font-weight: 700;
+        color: $glass-text-title;
+        margin-bottom: 0.75rem;
+
+        @media (min-width: 1200px) {
+            white-space: nowrap;
+            font-size: $feature-name-card-fit;
+        }
+    }
+
+    &__description {
+        font-size: calc(#{$feature-name-fluid} * #{$feature-desc-ratio});
+        line-height: 1.55;
+        font-weight: 300;
+        color: $glass-text-body;
+        margin-bottom: 0;
+
+        @media (min-width: 1200px) {
+            font-size: calc(#{$feature-name-card-fit} * #{$feature-desc-ratio});
+        }
+    }
+
+    &__body {
+        flex: 1;
+    }
+
+    &__icon {
+        display: flex;
+        align-self: center;
+        margin-top: auto;
+        padding-top: 2rem; // minimum text-to-icon gap; icon is pinned to the card bottom
+        color: $glass-text-title;
+
+        svg {
+            width: 26px;
+            height: 26px;
+        }
+    }
+}

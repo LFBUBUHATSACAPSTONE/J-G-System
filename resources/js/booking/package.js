@@ -1,4 +1,3 @@
-
 const SELECTOR = "[data-package-selection]";
 
 function initPackageSelection() {
@@ -15,7 +14,11 @@ function initPackageSelection() {
             const card = trigger.closest("[data-package-card]");
             if (!card) return;
 
-            event.preventDefault();
+            // A trigger that opens the auth modal (data-bs-toggle) must
+            // keep its default behaviour; plain buttons don't need it.
+            if (!trigger.hasAttribute("data-bs-toggle")) {
+                event.preventDefault();
+            }
 
             trigger.dispatchEvent(
                 new CustomEvent("booking:package-saved", {

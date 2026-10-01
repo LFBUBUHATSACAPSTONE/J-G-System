@@ -4,6 +4,7 @@ $body-bg: #f8fafc;
 // Typography
 $font-family-sans-serif: "Nunito", sans-serif;
 $font-family-text: "Poppins", sans-serif;
+$font-landing-heading-text: "Montserrat", sans-serif;
 $font-size-base: 0.9rem;
 $line-height-base: 1.6;
 $font-button--responsive: clamp(1rem, 1.1vw, 1.2rem);
@@ -30,9 +31,9 @@ $opacity-full: 1;
 $opacity-med: 0.8;
 
 // Coverflow Carousel
-$coverflow-height: 420px;
-$coverflow-center-width: 500px;
-$coverflow-side-width: 280px;
+$coverflow-height: 580px;
+$coverflow-center-width: 760px;
+$coverflow-side-width: 420px;
 
 // Auth Modal
 $auth-bg: oklch(14.735% 0.01949 294.184);
@@ -76,3 +77,59 @@ $auth-radius-pill: 999px;
 
 // Booking
 $event-schedule-selected-bg: oklch(54.134% 0.24669 293.012deg);
+
+// Features Section Background
+$features-bg-base: #131313;
+
+// Glassmorphism (feature cards)
+$glass-bg: oklch(100% 0 0 / 0.07);
+$glass-bg-hover: oklch(100% 0 0 / 0.1);
+$glass-border: oklch(100% 0 0 / 0.18);
+$glass-highlight: oklch(100% 0 0 / 0.22);
+$glass-shadow: oklch(0% 0 0 / 0.35);
+$glass-blur: 10px;
+$glass-text-title: oklch(100% 0 0);
+$glass-text-body: oklch(100% 0 0 / 0.88);
+
+// Features heading (muted lavender-gray)
+$features-title-color: oklch(62% 0.018 310);
+$features-title-shadow: oklch(0% 0 0 / 0.45);
+
+// Feature card type scale
+$feature-name-fluid: #{"clamp(1.05rem, 0.98rem + 0.3vw, 1.2rem)"};
+$feature-name-card-fit: #{"min(1.05rem, 6cqw)"};
+// Description is always this fraction of the card name (name = 1.25x description).
+$feature-desc-ratio: 0.8;
+
+// Footer (neutral greys; same values as the previous hex colors)
+$footer-bg: $features-bg-base; // same base as the Features
+$footer-text: oklch(92.494% 0 0);
+$footer-text-link: oklch(85.451% 0 0);
+$footer-text-muted: oklch(68.622% 0 0);
+
+// Header Navigation
+$nav-header-offset: 5rem;
+
+// Landing section spacing
+// Scales fluidly: min at 375px wide, max at 992px wide.
+$section-pad-top: #{"clamp(2.5rem, 1.89rem + 2.59vw, 3.5rem)"};
+$section-pad-bottom: #{"clamp(3rem, 2.39rem + 2.59vw, 4rem)"};
+$section-pad-x: #{"clamp(1rem, 0.39rem + 2.59vw, 2rem)"};
+
+//Package Book Now Button
+$package-cta-from: oklch(0.545 0.236 307.3);
+$package-cta-to: oklch(0.595 0.234 22.6);
+
+// Star Tall Clip (Package Comparison Deco Img)
+$pcmp-star-clip: 13%;
+$pcmp-star-opacity: 0.6;
+
+// Side Star Img (Package Comparison Deco Img)
+$pcmp-side-top: -8%;
+$pcmp-side-shift: -40%;
+$pcmp-side-opacity: 0.6;
+
+$features-star-opacity: 1;
+
+// How far the Features background bleeds UP into the hero, so the hero's bottom edge dissolves into it instead of ending in a hard line.
+$features-bleed: 10rem;

@@ -1,5 +1,4 @@
 @props([
-'href' => null,
 'packages' => [
 [
 'name' => 'Budget Lite',
@@ -8,6 +7,8 @@
 'Ideal for small and intimate events',
 'Basic yet clear sound setup',
 'Simple lighting for ambience',
+'Good for meetings and mini gatherings',
+'Easy and quick installation',
 ],
 ],
 [
@@ -16,6 +17,9 @@
 'features' => [
 'Perfect for birthdays and school programs',
 'Brighter party lighting',
+'Improved sound coverage',
+'Great for corporate events',
+'Fun and lively atmosphere',
 ],
 ],
 [
@@ -25,6 +29,8 @@
 'Best for simple weddings',
 'LED wall with live feed',
 'Clean and elegant audio',
+'For church or reception setups',
+'Balanced sound and lighting',
 ],
 ],
 [
@@ -63,10 +69,12 @@
 ],
 ])
 
+
+{{--Package Card Parent Containers--}}
 <div id="packages" class="package-selection position-relative z-1" data-package-selection>
-    <h1 class="package-selection__title fw-bold font-family-text text-caption-gradient">
+    <h2 class="package-selection__title">
         Packages
-    </h1>
+    </h2>
 
     <div class="package-selection__grid">
         @foreach ($packages as $package)
@@ -74,8 +82,7 @@
             :name="$package['name']"
             :price="$package['price']"
             :features="$package['features']"
-            :featured="$package['featured'] ?? false"
-            :href="$package['href'] ?? $href" />
+            :featured="$package['featured'] ?? false" />
         @endforeach
     </div>
 </div>

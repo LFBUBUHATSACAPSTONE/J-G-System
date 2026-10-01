@@ -1,6 +1,7 @@
 // Fonts
 @import url("https://fonts.bunny.net/css?family=Nunito");
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap");
 
 // Variables
 @import "variables";
@@ -11,19 +12,22 @@
 // Utilities
 @import "utilities";
 
-// Pseudo Classes and Elements
-@import "pseudo";
-
-// Coverflow Carousel
-@import "coverflow-carousel";
-
-// Landing & Landing Caption Gradient and Text Stylings
+// Gradient Button and Text
+@import "gradient-button";
 @import "gradient-text";
-@import "landing-caption";
-@import "features";
 
 // Modal and Forms
 @import "auth-modal";
+
+// Landing & Landing Caption Gradient and Text Stylings
+// Header Navigation
+@import "./landing/navigation";
+@import "./landing/coverflow-carousel";
+@import "./landing/landing-caption";
+@import "./landing/landing-hero";
+@import "./landing/features";
+@import "./landing/package-comparison-table";
+@import "./landing/footer";
 
 // Booking
 @import "./booking/package";

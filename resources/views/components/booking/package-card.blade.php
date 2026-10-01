@@ -3,9 +3,9 @@
 'price',
 'features' => [],
 'featured' => false,
-'href' => null,
 ])
 
+{{--Individual Package Cards Contents--}} 
 <div
   class="package-card{{ $featured ? ' package-card--featured' : '' }}"
   data-package-card
@@ -15,15 +15,17 @@
   <h3 class="package-card__name">{{ $name }}</h3>
   <p class="package-card__price">Php {{ number_format((float) $price) }}</p>
 
-  @if ($href)
-  <a href="{{ $href }}" class="package-card__cta btn-color-white" data-package-select>
+  {{-- Opens the shared #authModal on its Login view (same attributes every
+       other login CTA uses). data-package-select still fires
+       booking:package-saved with the chosen package (see package.js). --}}
+  <x-button type="button"
+    class="package-card__cta"
+    data-package-select
+    data-bs-toggle="modal"
+    data-bs-target="#authModal"
+    data-auth-view="login">
     Book Now
-  </a>
-  @else
-  <button type="button" class="package-card__cta btn-color-white" data-package-select>
-    Book Now
-  </button>
-  @endif
+  </x-button>
 
   <div class="package-card__divider"></div>
 
