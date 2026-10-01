@@ -52,8 +52,6 @@ function initLogin() {
     });
 }
 
-const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || document.querySelector('input[name="_token"]')?.value || "";
-
 async function submitLogin(form) {
     const identifierInput = form.querySelector('input[name="identifier"]');
     const passwordInput = form.querySelector('input[name="password"]');
@@ -85,12 +83,11 @@ async function submitLogin(form) {
     try {
         const response = await fetch(form.action, {
             method: "POST",
-            credentials: "same-origin",
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN": csrfToken,
-                "X-XSRF-TOKEN": csrfToken,
+                "X-CSRF-TOKEN":
+                    form.querySelector('input[name="_token"]')?.value ?? "",
             },
             body: JSON.stringify({ identifier, password, remember }),
         });
@@ -98,11 +95,11 @@ async function submitLogin(form) {
         if (!response.ok) {
             const data = await response.json().catch(() => ({}));
             /* The stub/back end can't say *which* field is wrong for security reasons (avoids confirming whether the account exists), so this stays a combined message — but it's still specific about what to check rather than a bare "error".
-            */
+             */
             showError(
                 form,
                 data.message ||
-                    "We couldn't sign you in — check that your email/phone and password are correct.",
+                    "We couldn't sign you in — check that your email and password are correct.",
                 [identifierInput, passwordInput],
             );
             return;

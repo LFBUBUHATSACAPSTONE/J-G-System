@@ -29,10 +29,10 @@
 
   <div class="auth-modal__field">
     <label for="signup-identifier">
-      <span>Email or Phone</span>
+      <span>Email</span>
       <span class="field-required__identifier">*</span>
     </label>
-    <input type="text" id="signup-identifier" name="identifier" placeholder="juanDelaCruz@gmail.com / 09XX-XXX-XXX" required>
+    <input type="text" id="signup-identifier" name="identifier" inputmode="email" placeholder="juanDelaCruz@gmail.com" required>
     <small class="auth-modal__field-error d-none" data-field-error="identifier"></small>
   </div>
 
@@ -69,7 +69,7 @@
 
 <div class="auth-modal__sso">
   <x-auth.link-button
-    :href="route('auth.google.redirect')"
+    id="google-login-btn"
     :aria-label="'Google Login'"
     icon="images/icons/auth/google.svg"
     icon-alt="Google Icon">

@@ -1,15 +1,15 @@
 <h2 class="auth-modal__title">Forgot Password</h2>
-<p class="auth-modal__subtext">Enter Email or Phone Number</p>
+<p class="auth-modal__subtext">Enter your email address</p>
 
 <form method="POST" action="{{ route('password.email') }}" novalidate>
   @csrf
 
   <div class="auth-modal__field">
     <label for="forgot-identifier">
-      <span>Email or Phone</span>
+      <span>Email</span>
       <span class="field-required__identifier">*</span>
     </label>
-    <input type="text" id="forgot-identifier" name="identifier" autocomplete="username" placeholder="juanDelaCruz@gmail.com / 09XX-XXX-XXX" required>
+    <input type="text" id="forgot-identifier" name="identifier" inputmode="email" autocomplete="username" placeholder="juanDelaCruz@gmail.com" required>
     <small class="auth-modal__field-error d-none" data-field-error="identifier"></small>
   </div>
 
