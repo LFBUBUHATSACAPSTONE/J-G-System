@@ -18,7 +18,9 @@ import {
 } from "./verification-code.js";
 import {
     getIdentifierError,
-    wireLiveField,
+    wireLiveFieldImmediate,
+    clearAllFieldStates,
+    clearInvalidWithoutFieldError,
     setFieldState,
 } from "./validation.js";
 
@@ -31,7 +33,8 @@ function initForgotPassword() {
 
     const form = modalEl.querySelector(`${VIEW_SELECTOR} form`);
     if (form) {
-        wireLiveField(form, "identifier", getIdentifierError);
+        // Validates on every keystroke (not on blur).
+        wireLiveFieldImmediate(form, "identifier", getIdentifierError);
     }
 
     modalEl.addEventListener("submit", (event) => {
@@ -48,7 +51,10 @@ function initForgotPassword() {
 
     modalEl.addEventListener("hidden.bs.modal", () => {
         const target = modalEl.querySelector(`${VIEW_SELECTOR} form`);
-        if (target) clearError(target);
+        if (target) {
+            clearError(target);
+            clearAllFieldStates(target);
+        }
     });
 }
 
@@ -127,9 +133,7 @@ function clearError(form) {
         errorEl.textContent = "";
         errorEl.classList.add("d-none");
     }
-    form.querySelector('input[name="identifier"]')?.classList.remove(
-        "is-invalid",
-    );
+    clearInvalidWithoutFieldError(form);
 }
 
 document.addEventListener("DOMContentLoaded", initForgotPassword);

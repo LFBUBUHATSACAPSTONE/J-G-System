@@ -151,6 +151,37 @@ function clearFieldState(input, errorEl) {
 }
 
 /*
+ Used by each auth form's banner-level clearError(). That function runs on
+ every 'input' in the form (the listener sits on the modal, so it fires
+ "after" the field's own live-validation listener) and used to strip
+ .is-invalid from every input — which would wipe the red border that
+ wireLiveFieldImmediate had just set while the user is still typing. This
+ clears only inputs with no visible per-field message (e.g. ones flagged by
+ a server error banner), and leaves live-validated fields to their own
+ listener.
+ */
+function clearInvalidWithoutFieldError(form) {
+    form.querySelectorAll("input").forEach((input) => {
+        const errorEl = form.querySelector(
+            `[data-field-error="${input.name}"]`,
+        );
+        if (errorEl && !errorEl.classList.contains("d-none")) return;
+        input.classList.remove("is-invalid");
+    });
+}
+
+// Full reset (modal closed / form reset): clears every input's border AND
+// its per-field message text.
+function clearAllFieldStates(form) {
+    form.querySelectorAll("input").forEach((input) => {
+        clearFieldState(
+            input,
+            form.querySelector(`[data-field-error="${input.name}"]`),
+        );
+    });
+}
+
+/*
  Single-purpose counterparts to getIdentifierError, for forms that have a dedicated Email field and a dedicated Contact Number field rather than one
  combined identifier field.
  */
@@ -259,4 +290,6 @@ export {
     wireLiveFieldImmediate,
     setFieldState,
     clearFieldState,
+    clearInvalidWithoutFieldError,
+    clearAllFieldStates,
 };

@@ -12,8 +12,10 @@
 
 import {
     getIdentifierError,
-    getRequiredError,
-    wireLiveField,
+    getPasswordError,
+    wireLiveFieldImmediate,
+    clearInvalidWithoutFieldError,
+    clearAllFieldStates,
     setFieldState,
 } from "./validation.js";
 
@@ -26,9 +28,11 @@ function initLogin() {
 
     const form = modalEl.querySelector(`${VIEW_SELECTOR} form`);
     if (form) {
-        wireLiveField(form, "identifier", getIdentifierError);
-        // No format rule on login, just a flag if it's left empty.
-        wireLiveField(form, "password", (v) => getRequiredError(v, "Password"));
+        // Validates on every keystroke (not on blur).
+        wireLiveFieldImmediate(form, "identifier", getIdentifierError);
+        // Same password rules as Sign up / New Password, so the feedback is
+        // live and consistent across the modal.
+        wireLiveFieldImmediate(form, "password", getPasswordError);
     }
 
     modalEl.addEventListener("submit", (event) => {
@@ -48,6 +52,7 @@ function initLogin() {
         if (target) {
             target.reset();
             clearError(target);
+            clearAllFieldStates(target);
         }
     });
 }
@@ -70,7 +75,7 @@ async function submitLogin(form) {
         return;
     }
 
-    const passwordError = getRequiredError(password, "Password");
+    const passwordError = getPasswordError(password);
     if (passwordError) {
         const errorEl = form.querySelector('[data-field-error="password"]');
         setFieldState(passwordInput, errorEl, passwordError);
@@ -132,9 +137,7 @@ function clearError(form) {
         errorEl.textContent = "";
         errorEl.classList.add("d-none");
     }
-    form.querySelectorAll("input").forEach((input) =>
-        input.classList.remove("is-invalid"),
-    );
+    clearInvalidWithoutFieldError(form);
 }
 
 document.addEventListener("DOMContentLoaded", initLogin);

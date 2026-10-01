@@ -21,7 +21,9 @@ import {
     getIdentifierError,
     getPasswordError,
     getNameError,
-    wireLiveField,
+    wireLiveFieldImmediate,
+    clearInvalidWithoutFieldError,
+    clearAllFieldStates,
     setFieldState,
 } from "./validation.js";
 
@@ -36,15 +38,23 @@ function initSignup() {
 
     const form = modalEl.querySelector(`${VIEW_SELECTOR} form`);
     if (form) {
-        wireLiveField(form, "first_name", (v) => getNameError(v, "First name"));
-        wireLiveField(form, "last_name", (v) => getNameError(v, "Last name"));
+        // The letters-only filter is registered BEFORE the live validators so
+        // each validator sees the already-filtered value (otherwise a typed
+        // "1" would flash an error for text that is about to be removed).
         initNameFilter(form, "first_name");
         initNameFilter(form, "last_name");
-        wireLiveField(form, "identifier", getIdentifierError);
-        wireLiveField(form, "password", getPasswordError);
+        wireLiveFieldImmediate(form, "first_name", (v) =>
+            getNameError(v, "First name"),
+        );
+        wireLiveFieldImmediate(form, "last_name", (v) =>
+            getNameError(v, "Last name"),
+        );
+        // Email and password validate on every keystroke (not on blur).
+        wireLiveFieldImmediate(form, "identifier", getIdentifierError);
+        wireLiveFieldImmediate(form, "password", getPasswordError);
 
-        /* Checkboxes don't fit wireLiveField's blur/input pattern (there's nothing to "type"), so this listens to 'change' directly. Only clears the error once checked — unchecking after already having agreed re-flags it immediately, same as any other live field.
-         */
+        /* Checkboxes don't fit wireLiveFieldImmediate's 'input' pattern (there's nothing to "type"), so this listens to 'change' directly. Only clears the error once checked — unchecking after already having agreed re-flags it immediately, same as any other live field.
+        */
         const termsInput = form.querySelector('[name="terms"]');
         const termsError = form.querySelector('[data-field-error="terms"]');
         termsInput?.addEventListener("change", () => {
@@ -78,7 +88,7 @@ function initSignup() {
  Blocks digits/symbols from ever being typed into First/Last Name — same
  "filter on input" approach as the booking flow's Client Information step
  (initNameFilter in booking/client-information.js). getNameError still runs
- via wireLiveField and on submit as a backstop (e.g. for pasted text).
+ via wireLiveFieldImmediate and on submit as a backstop (e.g. for pasted text).
 */
 function initNameFilter(form, fieldName) {
     const input = form.querySelector(`[name="${fieldName}"]`);
@@ -187,14 +197,13 @@ function clearError(form) {
         errorEl.textContent = "";
         errorEl.classList.add("d-none");
     }
-    form.querySelectorAll("input").forEach((input) =>
-        input.classList.remove("is-invalid"),
-    );
+    clearInvalidWithoutFieldError(form);
 }
 
 function resetForm(form) {
     form.reset();
     clearError(form);
+    clearAllFieldStates(form);
 }
 
 document.addEventListener("DOMContentLoaded", initSignup);
