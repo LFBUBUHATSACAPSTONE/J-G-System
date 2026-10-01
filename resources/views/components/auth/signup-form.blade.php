@@ -58,6 +58,7 @@
       <input type="checkbox" name="terms" required>
       I agree to the <a href="#" target="_blank">Terms & Condition</a>
     </label>
+    <small class="auth-modal__field-error d-none" data-field-error="terms"></small>
   </div>
 
   <x-button type="submit" class="auth-modal__submit btn-color-gradient--primary">
