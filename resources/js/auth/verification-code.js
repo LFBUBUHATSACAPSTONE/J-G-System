@@ -34,6 +34,7 @@
  */
 
 import { setAuthView } from "../auth-modal.js";
+import { getCsrfToken } from "./csrf.js";
 import { setResetCredentials } from "./new-password.js";
 
 const AUTH_MODAL_ID = "authModal";
@@ -53,11 +54,6 @@ function setVerificationContext(context) {
 
 function setVerificationToken(token) {
     verificationToken = token || "";
-    document
-        .querySelectorAll('input[name="verification_token"]')
-        .forEach((input) => {
-            input.value = verificationToken;
-        });
 }
 
 function initVerificationCode() {
@@ -164,8 +160,6 @@ function fillBoxes(startBox, text) {
     boxes[Math.min(start + digits.length, boxes.length - 1)].focus();
 }
 
-const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || document.querySelector('input[name="_token"]')?.value || "";
-
 async function submitVerificationCode(modalEl, form) {
     const code = getVerificationCode(form);
     if (code.length < CODE_LENGTH) {
@@ -174,10 +168,6 @@ async function submitVerificationCode(modalEl, form) {
     }
 
     const submitBtn = form.querySelector('[type="submit"]');
-    const hiddenTokenInput = form.querySelector('input[name="verification_token"]');
-    if (hiddenTokenInput) {
-        hiddenTokenInput.value = verificationToken;
-    }
     clearVerificationError(form);
     submitBtn.disabled = true;
 
@@ -188,8 +178,7 @@ async function submitVerificationCode(modalEl, form) {
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN": csrfToken,
-                "X-XSRF-TOKEN": csrfToken,
+                "X-CSRF-TOKEN": getCsrfToken(form),
             },
             body: JSON.stringify({
                 code,
@@ -284,12 +273,11 @@ function startResendCooldown(seconds = RESEND_COOLDOWN_SECONDS) {
 
 function resetVerificationCode() {
     verificationContext = DEFAULT_CONTEXT;
-    setVerificationToken("");
+    verificationToken = "";
 
     document.querySelectorAll(BOX_SELECTOR).forEach((b) => {
         b.value = "";
     });
-    setVerificationDestination("");
     document
         .querySelectorAll("[data-verification-error]")
         .forEach((el) => clearVerificationError(el.closest("form")));

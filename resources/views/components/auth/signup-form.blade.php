@@ -29,10 +29,10 @@
 
   <div class="auth-modal__field">
     <label for="signup-identifier">
-      <span>Email or Phone</span>
+      <span>Email</span>
       <span class="field-required__identifier">*</span>
     </label>
-    <input type="text" id="signup-identifier" name="identifier" placeholder="juanDelaCruz@gmail.com / 09XX-XXX-XXX" required>
+    <input type="text" id="signup-identifier" name="identifier" inputmode="email" placeholder="juanDelaCruz@gmail.com" required>
     <small class="auth-modal__field-error d-none" data-field-error="identifier"></small>
   </div>
 
@@ -59,6 +59,7 @@
       I agree to the <a href="#" target="_blank">Terms & Condition</a>
     </label>
   </div>
+  <small class="auth-modal__field-error d-none" data-field-error="terms"></small>
 
   <x-button type="submit" class="auth-modal__submit btn-color-gradient--primary">
     Create account
@@ -69,7 +70,8 @@
 
 <div class="auth-modal__sso">
   <x-auth.link-button
-    :href="route('auth.google.redirect')"
+    :disabled="true"
+    id="google-login-btn"
     :aria-label="'Google Login'"
     icon="images/icons/auth/google.svg"
     icon-alt="Google Icon">
@@ -77,6 +79,7 @@
   </x-auth.link-button>
 
   <x-auth.link-button
+    :disabled="true"
     id="apple-login-btn"
     :aria-label="'Apple Login'"
     icon="images/icons/auth/apple.svg"

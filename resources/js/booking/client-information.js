@@ -21,6 +21,7 @@
  *   422 {"message": "…", "errors": {"first_name": ["…"], …}} -> rejected
  */
 
+import { getCsrfToken } from "../auth/csrf.js";
 import {
     getRequiredError,
     getEmailError,
@@ -142,8 +143,7 @@ async function submitPersonalInformation(form) {
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN":
-                    form.querySelector('input[name="_token"]')?.value ?? "",
+                "X-CSRF-TOKEN": getCsrfToken(form),
             },
             body: JSON.stringify({
                 first_name: firstNameInput.value.trim(),

@@ -23,6 +23,7 @@
  *   422 {"message": "…", "errors": {"event_start_date": ["…"], …}} -> rejected
  */
 
+import { getCsrfToken } from "../auth/csrf.js";
 import { setFieldState } from "../auth/validation.js";
 
 const FORM_ID = "event-schedule-form";
@@ -375,8 +376,7 @@ async function submitEventSchedule(form) {
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN":
-                    form.querySelector('input[name="_token"]')?.value ?? "",
+                "X-CSRF-TOKEN": getCsrfToken(form),
             },
             body: JSON.stringify({
                 event_start_date: startDateInput.value,

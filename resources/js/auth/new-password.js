@@ -17,11 +17,14 @@
  * memory only; they are cleared on success and when the modal closes.
  */
 
+import { getCsrfToken } from "./csrf.js";
 import { setAuthView } from "../auth-modal.js";
 import {
     getPasswordError,
     getMatchError,
-    wireLiveField,
+    wireLiveFieldImmediate,
+    clearInvalidWithoutFieldError,
+    clearAllFieldStates,
     setFieldState,
 } from "./validation.js";
 
@@ -40,7 +43,8 @@ function initNewPassword() {
 
     const form = modalEl.querySelector(`${VIEW_SELECTOR} form`);
     if (form) {
-        wireLiveField(form, "password", getPasswordError);
+        // Validates on every keystroke (not on blur).
+        wireLiveFieldImmediate(form, "password", getPasswordError);
 
         /* Confirm field needs to check equality against the live password value, so it gets its own listeners rather than going through wireLiveField (which only sees its own field's value).
         */
@@ -51,24 +55,20 @@ function initNewPassword() {
         const confirmError = form.querySelector(
             '[data-field-error="password_confirmation"]',
         );
-        let confirmTouched = false;
 
         const checkMatch = () => {
-            if (!confirmTouched) return;
             setFieldState(
                 confirmInput,
                 confirmError,
                 getMatchError(confirmInput.value, passwordInput.value),
             );
         };
-        confirmInput?.addEventListener("blur", () => {
-            confirmTouched = true;
-            checkMatch();
-        });
         confirmInput?.addEventListener("input", checkMatch);
-        /* Also re-check confirm as the password itself changes (e.g. user fixes the password after already filling in confirm), but only once confirm has been touched — otherwise this would flag confirm as empty/mismatched before the user has even reached it.
+        /* Also re-check confirm as the password itself changes (e.g. user fixes the password after already filling in confirm), but only once confirm has a value — otherwise this would flag confirm as empty/mismatched before the user has even reached it.
         */
-        passwordInput?.addEventListener("input", checkMatch);
+        passwordInput?.addEventListener("input", () => {
+            if (confirmInput.value) checkMatch();
+        });
     }
 
     modalEl.addEventListener("submit", (event) => {
@@ -88,8 +88,6 @@ function initNewPassword() {
         if (target) resetForm(target);
     });
 }
-
-const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || document.querySelector('input[name="_token"]')?.value || "";
 
 async function submitNewPassword(modalEl, form) {
     const password = form.querySelector('input[name="password"]');
@@ -121,12 +119,10 @@ async function submitNewPassword(modalEl, form) {
     try {
         const response = await fetch(form.action, {
             method: "POST",
-            credentials: "same-origin",
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN": csrfToken,
-                "X-XSRF-TOKEN": csrfToken,
+                "X-CSRF-TOKEN": getCsrfToken(form),
             },
             body: JSON.stringify({
                 token: resetCredentials.token,
@@ -175,15 +171,14 @@ function clearError(form) {
         errorEl.textContent = "";
         errorEl.classList.add("d-none");
     }
-    form.querySelectorAll("input").forEach((input) =>
-        input.classList.remove("is-invalid"),
-    );
+    clearInvalidWithoutFieldError(form);
 }
 
 function resetForm(form) {
     setResetCredentials();
     form.reset();
     clearError(form);
+    clearAllFieldStates(form);
 }
 
 document.addEventListener("DOMContentLoaded", initNewPassword);

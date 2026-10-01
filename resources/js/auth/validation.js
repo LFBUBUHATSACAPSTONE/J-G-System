@@ -1,6 +1,6 @@
 /**
  * Shared client-side validation helpers.
- * Single source of truth for the identifier/email/phone/password regexes,
+ * Single source of truth for the email/phone/password regexes,
  * and for building error messages that explain *what* is wrong rather than
  * a generic "invalid" message.
  */
@@ -23,9 +23,10 @@ function isValidPhone(value) {
     return PHONE_CHARS_REGEX.test(value) && digits.length === PHONE_DIGITS;
 }
 
+// Auth identifier is email-only. isValidPhone stays below for the booking
+// flow's phone fields (getPhoneError), which are unaffected.
 function isValidIdentifier(value) {
-    const v = value.trim();
-    return isValidEmail(v) || isValidPhone(v);
+    return isValidEmail(value.trim());
 }
 
 function isValidPassword(value) {
@@ -33,32 +34,20 @@ function isValidPassword(value) {
 }
 
 /*
- Returns '' if the identifier is valid, or a message naming exactly what's wrong with it. Branches on what the user *appears* to be typing (email vs phone) so the message matches their intent instead of listing both formats every time.
+ Returns '' if the identifier (email) is valid, or a message naming exactly what's wrong with it. The auth modal's identifier field is email-only; phone validation lives on in getPhoneError / getContactNumberError for the booking flow and is not used here.
  */
 function getIdentifierError(value) {
     const v = value.trim();
-    if (!v) return "Enter your email address or phone number.";
+    if (!v) return "Enter your email address.";
 
-    if (v.includes("@")) {
-        if (!/^[^\s@]+@/.test(v)) return "Enter the part before the @ symbol.";
-        if (!/@[^\s@]+\./.test(v))
-            return "Email is missing a domain, e.g. name@example.com.";
-        return isValidEmail(v)
-            ? ""
-            : "That doesn't look like a valid email address.";
-    }
-
-    const looksLikePhone = /^[\d\s()+-]+$/.test(v);
-    if (looksLikePhone) {
-        const digits = v.replace(/\D/g, "");
-        if (digits.length < PHONE_DIGITS)
-            return `Phone number must be exactly ${PHONE_DIGITS} digits (${digits.length} entered).`;
-        if (digits.length > PHONE_DIGITS)
-            return `Phone number must be exactly ${PHONE_DIGITS} digits (${digits.length} entered).`;
-        return isValidPhone(v) ? "" : "Enter a valid phone number.";
-    }
-
-    return "Enter a valid email address or phone number.";
+    if (!v.includes("@"))
+        return "Email must include an @ symbol, e.g. name@example.com.";
+    if (!/^[^\s@]+@/.test(v)) return "Enter the part before the @ symbol.";
+    if (!/@[^\s@]+\./.test(v))
+        return "Email is missing a domain, e.g. name@example.com.";
+    return isValidEmail(v)
+        ? ""
+        : "That doesn't look like a valid email address.";
 }
 
 /*
@@ -162,6 +151,37 @@ function clearFieldState(input, errorEl) {
 }
 
 /*
+ Used by each auth form's banner-level clearError(). That function runs on
+ every 'input' in the form (the listener sits on the modal, so it fires
+ "after" the field's own live-validation listener) and used to strip
+ .is-invalid from every input — which would wipe the red border that
+ wireLiveFieldImmediate had just set while the user is still typing. This
+ clears only inputs with no visible per-field message (e.g. ones flagged by
+ a server error banner), and leaves live-validated fields to their own
+ listener.
+ */
+function clearInvalidWithoutFieldError(form) {
+    form.querySelectorAll("input").forEach((input) => {
+        const errorEl = form.querySelector(
+            `[data-field-error="${input.name}"]`,
+        );
+        if (errorEl && !errorEl.classList.contains("d-none")) return;
+        input.classList.remove("is-invalid");
+    });
+}
+
+// Full reset (modal closed / form reset): clears every input's border AND
+// its per-field message text.
+function clearAllFieldStates(form) {
+    form.querySelectorAll("input").forEach((input) => {
+        clearFieldState(
+            input,
+            form.querySelector(`[data-field-error="${input.name}"]`),
+        );
+    });
+}
+
+/*
  Single-purpose counterparts to getIdentifierError, for forms that have a dedicated Email field and a dedicated Contact Number field rather than one
  combined identifier field.
  */
@@ -193,8 +213,7 @@ function getPhoneError(value) {
  digits must start with "09" (e.g. 0917xxxxxxx). isValidPhone() isn't
  reused here since it has no notion of a required prefix; kept as a
  separate function rather than changing getPhoneError/isValidPhone so the
- more permissive auth identifier field (which accepts phone numbers in
- general) is unaffected. No "Enter a valid phone number" character-format
+ general-purpose getPhoneError is unaffected. No "Enter a valid phone number" character-format
  fallback here — these fields are digit-filtered on input (see
  initDigitsOnlyFilter in client-information.js/event-information.js), so
  non-digit characters can never reach this validator and that message
@@ -271,4 +290,6 @@ export {
     wireLiveFieldImmediate,
     setFieldState,
     clearFieldState,
+    clearInvalidWithoutFieldError,
+    clearAllFieldStates,
 };

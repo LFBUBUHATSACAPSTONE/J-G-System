@@ -27,6 +27,7 @@
  *   422 {"message": "…", "errors": {"event_name": ["…"], …}} -> rejected
  */
 
+import { getCsrfToken } from "../auth/csrf.js";
 import {
     getRequiredError,
     getContactNumberError,
@@ -285,8 +286,7 @@ async function submitEventInformation(form) {
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN":
-                    form.querySelector('input[name="_token"]')?.value ?? "",
+                "X-CSRF-TOKEN": getCsrfToken(form),
             },
             body: JSON.stringify({
                 event_name: eventNameInput.value.trim(),
