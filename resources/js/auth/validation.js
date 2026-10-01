@@ -119,6 +119,32 @@ function wireLiveField(form, fieldName, errorFn) {
     });
 }
 
+/*
+ Same contract as wireLiveField, but for fields that should give feedback
+ on the very first keystroke instead of waiting for a first blur — e.g.
+ a field where mistakes are cheap to point out immediately (contact
+ details typed in the booking flow). errorFn still receives the raw
+ value, so an errorFn that treats an empty value as invalid (a required
+ field) will only ever surface that once the field has been touched,
+ since 'input' cannot fire on an untouched field.
+ */
+function wireLiveFieldImmediate(
+    form,
+    fieldName,
+    errorFn,
+    { allowEmpty = false, isEmpty = (v) => !v.trim() } = {},
+) {
+    const input = form.querySelector(`[name="${fieldName}"]`);
+    const errorEl = form.querySelector(`[data-field-error="${fieldName}"]`);
+    if (!input) return;
+
+    input.addEventListener("input", () => {
+        const message =
+            allowEmpty && isEmpty(input.value) ? "" : errorFn(input.value);
+        setFieldState(input, errorEl, message);
+    });
+}
+
 function setFieldState(input, errorEl, message) {
     const valid = !message;
     input.classList.toggle("is-invalid", !valid);
@@ -135,9 +161,98 @@ function clearFieldState(input, errorEl) {
     }
 }
 
+/*
+ Single-purpose counterparts to getIdentifierError, for forms that have a dedicated Email field and a dedicated Contact Number field rather than one
+ combined identifier field.
+ */
+function getEmailError(value) {
+    const v = value.trim();
+    if (!v) return "Enter your email address.";
+    if (!/^[^\s@]+@/.test(v)) return "Enter the part before the @ symbol.";
+    if (!/@[^\s@]+\./.test(v))
+        return "Email is missing a domain, e.g. name@example.com.";
+    return isValidEmail(v)
+        ? ""
+        : "That doesn't look like a valid email address.";
+}
+
+function getPhoneError(value) {
+    const v = value.trim();
+    if (!v) return "Enter your contact number.";
+    const digits = v.replace(/\D/g, "");
+    if (!PHONE_CHARS_REGEX.test(v)) return "Enter a valid phone number.";
+    if (digits.length !== PHONE_DIGITS)
+        return `Phone number must be exactly ${PHONE_DIGITS} digits (${digits.length} entered).`;
+    return isValidPhone(v) ? "" : "Enter a valid phone number.";
+}
+
+/*
+ Stricter counterpart to getPhoneError for the booking flow's own Contact
+ Number / Venue Contact Person fields, which are PH mobile numbers
+ specifically: on top of everything getPhoneError already checks, the
+ digits must start with "09" (e.g. 0917xxxxxxx). isValidPhone() isn't
+ reused here since it has no notion of a required prefix; kept as a
+ separate function rather than changing getPhoneError/isValidPhone so the
+ more permissive auth identifier field (which accepts phone numbers in
+ general) is unaffected. No "Enter a valid phone number" character-format
+ fallback here — these fields are digit-filtered on input (see
+ initDigitsOnlyFilter in client-information.js/event-information.js), so
+ non-digit characters can never reach this validator and that message
+ could never actually fire.
+ */
+function getContactNumberError(value) {
+    const v = value.trim();
+    if (!v) return "Enter a contact number.";
+    const digits = v.replace(/\D/g, "");
+    if (!digits.startsWith("09"))
+        return "Contact number must start with 09, e.g. 09XXXXXXXXX.";
+    if (digits.length !== PHONE_DIGITS)
+        return `Phone number must be exactly ${PHONE_DIGITS} digits (${digits.length} entered).`;
+    return "";
+}
+
+const CONTACT_NUMBER_PREFIX = "09";
+// A field holding only the un-typed-into prefix reads as "empty" for
+// required/optional purposes — the user hasn't actually entered anything.
+const isContactNumberUntouched = (value) =>
+    !value.trim() || value.trim() === CONTACT_NUMBER_PREFIX;
+
+/*
+ Keeps a Contact Number-style field always starting with "09" and digits
+ only, capped at PHONE_DIGITS total — call on every 'input' event.
+ Handles the common edits: typing more digits after the prefix, pasting a
+ full number with or without the leading 0, and backspacing into the
+ prefix itself (re-derives "09" instead of leaving a broken prefix).
+ */
+function normalizeContactNumberInput(value) {
+    let digits = value.replace(/\D/g, "");
+    if (!digits.startsWith(CONTACT_NUMBER_PREFIX)) {
+        digits = digits.startsWith("9")
+            ? `0${digits}`
+            : `${CONTACT_NUMBER_PREFIX}${digits.replace(/^0+/, "")}`;
+    }
+    return digits.slice(0, PHONE_DIGITS);
+}
+
+const NAME_REGEX = /^[A-Za-z\s]+$/;
+
+/*
+ For First Name / Last Name in the booking flow: required, and letters
+ (plus spaces, for names written as two words) only — no digits or other
+ symbols.
+ */
+function getNameError(value, label) {
+    const v = value.trim();
+    if (!v) return `${label} is required.`;
+    if (!NAME_REGEX.test(v)) return `${label} can only contain letters.`;
+    return "";
+}
+
 export {
     EMAIL_REGEX,
     PASSWORD_REGEX,
+    PHONE_DIGITS,
+    NAME_REGEX,
     isValidEmail,
     isValidPhone,
     isValidIdentifier,
@@ -145,8 +260,15 @@ export {
     getIdentifierError,
     getPasswordError,
     getRequiredError,
+    getEmailError,
+    getPhoneError,
+    getContactNumberError,
+    normalizeContactNumberInput,
+    isContactNumberUntouched,
+    getNameError,
     getMatchError,
     wireLiveField,
+    wireLiveFieldImmediate,
     setFieldState,
     clearFieldState,
 };

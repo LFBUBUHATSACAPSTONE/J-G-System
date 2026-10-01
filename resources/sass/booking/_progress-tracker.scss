@@ -1,0 +1,175 @@
+.progress-tracker {
+    position: relative;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 1.5rem;
+
+    @media (max-width: 575.98px) {
+        padding: 1.75rem 0.75rem 1rem;
+    }
+
+    // Keeps side padding in step with .booking-flow below it (same
+    // breakpoint, same values) so both containers' edges stay aligned
+    // rather than the tracker looking narrower once .booking-flow gains
+    // its own extra breathing room on larger screens.
+    @media (min-width: 992px) {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+
+    &__track {
+        position: absolute;
+        top: calc(2.5rem + 17px); // vertical center of the 36px circles
+        left: calc(
+            100% / 12
+        ); // half a step-column (6 steps), so it starts/ends at the dot centers
+        right: calc(100% / 12);
+        height: 2px;
+        background: $auth-border;
+        border-radius: $auth-radius-pill;
+        overflow: hidden;
+
+        @media (max-width: 575.98px) {
+            top: calc(1.75rem + 13px); // recentered for the 28px circles below
+        }
+    }
+
+    &__track-fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 0%;
+        background: $auth-accent;
+        transition: width 0.45s ease;
+    }
+
+    &__list {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    &__step {
+        display: flex;
+        flex: 1 1 0;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.65rem;
+        // The step column is only as wide as the track slice it sits in
+        // (parent's justify-content: space-between splits 100% five ways).
+        // Without a hard width cap, align-items: center lets the circle
+        // and label size to their own content instead of the column, so
+        // a two-word label like "Client Information" renders at its full
+        // intrinsic width and visually bleeds into the next step's column
+        // on narrow screens — that's the "sticks on top of each other"
+        // overlap. min-width: 0 lets the column actually shrink below
+        // that content width so the cap below can take effect.
+        min-width: 0;
+        max-width: 100%;
+
+        @media (max-width: 575.98px) {
+            gap: 0.4rem;
+        }
+    }
+
+    &__circle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+        border-radius: $auth-radius-pill;
+        border: 2px solid $auth-border;
+        background: $auth-surface;
+        color: $auth-text-muted;
+        font-size: 0.85rem;
+        font-weight: 700;
+        padding: 0;
+        cursor: not-allowed;
+        transition:
+            background-color 0.3s ease,
+            border-color 0.3s ease,
+            color 0.3s ease,
+            transform 0.3s ease;
+
+        @media (max-width: 575.98px) {
+            width: 28px;
+            height: 28px;
+            font-size: 0.7rem;
+        }
+
+        &:not(:disabled) {
+            cursor: pointer;
+        }
+
+        &:not(:disabled):hover {
+            transform: translateY(-1px);
+        }
+    }
+
+    &__icon-lock {
+        display: none;
+    }
+
+    &__number {
+        display: none;
+    }
+
+    &__label {
+        // Fill the step column instead of sizing to content — this is
+        // the fix that actually stops the overlap (see the comment on
+        // &__step above). Wrapping rules keep a long single word from
+        // forcing the column wider than its column share.
+        width: 100%;
+        font-size: 0.8rem;
+        color: $auth-text-secondary;
+        text-align: center;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        transition:
+            color 0.3s ease,
+            font-weight 0.3s ease;
+
+        @media (max-width: 575.98px) {
+            font-size: 0.65rem;
+            line-height: 1.2;
+        }
+    }
+
+    // Locked — lock icon, muted, not reachable yet
+    &__step.is-locked {
+        .progress-tracker__icon-lock {
+            display: block;
+        }
+    }
+
+    // Open — visited via forward progress, currently behind the active
+    // step (reached again by clicking Previous). Filled, no icon/number.
+    &__step.is-open .progress-tracker__circle {
+        background: $auth-accent;
+        border-color: $auth-accent;
+        color: $auth-white;
+    }
+
+    // Numbered — current step, or a step fully completed and behind the
+    // current one. Filled, shows its step number, bold label.
+    &__step.is-numbered {
+        .progress-tracker__circle {
+            background: $auth-accent;
+            border-color: $auth-accent;
+            color: $auth-white;
+        }
+
+        .progress-tracker__number {
+            display: block;
+        }
+
+        .progress-tracker__label {
+            color: $auth-text-primary;
+            font-weight: 700;
+        }
+    }
+}

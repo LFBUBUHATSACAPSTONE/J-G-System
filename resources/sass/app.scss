@@ -17,12 +17,37 @@
 // Coverflow Carousel
 @import "coverflow-carousel";
 
-// Landing Caption Gradient and Text Stylings
+// Landing & Landing Caption Gradient and Text Stylings
 @import "gradient-text";
 @import "landing-caption";
-@import "auth-modal";
-@import "package";
 @import "features";
+
+// Modal and Forms
+@import "auth-modal";
+
+// Booking
+@import "./booking/package";
+@import "./booking/client-information";
+@import "./booking/event-information";
+@import "./booking/event-schedule";
+@import "./booking/booking-summary";
+@import "./booking/booking-confirmation";
+@import "./booking/progress-tracker";
+
+.booking-flow {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 0 0.75rem 2.5rem;
+
+    @media (min-width: 576px) {
+        padding: 0 1.5rem 3rem;
+    }
+
+    @media (min-width: 992px) {
+        padding: 0 2rem 3rem;
+    }
+}
+
 * {
     font-family: $font-family-text;
 }

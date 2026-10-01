@@ -50,7 +50,7 @@
 
   <x-auth-modal></x-auth-modal>
   @include('components.features')
-  @include('components.booking.package')
+  @include('components.booking.package', ['href' => route('user.booking')])
   @include('components.booking.package-comparison')
   @include('components.footer')
 </body>
