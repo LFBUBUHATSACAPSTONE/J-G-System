@@ -24,6 +24,8 @@
  *   422 {"message": "…", "errors": {"payment_option": ["…"]}} -> rejected
  */
 
+import { getCsrfToken } from "../auth/csrf.js";
+
 const FORM_ID = "payment-form";
 
 function initBookingSummary() {
@@ -105,8 +107,7 @@ async function submitPayment(form) {
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN": form.querySelector('input[name="_token"]')
-                    .value,
+                "X-CSRF-TOKEN": getCsrfToken(form),
             },
             body: JSON.stringify({ payment_option: hiddenInput.value }),
         });
