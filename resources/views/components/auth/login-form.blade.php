@@ -51,6 +51,7 @@
 
 <div class="auth-modal__sso">
   <x-auth.link-button
+    :disabled="true"
     id="google-login-btn"
     :aria-label="'Google Login'"
     icon="images/icons/auth/google.svg"
@@ -59,6 +60,7 @@
   </x-auth.link-button>
 
   <x-auth.link-button
+    :disabled="true"
     id="apple-login-btn"
     :aria-label="'Apple Login'"
     icon="images/icons/auth/apple.svg"

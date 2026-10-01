@@ -58,8 +58,8 @@
       <input type="checkbox" name="terms" required>
       I agree to the <a href="#" target="_blank">Terms & Condition</a>
     </label>
-    <small class="auth-modal__field-error d-none" data-field-error="terms"></small>
   </div>
+  <small class="auth-modal__field-error d-none" data-field-error="terms"></small>
 
   <x-button type="submit" class="auth-modal__submit btn-color-gradient--primary">
     Create account
@@ -70,6 +70,7 @@
 
 <div class="auth-modal__sso">
   <x-auth.link-button
+    :disabled="true"
     id="google-login-btn"
     :aria-label="'Google Login'"
     icon="images/icons/auth/google.svg"
@@ -78,6 +79,7 @@
   </x-auth.link-button>
 
   <x-auth.link-button
+    :disabled="true"
     id="apple-login-btn"
     :aria-label="'Apple Login'"
     icon="images/icons/auth/apple.svg"
