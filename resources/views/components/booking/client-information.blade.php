@@ -5,7 +5,7 @@
     <form
       id="personal-information-form"
       method="POST"
-      action="{{ route('booking.personal-information') }}"
+      action="{{ route('user.booking') }}"
       novalidate>
       @csrf
 
