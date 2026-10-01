@@ -34,6 +34,7 @@
  */
 
 import { setAuthView } from "../auth-modal.js";
+import { getCsrfToken } from "./csrf.js";
 import { setResetCredentials } from "./new-password.js";
 
 const AUTH_MODAL_ID = "authModal";
@@ -157,17 +158,6 @@ function fillBoxes(startBox, text) {
     }
 
     boxes[Math.min(start + digits.length, boxes.length - 1)].focus();
-}
-
-// Read at submit time (not import time) so a rotated token is never stale.
-// Prefers the layout's <meta name="csrf-token">; falls back to the form's
-// own @csrf input for pages that don't include the meta tag.
-function getCsrfToken(form) {
-    return (
-        document.head.querySelector('meta[name="csrf-token"]')?.content ||
-        form.querySelector('input[name="_token"]')?.value ||
-        ""
-    );
 }
 
 async function submitVerificationCode(modalEl, form) {

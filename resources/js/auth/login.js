@@ -10,6 +10,7 @@
  * `remember` is sent as a boolean for Auth::attempt($credentials, $remember).
  */
 
+import { getCsrfToken } from "./csrf.js";
 import {
     getIdentifierError,
     getPasswordError,
@@ -91,8 +92,7 @@ async function submitLogin(form) {
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN":
-                    form.querySelector('input[name="_token"]')?.value ?? "",
+                "X-CSRF-TOKEN": getCsrfToken(form),
             },
             body: JSON.stringify({ identifier, password, remember }),
         });

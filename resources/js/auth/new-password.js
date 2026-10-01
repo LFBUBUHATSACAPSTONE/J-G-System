@@ -17,6 +17,7 @@
  * memory only; they are cleared on success and when the modal closes.
  */
 
+import { getCsrfToken } from "./csrf.js";
 import { setAuthView } from "../auth-modal.js";
 import {
     getPasswordError,
@@ -121,8 +122,7 @@ async function submitNewPassword(modalEl, form) {
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN":
-                    form.querySelector('input[name="_token"]')?.value ?? "",
+                "X-CSRF-TOKEN": getCsrfToken(form),
             },
             body: JSON.stringify({
                 token: resetCredentials.token,

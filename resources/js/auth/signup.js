@@ -10,6 +10,7 @@
  *   422 {"message": "…", "errors": {"identifier": ["…"], …}} -> rejected
  */
 
+import { getCsrfToken } from "./csrf.js";
 import { setAuthView, focusFirstField } from "../auth-modal.js";
 import { maskIdentifier } from "./forgot-password.js";
 import {
@@ -135,8 +136,7 @@ async function submitSignup(modalEl, form) {
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN":
-                    form.querySelector('input[name="_token"]')?.value ?? "",
+                "X-CSRF-TOKEN": getCsrfToken(form),
             },
             body: JSON.stringify({
                 first_name: firstNameInput.value.trim(),

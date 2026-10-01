@@ -11,6 +11,7 @@
  * If `destination` is omitted, a masked version of the typed value is shown.
  */
 
+import { getCsrfToken } from "./csrf.js";
 import { setAuthView, focusFirstField } from "../auth-modal.js";
 import {
     setVerificationDestination,
@@ -81,8 +82,7 @@ async function submitForgotPassword(modalEl, form) {
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN":
-                    form.querySelector('input[name="_token"]')?.value ?? "",
+                "X-CSRF-TOKEN": getCsrfToken(form),
             },
             body: JSON.stringify({ identifier }),
         });
