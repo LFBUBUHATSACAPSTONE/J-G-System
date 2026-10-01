@@ -20,7 +20,7 @@ import {
 import {
     getIdentifierError,
     getPasswordError,
-    getRequiredError,
+    getNameError,
     wireLiveField,
     setFieldState,
 } from "./validation.js";
@@ -36,17 +36,15 @@ function initSignup() {
 
     const form = modalEl.querySelector(`${VIEW_SELECTOR} form`);
     if (form) {
-        wireLiveField(form, "first_name", (v) =>
-            getRequiredError(v, "First name"),
-        );
-        wireLiveField(form, "last_name", (v) =>
-            getRequiredError(v, "Last name"),
-        );
+        wireLiveField(form, "first_name", (v) => getNameError(v, "First name"));
+        wireLiveField(form, "last_name", (v) => getNameError(v, "Last name"));
+        initNameFilter(form, "first_name");
+        initNameFilter(form, "last_name");
         wireLiveField(form, "identifier", getIdentifierError);
         wireLiveField(form, "password", getPasswordError);
 
         /* Checkboxes don't fit wireLiveField's blur/input pattern (there's nothing to "type"), so this listens to 'change' directly. Only clears the error once checked — unchecking after already having agreed re-flags it immediately, same as any other live field.
-        */
+         */
         const termsInput = form.querySelector('[name="terms"]');
         const termsError = form.querySelector('[data-field-error="terms"]');
         termsInput?.addEventListener("change", () => {
@@ -76,7 +74,18 @@ function initSignup() {
     });
 }
 
-const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || document.querySelector('input[name="_token"]')?.value || "";
+/*
+ Blocks digits/symbols from ever being typed into First/Last Name — same
+ "filter on input" approach as the booking flow's Client Information step
+ (initNameFilter in booking/client-information.js). getNameError still runs
+ via wireLiveField and on submit as a backstop (e.g. for pasted text).
+*/
+function initNameFilter(form, fieldName) {
+    const input = form.querySelector(`[name="${fieldName}"]`);
+    input?.addEventListener("input", () => {
+        input.value = input.value.replace(/[^A-Za-z\s]/g, "");
+    });
+}
 
 async function submitSignup(modalEl, form) {
     const field = (name) => form.querySelector(`[name="${name}"]`);
@@ -90,8 +99,8 @@ async function submitSignup(modalEl, form) {
     clearError(form);
 
     const checks = [
-        [firstNameInput, getRequiredError(firstNameInput.value, "First name")],
-        [lastNameInput, getRequiredError(lastNameInput.value, "Last name")],
+        [firstNameInput, getNameError(firstNameInput.value, "First name")],
+        [lastNameInput, getNameError(lastNameInput.value, "Last name")],
         [identifierInput, getIdentifierError(identifierInput.value)],
         [passwordInput, getPasswordError(passwordInput.value)],
         [termsInput, termsInput.checked ? "" : TERMS_MESSAGE],
@@ -113,12 +122,11 @@ async function submitSignup(modalEl, form) {
     try {
         const response = await fetch(form.action, {
             method: "POST",
-            credentials: "same-origin",
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN": csrfToken,
-                "X-XSRF-TOKEN": csrfToken,
+                "X-CSRF-TOKEN":
+                    form.querySelector('input[name="_token"]')?.value ?? "",
             },
             body: JSON.stringify({
                 first_name: firstNameInput.value.trim(),
