@@ -1,4 +1,10 @@
 <?php
+
+// Data ownership: the admin side holds all data that comes from the user side
+// (bookings, client info, payments, messages). Packages are the exception: they
+// are created and edited here and read by the user side. This project covers the
+// admin FRONT END only; the backend and database are built separately.
+
 return [
 
   // Shown after the page label in the browser tab: "Bookings | J&G Admin"
@@ -6,7 +12,7 @@ return [
 
   'default_description' => 'J&G Audio admin panel for managing bookings, packages and messages.',
 
-  'author' => 'J&G Audio',
+  'author' => 'J&G Audio Lights and Sounds',
 
   // Used for the favicon. Path is relative to /public.
   'logo' => 'images/logo/J&G_official_logo.webp',
@@ -50,12 +56,12 @@ return [
   // ('admin.bookings*') so child pages keep the item highlighted.
   // icon   => Phosphor class suffix (ph-<icon>)
   'nav' => [
-    ['label' => 'Dashboard',       'route' => 'admin.dashboard',       'active' => 'admin.dashboard',        'icon' => 'chart-bar'],
-    ['label' => 'Bookings',        'route' => 'admin.bookings',        'active' => 'admin.bookings*',        'icon' => 'notebook'],
-    ['label' => 'Message',         'route' => 'admin.messages',        'active' => 'admin.messages*',        'icon' => 'chat-text'],
+    ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'active' => 'admin.dashboard', 'icon' => 'chart-bar'],
+    ['label' => 'Bookings', 'route' => 'admin.bookings', 'active' => 'admin.bookings*', 'icon' => 'notebook'],
+    ['label' => 'Message', 'route' => 'admin.messages', 'active' => 'admin.messages*', 'icon' => 'chat-text'],
     ['label' => 'Booking History', 'route' => 'admin.booking-history', 'active' => 'admin.booking-history*', 'icon' => 'clock-counter-clockwise'],
-    ['label' => 'Packages',        'route' => 'admin.packages',        'active' => 'admin.packages*',        'icon' => 'package'],
-    ['label' => 'Calendar',        'route' => 'admin.calendar',        'active' => 'admin.calendar*',        'icon' => 'calendar-dots'],
-    ['label' => 'Account',         'route' => 'admin.account',         'active' => 'admin.account*',         'icon' => 'user-circle'],
+    ['label' => 'Packages', 'route' => 'admin.packages', 'active' => 'admin.packages*', 'icon' => 'package'],
+    ['label' => 'Calendar', 'route' => 'admin.calendar', 'active' => 'admin.calendar*', 'icon' => 'calendar-dots'],
+    ['label' => 'Account', 'route' => 'admin.account', 'active' => 'admin.account*', 'icon' => 'user-circle'],
   ],
 ];
