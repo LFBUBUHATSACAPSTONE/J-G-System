@@ -8,7 +8,7 @@
 </head>
 
 <body>
-  @include('includes.navigation')
+  @include('components.landing.navigation')
 
   <section class="landing-hero">
     <img src="{{ asset('images/backgrounds/design/landing_bg.webp') }}" alt="" class="landing-hero__bg">
@@ -18,7 +18,7 @@
     </div>
   @endif
 
-    @include('includes.landing-caption', ["header" => "Bring Your Event to Life", "caption" => "We're dedicated to making every occasion look and sound its best with reliable equipment and professional service."])
+    @include('components.landing.landing-caption', ["header" => "Bring Your Event to Life", "caption" => "We're dedicated to making every occasion look and sound its best with reliable equipment and professional service."])
 
     <x-landing.coverflow-carousel :items="[
             ['image' => asset('images/carousel/1.webp'), 'alt' => ''],
