@@ -8,6 +8,8 @@
 
 @import "./admin/sidebar";
 @import "./admin/dashboard";
+@import "./admin/page-header";
+@import "./admin/bookings";
 
 body {
     background: $admin-sidebar-bg;

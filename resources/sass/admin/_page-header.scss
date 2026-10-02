@@ -1,0 +1,35 @@
+// Shared admin page header.
+.admin-page-header {
+    margin: 0 0 1.5rem;
+
+    // Leaves room for the fixed mobile menu button (< lg).
+    padding-left: 3.25rem;
+
+    @media (min-width: $admin-sidebar-breakpoint) {
+        padding-left: 1.5rem;
+    }
+
+    &__title {
+        display: inline-block;
+        margin: 0;
+        font-size: clamp(1.75rem, 1.2rem + 2vw, 2.5rem);
+        font-weight: 700;
+        background: $admin-heading-gradient;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+
+        @media (forced-colors: active) {
+            background: none;
+            -webkit-text-fill-color: currentColor;
+            color: CanvasText;
+        }
+    }
+
+    &__subtitle {
+        margin: 0.25rem 0 0;
+        color: $admin-text-muted;
+        font-size: 0.95rem;
+    }
+}
