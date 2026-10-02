@@ -1,0 +1,318 @@
+.admin-card {
+    background: $admin-surface;
+    border-radius: $admin-radius-xl;
+    padding: 1.5rem;
+
+    &__title {
+        margin: 0 0 1rem;
+        color: $admin-brand-text;
+        font-size: 1.125rem;
+        font-weight: 600;
+    }
+}
+
+.admin-empty {
+    margin: 0;
+    color: $admin-text-muted;
+    font-size: 0.9rem;
+}
+
+// Page header
+.admin-dashboard {
+    font-family: $admin-font-family;
+
+    &__header {
+        margin: 0 0 1.5rem;
+
+        // Leaves room for the fixed mobile menu button (< lg).
+        padding-left: 3.25rem;
+
+        @media (min-width: $admin-sidebar-breakpoint) {
+            padding-left: 1.5rem;
+        }
+    }
+
+    &__title {
+        display: inline-block;
+        margin: 0;
+        font-size: clamp(1.75rem, 1.2rem + 2vw, 2.5rem);
+        font-weight: 700;
+        background: $admin-heading-gradient;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+
+        // Gradient text disappears in Windows High Contrast; use the system colour.
+        @media (forced-colors: active) {
+            background: none;
+            -webkit-text-fill-color: currentColor;
+            color: CanvasText;
+        }
+    }
+
+    &__subtitle {
+        margin: 0.25rem 0 0;
+        color: $admin-text-muted;
+        font-size: 0.95rem;
+    }
+
+    // Grid
+    &__grid {
+        display: grid;
+        gap: 1.25rem;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+            "total"
+            "confirmed"
+            "pending"
+            "cancelled"
+            "upcoming"
+            "list"
+            "rate";
+
+        @media (min-width: 768px) {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-areas:
+                "total    confirmed"
+                "pending  cancelled"
+                "upcoming upcoming"
+                "list     list"
+                "rate     rate";
+        }
+
+        @media (min-width: 1200px) {
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(
+                    0,
+                    1.55fr
+                );
+            grid-template-areas:
+                "total confirmed upcoming"
+                "pending cancelled upcoming"
+                "list list rate";
+        }
+    }
+
+    &__total {
+        grid-area: total;
+    }
+    &__confirmed {
+        grid-area: confirmed;
+    }
+    &__pending {
+        grid-area: pending;
+    }
+    &__cancelled {
+        grid-area: cancelled;
+    }
+    &__upcoming {
+        grid-area: upcoming;
+    }
+    &__pending-list {
+        grid-area: list;
+    }
+    &__rate {
+        grid-area: rate;
+    }
+}
+
+// KPI card
+.admin-stat {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 12rem;
+
+    .admin-card__title,
+    &__label {
+        margin: 0;
+        color: $admin-brand-text;
+        font-size: 1.125rem;
+        font-weight: 600;
+    }
+
+    &__body {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    &__value {
+        margin: 0;
+        color: $admin-brand-text;
+        font-size: 3rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    &__delta {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.125rem 0.625rem;
+        border-radius: $admin-radius-pill;
+        font-size: 0.8rem;
+        font-weight: 600;
+
+        &--up {
+            background: $admin-delta-up-bg;
+            color: $admin-text-primary;
+        }
+
+        &--down {
+            background: $admin-danger-soft;
+            color: $admin-danger-text;
+        }
+    }
+
+    &__caption {
+        margin: 0;
+        color: $admin-text-muted;
+        font-size: 1rem;
+    }
+
+    // Filled purple variant (Total Bookings).
+    &--featured {
+        background: $admin-brand;
+        color: $admin-on-brand;
+
+        .admin-stat__label,
+        .admin-stat__value {
+            color: $admin-on-brand;
+        }
+
+        .admin-stat__caption {
+            color: $admin-on-brand-muted;
+        }
+    }
+}
+
+// Rows (Upcoming Events + Pending Approval)
+.admin-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.admin-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem 1.5rem;
+    padding: 1rem 1.5rem;
+    border-radius: $admin-radius-lg;
+    background: $admin-brand;
+    color: $admin-on-brand;
+    font-weight: 500;
+
+    &--booking {
+        // reference | date | package | link: even columns once there is room.
+        @media (min-width: 576px) {
+            display: grid;
+            grid-template-columns: 1fr 1.4fr 1.2fr auto;
+        }
+    }
+
+    &__ref,
+    &__package {
+        font-weight: 600;
+    }
+
+    &__link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        color: inherit;
+        font-weight: 600;
+        text-decoration: none;
+
+        &:hover {
+            color: inherit;
+            text-decoration: underline;
+        }
+
+        // White ring: the row is purple, so the usual purple ring would vanish.
+        &:focus-visible {
+            outline: $admin-focus-ring-width solid $admin-on-brand;
+            outline-offset: $admin-focus-ring-offset;
+            border-radius: $admin-radius-md;
+        }
+    }
+}
+
+// Package Rate donut
+// Six chart tokens. Colour is applied through `color`, and the SVG strokes / the
+// legend swatches use currentColor, so one class colours both.
+.admin-chart--1 {
+    color: $admin-chart-1;
+}
+.admin-chart--2 {
+    color: $admin-chart-2;
+}
+.admin-chart--3 {
+    color: $admin-chart-3;
+}
+.admin-chart--4 {
+    color: $admin-chart-4;
+}
+.admin-chart--5 {
+    color: $admin-chart-5;
+}
+.admin-chart--6 {
+    color: $admin-chart-6;
+}
+
+.admin-package-rate {
+    &__body {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 1.5rem 2rem;
+    }
+
+    &__chart {
+        flex: none;
+        width: 11rem;
+        height: 11rem;
+    }
+
+    &__legend {
+        flex: 1 1 14rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+        gap: 1rem 1.5rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+
+        li {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            align-items: center;
+            column-gap: 0.625rem;
+        }
+    }
+
+    &__swatch {
+        grid-row: span 2;
+        width: 1.25rem;
+        height: 1.25rem;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    &__name {
+        color: $admin-text-primary;
+        font-size: 0.875rem;
+    }
+
+    &__pct {
+        color: $admin-text-muted;
+        font-size: 0.8rem;
+    }
+}

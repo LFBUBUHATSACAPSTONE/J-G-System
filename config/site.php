@@ -38,6 +38,7 @@ return [
       'og_description' => 'Securely manage and complete payments for your event bookings with J&G Audio Lights and Sounds.',
       'logo' => 'images/logo/J&G_official_logo.webp',
       'noindex' => true,
-    ]
+      'no_tracking' => true,
+    ],
   ],
 ];

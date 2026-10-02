@@ -21,8 +21,8 @@ Route::get('/user/booking', function () {
     return view('user.booking');
 })->name('user.booking');
 
-
-Auth::routes();
+// REMOVES BROKEN ROUTES
+Auth::routes(['reset' => false]);
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
@@ -81,3 +81,5 @@ Route::post('/booking/booking-summary', function (Request $r) {
 
     return response()->json(['ok' => true]);
 })->name('booking.booking-summary');
+
+require __DIR__ . '/admin.php';

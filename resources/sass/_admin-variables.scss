@@ -13,7 +13,6 @@
 // Change this one token to restyle the admin only.
 $admin-font-family: $font-family-text;
 
-
 // ADMIN: SHELL (sidebar + page)
 $admin-sidebar-bg: oklch(18.674% 0 0);
 $admin-sidebar-text: $auth-white;
@@ -22,13 +21,13 @@ $admin-sidebar-active-border: $auth-accent-strong;
 $admin-sidebar-focus-ring: oklch(71.8% 0.16169 293.012);
 $admin-sidebar-width: 19.5rem;
 $admin-sidebar-breakpoint: 992px;
+$admin-sidebar-width-mobile: 256px;
 
 $admin-page-bg: oklch(90.365% 0 0);
 $admin-panel-bg: oklch(
     95.514% 0 0
 ); // grey panels inside white cards, table body
 $admin-surface: $auth-white; // cards, rows, filters
-
 
 // ADMIN: BRAND
 $admin-brand: $auth-accent-strong;
@@ -48,18 +47,15 @@ $admin-heading-gradient: linear-gradient(
     $admin-heading-gradient-to
 );
 
-
 // ADMIN: TEXT
 $admin-text-primary: $auth-black;
 $admin-text-muted: oklch(38% 0 0); // subtitles, "This month vs last", captions
 $admin-text-subtle: oklch(48% 0 0); // placeholders, out-of-month dates
 
-
 // ADMIN: FIELDS
 $admin-field-bg: $auth-white;
 $admin-field-bg-on-white: $admin-panel-bg; // fields placed on a white card (Profile)
 $admin-field-border: oklch(63.1% 0 0);
-
 
 // ADMIN: FOCUS
 $admin-focus-ring: $admin-brand-text;
@@ -68,7 +64,6 @@ $admin-focus-ring-soft: oklch(
 ); // halo only, never the sole indicator
 $admin-focus-ring-width: 2px;
 $admin-focus-ring-offset: 2px;
-
 
 // ADMIN: STATUS COLORS
 $admin-success: oklch(83.09% 0.21958 143.282);
@@ -85,7 +80,6 @@ $admin-danger-text: oklch(40% 0.16206 25.116);
 $admin-danger-border: oklch(68.8% 0.20106 25.116);
 $admin-danger-soft: oklch(94.298% 0.02858 17.67);
 $admin-on-danger: $auth-white;
-
 
 // ADMIN: BOOKING STATUS
 // Solid pills: black text on the fill.
@@ -105,7 +99,6 @@ $admin-action-decline-text: $admin-danger-text;
 $admin-action-decline-border: $admin-danger-border;
 $admin-delta-up-bg: $admin-success;
 
-
 // ADMIN: CALENDAR
 $admin-calendar-wrap-bg: oklch(88.224% 0 0);
 $admin-calendar-header-bg: $admin-brand;
@@ -120,7 +113,6 @@ $admin-calendar-outside-text: $admin-text-subtle; // days from adjacent months
 $admin-calendar-booked-bg: $admin-success-soft; // text: $admin-text-primary
 $admin-calendar-pending-bg: $admin-warning-soft; // text: $admin-text-primary
 
-
 // ADMIN: CHARTS
 $admin-chart-1: oklch(70% 0.27486 324.299); // Budget Lite
 $admin-chart-2: oklch(65.2% 0.17128 128.475); // Luxe Lite
@@ -130,14 +122,16 @@ $admin-chart-5: oklch(66.9% 0.13745 83.001); // Budget Wedding
 $admin-chart-6: oklch(56.451% 0.24918 283.426); // Elite Symphony
 $admin-chart-separator: $auth-white;
 
-
 // ADMIN: OVERLAYS
 $admin-scrim-black: $auth-scrim-black; // modal backdrop
 $admin-shadow-black: $auth-shadow-black;
-
 
 // ADMIN: RADII
 $admin-radius-xl: $auth-radius-xl; // cards, content panel
 $admin-radius-lg: $auth-radius-lg; // table rows, inner panels
 $admin-radius-md: $auth-radius-md; // fields, small buttons
 $admin-radius-pill: $auth-radius-pill; // pills, filters, status buttons
+
+//ADMIN: SIDEBAR
+$admin-sidebar-gutter: 1.5rem;
+
