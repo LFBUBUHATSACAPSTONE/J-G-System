@@ -76,7 +76,7 @@
         <form
           id="payment-form"
           method="POST"
-          action="{{ route('user.booking') }}"
+          action="{{ route('booking.booking-summary') }}"
           novalidate>
           @csrf
           <input type="hidden" name="payment_option" data-payment-option-input>

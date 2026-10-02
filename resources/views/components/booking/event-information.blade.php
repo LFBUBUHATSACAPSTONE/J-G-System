@@ -5,7 +5,7 @@
     <form
       id="event-information-form"
       method="POST"
-      action="{{ route('user.booking') }}"
+      action="{{ route('booking.event-information') }}"
       novalidate>
       @csrf
 
