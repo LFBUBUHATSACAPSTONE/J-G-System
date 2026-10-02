@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\Rule;
 
 //TEMPORARY FRONT-END TESTING STUBS
 
@@ -18,6 +19,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
   Route::view('/account', 'admin.account')->name('account');
 });
 
+// ? ADMIN DASHBOARD STUB ROUTE:
 Route::get('/admin/dashboard', function () {
   return view('admin.dashboard', [
     // `delta` and `direction` are optional. Leave `delta` out to hide the badge.
@@ -50,6 +52,7 @@ Route::get('/admin/dashboard', function () {
 })->name('admin.dashboard');
 
 
+// ? ADMIN BOOKINGS STUB ROUTES:
 Route::get('/admin/bookings', function () {
   return view('admin.bookings', [
     // Admin-managed, so the dropdown is built from this list, not hard-coded.
@@ -186,3 +189,94 @@ Route::patch('/admin/bookings/{booking}', function (Request $request, $booking) 
 
   return back()->with('status', "Booking {$booking}: changes received (stub, nothing was saved).");
 })->name('admin.bookings.update');
+
+
+// ? ADMIN PACKAGES STUB ROUTES:
+$stubPackages = fn() => [
+  ['id' => 'budget-lite', 'name' => 'Budget Lite', 'price' => 5000, 'available' => false, 'features' => [
+    'Ideal for small and intimate events',
+    'Basic yet clear sound setup',
+    'Simple lighting for ambience',
+    'Good for meetings and mini gatherings',
+    'Easy and quick installation'
+  ]],
+  ['id' => 'budget-party', 'name' => 'Budget Party', 'price' => 10000, 'available' => true, 'features' => [
+    'Perfect for birthdays and school programs',
+    'Brighter party lighting',
+    'Improved sound coverage',
+    'Great for corporate events',
+    'Fun and lively atmosphere'
+  ]],
+  ['id' => 'budget-wedding', 'name' => 'Budget Wedding', 'price' => 18000, 'available' => true, 'features' => [
+    'Best for simple weddings',
+    'LED wall with live feed',
+    'Clean and elegant audio',
+    'For church or reception setups',
+    'Balanced sound and lighting'
+  ]],
+  ['id' => 'luxe-lite', 'name' => 'Luxe Lite', 'price' => 25000, 'available' => true, 'features' => [
+    'For formal programs and receptions',
+    'Enhanced lighting setup',
+    'Clear sound for speeches and music',
+    'Supports basic band needs',
+    'Professional presentation finish'
+  ]],
+  ['id' => 'modern-glam', 'name' => 'Modern Glam', 'price' => 35000, 'available' => true, 'features' => [
+    'Ideal for debuts and luxury weddings',
+    'Upgraded visual lighting',
+    'Strong event audio',
+    'Works well for indoor venues',
+    'Grand ambience setting'
+  ]],
+  ['id' => 'elite-symphony', 'name' => 'Elite Symphony', 'price' => 45000, 'available' => true, 'features' => [
+    'Best for concerts and grand events',
+    'Full premium audio and lighting',
+    'Concert-level production',
+    'Complete event stage setup',
+    'Maximum visual and sound impact'
+  ]],
+];
+
+// Shared by store + update. `features` is one feature per line (textarea).
+$packageRules = fn() => [
+  'name' => ['required', 'string', 'max:100'],
+  'price' => ['required', 'integer', 'min:1', 'max:10000000'],
+  'features' => ['required', 'string', 'max:2000'],
+];
+
+Route::get('/admin/packages', function () use ($stubPackages) {
+  return view('admin.packages', ['packages' => $stubPackages()]);
+})->name('admin.packages');
+
+// "Add New Package" -> Save (modal in create mode).
+// Stub trigger for a 422-style redirect with errors: reuse an existing name.
+Route::post('/admin/packages', function (Request $request) use ($stubPackages, $packageRules) {
+  $request->validate([
+    'name' => [...$packageRules()['name'], Rule::notIn(array_column($stubPackages(), 'name'))],
+  ] + $packageRules(), ['name.not_in' => 'A package with this name already exists.']);
+
+  return redirect()->route('admin.packages')
+    ->with('status', "Package '{$request->input('name')}' received (stub, nothing was saved).");
+})->name('admin.packages.store');
+
+// Modal Edit -> Save. {package} is the immutable package id (slug).
+Route::patch('/admin/packages/{package}', function (Request $request, string $package) use ($stubPackages, $packageRules) {
+  $others = collect($stubPackages())->where('id', '!=', $package)->pluck('name')->all();
+
+  $request->validate([
+    'name' => [...$packageRules()['name'], Rule::notIn($others)],
+  ] + $packageRules(), ['name.not_in' => 'A package with this name already exists.']);
+
+  return redirect()->route('admin.packages')
+    ->with('status', "Package {$package}: changes received (stub, nothing was saved).");
+})->name('admin.packages.update');
+
+// Available / Unavailable buttons on a card.
+Route::patch('/admin/packages/{package}/availability', function (Request $request, string $package) {
+  $availability = $request->validate([
+    'availability' => ['required', Rule::in(array_keys(config('admin-packages.availability')))],
+  ])['availability'];
+
+  return redirect()->route('admin.packages')
+    ->with('status', "Package {$package}: '{$availability}' received (stub, nothing was saved).");
+})->name('admin.packages.availability');
