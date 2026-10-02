@@ -1,4 +1,3 @@
-{{-- Admin sidebar. Items come from config/admin.php. --}}
 <button
   type="button"
   class="admin-sidebar-toggle d-lg-none"
@@ -12,7 +11,7 @@
 <aside id="adminSidebar" class="admin-sidebar offcanvas-lg offcanvas-start" tabindex="-1" aria-label="Admin">
   <div class="admin-sidebar__header">
     <img
-      src="{{ asset('images/logo/logo_rectangular.webp') }}"
+      src="{{ asset('images/logo/J&G_official_logo.webp') }}"
       alt="J&G Audio Lights and Sounds"
       class="admin-sidebar__logo">
 
