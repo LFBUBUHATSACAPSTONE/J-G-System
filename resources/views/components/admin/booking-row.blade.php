@@ -1,11 +1,13 @@
-{{-- One booking row. Everything comes from the $booking array and from config/admin-bookings.php (how each status looks / which actions it gets).
+{{-- One booking row. Everything comes from the $booking array
+     and from config/admin-bookings.php (how each status looks / which actions it gets).
+     The data-* attributes on <tr> drive the JS filter/sort/search; data-booking on the
+     View Details button carries the modal's content.
+     History page: pass :history="true" and the row resolves its look from the event dates
+     (Upcoming / Ongoing / Completed) using config/admin-history.php, with no action buttons.
+     Cancelled and Declined bookings keep their own pill. Bookings page: nothing changes. --}}
 
-The data-* attributes on <tr> drive the JS filter/sort/search; 
-  
-data-booking on the View Details button carries the modal's content. --}}
-
-
-@props(['booking', 'index' => 0])
+     
+@props(['booking', 'index' => 0, 'history' => false])
 
 @php
 // `Str` is Laravel's default global alias, no import needed.
@@ -18,6 +20,26 @@ $status = config("admin-bookings.statuses.{$key}") ?? [
 $event = $booking['event'];
 $start = $event['start_date'];
 $end = $event['end_date'] ?? $start;
+
+// History page only: swap the status look for the timeline phase. The phase comes from the
+// dates (never stored), so nothing has to flip a booking to "completed" overnight.
+// A booking is Completed from the day AFTER its end date; it is Ongoing from the start date
+// through the end date; before that it is Upcoming.
+if ($history) {
+$phases = config('admin-history.phases');
+
+if (in_array($key, config('admin-history.terminal_statuses'), true)) {
+$phaseKey = 'cancelled';
+} else {
+$today = today();
+$phaseKey = $today->lt($start->copy()->startOfDay())
+? 'upcoming'
+: ($today->gt($end->copy()->startOfDay()) ? 'completed' : 'ongoing');
+}
+
+// Keys the phase does not define (e.g. label/badge for Cancelled) stay as the status had them.
+$status = array_merge($status, $phases[$phaseKey], ['group' => $phaseKey, 'actions' => []]);
+}
 
 if ($start->isSameDay($end)) {
 $schedule = $start->format('F j, Y');
@@ -50,6 +72,7 @@ $payload = [
 'start_time' => $event['start_time'] ?? null,
 'end_time' => $event['end_time'] ?? null,
 ],
+'editable' => $status['editable'] ?? true, // false hides Edit in the modal (History: Completed, Cancelled)
 'payment' => $booking['payment'] ?? [],
 'package' => [
 'name' => $package['name'],
@@ -64,18 +87,20 @@ $booking['client']['name'], $ref, $package['name'], $event['type'] ?? '', $statu
 
 <tr
   role="row"
-  class="admin-bookings__row{{ ($status['highlight'] ?? false) ? ' is-pending' : '' }}"
+  class="admin-bookings__row{{ ($status['highlight'] ?? false) ? ' ' . ($status['highlight_class'] ?? 'is-pending') : '' }}"
   data-booking-row
   data-index="{{ $index }}"
   data-name="{{ Str::lower($booking['client']['name']) }}"
   data-date="{{ $start->toDateString() }}"
+  data-month="{{ $start->format('Y-m') }}"
+  data-rank="{{ $status['rank'] ?? 0 }}"
   data-package="{{ $package['id'] }}"
   data-status-group="{{ $status['group'] }}"
   data-search="{{ $search }}">
 
   <td role="cell" class="admin-bookings__cell admin-bookings__cell--client" data-label="Client">
     @if ($status['highlight'] ?? false)
-    <span class="admin-bookings__chip">{{ $status['label'] }}</span>
+    <span class="admin-bookings__chip{{ isset($status['chip_class']) ? ' ' . $status['chip_class'] : '' }}">{{ $status['chip'] ?? $status['label'] }}</span>
     @endif
     <span class="admin-bookings__name">{{ $booking['client']['name'] }}</span>
     <span class="admin-bookings__ref">{{ $ref }}</span>

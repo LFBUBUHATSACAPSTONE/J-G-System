@@ -1,3 +1,8 @@
+// Admin Bookings page: filter / sort / search the rows, fill the booking modal, confirm
+// destructive actions. The modal and confirm prompt are shared with the
+// Booking History page (history.js owns that page's list).
+// The modal itself is Bootstrap's (admin.js already loads Bootstrap for the sidebar offcanvas).
+
 const getPath = (obj, path) =>
     path
         .split(".")
@@ -6,7 +11,7 @@ const getPath = (obj, path) =>
 const isEmpty = (value) =>
     value === undefined || value === null || value === "";
 
-// List: filter, sort, search
+//  List: filter, sort, search 
 function initList(body) {
     const rows = [...body.querySelectorAll("[data-booking-row]")];
     const sortSelect = document.querySelector("[data-bookings-sort]");
@@ -63,7 +68,7 @@ function initList(body) {
     searchInput.addEventListener("input", apply);
 }
 
-// Modal: fill from the clicked row, Edit toggle
+//  Modal: fill from the clicked row, Edit toggle 
 function initModal(modal) {
     const form = modal.querySelector("form");
     const editButton = modal.querySelector("[data-booking-edit]");
@@ -124,6 +129,9 @@ function initModal(modal) {
         current = JSON.parse(trigger.dataset.booking);
         setEditing(false);
         fill(current);
+
+        // History: finished and cancelled bookings are records, so they cannot be edited.
+        editButton.hidden = current.editable === false;
     });
 
     modal.addEventListener("hidden.bs.modal", () => setEditing(false));
@@ -136,7 +144,7 @@ function initModal(modal) {
     });
 }
 
-// Confirm destructive actions (Decline / Cancel)
+//  Confirm destructive actions (Decline / Cancel) 
 function initConfirm() {
     document.addEventListener("submit", (event) => {
         const message = event.target.dataset?.confirm;
