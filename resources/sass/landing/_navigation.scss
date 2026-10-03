@@ -1,0 +1,81 @@
+// Navbar in-page links (Home / Feature / Package / Inclusions).
+// navigation.js moves `.active` (and aria-current) to the link whose section is in view or that was just clicked. Only one link is ever active.
+// Follows the real header height (set by navigation.js as --landing-header-h)
+// so nav links land sections the same distance below the header on phone and
+// desktop. The 1.5rem tucks the section's top edge under the header, which is
+// what the previous fixed 5rem did on desktop (header ~6.5rem).
+html {
+    scroll-padding-top: calc(
+        var(--landing-header-h, #{$nav-header-offset + 1.5rem}) - 1.5rem
+    );
+}
+
+.glass-header {
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+} //Safari Support
+
+.navbar-brand img {
+    width: 5rem;
+}
+
+.glass-header .navbar-nav .nav-link {
+    position: relative;
+    display: inline-block;
+    white-space: nowrap;
+    color: rgb(255 255 255 / 0.6);
+    font-weight: 400;
+    transition: color 0.2s ease-in-out;
+
+    // Gradient underline, hidden until the link is active.
+    &::after {
+        content: "";
+        position: absolute;
+        left: var(--bs-nav-link-padding-x, 0.5rem);
+        right: var(--bs-nav-link-padding-x, 0.5rem);
+        bottom: 0.15rem;
+        height: 2px;
+        border-radius: 2px;
+        background: $button-gradient;
+        transform: scaleX(0);
+        transform-origin: left center;
+        transition: transform 0.25s ease-in-out;
+    }
+
+    &:hover,
+    &:focus-visible {
+        color: rgb(255 255 255 / 0.9);
+    }
+
+    &.active {
+        color: #fff;
+        font-weight: 600;
+
+        &::after {
+            transform: scaleX(1);
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .glass-header .navbar-nav .nav-link,
+    .glass-header .navbar-nav .nav-link::after {
+        transition: none;
+    }
+}
+
+// Mobile + tablet (< lg): the expanded menu overlays the page instead of pushing it down.
+@include media-breakpoint-down(lg) {
+    .glass-header .navbar-collapse {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        padding: 0.5rem 1.5rem 1.25rem;
+        background: oklch(19.306% 0.00802 285.593 / 0.92);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid oklch(100% 0.00011 271.152 / 0.25);
+    }
+}

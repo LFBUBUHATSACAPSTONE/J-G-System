@@ -1,0 +1,87 @@
+.booking-confirmation {
+    display: flex;
+    justify-content: center;
+
+    &__card {
+        position: relative;
+        width: 100%;
+        max-width: 640px;
+        background: $auth-surface;
+        border-radius: $auth-radius-xl;
+        padding: 3rem 2.5rem;
+        color: $auth-text-primary;
+        text-align: center;
+        isolation: isolate;
+        overflow: hidden;
+
+        &::before {
+            content: "";
+            position: absolute;
+            inset: -20% -20% auto auto;
+            width: 70%;
+            height: 60%;
+            background: radial-gradient(
+                circle at top right,
+                $auth-glow-violet 0%,
+                $auth-glow-rose 45%,
+                transparent 75%
+            );
+            opacity: 0.35;
+            filter: blur(60px);
+            z-index: -1;
+            pointer-events: none;
+        }
+    }
+
+    &__check {
+        color: $auth-accent;
+        margin-bottom: 1.5rem;
+    }
+
+    &__title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: $auth-accent;
+        margin-bottom: 1.25rem;
+    }
+
+    &__body {
+        font-size: 1rem;
+        color: $auth-text-primary;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+
+        &:last-of-type {
+            margin-bottom: 2.5rem;
+        }
+    }
+
+    &__ref {
+        color: $auth-accent;
+        font-weight: 700;
+    }
+
+    &__thanks {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: $auth-accent;
+        margin-bottom: 0.75rem;
+    }
+
+    &__subtext {
+        font-size: 0.95rem;
+        color: $auth-text-secondary;
+        line-height: 1.6;
+        margin-bottom: 2.5rem;
+    }
+
+    // Same job .client-info__actions does elsewhere — constrain the
+    // button's width, since .client-info__btn--confirm sets no width of
+    // its own — just centered (max-width + margin auto) instead of
+    // docked to a 220px side column, since this card has no side column.
+    &__actions {
+        width: 100%;
+        max-width: 360px;
+        margin: 0 auto;
+    }
+}

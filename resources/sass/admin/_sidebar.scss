@@ -1,0 +1,171 @@
+.admin-sidebar {
+    font-family: $admin-font-family;
+    overflow-y: auto;
+
+    // Still scrollable (wheel, touch, keyboard), but the scrollbar itself is hidden.
+    scrollbar-width: none; // Firefox
+    -ms-overflow-style: none; // old Edge/IE
+
+    &::-webkit-scrollbar {
+        display: none; // Chrome, Edge, Safari
+    }
+
+    // Below the breakpoint Bootstrap's .offcanvas-lg supplies position, transform
+    // and backdrop; we size it and set the colours explicitly so nothing falls
+    // back to Bootstrap's light offcanvas theme.
+    --bs-offcanvas-width: min(#{$admin-sidebar-width-mobile}, 80vw);
+    --bs-offcanvas-bg: #{$admin-sidebar-bg};
+    --bs-offcanvas-color: #{$admin-sidebar-text};
+    background-color: $admin-sidebar-bg;
+    color: $admin-sidebar-text;
+
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between; // logo left, close right on mobile
+        margin: 0 1rem;
+        padding: 1rem 0;
+        border-bottom: 1px solid $admin-sidebar-divider;
+    }
+
+    &__logo {
+        width: 100%;
+        max-width: 8rem;
+        height: auto;
+    }
+
+    &__close {
+        flex: none;
+    }
+
+    &__nav {
+        padding: 1.25rem 1rem;
+    }
+
+    &__list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    &__link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem 0.875rem;
+        border: 2px solid transparent; // reserve the border so active doesn't shift layout
+        border-radius: $auth-radius-md;
+        color: $admin-sidebar-text;
+        font-size: $font-size-base; // same base size the public site nav uses (0.9rem)
+        font-weight: 500;
+        text-decoration: none;
+
+        i {
+            font-size: 1.125rem;
+            line-height: 1;
+        }
+
+        &:hover {
+            color: $admin-sidebar-text;
+            background: oklch(100% 0 0 / 0.08);
+        }
+
+        &:focus-visible {
+            outline: $admin-focus-ring-width solid $admin-sidebar-focus-ring;
+            outline-offset: $admin-focus-ring-offset;
+        }
+
+        &.is-active {
+            border-color: $admin-sidebar-active-border;
+        }
+    }
+
+    // ---- Desktop: the full column from the mockup ----
+    @media (min-width: $admin-sidebar-breakpoint) {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: $admin-sidebar-width;
+        display: flex;
+        flex-direction: column;
+
+        // Closing rule at the bottom of the column (pushed down by the auto margin).
+        &::after {
+            content: "";
+            margin: auto 2rem 1.5rem;
+            border-top: 1px solid $admin-sidebar-divider;
+        }
+
+        &__header {
+            justify-content: center;
+            margin: 0 2rem;
+            padding: 1.5rem 0 1.25rem;
+        }
+
+        &__logo {
+            max-width: 10rem;
+        }
+
+        &__nav {
+            padding: 1.5rem 2rem;
+        }
+
+        &__list {
+            gap: 0.75rem;
+        }
+
+        &__link {
+            padding: 0.5rem 2rem;
+
+            i {
+                font-size: 1.25rem;
+            }
+        }
+    }
+}
+
+// Toggle + close share one look: icon-only buttons on the dark surface.
+.admin-sidebar-toggle,
+.admin-sidebar__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 0;
+    border-radius: $auth-radius-md;
+    background: $admin-sidebar-bg;
+    color: $admin-sidebar-text;
+    font-size: 1.5rem;
+
+    &:focus-visible {
+        outline: $admin-focus-ring-width solid $admin-sidebar-focus-ring;
+        outline-offset: $admin-focus-ring-offset;
+    }
+}
+
+.admin-sidebar__close {
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: 1.25rem;
+}
+
+.admin-sidebar-toggle {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 1030;
+}
+
+// Page content sits beside the fixed column. Wrap each admin page's content in this.
+.admin-content {
+    background: $admin-page-bg;
+    min-height: 100vh;
+
+    @media (min-width: $admin-sidebar-breakpoint) {
+        margin-left: $admin-sidebar-width;
+        border-radius: $admin-radius-xl 0 0 $admin-radius-xl; // rounded panel edge from the mockup
+    }
+}

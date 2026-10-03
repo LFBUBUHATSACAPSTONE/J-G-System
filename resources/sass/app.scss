@@ -1,8 +1,58 @@
 // Fonts
-@import url('https://fonts.bunny.net/css?family=Nunito');
+@import url("https://fonts.bunny.net/css?family=Nunito");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap");
 
 // Variables
-@import 'variables';
+@import "user-variables";
+@import "admin-variables";
 
 // Bootstrap
-@import 'bootstrap/scss/bootstrap';
+@import "bootstrap/scss/bootstrap";
+
+// Utilities
+@import "utilities";
+
+// Gradient Button and Text
+@import "gradient-button";
+@import "gradient-text";
+
+// Modal and Forms
+@import "auth-modal";
+
+// Landing & Landing Caption Gradient and Text Stylings
+// Header Navigation
+@import "./landing/navigation";
+@import "./landing/coverflow-carousel";
+@import "./landing/landing-caption";
+@import "./landing/landing-hero";
+@import "./landing/features";
+@import "./landing/package-comparison-table";
+@import "./landing/footer";
+
+// Booking
+@import "./booking/package";
+@import "./booking/client-information";
+@import "./booking/event-information";
+@import "./booking/event-schedule";
+@import "./booking/booking-summary";
+@import "./booking/booking-confirmation";
+@import "./booking/progress-tracker";
+
+.booking-flow {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 0 0.75rem 2.5rem;
+
+    @media (min-width: 576px) {
+        padding: 0 1.5rem 3rem;
+    }
+
+    @media (min-width: 992px) {
+        padding: 0 2rem 3rem;
+    }
+}
+
+* {
+    font-family: $font-family-text;
+}

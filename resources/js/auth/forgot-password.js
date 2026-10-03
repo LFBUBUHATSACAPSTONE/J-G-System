@@ -1,6 +1,6 @@
 /**
  * Forgot Password submit (AJAX) + live field feedback
- * 
+ *
  * Intercepts the submit, validates the identifier live with a message
  * naming what's wrong, posts via fetch, and on success moves the modal to
  * the verification view.
@@ -11,9 +11,19 @@
  * If `destination` is omitted, a masked version of the typed value is shown.
  */
 
+import { getCsrfToken } from "./csrf.js";
 import { setAuthView, focusFirstField } from "../auth-modal.js";
-import { setVerificationDestination } from "./verification-code.js";
-import { getIdentifierError, wireLiveField } from "./validation.js";
+import {
+    setVerificationDestination,
+    setVerificationToken,
+} from "./verification-code.js";
+import {
+    getIdentifierError,
+    wireLiveFieldImmediate,
+    clearAllFieldStates,
+    clearInvalidWithoutFieldError,
+    setFieldState,
+} from "./validation.js";
 
 const AUTH_MODAL_ID = "authModal";
 const VIEW_SELECTOR = '[data-view="forgot-password"]';
@@ -24,7 +34,8 @@ function initForgotPassword() {
 
     const form = modalEl.querySelector(`${VIEW_SELECTOR} form`);
     if (form) {
-        wireLiveField(form, "identifier", getIdentifierError);
+        // Validates on every keystroke (not on blur).
+        wireLiveFieldImmediate(form, "identifier", getIdentifierError);
     }
 
     modalEl.addEventListener("submit", (event) => {
@@ -41,7 +52,10 @@ function initForgotPassword() {
 
     modalEl.addEventListener("hidden.bs.modal", () => {
         const target = modalEl.querySelector(`${VIEW_SELECTOR} form`);
-        if (target) clearError(target);
+        if (target) {
+            clearError(target);
+            clearAllFieldStates(target);
+        }
     });
 }
 
@@ -54,7 +68,8 @@ async function submitForgotPassword(modalEl, form) {
 
     const identifierError = getIdentifierError(identifier);
     if (identifierError) {
-        showError(form, identifierError);
+        const errorEl = form.querySelector('[data-field-error="identifier"]');
+        setFieldState(input, errorEl, identifierError);
         input.focus();
         return;
     }
@@ -67,8 +82,7 @@ async function submitForgotPassword(modalEl, form) {
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN":
-                    form.querySelector('input[name="_token"]')?.value ?? "",
+                "X-CSRF-TOKEN": getCsrfToken(form),
             },
             body: JSON.stringify({ identifier }),
         });
@@ -78,12 +92,13 @@ async function submitForgotPassword(modalEl, form) {
             showError(
                 form,
                 data.message ||
-                    "We couldn't find an account with that email or phone number.",
+                    "We couldn't find an account with that email address.",
             );
             return;
         }
 
         const data = await response.json().catch(() => ({}));
+        setVerificationToken(data.verification_token);
         setVerificationDestination(
             data.destination || maskIdentifier(identifier),
         );
@@ -100,11 +115,8 @@ async function submitForgotPassword(modalEl, form) {
 }
 
 function maskIdentifier(value) {
-    if (value.includes("@")) {
-        const [local, domain] = value.split("@");
-        return `${local[0] ?? ""}***@${domain}`;
-    }
-    return `${"*".repeat(Math.max(value.length - 3, 0))}${value.slice(-3)}`;
+    const [local = "", domain = ""] = value.split("@");
+    return `${local[0] ?? ""}***@${domain}`;
 }
 
 function showError(form, message) {
@@ -121,9 +133,7 @@ function clearError(form) {
         errorEl.textContent = "";
         errorEl.classList.add("d-none");
     }
-    form.querySelector('input[name="identifier"]')?.classList.remove(
-        "is-invalid",
-    );
+    clearInvalidWithoutFieldError(form);
 }
 
 document.addEventListener("DOMContentLoaded", initForgotPassword);

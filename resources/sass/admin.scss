@@ -1,0 +1,17 @@
+// Admin entry: its own Vite entry so none of this ships to public pages.
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+// Shared tokens first, then Bootstrap, then admin tokens
+@import "user-variables";
+@import "bootstrap/scss/bootstrap";
+@import "admin-variables";
+
+@import "./admin/sidebar";
+@import "./admin/dashboard";
+@import "./admin/page-header";
+@import "./admin/bookings";
+@import "./admin/packages";
+
+body {
+    background: $admin-sidebar-bg;
+}

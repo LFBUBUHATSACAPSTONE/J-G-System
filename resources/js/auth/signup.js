@@ -10,17 +10,21 @@
  *   422 {"message": "…", "errors": {"identifier": ["…"], …}} -> rejected
  */
 
+import { getCsrfToken } from "./csrf.js";
 import { setAuthView, focusFirstField } from "../auth-modal.js";
 import { maskIdentifier } from "./forgot-password.js";
 import {
     setVerificationContext,
     setVerificationDestination,
+    setVerificationToken,
 } from "./verification-code.js";
 import {
     getIdentifierError,
     getPasswordError,
-    getRequiredError,
-    wireLiveField,
+    getNameError,
+    wireLiveFieldImmediate,
+    clearInvalidWithoutFieldError,
+    clearAllFieldStates,
     setFieldState,
 } from "./validation.js";
 
@@ -35,19 +39,23 @@ function initSignup() {
 
     const form = modalEl.querySelector(`${VIEW_SELECTOR} form`);
     if (form) {
-        wireLiveField(form, "first_name", (v) =>
-            getRequiredError(v, "First name"),
+        // The letters-only filter is registered BEFORE the live validators so
+        // each validator sees the already-filtered value (otherwise a typed
+        // "1" would flash an error for text that is about to be removed).
+        initNameFilter(form, "first_name");
+        initNameFilter(form, "last_name");
+        wireLiveFieldImmediate(form, "first_name", (v) =>
+            getNameError(v, "First name"),
         );
-        wireLiveField(form, "last_name", (v) =>
-            getRequiredError(v, "Last name"),
+        wireLiveFieldImmediate(form, "last_name", (v) =>
+            getNameError(v, "Last name"),
         );
-        wireLiveField(form, "identifier", getIdentifierError);
-        wireLiveField(form, "password", getPasswordError);
+        // Email and password validate on every keystroke (not on blur).
+        wireLiveFieldImmediate(form, "identifier", getIdentifierError);
+        wireLiveFieldImmediate(form, "password", getPasswordError);
 
-        // Checkboxes don't fit wireLiveField's blur/input pattern (there's
-        // nothing to "type"), so this listens to 'change' directly. Only
-        // clears the error once checked — unchecking after already having
-        // agreed re-flags it immediately, same as any other live field.
+        /* Checkboxes don't fit wireLiveFieldImmediate's 'input' pattern (there's nothing to "type"), so this listens to 'change' directly. Only clears the error once checked — unchecking after already having agreed re-flags it immediately, same as any other live field.
+        */
         const termsInput = form.querySelector('[name="terms"]');
         const termsError = form.querySelector('[data-field-error="terms"]');
         termsInput?.addEventListener("change", () => {
@@ -77,6 +85,19 @@ function initSignup() {
     });
 }
 
+/*
+ Blocks digits/symbols from ever being typed into First/Last Name — same
+ "filter on input" approach as the booking flow's Client Information step
+ (initNameFilter in booking/client-information.js). getNameError still runs
+ via wireLiveFieldImmediate and on submit as a backstop (e.g. for pasted text).
+*/
+function initNameFilter(form, fieldName) {
+    const input = form.querySelector(`[name="${fieldName}"]`);
+    input?.addEventListener("input", () => {
+        input.value = input.value.replace(/[^A-Za-z\s]/g, "");
+    });
+}
+
 async function submitSignup(modalEl, form) {
     const field = (name) => form.querySelector(`[name="${name}"]`);
     const firstNameInput = field("first_name");
@@ -89,8 +110,8 @@ async function submitSignup(modalEl, form) {
     clearError(form);
 
     const checks = [
-        [firstNameInput, getRequiredError(firstNameInput.value, "First name")],
-        [lastNameInput, getRequiredError(lastNameInput.value, "Last name")],
+        [firstNameInput, getNameError(firstNameInput.value, "First name")],
+        [lastNameInput, getNameError(lastNameInput.value, "Last name")],
         [identifierInput, getIdentifierError(identifierInput.value)],
         [passwordInput, getPasswordError(passwordInput.value)],
         [termsInput, termsInput.checked ? "" : TERMS_MESSAGE],
@@ -102,7 +123,6 @@ async function submitSignup(modalEl, form) {
             `[data-field-error="${input.name}"]`,
         );
         setFieldState(input, errorEl, message);
-        showError(form, message, []);
         input.focus();
         return;
     }
@@ -116,8 +136,7 @@ async function submitSignup(modalEl, form) {
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN":
-                    form.querySelector('input[name="_token"]')?.value ?? "",
+                "X-CSRF-TOKEN": getCsrfToken(form),
             },
             body: JSON.stringify({
                 first_name: firstNameInput.value.trim(),
@@ -146,6 +165,7 @@ async function submitSignup(modalEl, form) {
 
         const data = await response.json().catch(() => ({}));
         setVerificationContext("signup");
+        setVerificationToken(data.verification_token);
         setVerificationDestination(
             data.destination || maskIdentifier(identifier),
         );
@@ -177,14 +197,13 @@ function clearError(form) {
         errorEl.textContent = "";
         errorEl.classList.add("d-none");
     }
-    form.querySelectorAll("input").forEach((input) =>
-        input.classList.remove("is-invalid"),
-    );
+    clearInvalidWithoutFieldError(form);
 }
 
 function resetForm(form) {
     form.reset();
     clearError(form);
+    clearAllFieldStates(form);
 }
 
 document.addEventListener("DOMContentLoaded", initSignup);

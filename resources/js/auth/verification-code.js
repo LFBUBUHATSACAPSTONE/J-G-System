@@ -13,8 +13,10 @@
  *  - #resend-code-btn
  *  - [data-verification-destination]
  *
- * Confirm: submits { code, context } via fetch (JSON). `context` is "reset"
- * (default) or "signup", set by the caller through setVerificationContext().
+ * Confirm: submits { code, context, verification_token } via fetch (JSON).
+ * `context` is "reset" (default) or "signup", set by the caller through
+ * setVerificationContext(). `verification_token` is issued by register /
+ * password.email and set through setVerificationToken().
  * On success: "reset" moves to the new-password view, "signup" moves to login.
  * On failure an error is shown under the boxes.
  *
@@ -27,10 +29,12 @@
  * -> code invalid (message optional)
  *
  * The Resend AJAX call is back-end dependent: this module only dispatches
- * a bubbling `auth:resend-code` CustomEvent from the button.
+ * a bubbling `auth:resend-code` CustomEvent from the button, carrying
+ * { context, verificationToken }.
  */
 
 import { setAuthView } from "../auth-modal.js";
+import { getCsrfToken } from "./csrf.js";
 import { setResetCredentials } from "./new-password.js";
 
 const AUTH_MODAL_ID = "authModal";
@@ -42,9 +46,14 @@ const DEFAULT_CONTEXT = "reset";
 
 let cooldownTimer = null;
 let verificationContext = DEFAULT_CONTEXT;
+let verificationToken = "";
 
 function setVerificationContext(context) {
     verificationContext = context;
+}
+
+function setVerificationToken(token) {
+    verificationToken = token || "";
 }
 
 function initVerificationCode() {
@@ -91,7 +100,7 @@ function initVerificationCode() {
         btn.dispatchEvent(
             new CustomEvent("auth:resend-code", {
                 bubbles: true,
-                detail: { context: verificationContext },
+                detail: { context: verificationContext, verificationToken },
             }),
         );
         startResendCooldown();
@@ -165,23 +174,29 @@ async function submitVerificationCode(modalEl, form) {
     try {
         const response = await fetch(form.action, {
             method: "POST",
+            credentials: "same-origin",
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN":
-                    form.querySelector('input[name="_token"]')?.value ?? "",
+                "X-CSRF-TOKEN": getCsrfToken(form),
             },
-            body: JSON.stringify({ code, context: verificationContext }),
+            body: JSON.stringify({
+                code,
+                context: verificationContext,
+                verification_token: verificationToken,
+            }),
         });
 
         if (response.ok) {
             if (verificationContext === "signup") {
+                resetVerificationCode();
                 setAuthView(modalEl, "login");
                 return;
             }
 
             const data = await response.json().catch(() => ({}));
             setResetCredentials({ token: data.token, email: data.email });
+            resetVerificationCode();
             setAuthView(modalEl, "new-password");
             return;
         }
@@ -258,6 +273,7 @@ function startResendCooldown(seconds = RESEND_COOLDOWN_SECONDS) {
 
 function resetVerificationCode() {
     verificationContext = DEFAULT_CONTEXT;
+    verificationToken = "";
 
     document.querySelectorAll(BOX_SELECTOR).forEach((b) => {
         b.value = "";
@@ -280,6 +296,7 @@ export {
     initVerificationCode,
     getVerificationCode,
     setVerificationContext,
+    setVerificationToken,
     setVerificationDestination,
     startResendCooldown,
     resetVerificationCode,

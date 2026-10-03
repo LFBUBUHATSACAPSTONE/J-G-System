@@ -7,6 +7,7 @@
 
 <form method="POST" action="{{ route('verification.confirm') }}" novalidate>
   @csrf
+  <input type="hidden" name="verification_token" value="">
 
   <div class="auth-modal__code-inputs">
     <input type="text" maxlength="1" inputmode="numeric" name="code[]" class="auth-modal__code-box" required>
@@ -19,7 +20,7 @@
 
   <p class="auth-modal__error text-danger d-none" role="alert" data-verification-error></p>
 
-  <button type="button" id="resend-code-btn" data-resend-url="{{ route('verification.resend') }}">Resend Code</button>
+  <x-button type="button" id="resend-code-btn" data-resend-url="{{ route('verification.resend') }}">Resend Code</x-button>
 
-  <x-button type="submit" class="auth-modal__submit">Confirm</x-button>
+  <x-button type="submit" class="auth-modal__submit btn-color-gradient--primary">Confirm</x-button>
 </form>

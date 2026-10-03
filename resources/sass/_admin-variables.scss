@@ -1,0 +1,143 @@
+// Load order (admin.scss):  @import "variables";
+// shared tokens FIRST
+// @import "admin-variables";
+// then this file
+// This file has no shared/base block. It reads these existing tokens, so it must be imported after them:
+//   $font-family-text
+//   $auth-white  $auth-black  $auth-scrim-black  $auth-shadow-black
+//   $auth-accent-strong  $auth-accent-strong-hover
+//   $auth-radius-xl  $auth-radius-lg  $auth-radius-md  $auth-radius-pill
+//
+
+// ADMIN: TYPOGRAPHY
+// Change this one token to restyle the admin only.
+$admin-font-family: $font-family-text;
+
+// ADMIN: SHELL (sidebar + page)
+$admin-sidebar-bg: oklch(18.674% 0 0);
+$admin-sidebar-text: $auth-white;
+$admin-sidebar-divider: oklch(40% 0 0); // decorative rule under the logo
+$admin-sidebar-active-border: $auth-accent-strong;
+$admin-sidebar-focus-ring: oklch(71.8% 0.16169 293.012);
+$admin-sidebar-width: 19.5rem;
+$admin-sidebar-breakpoint: 992px;
+$admin-sidebar-width-mobile: 256px;
+
+$admin-page-bg: oklch(90.365% 0 0);
+$admin-panel-bg: oklch(
+    95.514% 0 0
+); // grey panels inside white cards, table body
+$admin-surface: $auth-white; // cards, rows, filters
+
+// ADMIN: BRAND
+$admin-brand: $auth-accent-strong;
+$admin-brand-hover: $auth-accent-strong-hover;
+$admin-brand-text: oklch(
+    40.9% 0.22719 293.012
+); // purple text/links/titles on any light surface:
+$admin-on-brand: $auth-white; // text on $admin-brand
+$admin-on-brand-muted: oklch(92.4% 0.012 293.012); // captions on $admin-brand
+
+// Page heading gradient
+$admin-heading-gradient-from: $admin-brand-text;
+$admin-heading-gradient-to: oklch(51.1% 0.24669 293.012);
+$admin-heading-gradient: linear-gradient(
+    90deg,
+    $admin-heading-gradient-from,
+    $admin-heading-gradient-to
+);
+
+// ADMIN: TEXT
+$admin-text-primary: $auth-black;
+$admin-text-muted: oklch(38% 0 0); // subtitles, "This month vs last", captions
+$admin-text-subtle: oklch(48% 0 0); // placeholders, out-of-month dates
+
+// ADMIN: FIELDS
+$admin-field-bg: $auth-white;
+$admin-field-bg-on-white: $admin-panel-bg; // fields placed on a white card (Profile)
+$admin-field-border: oklch(63.1% 0 0);
+
+// ADMIN: FOCUS
+$admin-focus-ring: $admin-brand-text;
+$admin-focus-ring-soft: oklch(
+    40.9% 0.22719 293.012 / 0.25
+); // halo only, never the sole indicator
+$admin-focus-ring-width: 2px;
+$admin-focus-ring-offset: 2px;
+
+// ADMIN: STATUS COLORS
+$admin-success: oklch(83.09% 0.21958 143.282);
+$admin-success-text: oklch(36.6% 0.12158 143.282);
+$admin-success-border: oklch(64.4% 0.21358 143.282);
+$admin-success-soft: oklch(90.243% 0.1191 144.51);
+
+$admin-warning: oklch(85.374% 0.17348 87.367);
+$admin-warning-text: oklch(38.1% 0.07798 87.367);
+$admin-warning-border: oklch(66.6% 0.13598 87.367);
+$admin-warning-soft: oklch(91.713% 0.11932 92.9);
+$admin-danger: oklch(48.5% 0.19656 25.116);
+$admin-danger-text: oklch(40% 0.16206 25.116);
+$admin-danger-border: oklch(68.8% 0.20106 25.116);
+$admin-danger-soft: oklch(94.298% 0.02858 17.67);
+$admin-on-danger: $auth-white;
+
+// ADMIN: BOOKING STATUS
+// Solid pills: black text on the fill.
+// Outline buttons: -text on surface + -border.
+$admin-status-pending-bg: $admin-warning-soft; // row highlight tint
+$admin-status-pending-border: $admin-warning-border;
+$admin-status-pending-chip-bg: $admin-warning;
+$admin-status-approved-bg: $admin-success;
+$admin-status-pending-pay-bg: $admin-warning;
+$admin-status-cancelled-text: $admin-danger-text;
+$admin-status-cancelled-border: $admin-danger-border;
+$admin-status-declined-text: $admin-danger-text;
+$admin-status-declined-border: $admin-danger-border;
+$admin-action-approve-text: $admin-success-text;
+$admin-action-approve-border: $admin-success-border;
+$admin-action-decline-text: $admin-danger-text;
+$admin-action-decline-border: $admin-danger-border;
+$admin-delta-up-bg: $admin-success;
+
+// ADMIN: CALENDAR
+$admin-calendar-wrap-bg: oklch(88.224% 0 0);
+$admin-calendar-header-bg: $admin-brand;
+$admin-calendar-header-text: $admin-on-brand;
+$admin-calendar-header-weekend-text: oklch(92.6% 0.02 21.9);
+$admin-calendar-day-bg: $admin-surface;
+$admin-calendar-day-text: $admin-text-primary;
+$admin-calendar-weekend-text: $admin-danger-text;
+$admin-calendar-holiday-text: $admin-danger-text;
+$admin-calendar-holiday-alt-text: $admin-brand-text; // purple labels (Christmas Eve/Day)
+$admin-calendar-outside-text: $admin-text-subtle; // days from adjacent months
+$admin-calendar-booked-bg: $admin-success-soft; // text: $admin-text-primary
+$admin-calendar-pending-bg: $admin-warning-soft; // text: $admin-text-primary
+
+// ADMIN: CHARTS
+$admin-chart-1: oklch(70% 0.27486 324.299); // Budget Lite
+$admin-chart-2: oklch(65.2% 0.17128 128.475); // Luxe Lite
+$admin-chart-3: oklch(68.8% 0.20106 25.116); // Budget Party
+$admin-chart-4: oklch(65% 0.11865 178.945); // Modern Glam
+$admin-chart-5: oklch(66.9% 0.13745 83.001); // Budget Wedding
+$admin-chart-6: oklch(56.451% 0.24918 283.426); // Elite Symphony
+$admin-chart-separator: $auth-white;
+
+// ADMIN: OVERLAYS
+$admin-scrim-black: $auth-scrim-black; // modal backdrop
+$admin-shadow-black: $auth-shadow-black;
+
+// ADMIN: RADII
+$admin-radius-xl: $auth-radius-xl; // cards, content panel
+$admin-radius-lg: $auth-radius-lg; // table rows, inner panels
+$admin-radius-md: $auth-radius-md; // fields, small buttons
+$admin-radius-pill: $auth-radius-pill; // pills, filters, status buttons
+
+//ADMIN: SIDEBAR
+$admin-sidebar-gutter: 1.5rem;
+
+// ADMIN: BOOKINGS
+$admin-bookings-table-breakpoint: 1200px;
+
+// ADMIN: PACKAGES
+$admin-packages-grid-md: 768px;
+$admin-packages-grid-lg: 1200px;

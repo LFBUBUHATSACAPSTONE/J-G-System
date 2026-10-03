@@ -1,0 +1,149 @@
+.client-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: flex-start;
+
+    // Card — same surface/radius/glow language as .modal-content
+    &__card {
+        position: relative;
+        flex: 1;
+        width: 100%;
+        background: $auth-surface;
+        border-radius: $auth-radius-xl;
+        padding: 2rem 2.25rem 2.5rem;
+        color: $auth-text-primary;
+        isolation: isolate;
+        overflow: hidden;
+
+        &::before {
+            content: "";
+            position: absolute;
+            inset: -20% -20% auto auto;
+            width: 70%;
+            height: 60%;
+            background: radial-gradient(
+                circle at top right,
+                $auth-glow-violet 0%,
+                $auth-glow-rose 45%,
+                transparent 75%
+            );
+            opacity: 0.35;
+            filter: blur(60px);
+            z-index: -1;
+            pointer-events: none;
+        }
+    }
+
+    &__title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 1.75rem;
+    }
+
+    // Fields — identical rules to .auth-modal__field / __field-row
+    &__field {
+        position: relative;
+        margin-bottom: 1.4rem;
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: $auth-text-primary;
+        }
+
+        label span:nth-of-type(2) {
+            color: $auth-danger;
+        }
+
+        input {
+            width: 100%;
+            background: $auth-field-bg;
+            border: 1px solid transparent;
+            border-radius: $auth-radius-md;
+            padding: 0.85rem 1rem;
+            color: $auth-text-primary;
+            font-size: 0.9rem;
+
+            &::placeholder {
+                color: $auth-text-muted;
+            }
+
+            &:focus {
+                outline: none;
+                border-color: $auth-accent;
+                box-shadow: 0 0 0 3px $auth-focus-ring-soft;
+            }
+
+            &.is-invalid {
+                border-color: $auth-danger;
+            }
+        }
+    }
+
+    &__field-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+
+        @media (min-width: 480px) {
+            flex-direction: row;
+            gap: 1rem;
+
+            .client-info__field {
+                flex: 1;
+            }
+        }
+    }
+
+    &__field-error {
+        display: block;
+        margin-top: 0.35rem;
+        color: $auth-danger;
+        font-size: 0.78rem;
+    }
+
+    &__error {
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+    }
+
+    // Action column (Continue / Cancel) — sits beside the card on desktop,
+    // stacks below it on mobile.
+    &__actions {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+
+        // Side by side once there's room for two buttons at a readable
+        // width (same breakpoint .booking-summary__actions already uses).
+        @media (min-width: 480px) {
+            flex-direction: row;
+
+            .client-info__btn--confirm,
+            .client-info__btn--cancel {
+                flex: 1;
+            }
+        }
+    }
+
+    &__btn--confirm {
+        border: none;
+        font-weight: 700;
+        padding: 0.9rem;
+    }
+
+    &__btn--cancel {
+        outline: 1px solid white;
+        background-color: none;
+        padding: 0.9rem;
+        transition: outline 0.15s ease-in-out;
+
+        &:hover {
+            outline: none;
+        }
+    }
+}

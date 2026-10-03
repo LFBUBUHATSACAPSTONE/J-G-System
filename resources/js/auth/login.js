@@ -10,10 +10,14 @@
  * `remember` is sent as a boolean for Auth::attempt($credentials, $remember).
  */
 
+import { getCsrfToken } from "./csrf.js";
 import {
     getIdentifierError,
-    getRequiredError,
-    wireLiveField,
+    getPasswordError,
+    wireLiveFieldImmediate,
+    clearInvalidWithoutFieldError,
+    clearAllFieldStates,
+    setFieldState,
 } from "./validation.js";
 
 const AUTH_MODAL_ID = "authModal";
@@ -25,9 +29,11 @@ function initLogin() {
 
     const form = modalEl.querySelector(`${VIEW_SELECTOR} form`);
     if (form) {
-        wireLiveField(form, "identifier", getIdentifierError);
-        // No format rule on login — just flag if it's left empty.
-        wireLiveField(form, "password", (v) => getRequiredError(v, "Password"));
+        // Validates on every keystroke (not on blur).
+        wireLiveFieldImmediate(form, "identifier", getIdentifierError);
+        // Same password rules as Sign up / New Password, so the feedback is
+        // live and consistent across the modal.
+        wireLiveFieldImmediate(form, "password", getPasswordError);
     }
 
     modalEl.addEventListener("submit", (event) => {
@@ -47,6 +53,7 @@ function initLogin() {
         if (target) {
             target.reset();
             clearError(target);
+            clearAllFieldStates(target);
         }
     });
 }
@@ -63,14 +70,16 @@ async function submitLogin(form) {
 
     const identifierError = getIdentifierError(identifier);
     if (identifierError) {
-        showError(form, identifierError, [identifierInput]);
+        const errorEl = form.querySelector('[data-field-error="identifier"]');
+        setFieldState(identifierInput, errorEl, identifierError);
         identifierInput.focus();
         return;
     }
 
-    const passwordError = getRequiredError(password, "Password");
+    const passwordError = getPasswordError(password);
     if (passwordError) {
-        showError(form, passwordError, [passwordInput]);
+        const errorEl = form.querySelector('[data-field-error="password"]');
+        setFieldState(passwordInput, errorEl, passwordError);
         passwordInput.focus();
         return;
     }
@@ -83,22 +92,19 @@ async function submitLogin(form) {
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN":
-                    form.querySelector('input[name="_token"]')?.value ?? "",
+                "X-CSRF-TOKEN": getCsrfToken(form),
             },
             body: JSON.stringify({ identifier, password, remember }),
         });
 
         if (!response.ok) {
             const data = await response.json().catch(() => ({}));
-            // The stub/back end can't say *which* field is wrong for security
-            // reasons (avoids confirming whether the account exists), so this
-            // stays a combined message — but it's still specific about what
-            // to check rather than a bare "error".
+            /* The stub/back end can't say *which* field is wrong for security reasons (avoids confirming whether the account exists), so this stays a combined message — but it's still specific about what to check rather than a bare "error".
+             */
             showError(
                 form,
                 data.message ||
-                    "We couldn't sign you in — check that your email/phone and password are correct.",
+                    "We couldn't sign you in — check that your email and password are correct.",
                 [identifierInput, passwordInput],
             );
             return;
@@ -131,9 +137,7 @@ function clearError(form) {
         errorEl.textContent = "";
         errorEl.classList.add("d-none");
     }
-    form.querySelectorAll("input").forEach((input) =>
-        input.classList.remove("is-invalid"),
-    );
+    clearInvalidWithoutFieldError(form);
 }
 
 document.addEventListener("DOMContentLoaded", initLogin);
