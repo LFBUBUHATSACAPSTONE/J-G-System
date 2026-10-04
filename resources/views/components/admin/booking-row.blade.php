@@ -1,18 +1,19 @@
 {{-- One booking row. Everything comes from the $booking array
-     and from config/admin-bookings.php (how each status looks / which actions it gets).
+     and from config/admin/bookings.php (how each status looks / which actions it gets).
      The data-* attributes on <tr> drive the JS filter/sort/search; data-booking on the
      View Details button carries the modal's content.
      History page: pass :history="true" and the row resolves its look from the event dates
-     (Upcoming / Ongoing / Completed) using config/admin-history.php, with no action buttons.
-     Cancelled and Declined bookings keep their own pill. Bookings page: nothing changes. --}}
-
-     
+     (Upcoming / Ongoing / Completed) using config/admin/history.php, with no action buttons.
+     Cancelled and Declined bookings keep their own badge. Bookings page: nothing changes.
+     Two separate cells on purpose: STATUS is a read-only badge, ACTIONS holds every button
+     (View Details + the status's actions from config/admin/bookings.php). A status must never look
+     like a button, so the two never share a cell or a shape. --}}
 @props(['booking', 'index' => 0, 'history' => false])
 
 @php
 // `Str` is Laravel's default global alias, no import needed.
 $key = $booking['status'];
-$status = config("admin-bookings.statuses.{$key}") ?? [
+$status = config("admin.bookings.statuses.{$key}") ?? [
 'label' => Str::headline($key), 'group' => $key, 'highlight' => false,
 'actions' => [], 'badge' => ['tone' => 'neutral', 'solid' => false],
 ];
@@ -26,9 +27,9 @@ $end = $event['end_date'] ?? $start;
 // A booking is Completed from the day AFTER its end date; it is Ongoing from the start date
 // through the end date; before that it is Upcoming.
 if ($history) {
-$phases = config('admin-history.phases');
+$phases = config('admin.history.phases');
 
-if (in_array($key, config('admin-history.terminal_statuses'), true)) {
+if (in_array($key, config('admin.history.terminal_statuses'), true)) {
 $phaseKey = 'cancelled';
 } else {
 $today = today();
@@ -40,6 +41,10 @@ $phaseKey = $today->lt($start->copy()->startOfDay())
 // Keys the phase does not define (e.g. label/badge for Cancelled) stay as the status had them.
 $status = array_merge($status, $phases[$phaseKey], ['group' => $phaseKey, 'actions' => []]);
 }
+
+// Status column: a read-only badge. History rows get the phase's badge/icon from the merge above.
+$badge = $status['badge'] ?? ['tone' => 'neutral', 'solid' => false];
+$icon = $status['icon'] ?? null;
 
 if ($start->isSameDay($end)) {
 $schedule = $start->format('F j, Y');
@@ -114,42 +119,50 @@ $booking['client']['name'], $ref, $package['name'], $event['type'] ?? '', $statu
 
   <td role="cell" class="admin-bookings__cell" data-label="Event Type">{{ $event['type'] ?? '--' }}</td>
 
-  <td role="cell" class="admin-bookings__cell" data-label="">
-    <button
-      type="button"
-      class="admin-link"
-      data-bs-toggle="modal"
-      data-bs-target="#bookingModal"
-      data-booking="{{ json_encode($payload) }}"
-      aria-label="View details for booking {{ $ref }}">
-      View Details
-    </button>
+  <td role="cell" class="admin-bookings__cell admin-bookings__cell--status" data-label="Status">
+    <span class="admin-badge admin-badge--{{ $badge['tone'] }}{{ ($badge['solid'] ?? false) ? ' admin-badge--solid' : '' }}">
+      @if ($icon)
+      <i class="ph ph-{{ $icon }}" aria-hidden="true"></i>
+      @endif
+      {{ $status['label'] }}
+    </span>
   </td>
 
-  <td role="cell" class="admin-bookings__cell admin-bookings__cell--status" data-label="Status">
-    <div class="admin-bookings__status">
+  <td role="cell" class="admin-bookings__cell admin-bookings__cell--actions" data-label="">
+    <div class="admin-bookings__actions">
+      <button
+        type="button"
+        class="admin-btn admin-btn--soft admin-btn--sm"
+        data-bs-toggle="modal"
+        data-bs-target="#bookingModal"
+        data-booking="{{ json_encode($payload) }}"
+        aria-label="View details for booking {{ $ref }}">
+        <i class="ph ph-eye" aria-hidden="true"></i>
+        <span>View Details</span>
+      </button>
+
       @foreach ($status['actions'] ?? [] as $action)
+      @php
+      // Danger actions always confirm. Any other action can opt in with a 'confirm' text in the
+      // config (":ref" becomes the booking reference), e.g. Verify Payment.
+      $confirm = $action['confirm'] ?? (($action['tone'] ?? '') === 'danger' ? $action['label'] . ' booking :ref?' : null);
+      @endphp
       <form
         method="POST"
         action="{{ $statusUrl }}"
-        @if (($action['tone'] ?? '' )==='danger' ) data-confirm="{{ $action['label'] }} booking {{ $ref }}?" @endif>
+        class="admin-bookings__action-form"
+        @if ($confirm) data-confirm="{{ str_replace(':ref', $ref, $confirm) }}" @endif>
         @csrf
         <button
           type="submit"
           name="action"
           value="{{ $action['action'] }}"
           class="admin-pill admin-pill--{{ $action['tone'] }}"
-          aria-label="{{ $action['label'] }} booking {{ $ref }}">
+          aria-label="{{ $action['label'] }}, booking {{ $ref }}">
           {{ $action['label'] }}
         </button>
       </form>
       @endforeach
-
-      @if (! empty($status['badge']))
-      <span class="admin-pill admin-pill--{{ $status['badge']['tone'] }}{{ ($status['badge']['solid'] ?? false) ? ' admin-pill--solid' : '' }}">
-        {{ $status['label'] }}
-      </span>
-      @endif
     </div>
   </td>
 </tr>

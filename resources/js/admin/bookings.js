@@ -1,6 +1,6 @@
 // Admin Bookings page: filter / sort / search the rows, fill the booking modal, confirm
 // destructive actions. The modal and confirm prompt are shared with the
-// Booking History page (history.js owns that page's list).
+// Booking History page (history.js owns that page's list). Add to resources/js/admin.js:
 // The modal itself is Bootstrap's (admin.js already loads Bootstrap for the sidebar offcanvas).
 
 const getPath = (obj, path) =>
@@ -11,7 +11,7 @@ const getPath = (obj, path) =>
 const isEmpty = (value) =>
     value === undefined || value === null || value === "";
 
-//  List: filter, sort, search 
+//  List: filter, sort, search
 function initList(body) {
     const rows = [...body.querySelectorAll("[data-booking-row]")];
     const sortSelect = document.querySelector("[data-bookings-sort]");
@@ -23,7 +23,7 @@ function initList(body) {
 
     if (!rows.length) return;
 
-    // Keys match config/admin-bookings.php 'sorts'.
+    // Keys match config/admin/bookings.php 'sorts'.
     const byIndex = (a, b) => Number(a.dataset.index) - Number(b.dataset.index);
     const comparators = {
         default: byIndex,
@@ -68,7 +68,7 @@ function initList(body) {
     searchInput.addEventListener("input", apply);
 }
 
-//  Modal: fill from the clicked row, Edit toggle 
+//  Modal: fill from the clicked row, Edit toggle
 function initModal(modal) {
     const form = modal.querySelector("form");
     const editButton = modal.querySelector("[data-booking-edit]");
@@ -115,7 +115,11 @@ function initModal(modal) {
             else el.readOnly = !on;
         });
         saveButton.hidden = !on;
-        editButton.textContent = on ? "Cancel edit" : "Edit";
+        // Label and icon swap in place (the button holds an icon, so textContent would wipe it).
+        const label = editButton.querySelector("[data-booking-edit-label]");
+        const icon = editButton.querySelector("[data-booking-edit-icon]");
+        if (label) label.textContent = on ? "Cancel" : "Edit";
+        if (icon) icon.className = `ph ${on ? "ph-x" : "ph-pencil-simple"}`;
 
         if (on) editable[0]?.focus();
         // Cancelling an edit puts the original values back.
@@ -144,7 +148,7 @@ function initModal(modal) {
     });
 }
 
-//  Confirm destructive actions (Decline / Cancel) 
+//  Confirm destructive actions (Decline / Cancel)
 function initConfirm() {
     document.addEventListener("submit", (event) => {
         const message = event.target.dataset?.confirm;

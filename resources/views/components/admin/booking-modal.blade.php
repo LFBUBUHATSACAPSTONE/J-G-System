@@ -1,16 +1,8 @@
-{{--
-
-One modal shared by every row. 
-
-bookings.js fills it from the clicked row's  data-booking JSON (shape in docs/admin-bookings.md), so there is no per-row modal markup.
-
-Client Information is always read-only. 
-
-Event Information has an Edit toggle that unlocks the fields marked data-editable and shows "Save changes" (PATCH to admin.bookings.update). Schedule, payment and package stay read-only. 
-
---}}
-
-
+{{-- One modal shared by every row. bookings.js fills it from the clicked row's
+     data-booking JSON, so there is no per-row modal markup.
+     Client Information is always read-only. Event Information has an Edit toggle that
+     unlocks the fields marked data-editable and shows "Save changes" (PATCH to
+     admin.bookings.update). Schedule, payment and package stay read-only. --}}
 @php
 $clientFields = [
 ['id' => 'client-name', 'label' => 'Client Name', 'path' => 'client.name'],
@@ -18,7 +10,7 @@ $clientFields = [
 ['id' => 'client-phone', 'label' => 'Contact Number', 'path' => 'client.phone'],
 ['id' => 'client-address', 'label' => 'Address', 'path' => 'client.address'],
 ];
-$venueTypes = config('admin-bookings.venue_types', ['Indoor', 'Outdoor', 'Both']);
+$venueTypes = config('admin.bookings.venue_types', ['Indoor', 'Outdoor', 'Both']);
 @endphp
 
 <div
@@ -57,7 +49,10 @@ $venueTypes = config('admin-bookings.venue_types', ['Indoor', 'Outdoor', 'Both']
         <section class="admin-booking-modal__section admin-booking-modal__section--event" aria-labelledby="bm-event-title">
           <div class="admin-booking-modal__section-head">
             <h3 id="bm-event-title" class="admin-booking-modal__heading">Event Information</h3>
-            <button type="button" class="admin-link" data-booking-edit>Edit</button>
+            <button type="button" class="admin-btn admin-btn--outline admin-btn--sm" data-booking-edit>
+              <i class="ph ph-pencil-simple" aria-hidden="true" data-booking-edit-icon></i>
+              <span data-booking-edit-label>Edit</span>
+            </button>
           </div>
 
           <div class="admin-booking-modal__panel admin-booking-modal__panel--event">
@@ -145,7 +140,7 @@ $venueTypes = config('admin-bookings.venue_types', ['Indoor', 'Outdoor', 'Both']
 
       <div class="modal-footer admin-booking-modal__footer">
         <button type="submit" class="admin-btn admin-btn--brand" data-booking-save hidden>Save changes</button>
-        <button type="button" class="admin-btn admin-btn--brand" data-bs-dismiss="modal">Back</button>
+        <button type="button" class="admin-btn admin-btn--outline" data-bs-dismiss="modal">Back</button>
       </div>
     </form>
   </div>

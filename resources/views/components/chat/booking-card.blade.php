@@ -1,16 +1,16 @@
 {{-- Booking card inside a chat thread.
-     Current booking: full colour. Finished (status in config/admin-messages.php 'past_statuses',
+     Current booking: full colour. Finished (status in config/admin/messages.php 'past_statuses',
      or end date already passed): grey. :admin="true" adds the "View in Bookings" link. --}}
 @props(['booking', 'admin' => false])
 
 @php
 $key = $booking['status'];
-$status = config("admin-bookings.statuses.{$key}") ?? ['label' => Str::headline($key), 'badge' => null];
+$status = config("admin.bookings.statuses.{$key}") ?? ['label' => Str::headline($key), 'badge' => null];
 $event = $booking['event'];
 $start = $event['start_date'];
 $end = $event['end_date'] ?? $start;
 
-$past = in_array($key, config('admin-messages.past_statuses'), true) || $end->copy()->endOfDay()->isPast();
+$past = in_array($key, config('admin.messages.past_statuses'), true) || $end->copy()->endOfDay()->isPast();
 $tone = $past ? 'past' : ($status['badge']['tone'] ?? 'warning');
 
 if ($start->isSameDay($end)) {

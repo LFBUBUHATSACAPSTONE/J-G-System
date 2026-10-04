@@ -10,8 +10,9 @@ use Illuminate\Support\Facades\Route;
 //
 // Route NAMES must stay as they are: config/admin.php (page meta + sidebar active state)
 // keys off `admin.bookings`, and the row/modal markup builds URLs from the other two.
+// Status flow and the buttons each status gets: config/admin/bookings.php.
 //
-// Everything below is placeholder data. The rest is made up so every status and filter can be tried.
+// Everything below is placeholder data. 
 
 Route::get('/admin/bookings', function () {
   return view('admin.bookings', [
@@ -83,7 +84,7 @@ Route::get('/admin/bookings', function () {
           'start_time' => '10:00 AM',
           'end_time' => '10:00 PM',
         ],
-        'payment' => ['label' => 'GCash - Down Payment', 'status' => 'Down payment paid', 'state' => 'partial'],
+        'payment' => ['label' => 'GCash - Down Payment', 'status' => 'Awaiting verification', 'state' => 'pending'],
         'package' => ['id' => 'luxe-lite', 'name' => 'Luxe Lite', 'price' => 20000],
       ],
       [
@@ -130,11 +131,21 @@ Route::get('/admin/bookings', function () {
   ]);
 })->name('admin.bookings');
 
-// Approve / Decline / Cancel buttons (a normal form POST, so the server re-renders the page).
+// Approve / Decline / Cancel / Verify Payment buttons (a normal form POST, so the server re-renders the page).
+// Next status the real controller should set:
+//   approve  : pending         -> pending_payment   (shown as "Payment to Verify")
+//   verify   : pending_payment -> approved          (payment.state becomes paid / partial, so the
+//                                                    booking now belongs in Booking History)
+//   decline  : pending         -> declined
+//   cancel   : pending_payment | approved -> cancelled
 Route::post('/admin/bookings/{booking}/status', function (Request $request, $booking) {
-  $action = $request->validate(['action' => ['required', 'in:approve,decline,cancel']])['action'];
+  $action = $request->validate(['action' => ['required', 'in:approve,decline,cancel,verify']])['action'];
 
-  return back()->with('status', "Booking {$booking}: '{$action}' received (stub, nothing was saved).");
+  $message = $action === 'verify'
+    ? "Booking {$booking}: payment verified (stub, nothing was saved). Once saved, it is Approved and appears in Booking History."
+    : "Booking {$booking}: '{$action}' received (stub, nothing was saved).";
+
+  return back()->with('status', $message);
 })->name('admin.bookings.status');
 
 // "Save changes" in the booking modal (editable event fields only).
