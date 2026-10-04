@@ -1,3 +1,16 @@
+// Admin sidebar. Tokens only: everything comes from _admin-variables.scss.
+// Falls back to this if the token isn't in _admin-variables.scss.
+
+// Mobile-first: the base rules are the compact offcanvas panel (< lg);
+// the min-width block restores the full fixed column from the mockup.
+
+// The dark sidebar colour doubles as the page backdrop, so the rounded corners
+// of .admin-content (desktop) reveal it, like the mockup.
+body {
+    background: $admin-sidebar-bg;
+    font-family: $admin-font-family; // Poppins everywhere in the admin, modals included
+}
+
 .admin-sidebar {
     font-family: $admin-font-family;
     overflow-y: auto;
@@ -83,7 +96,7 @@
         }
     }
 
-    // ---- Desktop: the full column from the mockup ----
+    //  Desktop: the full column from the mockup
     @media (min-width: $admin-sidebar-breakpoint) {
         position: fixed;
         inset: 0 auto 0 0;

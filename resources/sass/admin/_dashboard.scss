@@ -1,3 +1,7 @@
+// Admin dashboard. Tokens only: everything comes from _admin-variables.scss.
+// Mobile-first: base = one column; 768px = two columns; 1200px = the 3-column
+
+//  Shared card surface (also used by the other admin pages later)
 .admin-card {
     background: $admin-surface;
     border-radius: $admin-radius-xl;
@@ -17,45 +21,10 @@
     font-size: 0.9rem;
 }
 
-// Page header
+//  Page
+// The page header is the shared <x-admin.page-header> (see _page-header.scss).
 .admin-dashboard {
     font-family: $admin-font-family;
-
-    &__header {
-        margin: 0 0 1.5rem;
-
-        // Leaves room for the fixed mobile menu button (< lg).
-        padding-left: 3.25rem;
-
-        @media (min-width: $admin-sidebar-breakpoint) {
-            padding-left: 1.5rem;
-        }
-    }
-
-    &__title {
-        display: inline-block;
-        margin: 0;
-        font-size: clamp(1.75rem, 1.2rem + 2vw, 2.5rem);
-        font-weight: 700;
-        background: $admin-heading-gradient;
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        color: transparent;
-
-        // Gradient text disappears in Windows High Contrast; use the system colour.
-        @media (forced-colors: active) {
-            background: none;
-            -webkit-text-fill-color: currentColor;
-            color: CanvasText;
-        }
-    }
-
-    &__subtitle {
-        margin: 0.25rem 0 0;
-        color: $admin-text-muted;
-        font-size: 0.95rem;
-    }
 
     // Grid
     &__grid {
@@ -116,7 +85,7 @@
     }
 }
 
-// KPI card
+//  KPI card
 .admin-stat {
     display: flex;
     flex-direction: column;
@@ -188,7 +157,7 @@
     }
 }
 
-// Rows (Upcoming Events + Pending Approval)
+//  Rows (Upcoming Events + Pending Approval)
 .admin-list {
     display: flex;
     flex-direction: column;
@@ -245,7 +214,7 @@
     }
 }
 
-// Package Rate donut
+//  Package Rate donut
 // Six chart tokens. Colour is applied through `color`, and the SVG strokes / the
 // legend swatches use currentColor, so one class colours both.
 .admin-chart--1 {

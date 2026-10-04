@@ -1,3 +1,5 @@
+{{-- Admin dashboard (front end only). Every figure comes from the controller (the exact shape of $stats, $upcomingEvents,
+     $pendingApprovals and $packageRate). Nothing here is hard-coded. --}}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -9,10 +11,7 @@
   <x-admin.sidebar />
 
   <main class="admin-content admin-dashboard p-4">
-    <header class="admin-dashboard__header">
-      <h1 class="admin-dashboard__title">Welcome Admin!</h1>
-      <p class="admin-dashboard__subtitle">Here is the overview of your business</p>
-    </header>
+    <x-admin.page-header />
 
     <div class="admin-dashboard__grid">
       <x-admin.stat-card class="admin-dashboard__total" featured
