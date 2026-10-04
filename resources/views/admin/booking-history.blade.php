@@ -1,11 +1,9 @@
 {{-- Admin Booking History page (front end only). Variables from the controller:
        $bookings => list of bookings (same shape as the Bookings page, see docs/admin-booking-history.md)
        $packages => [['id' => 'budget-lite', 'name' => 'Budget Lite'], ...]  (admin-managed)
-     Which bookings are sent is the controller's job (rule in config/admin-history.php).
+     Which bookings are sent is the controller's job (rule in config/admin/history.php).
      State tabs, filters, sorting and search run in the browser (resources/js/admin/history.js).
      The row and the View Details modal are the Bookings page's own components. --}}
-
-
 @php
 // Month filter options come from the data, newest first: ['2026-10' => 'October 2026', ...]
 $months = collect($bookings)
@@ -14,7 +12,6 @@ $months = collect($bookings)
 ->sortDesc()
 ->mapWithKeys(fn ($month) => [$month => \Illuminate\Support\Carbon::parse($month . '-01')->format('F Y')]);
 @endphp
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -34,7 +31,7 @@ $months = collect($bookings)
 
     {{-- State tabs. Buttons with aria-pressed (there are no tab panels to switch). Counts are filled by history.js. --}}
     <div class="admin-history__tabs" role="group" aria-label="Show bookings by state">
-      @foreach (config('admin-history.tabs') as $value => $label)
+      @foreach (config('admin.history.tabs') as $value => $label)
       <button type="button" class="admin-tab" data-history-tab="{{ $value }}"
         aria-pressed="{{ $loop->first ? 'true' : 'false' }}">
         {{ $label }}
@@ -49,11 +46,10 @@ $months = collect($bookings)
         <label for="bh-sort" class="admin-filter__label">Sorted by:</label>
         <div class="admin-filter__control">
           <select id="bh-sort" class="admin-filter__select" data-history-sort>
-            @foreach (config('admin-history.sorts') as $value => $label)
+            @foreach (config('admin.history.sorts') as $value => $label)
             <option value="{{ $value }}">{{ $label }}</option>
             @endforeach
           </select>
-          <i class="ph ph-caret-down admin-filter__chevron" aria-hidden="true"></i>
         </div>
       </div>
 
@@ -66,7 +62,6 @@ $months = collect($bookings)
             <option value="{{ $package['id'] }}">{{ $package['name'] }}</option>
             @endforeach
           </select>
-          <i class="ph ph-caret-down admin-filter__chevron" aria-hidden="true"></i>
         </div>
       </div>
 
@@ -79,7 +74,6 @@ $months = collect($bookings)
             <option value="{{ $value }}">{{ $label }}</option>
             @endforeach
           </select>
-          <i class="ph ph-caret-down admin-filter__chevron" aria-hidden="true"></i>
         </div>
       </div>
 
@@ -101,8 +95,8 @@ $months = collect($bookings)
             <th role="columnheader" scope="col">Schedule</th>
             <th role="columnheader" scope="col">Package</th>
             <th role="columnheader" scope="col">Event Type</th>
-            <th role="columnheader" scope="col"><span class="visually-hidden">Details</span></th>
             <th role="columnheader" scope="col">Status</th>
+            <th role="columnheader" scope="col"><span class="visually-hidden">Details</span></th>
           </tr>
         </thead>
         <tbody role="rowgroup" data-history-body>

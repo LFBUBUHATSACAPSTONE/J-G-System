@@ -4,16 +4,14 @@
                     page reads status, reference, client.name, package.name and event.*)
        $holidays => OPTIONAL ['2026-04-02' => 'Maundy Thursday', ...] for movable holidays
      Month arrows are plain links (?month=YYYY-MM), so the page works without JS. Colours and the
-     status-to-colour mapping come from config/admin-calendar.php. Nothing is hard-coded here. --}}
-
-
+     status-to-colour mapping come from config/admin/calendar.php. Nothing is hard-coded here. --}}
 @php
 $month = $month->copy()->startOfMonth();
 $gridStart = $month->copy()->startOfWeek(0); // Sunday
 $gridEnd = $month->copy()->endOfMonth()->endOfWeek(6); // Saturday
-$statuses = config('admin-calendar.statuses');
-$tones = config('admin-calendar.tones');
-$fixedHolidays = config('admin-calendar.holidays');
+$statuses = config('admin.calendar.statuses');
+$tones = config('admin.calendar.tones');
+$fixedHolidays = config('admin.calendar.holidays');
 $movableHolidays = $holidays ?? [];
 $today = now()->toDateString();
 
@@ -32,22 +30,19 @@ $cursor->addDay();
 }
 }
 $holidayFor = fn ($d) => $movableHolidays[$d->toDateString()] ?? $fixedHolidays[$d->format('m-d')] ?? null;
-
-
 // Cell colour = first tone in the config's priority list that the date holds.
 $toneFor = function (array $dayBookings) use ($statuses, $tones) {
 $present = array_map(fn ($b) => $statuses[$b['status']]['tone'], $dayBookings);
-
-
 foreach (array_keys($tones) as $tone) {
 if (in_array($tone, $present, true)) {
 return $tone;
 }
 }
 };
-
+// Rows in the grid (4, 5 or 6). The CSS divides the free screen height by this so the whole month
+// fits without scrolling when the window is tall enough (see --cal-rows in _calendar.scss).
+$weeks = (int) ceil(($month->dayOfWeek + $month->daysInMonth) / 7);
 $dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
 $prev = $month->copy()->subMonth()->format('Y-m');
 $next = $month->copy()->addMonth()->format('Y-m');
 @endphp
@@ -65,15 +60,25 @@ $next = $month->copy()->addMonth()->format('Y-m');
     <x-admin.page-header />
 
     <div class="admin-cal__layout">
-      <section class="admin-cal__wrap" aria-labelledby="calMonth">
-        <div class="admin-cal__nav">
-          <a class="admin-cal__nav-link" href="{{ route('admin.calendar', ['month' => $prev]) }}" aria-label="Previous month">
-            <i class="ph ph-caret-left" aria-hidden="true"></i>
-          </a>
-          <h2 class="admin-cal__month" id="calMonth">{{ $month->format('F Y') }}</h2>
-          <a class="admin-cal__nav-link" href="{{ route('admin.calendar', ['month' => $next]) }}" aria-label="Next month">
-            <i class="ph ph-caret-right" aria-hidden="true"></i>
-          </a>
+      <section class="admin-cal__wrap" aria-labelledby="calMonth" style="--cal-rows: {{ $weeks }}">
+        {{-- Month bar: arrows + month, with the legend beside it (not under the grid, where it pushed the
+             page past the screen height). Wide calendars put the legend on the right of the same row. --}}
+        <div class="admin-cal__bar">
+          <div class="admin-cal__nav">
+            <a class="admin-cal__nav-link" href="{{ route('admin.calendar', ['month' => $prev]) }}" aria-label="Previous month">
+              <i class="ph ph-caret-left" aria-hidden="true"></i>
+            </a>
+            <h2 class="admin-cal__month" id="calMonth">{{ $month->format('F Y') }}</h2>
+            <a class="admin-cal__nav-link" href="{{ route('admin.calendar', ['month' => $next]) }}" aria-label="Next month">
+              <i class="ph ph-caret-right" aria-hidden="true"></i>
+            </a>
+          </div>
+
+          <ul class="admin-cal__legend" aria-label="Legend">
+            @foreach ($tones as $tone => $label)
+            <li><span class="admin-cal__swatch admin-cal__swatch--{{ $tone }}" aria-hidden="true"></span>{{ $label }}</li>
+            @endforeach
+          </ul>
         </div>
 
         <table class="admin-cal__table">
@@ -133,12 +138,6 @@ $next = $month->copy()->addMonth()->format('Y-m');
             @endfor
           </tbody>
         </table>
-
-        <ul class="admin-cal__legend" aria-label="Legend">
-          @foreach ($tones as $tone => $label)
-          <li><span class="admin-cal__swatch admin-cal__swatch--{{ $tone }}" aria-hidden="true"></span>{{ $label }}</li>
-          @endforeach
-        </ul>
       </section>
 
       <aside class="admin-cal__panel" id="calPanel" aria-labelledby="calPanelTitle" data-cal-panel

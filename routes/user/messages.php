@@ -36,10 +36,10 @@ View::composer('user.landing', function ($view) {
 
 // Same contract and limits as admin.messages.send.
 Route::post('/messages', function (Request $request) {
-  $att = config('admin-messages.attachments');
+  $att = config('admin.messages.attachments');
 
   $request->validate([
-    'body'          => ['nullable', 'string', 'max:' . config('admin-messages.max_length'), 'required_without:attachments'],
+    'body'          => ['nullable', 'string', 'max:' . config('admin.messages.max_length'), 'required_without:attachments'],
     'attachments'   => ['nullable', 'array', 'max:' . $att['max_files']],
     'attachments.*' => ['file', 'mimes:' . $att['mimes'], 'max:' . $att['max_kb']],
   ]);

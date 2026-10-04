@@ -13,8 +13,8 @@ use Illuminate\Support\Facades\Route;
 //
 // The dates are RELATIVE TO TODAY, so every state (ongoing, upcoming, completed, cancelled)
 // always shows up whenever you open the page. Some bookings are deliberately NOT history
-// (pending, waiting for payment, unpaid): the filter below drops them, which is the same rule
-// the real controller must apply (config/admin-history.php).
+// (pending approval, payment to verify, unpaid): the filter below drops them, which is the same rule
+// the real controller must apply (config/admin/history.php).
 
 Route::get('/admin/booking-history', function () {
   $today = Carbon::today();
@@ -140,7 +140,7 @@ Route::get('/admin/booking-history', function () {
       'reference' => '#JG90002',
       'status' => 'pending_payment',
       'client' => $client('Not In History B', 'b@example.com'),
-      'event' => $event('Waiting For Payment', 'Wedding', 20, 20, '2:00 PM', '9:00 PM'),
+      'event' => $event('Payment To Verify', 'Wedding', 20, 20, '2:00 PM', '9:00 PM'),
       'payment' => $unpaid,
       'package' => ['id' => 'luxe-lite', 'name' => 'Luxe Lite', 'price' => 25000]
     ],
@@ -155,11 +155,11 @@ Route::get('/admin/booking-history', function () {
     ],
   ];
 
-  // The history rule (config/admin-history.php): cancelled / declined always; approved / completed
+  // The history rule (config/admin/history.php): cancelled / declined always; approved / completed
   // once a payment is verified.
-  $isHistory = fn(array $booking) => in_array($booking['status'], config('admin-history.terminal_statuses'), true)
-    || (in_array($booking['status'], config('admin-history.history_statuses'), true)
-      && in_array($booking['payment']['state'] ?? null, config('admin-history.paid_states'), true));
+  $isHistory = fn(array $booking) => in_array($booking['status'], config('admin.history.terminal_statuses'), true)
+    || (in_array($booking['status'], config('admin.history.history_statuses'), true)
+      && in_array($booking['payment']['state'] ?? null, config('admin.history.paid_states'), true));
 
   return view('admin.booking-history', [
     // Admin-managed, so the dropdown is built from this list, not hard-coded.

@@ -1,7 +1,7 @@
 {{-- Admin Messages page (front end only). Variable from the controller:
-       $conversations => one per client 
+       $conversations => one per client (shape in docs/admin-messages.md)
      The list, every panel, the booking cards and the quick replies read from $conversations and
-     config/admin-messages.php. Nothing is hard-coded, so the stub route can be replaced by a real
+     config/admin/messages.php. Nothing is hard-coded, so the stub route can be replaced by a real
      controller without view edits. --}}
 <!DOCTYPE html>
 <html lang="en">
@@ -86,7 +86,7 @@
 
           <x-chat.composer
             :action="Route::has('admin.messages.send') ? route('admin.messages.send', ['conversation' => $c['id']]) : '#'"
-            :quick="config('admin-messages.quick_replies')" />
+            :quick="config('admin.messages.quick_replies')" />
         </div>
         @endforeach
 

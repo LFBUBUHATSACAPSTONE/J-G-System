@@ -8,8 +8,6 @@ use Illuminate\Validation\Rule;
 // Everything here is a FRONT-END STUB (placeholder data, nothing is saved). When the backend is
 // built, replace each closure with a controller call and keep this file as the page's routes. Route NAMES must stay as they are: config/admin.php (page meta + sidebar
 // active state) keys off `admin.packages`, and the card/modal markup builds URLs from the rest.
-//
-// Placeholder data. Nothing is saved.
 
 $stubPackages = fn() => [
   ['id' => 'budget-lite', 'name' => 'Budget Lite', 'price' => 5000, 'available' => false, 'features' => [
@@ -93,7 +91,7 @@ Route::patch('/admin/packages/{package}', function (Request $request, string $pa
 // Available / Unavailable buttons on a card.
 Route::patch('/admin/packages/{package}/availability', function (Request $request, string $package) {
   $availability = $request->validate([
-    'availability' => ['required', Rule::in(array_keys(config('admin-packages.availability')))],
+    'availability' => ['required', Rule::in(array_keys(config('admin.packages.availability')))],
   ])['availability'];
 
   return redirect()->route('admin.packages')

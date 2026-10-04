@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 // Routes for the admin Messages page. Required from routes/admin.php.
 // FRONT-END STUB: placeholder data, nothing is saved. Replace each closure with a controller call
 // and keep the route NAMES (`admin.messages`, `admin.messages.send`): config/admin.php (page meta,
-// sidebar active state) and the views depend on them. Data contract: docs/admin-messages.md.
+// sidebar active state) and the views depend on them.
 
 Route::get('/admin/messages', function () {
   // One thread per client. Ordered newest activity first (the backend should do the same).
@@ -97,10 +97,10 @@ Route::get('/admin/messages', function () {
 // Send a message or attachments to a client. Backend contract: 200 {"ok": true} on success;
 // 422 {"message", "errors": {field: [msg]}} on a validation failure (Laravel does this for JSON requests).
 Route::post('/admin/messages/{conversation}', function (Request $request, $conversation) {
-  $att = config('admin-messages.attachments');
+  $att = config('admin.messages.attachments');
 
   $request->validate([
-    'body'          => ['nullable', 'string', 'max:' . config('admin-messages.max_length'), 'required_without:attachments'],
+    'body'          => ['nullable', 'string', 'max:' . config('admin.messages.max_length'), 'required_without:attachments'],
     'attachments'   => ['nullable', 'array', 'max:' . $att['max_files']],
     'attachments.*' => ['file', 'mimes:' . $att['mimes'], 'max:' . $att['max_kb']],
   ]);

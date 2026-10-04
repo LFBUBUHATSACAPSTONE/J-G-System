@@ -1,5 +1,5 @@
-// Admin Booking History page: state tabs, filters, sort and search over the rows already on the page.
-
+// Admin Booking History page: state tabs, filters, sort and search over the rows already on the
+// page.
 // Row markup comes from <x-admin.booking-row :history="true">: each <tr> carries
 //   data-status-group (ongoing | upcoming | completed | cancelled), data-rank, data-date (start),
 //   data-month (Y-m of the start date), data-package, data-name, data-search.
@@ -32,7 +32,7 @@ function init() {
         if (badge) badge.textContent = total;
     });
 
-    // Keys match config/admin-history.php 'sorts'.
+    // Keys match config/admin/history.php 'sorts'.
     const byIndex = (a, b) => Number(a.dataset.index) - Number(b.dataset.index);
     const soonest = (a, b) => a.dataset.date.localeCompare(b.dataset.date);
     const latest = (a, b) => b.dataset.date.localeCompare(a.dataset.date);

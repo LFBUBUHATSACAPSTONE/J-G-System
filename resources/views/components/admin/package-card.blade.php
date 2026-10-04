@@ -1,13 +1,13 @@
 {{-- One package card.
-     "Edit" opens the shared #packageModal (package-modal.blade.php): 
-        packages.js reads the data-package JSON below. Available / Unavailable are two real forms (PATCH to admin.packages.availability); --}}
-
+     "Edit" opens the shared #packageModal (package-modal.blade.php): packages.js reads the
+     data-package JSON below. Available / Unavailable are two real forms (PATCH to
+     admin.packages.availability); the front end never flips the state itself. --}}
 @props(['package'])
 
 @php
 $id = $package['id'];
 $available = (bool) $package['available'];
-$prefix = config('admin-packages.currency_prefix', 'Php');
+$prefix = config('admin.packages.currency_prefix', 'Php');
 
 $payload = [
 'id' => $id,
@@ -30,11 +30,14 @@ $availabilityUrl = Route::has('admin.packages.availability')
     <h3 id="pkg-{{ $id }}-name" class="admin-package-card__name">{{ $package['name'] }}</h3>
     <button
       type="button"
-      class="admin-link"
+      class="admin-btn admin-btn--outline admin-btn--sm"
       data-bs-toggle="modal"
       data-bs-target="#packageModal"
       data-package="{{ json_encode($payload) }}"
-      aria-label="Edit {{ $package['name'] }}">Edit</button>
+      aria-label="Edit {{ $package['name'] }}">
+      <i class="ph ph-pencil-simple" aria-hidden="true"></i>
+      <span>Edit</span>
+    </button>
   </header>
 
   <p class="admin-package-card__price">{{ $prefix }} {{ number_format($package['price']) }}</p>
@@ -47,7 +50,7 @@ $availabilityUrl = Route::has('admin.packages.availability')
   </ul>
 
   <div class="admin-package-card__availability" role="group" aria-label="Availability of {{ $package['name'] }}">
-    @foreach (config('admin-packages.availability') as $key => $state)
+    @foreach (config('admin.packages.availability') as $key => $state)
     @php
     $active = ($key === 'available') === $available;
     $confirm = $state['confirm'] ? str_replace('{name}', $package['name'], $state['confirm']) : null;
