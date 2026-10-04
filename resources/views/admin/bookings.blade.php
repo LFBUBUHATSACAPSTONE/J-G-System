@@ -1,8 +1,10 @@
-{{-- Admin Bookings page (front end only). Variables from the controller:
-       $bookings => list of bookings (shape in docs/admin-bookings.md)
+{{-- Admin Bookings page (front end only). Variables from the controller
+       $bookings => list of bookings
        $packages => [['id' => 'budget-lite', 'name' => 'Budget Lite'], ...]  (admin-managed)
      Filtering, sorting and search run in the browser (resources/js/admin/bookings.js).
-     Nothing here is hard-coded; status badge + actions come from config/admin/bookings.php. --}}
+     Nothing here is hard-coded; status badge + actions come from config/admin/bookings.php. 
+
+--}}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -26,6 +28,7 @@
         <label for="bk-sort" class="admin-filter__label">Sorted by:</label>
         <div class="admin-filter__control">
           <select id="bk-sort" class="admin-filter__select" data-bookings-sort>
+
             @foreach (config('admin.bookings.sorts') as $value => $label)
             <option value="{{ $value }}">{{ $label }}</option>
             @endforeach
@@ -37,7 +40,7 @@
         <label for="bk-status" class="admin-filter__label">Status:</label>
         <div class="admin-filter__control">
           <select id="bk-status" class="admin-filter__select" data-bookings-status>
-            @foreach (config('admin.bookings.status_filters') as $value => $label)
+            @foreach (config('admin.bookings.status_filters') as $value=> $label)
             <option value="{{ $value }}">{{ $label }}</option>
             @endforeach
           </select>

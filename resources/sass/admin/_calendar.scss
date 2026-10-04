@@ -1,5 +1,7 @@
-// Mobile-first: the side panel stacks under the grid, and sits to the
+// Admin Calendar page.
+// ("Admin: calendar" block). Mobile-first: the side panel stacks under the grid, and sits to the
 // right of it from 1200px (the sidebar already takes 312px, like the Bookings table breakpoint).
+
 .admin-cal {
     font-family: $admin-font-family;
 
@@ -14,7 +16,7 @@
         }
     }
 
-    //  Month bar
+    // Month bar
     &__wrap {
         flex: 1 1 auto;
         min-width: 0;
@@ -24,12 +26,40 @@
         container-type: inline-size; // the day names switch on the calendar's own width, not the screen's
     }
 
+    // Month bar: the month arrows plus the legend. Narrow: arrows on one row, legend centred under
+    // them. From 40rem of calendar width: legend on the left of the same row, arrows kept centred
+    // (equal side columns). The legend wraps inside its column if it ever needs to.
+    &__bar {
+        display: grid;
+        gap: 0.5rem;
+        justify-items: center;
+        margin-bottom: 1rem;
+    }
+
+    @container (min-width: 40rem) {
+        &__bar {
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            align-items: center;
+            justify-items: stretch;
+        }
+
+        &__bar > &__nav {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        &__bar > &__legend {
+            grid-column: 1;
+            grid-row: 1;
+            justify-content: flex-start;
+        }
+    }
+
     &__nav {
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 1rem;
-        margin-bottom: 1rem;
     }
 
     &__month {
@@ -261,8 +291,9 @@
     &__legend {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.5rem 1.25rem;
-        margin: 1rem 0 0;
+        justify-content: center;
+        gap: 0.25rem 1.25rem;
+        margin: 0;
         padding: 0;
         list-style: none;
         color: $admin-text-primary;

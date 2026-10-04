@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 // The dates are RELATIVE TO TODAY, so every state (ongoing, upcoming, completed, cancelled)
 // always shows up whenever you open the page. Some bookings are deliberately NOT history
 // (pending approval, payment to verify, unpaid): the filter below drops them, which is the same rule
-// the real controller must apply (config/admin/history.php).
+// the real controller must apply (config/admin-history.php).
 
 Route::get('/admin/booking-history', function () {
   $today = Carbon::today();
