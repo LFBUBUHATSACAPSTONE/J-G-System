@@ -21,7 +21,7 @@
     font-size: 1.5rem;
 }
 
-// ---- Thread -----------------------------------------------------------
+// Thread 
 .chat-log {
     display: flex;
     flex-direction: column;
@@ -97,7 +97,7 @@
     }
 }
 
-// ---- Attachments ------------------------------------------------------
+// Attachments 
 .chat-attach {
     display: flex;
     align-items: center;
@@ -141,7 +141,7 @@
     }
 }
 
-// ---- Booking card -----------------------------------------------------
+// Booking card 
 .chat-booking {
     align-self: stretch;
     max-width: 28rem;
@@ -241,7 +241,7 @@
     }
 }
 
-// ---- Composer ---------------------------------------------------------
+// Composer 
 .chat-composer {
     flex: none;
     padding: 0.75rem 1.25rem 1rem;
@@ -381,11 +381,11 @@
     }
 }
 
-// ---- User-side floating widget ---------------------------------------
+// User-side floating widget 
 .chat-widget {
     position: fixed;
-    right: calc(1rem + env(safe-area-inset-right, 0px));
-    bottom: calc(3rem + env(safe-area-inset-bottom, 0px));
+    right: calc(2rem + env(safe-area-inset-right, 0px));
+    bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
     z-index: 1040; // above page content, below Bootstrap modals (1055) so the auth modal still covers it
 
     &__fab {
