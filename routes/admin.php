@@ -7,10 +7,12 @@
 //
 // Route NAMES (admin.dashboard, admin.bookings, ...) must not change: config/admin.php (page meta
 // and the sidebar's active state) and the views build their URLs from them.
+// See docs/admin-routes.md.
 //
-// Order follows the sidebar. Messages and Account have no file yet: add one when they are built.
+// Order follows the sidebar. Account has no file yet: add one when it is built.
 require __DIR__ . '/admin/dashboard.php';
 require __DIR__ . '/admin/bookings.php';
+require __DIR__ . '/admin/messages.php';
 require __DIR__ . '/admin/booking-history.php';
 require __DIR__ . '/admin/packages.php';
 require __DIR__ . '/admin/calendar.php';
