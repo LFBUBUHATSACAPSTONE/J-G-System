@@ -3,11 +3,8 @@
      The data-* attributes on <tr> drive the JS filter/sort/search; data-booking on the
      View Details button carries the modal's content.
      History page: pass :history="true" and the row resolves its look from the event dates
-     (Upcoming / Ongoing / Completed) using config/admin/history.php, with no action buttons.
-     Cancelled and Declined bookings keep their own badge. Bookings page: nothing changes.
-     Two separate cells on purpose: STATUS is a read-only badge, ACTIONS holds every button
-     (View Details + the status's actions from config/admin/bookings.php). A status must never look
-     like a button, so the two never share a cell or a shape. --}}
+     (Upcoming / Ongoing / Completed) using config/admin-history.php, with no action buttons.
+     Cancelled and Declined bookings keep their own pill. Bookings page: nothing changes. --}}
 @props(['booking', 'index' => 0, 'history' => false])
 
 @php
@@ -119,27 +116,18 @@ $booking['client']['name'], $ref, $package['name'], $event['type'] ?? '', $statu
 
   <td role="cell" class="admin-bookings__cell" data-label="Event Type">{{ $event['type'] ?? '--' }}</td>
 
-  <td role="cell" class="admin-bookings__cell admin-bookings__cell--status" data-label="Status">
-    <span class="admin-badge admin-badge--{{ $badge['tone'] }}{{ ($badge['solid'] ?? false) ? ' admin-badge--solid' : '' }}">
-      @if ($icon)
-      <i class="ph ph-{{ $icon }}" aria-hidden="true"></i>
-      @endif
-      {{ $status['label'] }}
-    </span>
+  <td role="cell" class="admin-bookings__cell" data-label="">
+    <button
+      type="button"
+      class="admin-btn admin-btn--soft admin-btn--sm"
+      data-bs-toggle="modal"
+      data-bs-target="#bookingModal"
+      data-booking="{{ json_encode($payload) }}"
+      aria-label="View details for booking {{ $ref }}">
+      <i class="ph ph-eye" aria-hidden="true"></i>
+      <span>View Details</span>
+    </button>
   </td>
-
-  <td role="cell" class="admin-bookings__cell admin-bookings__cell--actions" data-label="">
-    <div class="admin-bookings__actions">
-      <button
-        type="button"
-        class="admin-btn admin-btn--soft admin-btn--sm"
-        data-bs-toggle="modal"
-        data-bs-target="#bookingModal"
-        data-booking="{{ json_encode($payload) }}"
-        aria-label="View details for booking {{ $ref }}">
-        <i class="ph ph-eye" aria-hidden="true"></i>
-        <span>View Details</span>
-      </button>
 
       @foreach ($status['actions'] ?? [] as $action)
       @php

@@ -37,6 +37,9 @@ $admin-brand-text: oklch(
 ); // purple text/links/titles on any light surface:
 $admin-on-brand: $auth-white; // text on $admin-brand
 $admin-on-brand-muted: oklch(92.4% 0.012 293.012); // captions on $admin-brand
+// Soft brand tint: secondary buttons (View Details), selected dropdown option.
+$admin-brand-soft: oklch(95% 0.03 293.012);
+$admin-brand-soft-hover: oklch(91% 0.06 293.012);
 
 // Page heading gradient
 $admin-heading-gradient-from: $admin-brand-text;
@@ -155,7 +158,5 @@ $messages-height: calc(100dvh - 11rem);
 //ADMIN DROPDOWN
 $admin-dropdown-menu-bg: $admin-surface;
 $admin-dropdown-hover-bg: $admin-panel-bg;
-$admin-dropdown-selected-bg: oklch(
-    95% 0.03 293.012
-); // faint brand tint; text on it is $admin-brand-text (AAA)
+$admin-dropdown-selected-bg: $admin-brand-soft; // text on it is $admin-brand-text (AAA)
 $admin-dropdown-border: oklch(88% 0 0);

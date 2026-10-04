@@ -1,16 +1,11 @@
-{{-- One modal shared by every card AND by "Add New Package". 
-
-  packages.js decides the mode:
+{{-- One modal shared by every card AND by "Add New Package". packages.js decides the mode:
        view   (card "Edit" link)  read-only fields, Edit link + Back          -> no form post
        edit   (modal "Edit" link) unlocked fields, Cancel + Save              -> PATCH admin.packages.update
        create ("Add New Package") empty unlocked fields, Cancel + Save        -> POST  admin.packages.store
+     Field names: name, price (digits only, hidden input), features (one feature per line).
+     When the server rejects the form (redirect back with $errors + old input) the modal reopens
+     in edit/create mode with the old values and the messages below; see docs/admin-packages.md. --}}
      
-  Field names: name, price (digits only, hidden input), features (one feature per line).
-  
-  When the server rejects the form (redirect back with $errors + old input) the modal reopens in edit/create mode with the old values and the messages below; see docs/admin-packages.md. 
-  
---}}
-
 @php
 $reopen = $errors->any()
 ? ['mode' => old('_mode'), 'id' => old('_package_id'), 'old' => old()]
@@ -36,7 +31,10 @@ $reopen = $errors->any()
       <div class="modal-body admin-package-modal__body">
         <div class="admin-package-modal__head">
           <h2 id="packageModalTitle" class="admin-package-modal__heading" data-package-title>Package Information</h2>
-          <button type="button" class="admin-link" data-package-edit>Edit</button>
+          <button type="button" class="admin-btn admin-btn--outline admin-btn--sm" data-package-edit>
+            <i class="ph ph-pencil-simple" aria-hidden="true"></i>
+            <span>Edit</span>
+          </button>
         </div>
 
         <div class="admin-package-modal__panel">

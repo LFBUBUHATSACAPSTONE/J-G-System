@@ -2,9 +2,7 @@
 // Mobile-first: below 1200px each booking is a stacked card; from 1200px it is a table row,
 // like the mockup (the sidebar takes 312px, so 992px is too narrow for six columns).
 
-$admin-bookings-table-breakpoint: 1200px;
-
-//  Small shared pieces (links, pills, buttons, fields, alert)
+// Small shared pieces (links, pills, buttons, fields, alert)
 .admin-link {
     padding: 0;
     border: 0;
@@ -109,6 +107,41 @@ button.admin-pill {
         }
     }
 
+    // Outline: secondary action next to a solid one (Back, Edit / Cancel).
+    &--outline {
+        border: 1px solid $admin-brand-text;
+        background: transparent;
+        color: $admin-brand-text;
+
+        &:hover {
+            background: $admin-brand-soft;
+        }
+    }
+
+    // Soft: quiet row action that must not compete with the status pill (View Details).
+    &--soft {
+        background: $admin-brand-soft;
+        color: $admin-brand-text;
+
+        &:hover {
+            background: $admin-brand-soft-hover;
+        }
+    }
+
+    // Small: compact, one line, optional leading icon.
+    &--sm {
+        gap: 0.4rem;
+        min-height: 2.25rem;
+        padding: 0.25rem 1rem;
+        border-radius: $admin-radius-pill;
+        font-size: 0.9rem;
+        white-space: nowrap;
+
+        .ph {
+            font-size: 1.1rem;
+        }
+    }
+
     &:focus-visible {
         outline: $admin-focus-ring-width solid $admin-focus-ring;
         outline-offset: $admin-focus-ring-offset;
@@ -125,7 +158,7 @@ button.admin-pill {
     font-weight: 500;
 }
 
-//  Page
+//  Page 
 .admin-bookings {
     font-family: $admin-font-family;
 
@@ -148,7 +181,7 @@ button.admin-pill {
     }
 }
 
-// Filter pills
+//  Filter pills 
 .admin-filter {
     position: relative;
     display: flex;
@@ -228,7 +261,7 @@ button.admin-pill {
     }
 }
 
-//  Rows: stacked cards below the breakpoint
+//  Rows: stacked cards below the breakpoint 
 .admin-bookings__table {
     width: 100%;
     border-collapse: separate;
@@ -325,7 +358,7 @@ button.admin-pill {
     }
 }
 
-//  Rows: table layout from 1200px
+// Rows: table layout from 1200px 
 @media (min-width: $admin-bookings-table-breakpoint) {
     .admin-bookings__table {
         display: table;
@@ -410,7 +443,7 @@ button.admin-pill {
     }
 }
 
-//  Booking modal
+//  Booking modal 
 .admin-booking-modal {
     // Bootstrap's [hidden] is weaker than our display rules; make it win in here.
     [hidden] {
@@ -442,15 +475,23 @@ button.admin-pill {
         grid-column: 1 / -1;
     }
 
+    // Heading row: the heading and the Edit button share one 2.25rem line, so both columns'
+    // panels start at the same height.
     &__section-head {
         display: flex;
-        align-items: baseline;
+        align-items: center;
         justify-content: space-between;
         gap: 1rem;
+        margin-bottom: 1rem;
+
+        .admin-booking-modal__heading {
+            margin: 0;
+        }
     }
 
     &__heading {
         margin: 0 0 1rem;
+        line-height: 2.25rem;
         color: $admin-text-primary;
         font-size: 1.25rem;
         font-weight: 700;

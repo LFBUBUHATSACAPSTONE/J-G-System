@@ -1,4 +1,5 @@
-// Admin dropdown (enhances <select>, see resources/js/admin/dropdown.js) 
+//  Admin dropdown (enhances <select>, see resources/js/admin/dropdown.js) 
+
 .admin-dropdown {
     position: relative;
     min-width: 0;
@@ -17,7 +18,7 @@
         pointer-events: none;
     }
 
-    // Trigger: bare inside a filter pill (the pill draws the focus ring)
+    // ---- Trigger: bare inside a filter pill (the pill draws the focus ring) ----
     &__trigger {
         display: flex;
         align-items: center;
@@ -61,7 +62,7 @@
         transform: rotate(180deg);
     }
 
-    // Menu 
+    // ---- Menu ---------------------------------------------------------------
     &__menu {
         position: fixed;
         z-index: 1080; // above modals (Bootstrap modal is 1055)
@@ -127,7 +128,7 @@
         }
     }
 
-    //  Form-field variant (booking modal): looks like the other fields 
+    // ---- Form-field variant (booking modal): looks like the other fields -------
     &--field &__trigger {
         padding: 0.4rem 0.75rem;
         border: 1px solid $admin-field-border;
