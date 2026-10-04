@@ -147,7 +147,14 @@ $admin-packages-grid-lg: 1200px;
 
 //ADMIN: CALENDAR
 $admin-cal-panel-breakpoint: 1200px;
-$admin-cal-cell-height: clamp(4.25rem, 3rem + 3vw, 6.25rem);
+$admin-cal-cell-height: clamp(
+    4.25rem,
+    min(
+        calc(3rem + 3vw),
+        calc((100dvh - var(--cal-chrome, 18rem)) / var(--cal-rows, 6))
+    ),
+    6.25rem
+);
 $admin-calendar-weekend-text: oklch(52% 0.19 350);
 $admin-calendar-holiday-text: $admin-brand-text; // every holiday label is purple, whatever weekday it falls on
 $admin-calendar-holiday-alt-text: $admin-calendar-holiday-text; // kept so older references still resolve
