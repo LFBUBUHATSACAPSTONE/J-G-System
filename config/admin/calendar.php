@@ -1,6 +1,6 @@
 <?php
 
-// Calendar page registry. The view reads from here,
+// Calendar page registry.
 // so a new status or holiday is one edit, not a Blade edit. Booking DATA comes from the controller.
 return [
 
@@ -11,8 +11,8 @@ return [
   'statuses' => [
     'approved'        => ['tone' => 'confirmed', 'label' => 'Confirmed'],
     'completed'       => ['tone' => 'confirmed', 'label' => 'Completed'],
-    'pending'         => ['tone' => 'pending',   'label' => 'Pending'],
-    'pending_payment' => ['tone' => 'pending',   'label' => 'Pending Pay'],
+    'pending'         => ['tone' => 'pending',   'label' => 'Pending Approval'],
+    'pending_payment' => ['tone' => 'pending',   'label' => 'Payment to Verify'],
   ],
 
   // Cell colours, in PRIORITY order: when one date holds bookings of different tones, the first
