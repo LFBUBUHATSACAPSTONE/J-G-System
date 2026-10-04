@@ -1,6 +1,6 @@
 <?php
 
-// Booking History registry. The views read from here,
+// Booking History registry.
 // so a new state, tab or sort is one edit, not a Blade edit. Booking DATA comes from the controller.
 return [
 
@@ -9,6 +9,8 @@ return [
   //
   //   - cancelled / declined bookings always belong (they no longer need a decision), and
   //   - approved / completed bookings belong once a payment is verified (`payment.state` below).
+  //     On the Bookings page that is the "Verify Payment" action: it turns Payment to Verify
+  //     (`pending_payment`) into Approved, and the booking shows up here from then on.
   //
   // 'partial' = a verified down payment. Remove it from this list if only fully paid bookings
   // should appear here.
@@ -20,17 +22,19 @@ return [
   //   Upcoming  = today is before the start date
   //   Ongoing   = today is between the start and end date, inclusive
   //   Completed = from the day AFTER the end date
-  // Cancelled and Declined are not phases: they keep their own pill from config/admin-bookings.php
+  // Cancelled and Declined are not phases: they keep their own badge from config/admin-bookings.php
   // and share the `cancelled` group, so these two keys only add the rank and the edit lock.
   //
   // rank        => Default sort order (lowest first)
   // group       => tab the row belongs to (matches 'tabs' below)
   // highlight   => draws an outline + chip on the row; highlight_class / chip / chip_class style it
   // editable    => false hides Edit in the View Details modal
-  // badge       => the non-clickable pill in the Status column (tone: brand | success | warning | danger | neutral)
+  // icon        => Phosphor icon name (ph-<icon>) inside the badge; decorative
+  // badge       => the read-only badge in the Status column (tone: brand | success | warning | danger | neutral)
   'phases' => [
     'ongoing' => [
       'label'           => 'Ongoing',
+      'icon'            => 'broadcast',
       'group'           => 'ongoing',
       'rank'            => 0,
       'editable'        => true,
@@ -42,6 +46,7 @@ return [
     ],
     'upcoming' => [
       'label'     => 'Upcoming',
+      'icon'      => 'calendar-blank',
       'group'     => 'upcoming',
       'rank'      => 1,
       'editable'  => true,
@@ -50,6 +55,7 @@ return [
     ],
     'completed' => [
       'label'     => 'Completed',
+      'icon'      => 'checks',
       'group'     => 'completed',
       'rank'      => 2,
       'editable'  => false,
