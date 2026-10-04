@@ -1,10 +1,9 @@
 {{-- Admin Booking History page (front end only). Variables from the controller:
-       $bookings => list of bookings
+       $bookings => list of bookings (same shape as the Bookings page, see docs/admin-booking-history.md)
        $packages => [['id' => 'budget-lite', 'name' => 'Budget Lite'], ...]  (admin-managed)
      Which bookings are sent is the controller's job (rule in config/admin/history.php).
      State tabs, filters, sorting and search run in the browser (resources/js/admin/history.js).
      The row and the View Details modal are the Bookings page's own components. --}}
-
 @php
 // Month filter options come from the data, newest first: ['2026-10' => 'October 2026', ...]
 $months = collect($bookings)

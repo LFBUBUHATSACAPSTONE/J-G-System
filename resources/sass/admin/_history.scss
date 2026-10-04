@@ -1,4 +1,6 @@
-// Admin Booking History page.  It only adds: the state tabs, the brand pill, and the
+// Admin Booking History page. Tokens only: everything comes from _admin-variables.scss.
+// Reuses the Bookings page's rows, filters, pills and modal (_bookings.scss), so import this
+// file AFTER "admin/bookings". It only adds: the state tabs, the brand pill, and the
 // "Ongoing" row highlight (same mechanics as the Pending highlight on Bookings).
 
 // State tabs 
@@ -55,19 +57,10 @@
     }
 }
 
-//  Brand pill (Upcoming outline, Ongoing filled) 
-.admin-pill--brand {
-    color: $admin-brand-text;
-    border-color: $admin-brand-text;
-}
+// Upcoming / Ongoing badges 
+// Both use `.admin-badge--brand` (Ongoing adds `--solid`), defined with the other tones in _bookings.scss.
 
-.admin-pill--solid.admin-pill--brand {
-    background: $admin-brand;
-    border-color: $admin-brand;
-    color: $admin-on-brand;
-}
-
-//  Ongoing row: outline + "Happening now" chip 
+// Ongoing row: outline + "Happening now" chip 
 .admin-bookings__chip--ongoing {
     background: $admin-brand;
     color: $admin-on-brand;
