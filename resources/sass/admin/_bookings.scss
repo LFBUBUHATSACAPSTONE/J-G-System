@@ -1,4 +1,10 @@
-// Small shared pieces (links, pills, buttons, fields, alert)
+// Admin Bookings page + booking modal. Tokens only: everything comes from _admin-variables.scss.
+// Mobile-first: below 1200px each booking is a stacked card; from 1200px it is a table row,
+// like the mockup (the sidebar takes 312px, so 992px is too narrow for six columns).
+
+$admin-bookings-table-breakpoint: 1200px;
+
+//  Small shared pieces (links, pills, buttons, fields, alert)
 .admin-link {
     padding: 0;
     border: 0;
@@ -119,7 +125,7 @@ button.admin-pill {
     font-weight: 500;
 }
 
-// Page
+//  Page
 .admin-bookings {
     font-family: $admin-font-family;
 
@@ -222,7 +228,7 @@ button.admin-pill {
     }
 }
 
-// Rows: stacked cards below the breakpoint ---------------------------------
+//  Rows: stacked cards below the breakpoint
 .admin-bookings__table {
     width: 100%;
     border-collapse: separate;
@@ -319,7 +325,7 @@ button.admin-pill {
     }
 }
 
-// Rows: table layout from 1200px
+//  Rows: table layout from 1200px
 @media (min-width: $admin-bookings-table-breakpoint) {
     .admin-bookings__table {
         display: table;
@@ -404,7 +410,7 @@ button.admin-pill {
     }
 }
 
-// Booking modal
+//  Booking modal
 .admin-booking-modal {
     // Bootstrap's [hidden] is weaker than our display rules; make it win in here.
     [hidden] {
@@ -564,8 +570,5 @@ button.admin-pill {
         }
     }
 
-    // A locked select looks like the other read-only boxes; unlocked, it gets its native arrow.
-    select.admin-field__control:not(:disabled) {
-        appearance: auto;
-    }
+    // Selects are drawn by the custom dropdown (_dropdown.scss), so no native arrow is needed.
 }

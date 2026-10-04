@@ -2,14 +2,16 @@
        $bookings => list of bookings (shape in docs/admin-bookings.md)
        $packages => [['id' => 'budget-lite', 'name' => 'Budget Lite'], ...]  (admin-managed)
      Filtering, sorting and search run in the browser (resources/js/admin/bookings.js).
+<<<<<<< HEAD
      Nothing here is hard-coded; status badge + actions come from config/admin/bookings.php. --}}
+=======
+     Nothing here is hard-coded; status look + actions come from config/admin-bookings.php. --}}
+>>>>>>> faf9a20 (feat(admin): added a custom dropdown to enhance style)
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <x-admin-header />
 </head>
-
 <body>
   <x-admin.sidebar />
 
@@ -17,7 +19,7 @@
     <x-admin.page-header />
 
     @if (session('status'))
-    <p class="admin-alert" role="status">{{ session('status') }}</p>
+      <p class="admin-alert" role="status">{{ session('status') }}</p>
     @endif
 
     {{-- Filters --}}
@@ -26,8 +28,13 @@
         <label for="bk-sort" class="admin-filter__label">Sorted by:</label>
         <div class="admin-filter__control">
           <select id="bk-sort" class="admin-filter__select" data-bookings-sort>
+<<<<<<< HEAD
             @foreach (config('admin.bookings.sorts') as $value => $label)
             <option value="{{ $value }}">{{ $label }}</option>
+=======
+            @foreach (config('admin-bookings.sorts') as $value => $label)
+              <option value="{{ $value }}">{{ $label }}</option>
+>>>>>>> faf9a20 (feat(admin): added a custom dropdown to enhance style)
             @endforeach
           </select>
         </div>
@@ -37,8 +44,13 @@
         <label for="bk-status" class="admin-filter__label">Status:</label>
         <div class="admin-filter__control">
           <select id="bk-status" class="admin-filter__select" data-bookings-status>
+<<<<<<< HEAD
             @foreach (config('admin.bookings.status_filters') as $value => $label)
             <option value="{{ $value }}">{{ $label }}</option>
+=======
+            @foreach (config('admin-bookings.status_filters') as $value => $label)
+              <option value="{{ $value }}">{{ $label }}</option>
+>>>>>>> faf9a20 (feat(admin): added a custom dropdown to enhance style)
             @endforeach
           </select>
         </div>
@@ -50,7 +62,7 @@
           <select id="bk-package" class="admin-filter__select" data-bookings-package>
             <option value="all">All</option>
             @foreach ($packages as $package)
-            <option value="{{ $package['id'] }}">{{ $package['name'] }}</option>
+              <option value="{{ $package['id'] }}">{{ $package['name'] }}</option>
             @endforeach
           </select>
         </div>
@@ -60,7 +72,7 @@
         <i class="ph ph-magnifying-glass admin-filter__icon" aria-hidden="true"></i>
         <label for="bk-search" class="visually-hidden">Search bookings</label>
         <input type="search" id="bk-search" class="admin-filter__input" placeholder="Search"
-          autocomplete="off" data-bookings-search>
+               autocomplete="off" data-bookings-search>
       </div>
     </div>
 
@@ -80,12 +92,12 @@
         </thead>
         <tbody role="rowgroup" data-bookings-body>
           @foreach ($bookings as $booking)
-          <x-admin.booking-row :booking="$booking" :index="$loop->index" />
+            <x-admin.booking-row :booking="$booking" :index="$loop->index" />
           @endforeach
         </tbody>
       </table>
 
-      <p class="admin-empty admin-bookings__empty" data-bookings-empty @if (count($bookings)> 0) hidden @endif>
+      <p class="admin-empty admin-bookings__empty" data-bookings-empty @if (count($bookings) > 0) hidden @endif>
         @if (count($bookings) > 0) No bookings match your filters. @else No bookings yet. @endif
       </p>
     </div>
@@ -96,5 +108,4 @@
     <x-admin.booking-modal />
   </main>
 </body>
-
 </html>

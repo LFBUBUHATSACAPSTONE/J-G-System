@@ -151,3 +151,11 @@ $admin-calendar-holiday-alt-text: $admin-calendar-holiday-text; // kept so older
 
 // ADMIN MESSAGES PAGE: height of the list + panel layout, minus the header and footer. The list and panel scroll independently.
 $messages-height: calc(100dvh - 11rem);
+
+//ADMIN DROPDOWN
+$admin-dropdown-menu-bg: $admin-surface;
+$admin-dropdown-hover-bg: $admin-panel-bg;
+$admin-dropdown-selected-bg: oklch(
+    95% 0.03 293.012
+); // faint brand tint; text on it is $admin-brand-text (AAA)
+$admin-dropdown-border: oklch(88% 0 0);
