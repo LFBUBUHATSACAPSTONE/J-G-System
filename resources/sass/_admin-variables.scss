@@ -148,3 +148,6 @@ $admin-cal-cell-height: clamp(4.25rem, 3rem + 3vw, 6.25rem);
 $admin-calendar-weekend-text: oklch(52% 0.19 350);
 $admin-calendar-holiday-text: $admin-brand-text; // every holiday label is purple, whatever weekday it falls on
 $admin-calendar-holiday-alt-text: $admin-calendar-holiday-text; // kept so older references still resolve
+
+// ADMIN MESSAGES PAGE: height of the list + panel layout, minus the header and footer. The list and panel scroll independently.
+$messages-height: calc(100dvh - 11rem);
