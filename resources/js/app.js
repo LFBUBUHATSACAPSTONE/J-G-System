@@ -3,7 +3,7 @@ import * as bootstrap from "bootstrap"; //Bootstrap's JS
 import "../sass/app.scss"; //CSS
 
 // LANDING
-import Carousel from "./landing/coverflow-carousel.js"; 
+import Carousel from "./landing/coverflow-carousel.js";
 import "./landing/navigation.js";
 
 // AUTH
@@ -25,3 +25,6 @@ import "./booking/booking-summary.js";
 import "./booking/booking-confirmation.js";
 import "./booking-flow.js";
 import "./booking/progress-tracker.js";
+
+// CHAT
+import "./chat/widget.js";

@@ -13,3 +13,4 @@
 require __DIR__ . '/user/landing.php';
 require __DIR__ . '/user/auth.php';
 require __DIR__ . '/user/booking.php';
+require __DIR__ . '/user/messages.php';
