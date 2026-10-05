@@ -1,10 +1,7 @@
-{{-- Admin Packages page. Variable from the controller:
-       $packages => list of packages (shape in docs/admin-packages.md)
-
-     Cards, modal and buttons read everything from $packages and config/admin-packages.php.
-
-     Nothing is hard-coded, so the stub route can be replaced by a real controller without view edits. 
---}}
+{{-- Admin Packages page (front end only). Variable from the controller:
+       $packages => list of packages
+     Cards, modal and buttons read everything from $packages and config/admin/packages.php.
+     Nothing is hard-coded, so the stub route can be replaced by a real controller without view edits. --}}
 <!DOCTYPE html>
 <html lang="en">
 

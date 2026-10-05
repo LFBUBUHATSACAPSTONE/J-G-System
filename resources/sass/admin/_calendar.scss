@@ -1,0 +1,437 @@
+// Admin Calendar page.
+// ("Admin: calendar" block). Mobile-first: the side panel stacks under the grid, and sits to the
+// right of it from 1200px (the sidebar already takes 312px, like the Bookings table breakpoint).
+
+.admin-cal {
+    font-family: $admin-font-family;
+
+    &__layout {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+
+        @media (min-width: $admin-cal-panel-breakpoint) {
+            flex-direction: row;
+            align-items: flex-start;
+        }
+    }
+
+    // Month bar
+    &__wrap {
+        flex: 1 1 auto;
+        min-width: 0;
+        padding: 1rem;
+        border-radius: $admin-radius-xl;
+        background: $admin-calendar-wrap-bg;
+        container-type: inline-size; // the day names switch on the calendar's own width, not the screen's
+    }
+
+    // Month bar: the month arrows plus the legend. Narrow: arrows on one row, legend centred under
+    // them. From 40rem of calendar width: legend on the left of the same row, arrows kept centred
+    // (equal side columns). The legend wraps inside its column if it ever needs to.
+    &__bar {
+        display: grid;
+        gap: 0.5rem;
+        justify-items: center;
+        margin-bottom: 1rem;
+    }
+
+    @container (min-width: 40rem) {
+        &__bar {
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            align-items: center;
+            justify-items: stretch;
+        }
+
+        &__bar > &__nav {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        &__bar > &__legend {
+            grid-column: 1;
+            grid-row: 1;
+            justify-content: flex-start;
+        }
+    }
+
+    &__nav {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    &__month {
+        margin: 0;
+        font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem);
+        font-weight: 700;
+        text-align: center;
+        background: $admin-heading-gradient;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+
+        @media (forced-colors: active) {
+            background: none;
+            -webkit-text-fill-color: currentColor;
+            color: CanvasText;
+        }
+    }
+
+    &__nav-link {
+        display: grid;
+        place-items: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: $admin-radius-pill;
+        color: $admin-text-primary;
+        font-size: 1.5rem;
+        text-decoration: none;
+
+        &:hover {
+            background: $admin-calendar-day-bg;
+        }
+
+        &:focus-visible {
+            outline: $admin-focus-ring-width solid $admin-focus-ring;
+            outline-offset: $admin-focus-ring-offset;
+        }
+    }
+
+    //  Grid
+    &__table {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    &__dow {
+        padding: 0.75rem 0.25rem;
+        background: $admin-calendar-header-bg;
+        color: $admin-calendar-header-text;
+        font-size: clamp(0.8rem, 0.7rem + 0.5vw, 1rem);
+        font-weight: 700;
+        text-align: center;
+
+        &--weekend {
+            color: $admin-calendar-header-weekend-text;
+        }
+
+        &:first-child {
+            border-top-left-radius: $admin-radius-lg;
+        }
+        &:last-child {
+            border-top-right-radius: $admin-radius-lg;
+        }
+    }
+
+    // Three-letter names by default; full names once the calendar itself is wide enough
+    // (800px). Using the calendar's width, not the screen's, matters because the side panel
+    // takes space from 1200px. The full name stays available to screen readers either way.
+    &__dow-full {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    @container (min-width: 50rem) {
+        &__dow-short {
+            display: none;
+        }
+
+        &__dow-full {
+            position: static;
+            width: auto;
+            height: auto;
+            overflow: visible;
+            clip-path: none;
+        }
+    }
+
+    &__cell {
+        height: $admin-cal-cell-height;
+        padding: 0.25rem;
+        background: $admin-calendar-day-bg;
+        vertical-align: top;
+        color: $admin-calendar-day-text;
+
+        &--weekend {
+            color: $admin-calendar-weekend-text;
+        }
+        &--outside {
+            color: $admin-calendar-outside-text;
+        }
+    }
+
+    tbody tr:last-child #{&}__cell {
+        &:first-child {
+            border-bottom-left-radius: $admin-radius-lg;
+        }
+        &:last-child {
+            border-bottom-right-radius: $admin-radius-lg;
+        }
+    }
+
+    // A date. Plain <div> when it has nothing booked, <button> when it does.
+    &__day {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.1rem;
+        width: 100%;
+        height: 100%;
+        padding: 0.15rem;
+        border: 0;
+        border-radius: $admin-radius-lg;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        text-align: center;
+    }
+
+    &__cell--today &__day {
+        box-shadow: inset 0 0 0 2px $admin-brand-text;
+    }
+
+    &__num {
+        font-size: clamp(1.1rem, 0.8rem + 1.2vw, 1.75rem);
+        font-weight: 500;
+        line-height: 1.1;
+    }
+
+    &__holiday {
+        max-width: 100%;
+        color: $admin-calendar-holiday-text; // purple on every weekday, weekend or not
+        font-size: 0.75rem;
+        line-height: 1.2;
+        overflow-wrap: anywhere;
+    }
+
+    // Booked dates: soft tint, black text. Hover / selected / focus: the solid colour plus the
+    // booking reference and package (the mockup's hover state).
+    &__day--confirmed {
+        background: $admin-calendar-booked-bg;
+    }
+    &__day--pending {
+        background: $admin-calendar-pending-bg;
+    }
+
+    button#{&}__day {
+        color: $admin-text-primary;
+        cursor: pointer;
+
+        &:focus-visible {
+            outline: $admin-focus-ring-width solid $admin-focus-ring;
+            outline-offset: -$admin-focus-ring-width;
+        }
+    }
+
+    &__peek {
+        display: none;
+        flex-direction: column;
+        color: $admin-brand-text;
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+    }
+
+    // Selected + keyboard focus always; hover only on devices that really hover.
+    button#{&}__day[aria-pressed="true"],
+    button#{&}__day:focus-visible {
+        box-shadow: inset 0 0 0 2px $admin-brand-text;
+    }
+
+    button#{&}__day--confirmed[aria-pressed="true"],
+    button#{&}__day--confirmed:focus-visible {
+        background: $admin-success;
+    }
+
+    button#{&}__day--pending[aria-pressed="true"],
+    button#{&}__day--pending:focus-visible {
+        background: $admin-warning;
+    }
+
+    @media (hover: hover) {
+        button#{&}__day--confirmed:hover {
+            background: $admin-success;
+        }
+        button#{&}__day--pending:hover {
+            background: $admin-warning;
+        }
+    }
+
+    button#{&}__day[aria-pressed="true"] &__holiday,
+    button#{&}__day:focus-visible &__holiday {
+        display: none;
+    }
+
+    button#{&}__day[aria-pressed="true"] &__peek,
+    button#{&}__day:focus-visible &__peek {
+        display: flex;
+    }
+
+    @media (hover: hover) {
+        button#{&}__day:hover &__holiday {
+            display: none;
+        }
+        button#{&}__day:hover &__peek {
+            display: flex;
+        }
+    }
+
+    //  Legend
+    &__legend {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.25rem 1.25rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        color: $admin-text-primary;
+        font-size: 0.9rem;
+
+        li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+    }
+
+    &__swatch {
+        width: 1.1rem;
+        height: 1.1rem;
+        border-radius: 0.3rem;
+
+        &--confirmed {
+            background: $admin-calendar-booked-bg;
+            border: 2px solid $admin-success-border;
+        }
+
+        &--pending {
+            background: $admin-calendar-pending-bg;
+            border: 2px solid $admin-warning-border;
+        }
+    }
+
+    //  Side panel
+    &__panel {
+        width: 100%;
+        padding: 1.25rem;
+        border-radius: $admin-radius-xl;
+        background: $admin-surface;
+
+        @media (min-width: $admin-cal-panel-breakpoint) {
+            position: sticky;
+            top: 1.5rem;
+            flex: 0 0 21rem;
+            width: 21rem;
+        }
+    }
+
+    &__panel-title {
+        margin: 0;
+        color: $admin-brand-text;
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+
+    &__panel-sub {
+        margin: 0.35rem 0 0;
+        color: $admin-text-muted;
+        font-size: 0.95rem;
+    }
+
+    &__panel-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-top: 1rem;
+
+        &:empty {
+            display: none;
+        }
+    }
+
+    //  Booking card in the panel
+    &__event {
+        padding: 1rem;
+        border-left: 4px solid transparent;
+        border-radius: $admin-radius-lg;
+        background: $admin-panel-bg;
+        color: $admin-text-primary;
+
+        &--confirmed {
+            border-left-color: $admin-success-border;
+        }
+        &--pending {
+            border-left-color: $admin-warning-border;
+        }
+    }
+
+    &__event-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+
+    &__event-ref {
+        color: $admin-brand-text;
+        font-size: 0.9rem;
+        font-weight: 700;
+    }
+
+    &__badge {
+        padding: 0.15rem 0.7rem;
+        border-radius: $admin-radius-pill;
+        color: $admin-text-primary;
+        font-size: 0.8rem;
+        font-weight: 600;
+        white-space: nowrap;
+
+        &--confirmed {
+            background: $admin-status-approved-bg;
+        }
+        &--pending {
+            background: $admin-status-pending-chip-bg;
+        }
+    }
+
+    &__event-name {
+        margin: 0.5rem 0 0.6rem;
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+
+    &__event-list {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.25rem 0.75rem;
+        margin: 0 0 0.75rem;
+        font-size: 0.9rem;
+
+        dt {
+            color: $admin-text-muted;
+            font-weight: 400;
+        }
+
+        dd {
+            margin: 0;
+            overflow-wrap: anywhere;
+        }
+    }
+
+    &__event-link {
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+}

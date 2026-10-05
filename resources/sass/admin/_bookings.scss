@@ -1,3 +1,9 @@
+// Admin Bookings page + booking modal. Tokens only: everything comes from _admin-variables.scss.
+// Mobile-first: below 1200px each booking is a stacked card; from 1200px it is a table row,
+// like the mockup (the sidebar takes 312px, so 992px is too narrow for six columns).
+
+$admin-bookings-table-breakpoint: 1200px;
+
 // Small shared pieces (links, pills, buttons, fields, alert)
 .admin-link {
     padding: 0;
@@ -15,7 +21,8 @@
     }
 }
 
-// Status pill. Outline by default; `--solid` fills it. Buttons and plain badges share it.
+// Action pill (Approve, Decline, Cancel, Verify Payment, and the Packages buttons). Outline by default;
+// `--solid` fills it. It is for things the admin CLICKS. A read-only status uses `.admin-badge` below.
 .admin-pill {
     display: inline-flex;
     align-items: center;
@@ -82,6 +89,68 @@ button.admin-pill {
     }
 }
 
+// Status badge: read-only, never clickable. Deliberately NOT drawn like a button: smaller, tinted
+// fill, no border, leading icon, and it keeps its natural width instead of stretching. Buttons
+// (`.admin-pill`) stay outlined and taller, so a status can't be mistaken for an action.
+// Text on every tint is AAA (the *-text tokens on their *-soft tint); the label always carries
+// the meaning, the icon and colour only support it.
+.admin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.9rem 0.3rem 0.7rem;
+    border-radius: $admin-radius-pill;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.3;
+    white-space: nowrap;
+
+    .ph {
+        font-size: 1.1rem;
+    }
+
+    &--warning {
+        background: $admin-warning-soft;
+        color: $admin-warning-text;
+    }
+    &--success {
+        background: $admin-success-soft;
+        color: $admin-success-text;
+    }
+    &--danger {
+        background: $admin-danger-soft;
+        color: $admin-danger-text;
+    }
+    &--brand {
+        background: $admin-brand-soft;
+        color: $admin-brand-text;
+    }
+    &--neutral {
+        background: $admin-panel-bg;
+        color: $admin-text-primary;
+    }
+
+    // Strong fill, for the one state that must stand out (History: Ongoing).
+    &--solid {
+        &.admin-badge--brand {
+            background: $admin-brand;
+            color: $admin-on-brand;
+        }
+        &.admin-badge--success {
+            background: $admin-status-approved-bg;
+            color: $admin-text-primary;
+        }
+        &.admin-badge--warning {
+            background: $admin-status-pending-pay-bg;
+            color: $admin-text-primary;
+        }
+        &.admin-badge--danger {
+            background: $admin-danger;
+            color: $admin-on-danger;
+        }
+    }
+}
+
 .admin-btn {
     display: inline-flex;
     align-items: center;
@@ -100,6 +169,41 @@ button.admin-pill {
 
         &:hover {
             background: $admin-brand-hover;
+        }
+    }
+
+    // Outline: secondary action next to a solid one (Back, Edit / Cancel).
+    &--outline {
+        border: 1px solid $admin-brand-text;
+        background: transparent;
+        color: $admin-brand-text;
+
+        &:hover {
+            background: $admin-brand-soft;
+        }
+    }
+
+    // Soft: quiet row action that must not compete with the status pill (View Details).
+    &--soft {
+        background: $admin-brand-soft;
+        color: $admin-brand-text;
+
+        &:hover {
+            background: $admin-brand-soft-hover;
+        }
+    }
+
+    // Small: compact, one line, optional leading icon.
+    &--sm {
+        gap: 0.4rem;
+        min-height: 2.25rem;
+        padding: 0.25rem 1rem;
+        border-radius: $admin-radius-pill;
+        font-size: 0.9rem;
+        white-space: nowrap;
+
+        .ph {
+            font-size: 1.1rem;
         }
     }
 
@@ -222,7 +326,7 @@ button.admin-pill {
     }
 }
 
-// Rows: stacked cards below the breakpoint ---------------------------------
+// Rows: stacked cards below the breakpoint
 .admin-bookings__table {
     width: 100%;
     border-collapse: separate;
@@ -283,7 +387,8 @@ button.admin-pill {
     }
 
     &--client,
-    &--status {
+    &--status,
+    &--actions {
         grid-column: 1 / -1;
     }
 }
@@ -309,13 +414,26 @@ button.admin-pill {
     font-weight: 500;
 }
 
-.admin-bookings__status {
+// Actions cell: View Details plus the status's buttons. In the stacked card they wrap and share the width;
+// from the table breakpoint they sit in one centred row (see below).
+.admin-bookings__actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.75rem;
 
     > * {
-        flex: 1 1 0;
+        flex: 1 1 8rem;
         min-width: 0;
+    }
+
+    .admin-bookings__action-form {
+        display: flex;
+    }
+
+    .admin-pill,
+    .admin-btn--sm {
+        width: 100%;
+        min-height: 2.75rem; // comfortable touch target in the card
     }
 }
 
@@ -399,8 +517,24 @@ button.admin-pill {
         }
     }
 
-    .admin-bookings__status {
-        min-width: 18rem;
+    .admin-bookings__actions {
+        justify-content: center;
+
+        > * {
+            flex: 0 0 auto;
+        }
+
+        .admin-pill,
+        .admin-btn--sm {
+            width: auto;
+            min-height: 2.5rem;
+            white-space: nowrap;
+        }
+
+        .admin-pill {
+            padding: 0.35rem 1.1rem;
+            font-size: 0.9rem;
+        }
     }
 }
 
@@ -436,15 +570,23 @@ button.admin-pill {
         grid-column: 1 / -1;
     }
 
+    // Heading row: the heading and the Edit button share one 2.25rem line, so both columns'
+    // panels start at the same height.
     &__section-head {
         display: flex;
-        align-items: baseline;
+        align-items: center;
         justify-content: space-between;
         gap: 1rem;
+        margin-bottom: 1rem;
+
+        .admin-booking-modal__heading {
+            margin: 0;
+        }
     }
 
     &__heading {
         margin: 0 0 1rem;
+        line-height: 2.25rem;
         color: $admin-text-primary;
         font-size: 1.25rem;
         font-weight: 700;
@@ -564,8 +706,5 @@ button.admin-pill {
         }
     }
 
-    // A locked select looks like the other read-only boxes; unlocked, it gets its native arrow.
-    select.admin-field__control:not(:disabled) {
-        appearance: auto;
-    }
+    // Selects are drawn by the custom dropdown (_dropdown.scss), so no native arrow is needed.
 }

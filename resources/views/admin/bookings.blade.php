@@ -1,4 +1,10 @@
+{{-- Admin Bookings page (front end only). Variables from the controller
+       $bookings => list of bookings
+       $packages => [['id' => 'budget-lite', 'name' => 'Budget Lite'], ...]  (admin-managed)
+     Filtering, sorting and search run in the browser (resources/js/admin/bookings.js).
+     Nothing here is hard-coded; status badge + actions come from config/admin/bookings.php. 
 
+--}}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -22,11 +28,11 @@
         <label for="bk-sort" class="admin-filter__label">Sorted by:</label>
         <div class="admin-filter__control">
           <select id="bk-sort" class="admin-filter__select" data-bookings-sort>
-            @foreach (config('admin-bookings.sorts') as $value => $label)
+
+            @foreach (config('admin.bookings.sorts') as $value => $label)
             <option value="{{ $value }}">{{ $label }}</option>
             @endforeach
           </select>
-          <i class="ph ph-caret-down admin-filter__chevron" aria-hidden="true"></i>
         </div>
       </div>
 
@@ -34,11 +40,10 @@
         <label for="bk-status" class="admin-filter__label">Status:</label>
         <div class="admin-filter__control">
           <select id="bk-status" class="admin-filter__select" data-bookings-status>
-            @foreach (config('admin-bookings.status_filters') as $value => $label)
+            @foreach (config('admin.bookings.status_filters') as $value=> $label)
             <option value="{{ $value }}">{{ $label }}</option>
             @endforeach
           </select>
-          <i class="ph ph-caret-down admin-filter__chevron" aria-hidden="true"></i>
         </div>
       </div>
 
@@ -51,7 +56,6 @@
             <option value="{{ $package['id'] }}">{{ $package['name'] }}</option>
             @endforeach
           </select>
-          <i class="ph ph-caret-down admin-filter__chevron" aria-hidden="true"></i>
         </div>
       </div>
 
@@ -73,8 +77,8 @@
             <th role="columnheader" scope="col">Schedule</th>
             <th role="columnheader" scope="col">Package</th>
             <th role="columnheader" scope="col">Event Type</th>
-            <th role="columnheader" scope="col"><span class="visually-hidden">Details</span></th>
             <th role="columnheader" scope="col">Status</th>
+            <th role="columnheader" scope="col">Actions</th>
           </tr>
         </thead>
         <tbody role="rowgroup" data-bookings-body>

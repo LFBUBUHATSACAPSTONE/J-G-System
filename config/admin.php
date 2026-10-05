@@ -1,18 +1,20 @@
 <?php
 
+// Admin config. Same idea as config/site.php: views read from here, so changing
+// a name, logo or page description is one edit, not a Blade edit.
+//
 // Data ownership: the admin side holds all data that comes from the user side
 // (bookings, client info, payments, messages). Packages are the exception: they
 // are created and edited here and read by the user side. This project covers the
 // admin FRONT END only; the backend and database are built separately.
-
 return [
 
-  // Shown after the page label in the browser tab: "Bookings | J&G Admin"
+  // Shown after the page label in the browser tab: "Bookings - J&G Admin"
   'name' => 'J&G Admin',
 
   'default_description' => 'J&G Audio admin panel for managing bookings, packages and messages.',
 
-  'author' => 'J&G Audio Lights and Sounds',
+  'author' => 'J&G Audio',
 
   // Used for the favicon. Path is relative to /public.
   'logo' => 'images/logo/J&G_official_logo.webp',
@@ -22,46 +24,63 @@ return [
   'noindex' => true,
 
   // Per-page details, keyed by route name (must match routes/admin.php).
-  // title       => overrides the label taken from 'nav'
+  // title       => overrides the label taken from 'nav' (browser tab only)
   // description => meta description for that page
+  // heading     => big gradient title shown at the top of the page (<x-admin.page-header>)
+  // subheading  => caption under the heading
   'pages' => [
     'admin.dashboard' => [
+      'heading'     => 'Welcome Admin!',
+      'subheading'  => 'Here is the overview of your business',
       'description' => 'Overview of upcoming events, pending bookings and recent activity.',
     ],
     'admin.bookings' => [
+      'heading'     => 'Bookings',
+      'subheading'  => 'Review requests and verify payments',
       'description' => 'Review, confirm or decline incoming booking requests and verify GCash payments.',
     ],
     'admin.messages' => [
+      'heading'     => 'Messages',
+      'subheading'  => 'Chat with your clients',
       'title'       => 'Messages',
       'description' => 'Client inquiries and messages.',
     ],
     'admin.booking-history' => [
+      'heading'     => 'Booking History',
+      'subheading'  => 'Completed and cancelled bookings',
       'description' => 'Completed and cancelled bookings.',
     ],
     'admin.packages' => [
+      'heading'     => 'Packages',
+      'subheading'  => 'Manage your packages and pricing',
       'description' => 'Manage service packages, inclusions and pricing.',
     ],
     'admin.calendar' => [
+      'heading'     => 'Calendar',
+      'subheading'  => 'Events and availability',
       'description' => 'Event calendar and availability.',
     ],
     'admin.account' => [
+      'heading'     => 'Account',
+      'subheading'  => 'Manage your profile and security',
       'description' => 'Admin account and security settings.',
     ],
   ],
 
-  // component reads this, so adding a page is one entry here, not a Blade edit.
+  // Navigation registry. The sidebar component reads this, so adding a page
+  // is one entry here, not a Blade edit.
   //
   // route  => named route the link points to (unnamed routes break active state)
   // active => routeIs() pattern; defaults to the route name. Use a wildcard
-  // ('admin.bookings*') so child pages keep the item highlighted.
+  //           ('admin.bookings*') so child pages keep the item highlighted.
   // icon   => Phosphor class suffix (ph-<icon>)
   'nav' => [
-    ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'active' => 'admin.dashboard', 'icon' => 'chart-bar'],
-    ['label' => 'Bookings', 'route' => 'admin.bookings', 'active' => 'admin.bookings*', 'icon' => 'notebook'],
-    ['label' => 'Message', 'route' => 'admin.messages', 'active' => 'admin.messages*', 'icon' => 'chat-text'],
+    ['label' => 'Dashboard',       'route' => 'admin.dashboard',       'active' => 'admin.dashboard',        'icon' => 'chart-bar'],
+    ['label' => 'Bookings',        'route' => 'admin.bookings',        'active' => 'admin.bookings*',        'icon' => 'notebook'],
+    ['label' => 'Message',         'route' => 'admin.messages',        'active' => 'admin.messages*',        'icon' => 'chat-text'],
     ['label' => 'Booking History', 'route' => 'admin.booking-history', 'active' => 'admin.booking-history*', 'icon' => 'clock-counter-clockwise'],
-    ['label' => 'Packages', 'route' => 'admin.packages', 'active' => 'admin.packages*', 'icon' => 'package'],
-    ['label' => 'Calendar', 'route' => 'admin.calendar', 'active' => 'admin.calendar*', 'icon' => 'calendar-dots'],
-    ['label' => 'Account', 'route' => 'admin.account', 'active' => 'admin.account*', 'icon' => 'user-circle'],
+    ['label' => 'Packages',        'route' => 'admin.packages',        'active' => 'admin.packages*',        'icon' => 'package'],
+    ['label' => 'Calendar',        'route' => 'admin.calendar',        'active' => 'admin.calendar*',        'icon' => 'calendar-dots'],
+    ['label' => 'Account',         'route' => 'admin.account',         'active' => 'admin.account*',         'icon' => 'user-circle'],
   ],
 ];

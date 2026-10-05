@@ -7,16 +7,18 @@
   <x-site-head></x-site-head>
 </head>
 
+<x-chat.widget :conversation="$chatConversation ?? null" :authenticated="auth()->check()" />
+
 <body>
   @include('components.landing.navigation')
 
   <section class="landing-hero">
     <img src="{{ asset('images/backgrounds/design/landing_bg.webp') }}" alt="" class="landing-hero__bg">
-  @if (session('auth_error'))
+    @if (session('auth_error'))
     <div class="alert alert-danger position-relative z-1 mx-auto mt-3" role="alert" style="max-width: 36rem;">
       {{ session('auth_error') }}
     </div>
-  @endif
+    @endif
 
     @include('components.landing.landing-caption', ["header" => "Bring Your Event to Life", "caption" => "We're dedicated to making every occasion look and sound its best with reliable equipment and professional service."])
 

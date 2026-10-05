@@ -133,3 +133,25 @@ $features-star-opacity: 1;
 
 // How far the Features background bleeds UP into the hero, so the hero's bottom edge dissolves into it instead of ending in a hard line.
 $features-bleed: 10rem;
+
+// CHATS (used by both the user and the admin)
+$chat-out-bg: $auth-accent-strong !default; // white text on it: AA
+$chat-out-text: $auth-white !default;
+$chat-out-hover: $auth-accent-strong-hover !default;
+$chat-in-bg: oklch(95.514% 0 0) !default; // = $admin-panel-bg
+$chat-text: $auth-black !default;
+$chat-muted: oklch(38% 0 0) !default; // AAA on white and on $chat-in-bg
+$chat-border: oklch(63.1% 0 0) !default; // 3:1 non-text contrast
+$chat-focus: oklch(40.9% 0.22719 293.012) !default; // = $admin-brand-text
+$chat-focus-soft: oklch(40.9% 0.22719 293.012 / 0.25) !default;
+$chat-tint: oklch(96% 0.02 293.012) !default; // current booking card
+$chat-tint-border: oklch(70% 0.12 293.012) !default;
+$chat-past-bg: oklch(92% 0 0) !default; // finished booking card
+$chat-past-border: oklch(75% 0 0) !default;
+$chat-success-bg: oklch(90.243% 0.1191 144.51) !default;
+$chat-success-text: oklch(36.6% 0.12158 143.282) !default;
+$chat-warning-bg: oklch(91.713% 0.11932 92.9) !default;
+$chat-warning-text: oklch(38.1% 0.07798 87.367) !default;
+$chat-danger-bg: oklch(94.298% 0.02858 17.67) !default;
+$chat-danger-text: oklch(40% 0.16206 25.116) !default;
+$chat-danger: oklch(48.5% 0.19656 25.116) !default;

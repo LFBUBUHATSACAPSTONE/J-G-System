@@ -1,3 +1,7 @@
+// Admin Bookings page: filter / sort / search the rows (also from ?status= ?package= ?booking=
+// links, see applyQueryParams), fill the booking modal, confirm destructive actions. No framework. The modal and confirm prompt are shared with the
+// The modal itself is Bootstrap's (admin.js already loads Bootstrap for the sidebar offcanvas).
+
 const getPath = (obj, path) =>
     path
         .split(".")
@@ -6,7 +10,7 @@ const getPath = (obj, path) =>
 const isEmpty = (value) =>
     value === undefined || value === null || value === "";
 
-// List: filter, sort, search
+//  List: filter, sort, search
 function initList(body) {
     const rows = [...body.querySelectorAll("[data-booking-row]")];
     const sortSelect = document.querySelector("[data-bookings-sort]");
@@ -18,7 +22,7 @@ function initList(body) {
 
     if (!rows.length) return;
 
-    // Keys match config/admin-bookings.php 'sorts'.
+    // Keys match config/admin/bookings.php 'sorts'.
     const byIndex = (a, b) => Number(a.dataset.index) - Number(b.dataset.index);
     const comparators = {
         default: byIndex,
@@ -61,9 +65,80 @@ function initList(body) {
         el.addEventListener("change", apply),
     );
     searchInput.addEventListener("input", apply);
+
+    applyQueryParams({
+        rows,
+        sortSelect,
+        statusSelect,
+        packageSelect,
+        searchInput,
+        apply,
+    });
 }
 
-// Modal: fill from the clicked row, Edit toggle
+// ---- Deep links (Dashboard cards, attention list, upcoming events, package legend) ----------
+// The page reads these optional query params on load:
+//   ?status=approved|pending|payment|cancelled|completed   (keys of 'status_filters')
+//   ?package=<package id>                                  (same ids as the Package filter)
+//   ?sort=default|alpha|date   ?q=<search text>
+//   ?booking=<booking id>   scrolls to that row and opens its View Details modal
+// Unknown values are ignored, so a stale link still opens the page. Nothing is written to the URL.
+function applyQueryParams({
+    rows,
+    sortSelect,
+    statusSelect,
+    packageSelect,
+    searchInput,
+    apply,
+}) {
+    const params = new URLSearchParams(window.location.search);
+    if (![...params.keys()].length) return;
+
+    const setIfValid = (select, value) => {
+        if (
+            value &&
+            [...select.options].some((option) => option.value === value)
+        )
+            select.value = value;
+    };
+
+    setIfValid(statusSelect, params.get("status"));
+    setIfValid(packageSelect, params.get("package"));
+    setIfValid(sortSelect, params.get("sort"));
+    if (params.get("q")) searchInput.value = params.get("q");
+    apply();
+
+    const id = params.get("booking");
+    if (!id) return;
+
+    const row = rows.find((candidate) => candidate.dataset.bookingId === id);
+    if (!row) return;
+
+    // The filters in the link may hide the booking (for example a stale status): show everything.
+    if (row.hidden) {
+        statusSelect.value = "all";
+        packageSelect.value = "all";
+        searchInput.value = "";
+        apply();
+    }
+
+    row.scrollIntoView({ block: "center" });
+    // A real click on the row's own button, so Bootstrap sets relatedTarget and the modal fills as usual.
+    row.querySelector('[data-bs-toggle="modal"]')?.click();
+
+    // Drop ?booking= so a refresh does not reopen the modal; the filters stay in the URL.
+    params.delete("booking");
+    const query = params.toString();
+    window.history.replaceState(
+        null,
+        "",
+        window.location.pathname +
+            (query ? `?${query}` : "") +
+            window.location.hash,
+    );
+}
+
+//  Modal: fill from the clicked row, Edit toggle
 function initModal(modal) {
     const form = modal.querySelector("form");
     const editButton = modal.querySelector("[data-booking-edit]");
@@ -110,7 +185,11 @@ function initModal(modal) {
             else el.readOnly = !on;
         });
         saveButton.hidden = !on;
-        editButton.textContent = on ? "Cancel edit" : "Edit";
+        // Label and icon swap in place (the button holds an icon, so textContent would wipe it).
+        const label = editButton.querySelector("[data-booking-edit-label]");
+        const icon = editButton.querySelector("[data-booking-edit-icon]");
+        if (label) label.textContent = on ? "Cancel" : "Edit";
+        if (icon) icon.className = `ph ${on ? "ph-x" : "ph-pencil-simple"}`;
 
         if (on) editable[0]?.focus();
         // Cancelling an edit puts the original values back.
@@ -124,6 +203,9 @@ function initModal(modal) {
         current = JSON.parse(trigger.dataset.booking);
         setEditing(false);
         fill(current);
+
+        // History: finished and cancelled bookings are records, so they cannot be edited.
+        editButton.hidden = current.editable === false;
     });
 
     modal.addEventListener("hidden.bs.modal", () => setEditing(false));
@@ -136,7 +218,7 @@ function initModal(modal) {
     });
 }
 
-// Confirm destructive actions (Decline / Cancel)
+//  Confirm destructive actions (Decline / Cancel)
 function initConfirm() {
     document.addEventListener("submit", (event) => {
         const message = event.target.dataset?.confirm;
@@ -145,11 +227,13 @@ function initConfirm() {
 }
 
 function init() {
-    const body = document.querySelector("[data-bookings-body]");
-    if (body) initList(body);
-
+    // The modal listener must exist before initList runs: the ?booking= deep link clicks a row's
+    // View Details button on load, and the modal fills in its show.bs.modal handler.
     const modal = document.getElementById("bookingModal");
     if (modal) initModal(modal);
+
+    const body = document.querySelector("[data-bookings-body]");
+    if (body) initList(body);
 
     initConfirm();
 }
