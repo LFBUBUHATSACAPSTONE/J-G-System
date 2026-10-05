@@ -10,7 +10,7 @@ const getPath = (obj, path) =>
 const isEmpty = (value) =>
     value === undefined || value === null || value === "";
 
-//  List: filter, sort, search 
+//  List: filter, sort, search
 function initList(body) {
     const rows = [...body.querySelectorAll("[data-booking-row]")];
     const sortSelect = document.querySelector("[data-bookings-sort]");
@@ -138,7 +138,7 @@ function applyQueryParams({
     );
 }
 
-//  Modal: fill from the clicked row, Edit toggle =
+//  Modal: fill from the clicked row, Edit toggle
 function initModal(modal) {
     const form = modal.querySelector("form");
     const editButton = modal.querySelector("[data-booking-edit]");
@@ -218,7 +218,7 @@ function initModal(modal) {
     });
 }
 
-// Confirm destructive actions (Decline / Cancel) 
+//  Confirm destructive actions (Decline / Cancel)
 function initConfirm() {
     document.addEventListener("submit", (event) => {
         const message = event.target.dataset?.confirm;
@@ -227,11 +227,13 @@ function initConfirm() {
 }
 
 function init() {
-    const body = document.querySelector("[data-bookings-body]");
-    if (body) initList(body);
-
+    // The modal listener must exist before initList runs: the ?booking= deep link clicks a row's
+    // View Details button on load, and the modal fills in its show.bs.modal handler.
     const modal = document.getElementById("bookingModal");
     if (modal) initModal(modal);
+
+    const body = document.querySelector("[data-bookings-body]");
+    if (body) initList(body);
 
     initConfirm();
 }
