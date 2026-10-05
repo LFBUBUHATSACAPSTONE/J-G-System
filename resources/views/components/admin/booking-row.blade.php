@@ -1,12 +1,12 @@
 {{-- One booking row. Everything comes from the $booking array
-     and from config/admin-bookings.php (how each status looks / which actions it gets).
+     and from config/admin/bookings.php (how each status looks / which actions it gets).
      The data-* attributes on <tr> drive the JS filter/sort/search; data-booking on the
      View Details button carries the modal's content.
      History page: pass :history="true" and the row resolves its look from the event dates
-     (Upcoming / Ongoing / Completed) using config/admin-history.php, with no action buttons.
+     (Upcoming / Ongoing / Completed) using config/admin/history.php, with no action buttons.
      Cancelled and Declined bookings keep their own badge. Bookings page: nothing changes.
      Two separate cells on purpose: STATUS is a read-only badge, ACTIONS holds every button
-     (View Details + the status's actions from config/admin-bookings.php). A status must never look
+     (View Details + the status's actions from config/admin/bookings.php). A status must never look
      like a button, so the two never share a cell or a shape. --}}
 @props(['booking', 'index' => 0, 'history' => false])
 
@@ -95,6 +95,7 @@ $booking['client']['name'], $ref, $package['name'], $event['type'] ?? '', $statu
   class="admin-bookings__row{{ ($status['highlight'] ?? false) ? ' ' . ($status['highlight_class'] ?? 'is-pending') : '' }}"
   data-booking-row
   data-index="{{ $index }}"
+  data-booking-id="{{ $booking['id'] }}"
   data-name="{{ Str::lower($booking['client']['name']) }}"
   data-date="{{ $start->toDateString() }}"
   data-month="{{ $start->format('Y-m') }}"
@@ -142,11 +143,6 @@ $booking['client']['name'], $ref, $package['name'], $event['type'] ?? '', $statu
       </button>
 
       @foreach ($status['actions'] ?? [] as $action)
-      @php
-      // Danger actions always confirm. Any other action can opt in with a 'confirm' text in the
-      // config (":ref" becomes the booking reference), e.g. Verify Payment.
-      $confirm = $action['confirm'] ?? (($action['tone'] ?? '') === 'danger' ? $action['label'] . ' booking :ref?' : null);
-      @endphp
       @php
       // Danger actions always confirm. Any other action can opt in with a 'confirm' text in the
       // config (":ref" becomes the booking reference), e.g. Verify Payment.

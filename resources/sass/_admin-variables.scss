@@ -21,7 +21,7 @@ $admin-sidebar-active-border: $auth-accent-strong;
 $admin-sidebar-focus-ring: oklch(71.8% 0.16169 293.012);
 $admin-sidebar-width: 19.5rem;
 $admin-sidebar-breakpoint: 992px;
-$admin-sidebar-width-mobile: 256px;
+$admin-sidebar-width-mobile: 16rem !default;
 
 $admin-page-bg: oklch(90.365% 0 0);
 $admin-panel-bg: oklch(
