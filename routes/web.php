@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 //USED FOR FRONT-END TESTING PURPOSES ONLY. REMOVE THIS ROUTE IN PRODUCTION
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
     return view('welcome');
