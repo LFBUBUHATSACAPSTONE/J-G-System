@@ -24,7 +24,24 @@
         </ul>
 
         <div class="d-flex gap-3 align-items-center justify-content-center mt-3 mt-lg-0">
+          @auth
+          <x-button type="button"
+            data-chat-open
+            aria-label="Messages"
+            aria-expanded="false"
+            aria-controls="chatWidgetPanel"
+            title="Messages"
+            class="landing-nav__icon-button">
+            <x-chat.icon name="chat" />
+          </x-button>
 
+          <a href="{{ route('home') }}"
+            aria-label="Profile"
+            title="Profile"
+            class="landing-nav__icon-button">
+            <x-chat.icon name="user" />
+          </a>
+          @else
           <x-button type="button"
             data-bs-toggle="modal" data-bs-target="#authModal"
             data-auth-view="signup"
@@ -39,7 +56,7 @@
             class="rounded-3 btn-color-gradient--secondary px-3 py-2 d-none d-lg-block">
             Login
           </x-button>
-
+          @endauth
         </div>
       </div>
     </div>

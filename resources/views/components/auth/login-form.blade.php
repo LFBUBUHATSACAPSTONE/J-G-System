@@ -47,11 +47,12 @@
   </x-button>
 </form>
 
-<div class="auth-modal__divider">Or register with</div>
+<div class="auth-modal__divider">Or sign in with</div>
 
 <div class="auth-modal__sso">
   <x-auth.link-button
     id="google-login-btn"
+    :href="route('auth.google.redirect')"
     :aria-label="'Google Login'"
     icon="images/icons/auth/google.svg"
     icon-alt="Google Icon">

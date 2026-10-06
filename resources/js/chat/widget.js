@@ -8,10 +8,14 @@ if (root) {
     const panel = root.querySelector("[data-chat-panel]");
     const log = root.querySelector("[data-chat-log]");
     const dot = root.querySelector("[data-chat-dot]");
+    let returnFocusTarget = fab;
 
-    const setOpen = (open) => {
+    const setOpen = (open, trigger = returnFocusTarget) => {
+        if (open) returnFocusTarget = trigger;
         panel.hidden = !open;
-        fab.setAttribute("aria-expanded", String(open));
+        root.querySelectorAll("[data-chat-toggle], [data-chat-open]").forEach((button) => {
+            button.setAttribute("aria-expanded", String(open));
+        });
         if (open) {
             dot?.remove(); // unread is cleared by the backend later; here it just hides
             if (log) scrollLog(log);
@@ -20,11 +24,14 @@ if (root) {
                 root.querySelector("[data-chat-close]")
             )?.focus();
         } else {
-            fab.focus();
+            returnFocusTarget.focus();
         }
     };
 
-    fab.addEventListener("click", () => setOpen(panel.hidden));
+    fab.addEventListener("click", () => setOpen(panel.hidden, fab));
+    document.querySelectorAll("[data-chat-open]").forEach((button) => {
+        button.addEventListener("click", () => setOpen(panel.hidden, button));
+    });
     root.querySelector("[data-chat-close]").addEventListener("click", () =>
         setOpen(false),
     );
