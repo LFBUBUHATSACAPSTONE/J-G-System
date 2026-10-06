@@ -22,15 +22,7 @@
 
     @include('components.landing.landing-caption', ["header" => "Bring Your Event to Life", "caption" => "We're dedicated to making every occasion look and sound its best with reliable equipment and professional service."])
 
-    <x-landing.coverflow-carousel :items="[
-            ['image' => asset('images/carousel/1.webp'), 'alt' => ''],
-            ['image' => asset('images/carousel/2.webp'), 'alt' => ''],
-            ['image' => asset('images/carousel/3.webp'), 'alt' => ''],
-            ['image' => asset('images/carousel/4.webp'), 'alt' => ''],
-            ['image' => asset('images/carousel/5.webp'), 'alt' => ''],
-            ['image' => asset('images/carousel/6.webp'), 'alt' => ''],
-            ['image' => asset('images/carousel/7.webp'), 'alt' => ''],
-        ]" :interval="3000" />
+    <x-landing.coverflow-carousel />
 
     <div class="d-flex justify-content-center">
       <x-button

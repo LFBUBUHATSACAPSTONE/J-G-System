@@ -1,14 +1,14 @@
 @props([
 'items' => [
-['image' => asset('images/carousel/1.webp'), 'alt' => ''],
-['image' => asset('images/carousel/2.webp'), 'alt' => ''],
-['image' => asset('images/carousel/3.webp'), 'alt' => ''],
-['image' => asset('images/carousel/4.webp'), 'alt' => ''],
-['image' => asset('images/carousel/5.webp'), 'alt' => ''],
+['image' => asset('images/carousel/poster1.webp'), 'alt' => ''],
+['image' => asset('images/carousel/poster2.webp'), 'alt' => ''],
+['image' => asset('images/carousel/poster3.webp'), 'alt' => ''],
+['image' => asset('images/carousel/poster4.webp'), 'alt' => ''],
+['image' => asset('images/carousel/poster5.webp'), 'alt' => ''],
 ['image' => asset('images/carousel/6.webp'), 'alt' => ''],
 ['image' => asset('images/carousel/7.webp'), 'alt' => ''],
 ],
-'interval' => 2000,
+'interval' => 3000,
 ])
 
 <div
