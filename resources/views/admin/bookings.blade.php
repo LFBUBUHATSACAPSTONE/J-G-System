@@ -1,6 +1,8 @@
 {{-- Admin Bookings page (front end only). Variables from the controller
        $bookings => list of bookings
        $packages => [['id' => 'budget-lite', 'name' => 'Budget Lite'], ...]  (admin-managed)
+       $fullDates => ['2026-10-14', ...] days already at the event limit (config/scheduling.php);
+                     optional, a pending booking on one of them can't be approved (docs/event-capacity.md)
      Filtering, sorting and search run in the browser (resources/js/admin/bookings.js).
      Nothing here is hard-coded; status badge + actions come from config/admin/bookings.php. 
 
@@ -20,6 +22,11 @@
 
     @if (session('status'))
     <p class="admin-alert" role="status">{{ session('status') }}</p>
+    @endif
+
+    {{-- Approve refused by the server (event limit reached). role=alert announces it at once. --}}
+    @if (session('error'))
+    <p class="admin-alert admin-alert--danger" role="alert">{{ session('error') }}</p>
     @endif
 
     {{-- Filters --}}
@@ -83,7 +90,7 @@
         </thead>
         <tbody role="rowgroup" data-bookings-body>
           @foreach ($bookings as $booking)
-          <x-admin.booking-row :booking="$booking" :index="$loop->index" />
+          <x-admin.booking-row :booking="$booking" :index="$loop->index" :full-dates="$fullDates ?? []" />
           @endforeach
         </tbody>
       </table>

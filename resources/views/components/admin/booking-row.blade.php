@@ -8,7 +8,7 @@
      Two separate cells on purpose: STATUS is a read-only badge, ACTIONS holds every button
      (View Details + the status's actions from config/admin/bookings.php). A status must never look
      like a button, so the two never share a cell or a shape. --}}
-@props(['booking', 'index' => 0, 'history' => false])
+@props(['booking', 'index' => 0, 'history' => false, 'fullDates' => []])
 
 @php
 // `Str` is Laravel's default global alias, no import needed.
@@ -56,6 +56,13 @@ $schedule = $start->format('F j, Y') . ' – ' . $end->format('F j, Y');
 
 $ref = $booking['reference'];
 $package = $booking['package'];
+
+// Event limit: a booking waiting for approval whose days include one already at the limit can't
+// be approved. Only the Bookings page passes $fullDates (the History page never has Approve).
+// The server still decides: it re-checks when Approve is pressed (docs/event-capacity.md).
+$dayFull = ! $history
+&& ($booking['status'] === 'pending')
+&& count(array_intersect($fullDates, collect(\Carbon\CarbonPeriod::create($start, $end))->map->toDateString()->all())) > 0;
 
 // Route::has() keeps the page rendering before the POST routes exist.
 $statusUrl = Route::has('admin.bookings.status')
@@ -110,6 +117,12 @@ $booking['client']['name'], $ref, $package['name'], $event['type'] ?? '', $statu
     @endif
     <span class="admin-bookings__name">{{ $booking['client']['name'] }}</span>
     <span class="admin-bookings__ref">{{ $ref }}</span>
+    @if ($dayFull)
+    <span class="admin-bookings__note" id="day-full-{{ $booking['id'] }}">
+      <i class="ph ph-calendar-x" aria-hidden="true"></i>
+      Day full ({{ config('scheduling.max_events_per_day') }}/{{ config('scheduling.max_events_per_day') }} approved)
+    </span>
+    @endif
   </td>
 
   <td role="cell" class="admin-bookings__cell" data-label="Schedule">
@@ -154,12 +167,14 @@ $booking['client']['name'], $ref, $package['name'], $event['type'] ?? '', $statu
         class="admin-bookings__action-form"
         @if ($confirm) data-confirm="{{ str_replace(':ref', $ref, $confirm) }}" @endif>
         @csrf
+        @php $blocked = $dayFull && $action['action'] === 'approve'; @endphp
         <button
           type="submit"
           name="action"
           value="{{ $action['action'] }}"
           class="admin-pill admin-pill--{{ $action['tone'] }}"
-          aria-label="{{ $action['label'] }}, booking {{ $ref }}">
+          @if ($blocked) disabled aria-describedby="day-full-{{ $booking['id'] }}" title="This day already has the maximum number of approved events." @endif
+          aria-label="" {{ $action['label'] }}, booking {{ $ref }}">
           {{ $action['label'] }}
         </button>
       </form>
