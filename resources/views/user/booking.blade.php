@@ -22,12 +22,20 @@
     swap either independently once there's somewhere more specific for
     it to go (e.g. a user dashboard for "continue").
   --}}
+  {{-- Reschedule mode: the controller passes $reschedule = ['booking_id', 'reference', 'month' => 'YYYY-MM'].
+       Absent on a normal booking. See docs/reschedule-within-original-month.md. --}}
+  @php($reschedule = $reschedule ?? null)
+
   @include('components.progress-tracker')
 
   <div
     id="bookingFlow"
     class="booking-flow"
-    data-current-view="client-information"
+    data-current-view="{{ $reschedule ? 'event-schedule' : 'client-information' }}"
+    @if ($reschedule)
+    data-reschedule-id="{{ $reschedule['booking_id'] }}"
+    data-reschedule-month="{{ $reschedule['month'] }}"
+    @endif
     data-package-url="{{ route('user.landing') }}#packages"
     data-cancel-url="{{ route('user.landing') }}"
     data-continue-url="{{ route('user.landing') }}">
