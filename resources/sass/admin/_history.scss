@@ -3,12 +3,34 @@
 // file AFTER "admin/bookings". It only adds: the state tabs, the brand pill, and the
 // "Ongoing" row highlight (same mechanics as the Pending highlight on Bookings).
 
-// State tabs 
+// State tabs
+// Below 768px the five tabs are one horizontally scrolling strip instead of wrapping onto several
+// lines (the strip bleeds to the page edge so a cut-off tab shows there is more). From 768px they wrap as before.
 .admin-history__tabs {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 0.75rem;
-    margin-bottom: 1rem;
+    margin: 0 -1.5rem 1rem; // cancels the page's p-4 padding so the strip reaches the screen edge
+    padding: 0.25rem 1.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    .admin-tab {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    @media (min-width: 768px) {
+        flex-wrap: wrap;
+        margin: 0 0 1rem;
+        padding: 0;
+        overflow-x: visible;
+    }
 }
 
 .admin-tab {
@@ -57,10 +79,10 @@
     }
 }
 
-// Upcoming / Ongoing badges 
+// Upcoming / Ongoing badges
 // Both use `.admin-badge--brand` (Ongoing adds `--solid`), defined with the other tones in _bookings.scss.
 
-// Ongoing row: outline + "Happening now" chip 
+// Ongoing row: outline + "Happening now" chip
 .admin-bookings__chip--ongoing {
     background: $admin-brand;
     color: $admin-on-brand;
