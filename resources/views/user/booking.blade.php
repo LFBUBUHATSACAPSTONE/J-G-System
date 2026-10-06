@@ -20,12 +20,25 @@
     person when they Cancel out of the flow, or hit Continue on the
     final Confirmation step. Both point at the landing page for now —
     swap either independently once there's somewhere more specific for
-    it to go (e.g. a user dashboard for "continue").
-  --}}
+    it to go (e.g. a user dashboard for "continue"). --}}
+    
   {{-- Reschedule mode: the controller passes $reschedule = ['booking_id', 'reference', 'month' => 'YYYY-MM'].
-       Absent on a normal booking. See docs/reschedule-within-original-month.md. --}}
+       Absent on a normal booking.  --}}
   @php($reschedule = $reschedule ?? null)
 
+  @php($rescheduleBlocked = $rescheduleBlocked ?? null)
+
+  @if ($rescheduleBlocked)
+  {{-- Reschedule refused (not user-cancelled, already rescheduled, or the month has passed). The page
+       still renders (HTTP 403) so the client sees why, instead of a bare error page. --}}
+  <div class="event-schedule position-relative z-1" data-reschedule-blocked>
+    <div class="event-schedule__card">
+      <h2 class="event-schedule__title">Reschedule unavailable</h2>
+      <p class="event-schedule__notice" role="alert">{{ $rescheduleBlocked }}</p>
+      <a href="{{ route('user.landing') }}" class="btn-color-gradient--primary client-info__btn--confirm font-button--responsive text-pale--white rounded-2 text-decoration-none d-inline-block text-center">Back to home</a>
+    </div>
+  </div>
+  @else
   @include('components.progress-tracker')
 
   <div
@@ -69,6 +82,7 @@
       @include('components.booking.booking-confirmation')
     </div>
   </div>
+  @endif
 </body>
 
 

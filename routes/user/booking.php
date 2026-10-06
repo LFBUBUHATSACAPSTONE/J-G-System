@@ -45,7 +45,7 @@ $bookingStubFullDates = ['2026-10-14', '2026-10-15', '2026-10-28'];
 $bookingStubRaceDates = ['2026-10-21'];
 $bookingStubSummaryRaceDates = ['2026-10-22'];
 
-// ---- Reschedule within the original month (docs/reschedule-within-original-month.md) ---------
+// ---- Reschedule within the original month ---------
 // STUB DATA. The real backend loads the booking and reads the month from the STORED start date,
 // never from the request. Open the booking page with /user/booking?reschedule=<id>:
 //   JG70001 : user-cancelled, month 2026-10          -> reschedule mode on, month locked
@@ -102,7 +102,9 @@ Route::get('/user/booking', function (Request $r) use ($bookingStubReschedule) {
   }
 
   [$booking, $why] = $bookingStubReschedule($id);
-  abort_if($why, 403, $why);
+  if ($why) {
+    return response()->view('user.booking', ['rescheduleBlocked' => $why], 403);
+  }
 
   return view('user.booking', ['reschedule' => [
     'booking_id' => $id,
