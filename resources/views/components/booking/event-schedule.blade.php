@@ -10,7 +10,7 @@
       @csrf
 
       <div class="event-schedule__body">
-        <div class="event-schedule__calendar" data-calendar>
+        <div class="event-schedule__calendar" data-calendar data-availability-url="{{ route('booking.availability') }}">
           <div class="event-schedule__calendar-header">
             <button type="button" class="event-schedule__nav-btn is-invisible" data-calendar-prev aria-label="Previous month">
               <svg width="10" height="16" viewBox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -34,6 +34,11 @@
           <input type="hidden" name="event_start_date" data-start-date-input>
           <input type="hidden" name="event_end_date" data-end-date-input>
           <small class="event-schedule__field-error d-none" data-field-error="event_start_date"></small>
+
+          <p class="event-schedule__legend">
+            <span class="event-schedule__legend-swatch" aria-hidden="true"></span>
+            Fully booked
+          </p>
         </div>
 
         <div class="event-schedule__times">

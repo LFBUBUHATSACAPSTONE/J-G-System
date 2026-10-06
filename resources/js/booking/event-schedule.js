@@ -18,9 +18,22 @@
  * dispatches a bubbling `booking:previous` CustomEvent, same as
  * event-information.js.
  *
+ * Event limit (config/scheduling.php, max 3 approved events per day):
+ *   - GET `booking.availability` ?month=YYYY-MM -> { limit, month, full: ["YYYY-MM-DD", …] }
+ *     is called when the step opens and on every month change. Full days
+ *     get `.is-full`, aria-disabled and a "fully booked" label, and can't
+ *     be picked or included in a range. If the call fails the calendar
+ *     stays usable: the server still rejects a full day on submit.
+ *   - A `booking:schedule-conflict` event (detail: { fullDates, message })
+ *     marks those days full, clears the selection and shows the message.
+ *     This step fires it on a 422 that carries `full_dates`; the Booking
+ *     Summary step fires it too, and booking-flow.js sends the client back here.
+ *
  * Expected back-end contract for `booking.event-schedule`:
  *   200 JSON -> saved, caller advances to the next step
  *   422 {"message": "…", "errors": {"event_start_date": ["…"], …}} -> rejected
+ *   422 {"message": "…", "errors": {…}, "full_dates": ["YYYY-MM-DD", …]}
+ *       -> a day in the range is at the event limit (race: someone else took it)
  */
 
 import { getCsrfToken } from "../auth/csrf.js";
@@ -95,6 +108,8 @@ function initCalendar(form) {
     const minView = { year: today.getFullYear(), month: today.getMonth() };
     const view = { ...minView };
     const selection = { start: null, end: null };
+    const availabilityUrl = root.dataset.availabilityUrl;
+    const fullDates = new Set(); // days at the event limit, as local YYYY-MM-DD strings
 
     const render = () => {
         label.textContent = `${MONTH_LABELS[view.month]} ${view.year}`;
@@ -126,8 +141,21 @@ function initCalendar(form) {
                 btn.classList.add("is-selected");
             }
             if (date < today) btn.disabled = true;
+            if (fullDates.has(iso)) {
+                // aria-disabled (not disabled) so the label is still announced.
+                btn.classList.add("is-full");
+                btn.setAttribute("aria-disabled", "true");
+                btn.setAttribute(
+                    "aria-label",
+                    `${formatDisplayDate(iso)}, fully booked`,
+                );
+                btn.title = "Fully booked";
+            }
 
-            btn.addEventListener("click", () => selectDate(iso));
+            btn.addEventListener("click", () => {
+                if (btn.classList.contains("is-full")) return;
+                selectDate(iso);
+            });
             daysEl.appendChild(btn);
         }
 
@@ -148,7 +176,56 @@ function initCalendar(form) {
         rangeLabel.classList.add("has-value");
     };
 
+    const monthKey = () =>
+        `${view.year}-${String(view.month + 1).padStart(2, "0")}`;
+
+    const clearSelection = () => {
+        selection.start = null;
+        selection.end = null;
+        startInput.value = "";
+        endInput.value = "";
+    };
+
+    // A range may not cover a full day, even one in between its ends.
+    const rangeHasFull = (from, to) =>
+        daysBetween(from, to).some((d) => fullDates.has(d));
+
+    // Fresh data can turn the picked day(s) full. Never keep such a selection.
+    const dropSelectionIfFull = () => {
+        if (!selection.start || !rangeHasFull(selection.start, selection.end))
+            return;
+        clearSelection();
+        showError(
+            form,
+            "The dates you selected just became fully booked. Please choose again.",
+            [root],
+        );
+    };
+
+    // Replaces what we know about the viewed month with the server's answer, so a day that
+    // was freed (a cancellation) opens up again.
+    const loadAvailability = async () => {
+        if (!availabilityUrl) return;
+        const key = monthKey();
+        try {
+            const response = await fetch(`${availabilityUrl}?month=${key}`, {
+                headers: { Accept: "application/json" },
+            });
+            if (!response.ok) return;
+            const data = await response.json();
+            [...fullDates]
+                .filter((d) => d.startsWith(key))
+                .forEach((d) => fullDates.delete(d));
+            (data.full ?? []).forEach((d) => fullDates.add(d));
+            dropSelectionIfFull();
+            render();
+        } catch {
+            // Fail open: the server still refuses a full day when the step is submitted.
+        }
+    };
+
     const selectDate = (iso) => {
+        if (fullDates.has(iso)) return;
         if (!selection.start || selection.start !== selection.end) {
             // Nothing picked yet, or a full multi-day range was already
             // picked — start a fresh selection. A single click alone is
@@ -163,7 +240,15 @@ function initCalendar(form) {
             selection.end = iso;
         } else {
             // Same day again (no-op) or a later day — extend into a
-            // multi-day range.
+            // multi-day range, unless it would cover a fully booked day.
+            if (rangeHasFull(selection.start, iso)) {
+                showError(
+                    form,
+                    "That range includes a fully booked day. Pick dates without one.",
+                    [root],
+                );
+                return;
+            }
             selection.end = iso;
         }
         startInput.value = selection.start ?? "";
@@ -179,6 +264,7 @@ function initCalendar(form) {
             view.year -= 1;
         }
         render();
+        loadAvailability();
     });
 
     nextBtn.addEventListener("click", () => {
@@ -188,15 +274,67 @@ function initCalendar(form) {
             view.year += 1;
         }
         render();
+        loadAvailability();
     });
 
+    // A day filled up after the client picked it (this step's 422, or the Booking Summary's).
+    document.addEventListener("booking:schedule-conflict", (event) => {
+        const { fullDates: dates = [], message } = event.detail ?? {};
+        dates.forEach((d) => fullDates.add(d));
+        clearSelection();
+
+        // Show the month of the first full day so the client sees what changed.
+        const first = [...dates].sort()[0];
+        if (first) {
+            const [y, m] = first.split("-").map(Number);
+            if (
+                y > minView.year ||
+                (y === minView.year && m - 1 >= minView.month)
+            ) {
+                view.year = y;
+                view.month = m - 1;
+            }
+        }
+        render();
+        showError(
+            form,
+            message ||
+                "That day is no longer available. Please choose another date.",
+            [root],
+        );
+        loadAvailability();
+    });
+
+    // The other steps live in the same page, so refresh whenever this one becomes visible again.
+    const step = form.closest(".booking-flow__view");
+    if (step) {
+        new MutationObserver(() => {
+            if (!step.classList.contains("d-none")) loadAvailability();
+        }).observe(step, { attributes: true, attributeFilter: ["class"] });
+    }
+
     render();
+    loadAvailability();
 }
 
 function startOfDay(date) {
     const d = new Date(date);
     d.setHours(0, 0, 0, 0);
     return d;
+}
+
+// Every local YYYY-MM-DD from `from` to `to`, both included.
+function daysBetween(from, to) {
+    const days = [];
+    const [y, m, d] = from.split("-").map(Number);
+    const cursor = new Date(y, m - 1, d);
+    for (let guard = 0; guard < 400; guard++) {
+        const iso = toIso(cursor);
+        if (iso > to) break;
+        days.push(iso);
+        cursor.setDate(cursor.getDate() + 1);
+    }
+    return days;
 }
 
 function toIso(date) {
@@ -388,6 +526,21 @@ async function submitEventSchedule(form) {
 
         if (!response.ok) {
             const data = await response.json().catch(() => ({}));
+
+            // A day in the range is at the event limit: the calendar takes it from here.
+            if (Array.isArray(data.full_dates) && data.full_dates.length) {
+                form.dispatchEvent(
+                    new CustomEvent("booking:schedule-conflict", {
+                        bubbles: true,
+                        detail: {
+                            fullDates: data.full_dates,
+                            message: data.message,
+                        },
+                    }),
+                );
+                return;
+            }
+
             const errors = data.errors ?? {};
             const invalidInputs = Object.keys(errors)
                 .map((name) => {
