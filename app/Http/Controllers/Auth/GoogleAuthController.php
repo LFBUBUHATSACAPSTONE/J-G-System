@@ -96,7 +96,7 @@ class GoogleAuthController extends Controller
             Auth::login($user, true);
             request()->session()->regenerate();
 
-            return redirect()->intended(route('home'))->withCookie(cookie()->forget('google_oauth_state'));
+            return redirect()->route('user.landing')->withCookie(cookie()->forget('google_oauth_state'));
         } catch (Throwable $exception) {
             Log::warning('Google sign-in failed.', [
                 'exception' => $exception::class,

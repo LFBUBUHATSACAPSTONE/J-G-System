@@ -31,7 +31,7 @@ class ModalAuthController extends Controller
 
         return response()->json([
             'ok' => true,
-            'redirect' => route('home'),
+            'redirect' => route('user.landing'),
         ]);
     }
 

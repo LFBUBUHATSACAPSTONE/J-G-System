@@ -71,6 +71,7 @@
 <div class="auth-modal__sso">
   <x-auth.link-button
     id="google-login-btn"
+    :href="route('auth.google.redirect')"
     :aria-label="'Google Login'"
     icon="images/icons/auth/google.svg"
     icon-alt="Google Icon">

@@ -25,13 +25,23 @@
     <x-landing.coverflow-carousel />
 
     <div class="d-flex justify-content-center">
+      @auth
+      <a
+        id="landing-book-now"
+        href="{{ route('user.booking') }}"
+        class="btn-color-gradient--primary font-button--responsive text-pale--white position-relative z-1 rounded-5 px-5 py-3 border-0 fw-semibold text-decoration-none">
+        <span>Book Now</span>
+      </a>
+      @else
       <x-button
+        id="landing-book-now"
         data-bs-toggle="modal"
         data-bs-target="#authModal"
         data-auth-view="login"
         class="btn-color-gradient--primary font-button--responsive text-pale--white position-relative z-1 rounded-5 px-5 py-3 border-0 fw-semibold">
         Book Now
       </x-button>
+      @endauth
     </div>
   </section>
 

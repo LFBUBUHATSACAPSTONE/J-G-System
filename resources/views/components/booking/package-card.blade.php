@@ -15,9 +15,14 @@
   <h3 class="package-card__name">{{ $name }}</h3>
   <p class="package-card__price">Php {{ number_format((float) $price) }}</p>
 
-  {{-- Opens the shared #authModal on its Login view (same attributes every
-       other login CTA uses). data-package-select still fires
-       booking:package-saved with the chosen package (see package.js). --}}
+  @auth
+  <a
+    class="package-card__cta"
+    data-package-select
+    href="{{ route('user.booking') }}">
+    Book Now
+  </a>
+  @else
   <x-button type="button"
     class="package-card__cta"
     data-package-select
@@ -26,6 +31,7 @@
     data-auth-view="login">
     Book Now
   </x-button>
+  @endauth
 
   <div class="package-card__divider"></div>
 
