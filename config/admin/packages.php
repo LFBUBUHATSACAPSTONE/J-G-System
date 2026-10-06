@@ -21,6 +21,10 @@ return [
     ],
   ],
 
+  // Package cards on phones (below 768px): how many features always show; the rest sit behind "See more".
+  // From 768px up every feature shows. Same idea as `previewCount` on the user-side package cards.
+  'preview_features' => 2,
+
   // Printed before every price: "Php 5,000".
   'currency_prefix' => 'Php',
 ];
