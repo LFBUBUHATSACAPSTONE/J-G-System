@@ -52,7 +52,6 @@ $extraFeatures = array_slice($features, $previewCount);
         type="button"
         data-bs-toggle="collapse"
         data-bs-target="#{{ $featureId }}"
-        data-bs-parent="#package-grid"
         aria-expanded="false"
         aria-controls="{{ $featureId }}">
         <span class="package-card__toggle-title">Features</span>
@@ -74,7 +73,7 @@ $extraFeatures = array_slice($features, $previewCount);
     </ul>
 
     @if ($extraFeatures)
-    <div id="{{ $featureId }}" class="package-card__more collapse">
+    <div id="{{ $featureId }}" class="package-card__more collapse" data-bs-parent="#package-grid">
       <ul class="package-card__features-list package-card__features-list--extra">
         @foreach ($extraFeatures as $feature)
         <li>{{ $feature }}</li>

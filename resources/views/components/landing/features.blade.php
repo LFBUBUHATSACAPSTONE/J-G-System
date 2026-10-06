@@ -55,7 +55,7 @@ $featuresSectionIcons = [
       {{ $title }}
     </h2>
 
-    <div class="features-section__grid">
+    <div class="features-section__grid" id="features-grid">
       @foreach ($features as $feature)
       @php $icon = $featuresSectionIcons[$feature['icon']] ?? $feature['icon']; @endphp
       <div class="feature-card">
@@ -73,7 +73,7 @@ $featuresSectionIcons = [
             <span class="feature-card__chevron" aria-hidden="true"></span>
           </button>
         </h3>
-        <div id="feature-{{ $loop->index }}" class="feature-card__body collapse">
+        <div id="feature-{{ $loop->index }}" class="feature-card__body collapse" data-bs-parent="#features-grid">
           <p class="feature-card__description">{{ $feature['description'] }}</p>
         </div>
         <span class="feature-card__icon feature-card__icon--bottom" aria-hidden="true">{!! $icon !!}</span>
