@@ -1,7 +1,8 @@
 .coverflow {
-    // Caps for the slide sizes; the real sizes also follow the carousel's own
-    // height (cqh) so the photos keep a natural ~3:2 shape when the hero
-    // shrinks to fit short screens, instead of turning into wide strips.
+    // Slides use the posters' own aspect ratio (2048x1717) so object-fit: cover
+    // has nothing to crop. Width follows the carousel's height (cqh), capped by
+    // the --coverflow-*-cap values, and the height is derived from the ratio.
+    --coverflow-ratio: 2048 / 1717;
     --coverflow-center-cap: #{$coverflow-center-width};
     --coverflow-side-cap: #{$coverflow-side-width};
     container-type: size;
@@ -17,8 +18,8 @@
         position: relative;
         width: 100%;
         height: 100%;
-        --coverflow-center-width: min(var(--coverflow-center-cap), 148cqh);
-        --coverflow-side-width: min(var(--coverflow-side-cap), 74cqh);
+        --coverflow-center-width: min(var(--coverflow-center-cap), 109cqh);
+        --coverflow-side-width: min(var(--coverflow-side-cap), 55cqh);
     }
 
     &__slide {
@@ -26,7 +27,7 @@
         top: 50%;
         left: 50%;
         width: var(--coverflow-center-width);
-        height: 92%;
+        aspect-ratio: var(--coverflow-ratio);
         transform: translate(-50%, -50%) scale(0.8);
         opacity: 0;
         filter: blur(2px) brightness(0.6);
