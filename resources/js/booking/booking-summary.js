@@ -22,6 +22,8 @@
  * Expected back-end contract for `booking.payment`:
  *   200 JSON -> saved, caller advances to the Confirmation step
  *   422 {"message": "…", "errors": {"payment_option": ["…"]}} -> rejected
+ *   422 {"message": "…", "full_dates": ["YYYY-MM-DD", …]}
+ *       -> a chosen day reached the event limit meanwhile;
  */
 
 import { getCsrfToken } from "../auth/csrf.js";
@@ -115,6 +117,20 @@ async function submitPayment(form) {
         const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
+            // Capacity race: a chosen day filled up after Event Schedule saved. Hand it to the flow.
+            if (Array.isArray(data.full_dates) && data.full_dates.length) {
+                form.dispatchEvent(
+                    new CustomEvent("booking:schedule-conflict", {
+                        bubbles: true,
+                        detail: {
+                            fullDates: data.full_dates,
+                            message: data.message,
+                        },
+                    }),
+                );
+                return;
+            }
+
             const message =
                 data.errors?.payment_option?.[0] ??
                 data.message ??

@@ -47,24 +47,15 @@
   </x-button>
 </form>
 
-<div class="auth-modal__divider">Or register with</div>
+<div class="auth-modal__divider">Or sign in with</div>
 
 <div class="auth-modal__sso">
   <x-auth.link-button
-    :disabled="true"
     id="google-login-btn"
+    :href="route('auth.google.redirect')"
     :aria-label="'Google Login'"
     icon="images/icons/auth/google.svg"
     icon-alt="Google Icon">
     Google
-  </x-auth.link-button>
-
-  <x-auth.link-button
-    :disabled="true"
-    id="apple-login-btn"
-    :aria-label="'Apple Login'"
-    icon="images/icons/auth/apple.svg"
-    icon-alt="Apple Icon">
-    Apple
   </x-auth.link-button>
 </div>

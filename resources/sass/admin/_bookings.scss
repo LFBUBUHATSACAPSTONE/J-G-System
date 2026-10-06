@@ -76,6 +76,16 @@ $admin-bookings-table-breakpoint: 1200px;
 button.admin-pill {
     cursor: pointer;
 
+    // Approve blocked by the event limit.
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+
+        &:hover {
+            background: transparent;
+        }
+    }
+
     &--danger:hover {
         background: $admin-danger-soft;
     }
@@ -221,6 +231,12 @@ button.admin-pill {
     background: $admin-success-soft;
     color: $admin-success-text;
     font-weight: 500;
+}
+
+.admin-alert--danger {
+    border-color: $admin-danger-border;
+    background: $admin-danger-soft;
+    color: $admin-danger-text;
 }
 
 // Page
@@ -400,6 +416,15 @@ button.admin-pill {
 .admin-bookings__ref {
     margin-left: 0.5rem;
     color: $admin-brand-text;
+}
+
+// "Day full" note under the reference when the event limit blocks Approve.
+.admin-bookings__note {
+    display: block;
+    margin-top: 0.25rem;
+    color: $admin-danger-text;
+    font-size: 0.85rem;
+    font-weight: 600;
 }
 
 .admin-bookings__chip {

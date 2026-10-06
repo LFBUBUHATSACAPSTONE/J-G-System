@@ -20,6 +20,40 @@ html {
     width: 5rem;
 }
 
+.landing-nav__icon-button {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 1px solid rgb(255 255 255 / 0.35);
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.1);
+    color: #fff;
+    font-size: 1.25rem;
+    text-decoration: none;
+    transition:
+        background-color 0.2s ease-in-out,
+        border-color 0.2s ease-in-out;
+
+    &:hover,
+    &:focus-visible {
+        border-color: rgb(255 255 255 / 0.75);
+        background: rgb(255 255 255 / 0.2);
+        color: #fff;
+    }
+
+    &:focus-visible {
+        outline: 2px solid #fff;
+        outline-offset: 3px;
+    }
+
+    .chat-icon {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+}
+
 .glass-header .navbar-nav .nav-link {
     position: relative;
     display: inline-block;
@@ -60,7 +94,8 @@ html {
 
 @media (prefers-reduced-motion: reduce) {
     .glass-header .navbar-nav .nav-link,
-    .glass-header .navbar-nav .nav-link::after {
+    .glass-header .navbar-nav .nav-link::after,
+    .landing-nav__icon-button {
         transition: none;
     }
 }
