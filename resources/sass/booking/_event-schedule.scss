@@ -54,7 +54,7 @@
         }
     }
 
-    // Calendar --------------------------------------------------------
+    // Calendar 
     &__calendar {
         position: relative;
         background: $auth-field-bg;
@@ -178,9 +178,35 @@
             color: $auth-text-muted;
             cursor: not-allowed;
         }
+
+        // Day at the event limit (max 3 approved). aria-disabled, not :disabled, so screen
+        // readers still read its label. Dashed ring + strikethrough: not colour alone.
+        &.is-full {
+            color: $auth-text-muted;
+            text-decoration: line-through;
+            cursor: not-allowed;
+            box-shadow: inset 0 0 0 1px $auth-danger;
+            background: none;
+        }
     }
 
-    // Times -------------------------------------------------------------
+    &__legend {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0.9rem 0 0;
+        font-size: 0.8rem;
+        color: $auth-text-secondary;
+    }
+
+    &__legend-swatch {
+        width: 0.9rem;
+        height: 0.9rem;
+        border-radius: 0.25rem;
+        box-shadow: inset 0 0 0 1px $auth-danger;
+    }
+
+    // Times 
     &__times {
         flex: 1;
         display: flex;
