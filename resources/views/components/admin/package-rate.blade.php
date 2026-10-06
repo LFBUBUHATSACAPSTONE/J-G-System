@@ -26,7 +26,7 @@ $summary = $items->map(fn ($i) => "{$i['label']} {$i['count']}")->join(', ');
 @endphp
 
 <section {{ $attributes->class(['admin-card', 'admin-package-rate']) }} aria-labelledby="package-rate-title">
-  <h2 id="package-rate-title" class="admin-card__title">Package Rate</h2>
+  <h2 id="package-rate-title" class="admin-card__title">Package Rate (approved)</h2>
 
   @if ($total > 0)
   <div class="admin-package-rate__body">
