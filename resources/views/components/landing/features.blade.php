@@ -57,14 +57,26 @@ $featuresSectionIcons = [
 
     <div class="features-section__grid">
       @foreach ($features as $feature)
+      @php $icon = $featuresSectionIcons[$feature['icon']] ?? $feature['icon']; @endphp
       <div class="feature-card">
-        <div class="feature-card__body">
-          <h3 class="feature-card__name">{{ $feature['name'] }}</h3>
+        <h3 class="feature-card__name">
+          {{-- Below 768px this is an accordion toggle; from 768px up it is inert (see _features.scss). --}}
+          <button
+            class="feature-card__toggle collapsed"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#feature-{{ $loop->index }}"
+            aria-expanded="false"
+            aria-controls="feature-{{ $loop->index }}">
+            <span class="feature-card__icon feature-card__icon--inline" aria-hidden="true">{!! $icon !!}</span>
+            <span class="feature-card__label">{{ $feature['name'] }}</span>
+            <span class="feature-card__chevron" aria-hidden="true"></span>
+          </button>
+        </h3>
+        <div id="feature-{{ $loop->index }}" class="feature-card__body collapse">
           <p class="feature-card__description">{{ $feature['description'] }}</p>
         </div>
-        <span class="feature-card__icon" aria-hidden="true">
-          {!! $featuresSectionIcons[$feature['icon']] ?? $feature['icon'] !!}
-        </span>
+        <span class="feature-card__icon feature-card__icon--bottom" aria-hidden="true">{!! $icon !!}</span>
       </div>
       @endforeach
     </div>
