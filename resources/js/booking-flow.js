@@ -53,6 +53,12 @@ function initBookingFlow() {
         advanceTo(root, "booking-confirmation"),
     );
 
+    // A later step was rejected because a chosen day filled up (capacity race). Send the client
+    // back to Event Schedule; event-schedule.js listens for the same event to mark the day full.
+    root.addEventListener("booking:schedule-conflict", () =>
+        advanceTo(root, "event-schedule"),
+    );
+
     // "Previous" is dispatched by whichever step is currently visible
     // (event-information, event-schedule, booking-summary all use the
     // same event name) — the controller just steps back one in
