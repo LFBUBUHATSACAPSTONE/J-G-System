@@ -3,9 +3,16 @@
 'price',
 'features' => [],
 'featured' => false,
+'previewCount' => 2, // features always visible on phones; the rest sit behind "See more"
 ])
 
-{{--Individual Package Cards Contents--}} 
+@php
+$featureId = 'pkg-features-' . \Illuminate\Support\Str::slug($name);
+$visibleFeatures = array_slice($features, 0, $previewCount);
+$extraFeatures = array_slice($features, $previewCount);
+@endphp
+
+{{--Individual Package Cards Contents--}}
 <div
   class="package-card{{ $featured ? ' package-card--featured' : '' }}"
   data-package-card
@@ -36,11 +43,43 @@
   <div class="package-card__divider"></div>
 
   <div class="package-card__features">
-    <h4 class="package-card__features-title">Features</h4>
+    <h4 class="package-card__features-title">
+      @if ($extraFeatures)
+      {{-- Below 768px this toggles the extra features (one card open at a time via data-bs-parent);
+           from 768px up it is inert and everything is visible (see _package.scss). --}}
+      <button
+        class="package-card__toggle collapsed"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#{{ $featureId }}"
+        aria-expanded="false"
+        aria-controls="{{ $featureId }}">
+        <span class="package-card__toggle-title">Features</span>
+        <span class="package-card__toggle-action">
+          <span class="package-card__toggle-more">See more</span>
+          <span class="package-card__toggle-less">See less</span>
+          <span class="package-card__chevron" aria-hidden="true"></span>
+        </span>
+      </button>
+      @else
+      Features
+      @endif
+    </h4>
+
     <ul class="package-card__features-list">
-      @foreach ($features as $feature)
+      @foreach ($visibleFeatures as $feature)
       <li>{{ $feature }}</li>
       @endforeach
     </ul>
+
+    @if ($extraFeatures)
+    <div id="{{ $featureId }}" class="package-card__more collapse" data-bs-parent="#package-grid">
+      <ul class="package-card__features-list package-card__features-list--extra">
+        @foreach ($extraFeatures as $feature)
+        <li>{{ $feature }}</li>
+        @endforeach
+      </ul>
+    </div>
+    @endif
   </div>
 </div>

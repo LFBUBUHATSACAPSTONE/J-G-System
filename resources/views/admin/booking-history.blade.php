@@ -40,40 +40,65 @@ $months = collect($bookings)
       @endforeach
     </div>
 
-    {{-- Filters --}}
-    <div class="admin-bookings__filters" role="search" aria-label="Filter booking history">
-      <div class="admin-filter">
-        <label for="bh-sort" class="admin-filter__label">Sorted by:</label>
-        <div class="admin-filter__control">
-          <select id="bh-sort" class="admin-filter__select" data-history-sort>
-            @foreach (config('admin.history.sorts') as $value => $label)
-            <option value="{{ $value }}">{{ $label }}</option>
-            @endforeach
-          </select>
+    {{-- Filters
+         Same pattern as the Bookings page. Below 768px: search + a "Filters" button; Sort / Package / Month
+         live in a bottom sheet (Bootstrap .offcanvas-md) and active ones show as removable chips.
+         From 768px the sheet is "display: contents", so the pills sit inline as before.
+         The state tabs above stay outside the sheet on purpose: they are the main way to switch
+         state, so "Clear all" resets the selects only, never the tab.
+         The selects keep their data-history-* hooks, so history.js filtering is unchanged;
+         the sheet itself is wired by filter-sheet.js (started from bookings.js on every [data-filter-bar]). --}}
+    <div class="admin-bookings__filters" role="search" aria-label="Filter booking history" data-filter-bar>
+      <div class="admin-filter-sheet offcanvas-md offcanvas-bottom" tabindex="-1" id="historyFilterSheet"
+        aria-labelledby="historyFilterSheetTitle" data-filter-sheet>
+        <div class="offcanvas-header">
+          <h2 class="offcanvas-title" id="historyFilterSheetTitle">Filters</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#historyFilterSheet"
+            aria-label="Close filters"></button>
         </div>
-      </div>
 
-      <div class="admin-filter">
-        <label for="bh-package" class="admin-filter__label">Package:</label>
-        <div class="admin-filter__control">
-          <select id="bh-package" class="admin-filter__select" data-history-package>
-            <option value="all">All</option>
-            @foreach ($packages as $package)
-            <option value="{{ $package['id'] }}">{{ $package['name'] }}</option>
-            @endforeach
-          </select>
-        </div>
-      </div>
+        <div class="offcanvas-body">
+          <div class="admin-filter">
+            <label for="bh-sort" class="admin-filter__label">Sorted by:</label>
+            <div class="admin-filter__control">
+              <select id="bh-sort" class="admin-filter__select" data-history-sort>
+                @foreach (config('admin.history.sorts') as $value => $label)
+                <option value="{{ $value }}">{{ $label }}</option>
+                @endforeach
+              </select>
+            </div>
+          </div>
 
-      <div class="admin-filter">
-        <label for="bh-month" class="admin-filter__label">Month:</label>
-        <div class="admin-filter__control">
-          <select id="bh-month" class="admin-filter__select" data-history-month>
-            <option value="all">All</option>
-            @foreach ($months as $value => $label)
-            <option value="{{ $value }}">{{ $label }}</option>
-            @endforeach
-          </select>
+          <div class="admin-filter">
+            <label for="bh-package" class="admin-filter__label">Package:</label>
+            <div class="admin-filter__control">
+              <select id="bh-package" class="admin-filter__select" data-history-package>
+                <option value="all">All</option>
+                @foreach ($packages as $package)
+                <option value="{{ $package['id'] }}">{{ $package['name'] }}</option>
+                @endforeach
+              </select>
+            </div>
+          </div>
+
+          <div class="admin-filter">
+            <label for="bh-month" class="admin-filter__label">Month:</label>
+            <div class="admin-filter__control">
+              <select id="bh-month" class="admin-filter__select" data-history-month>
+                <option value="all">All</option>
+                @foreach ($months as $value => $label)
+                <option value="{{ $value }}">{{ $label }}</option>
+                @endforeach
+              </select>
+            </div>
+          </div>
+
+          {{-- Sheet footer (phones only): filtering is live, "Done" just closes the sheet. --}}
+          <div class="admin-filter-sheet__actions">
+            <button type="button" class="admin-btn admin-btn--outline" data-filter-clear disabled>Clear all</button>
+            <button type="button" class="admin-btn admin-btn--brand" data-bs-dismiss="offcanvas"
+              data-bs-target="#historyFilterSheet">Done</button>
+          </div>
         </div>
       </div>
 
@@ -83,6 +108,16 @@ $months = collect($bookings)
         <input type="search" id="bh-search" class="admin-filter__input" placeholder="Search"
           autocomplete="off" data-history-search>
       </div>
+
+      <button type="button" class="admin-filters-toggle" data-bs-toggle="offcanvas"
+        data-bs-target="#historyFilterSheet" aria-controls="historyFilterSheet" data-filter-toggle>
+        <i class="ph ph-sliders-horizontal" aria-hidden="true"></i>
+        <span>Filters</span>
+        <span class="admin-filters-toggle__badge" data-filter-count hidden>0</span>
+      </button>
+
+      {{-- Active filters as removable chips (phones only; filled by filter-sheet.js) --}}
+      <div class="admin-filter-chips" data-filter-chips hidden></div>
     </div>
 
     {{-- Table --}}

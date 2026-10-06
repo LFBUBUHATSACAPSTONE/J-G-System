@@ -1,5 +1,7 @@
+import { initFilterSheet } from "./filter-sheet.js";
+
 // Admin Bookings page: filter / sort / search the rows (also from ?status= ?package= ?booking=
-// links, see applyQueryParams), fill the booking modal, confirm destructive actions. No framework. The modal and confirm prompt are shared with the
+// links, see applyQueryParams), fill the booking modal, confirm destructive actions. The modal and confirm prompt are shared with the
 // The modal itself is Bootstrap's (admin.js already loads Bootstrap for the sidebar offcanvas).
 
 const getPath = (obj, path) =>
@@ -59,6 +61,9 @@ function initList(body) {
 
         emptyMessage.hidden = visible.size > 0;
         count.textContent = `Showing ${visible.size} of ${rows.length} bookings`;
+
+        // Lets the filter bar (chips + badge) follow along, including after deep-link params.
+        document.dispatchEvent(new CustomEvent("admin:filters-applied"));
     }
 
     [sortSelect, statusSelect, packageSelect].forEach((el) =>
@@ -234,6 +239,9 @@ function init() {
 
     const body = document.querySelector("[data-bookings-body]");
     if (body) initList(body);
+
+    // After initList, so chips reflect any ?status= / ?package= deep link.
+    document.querySelectorAll("[data-filter-bar]").forEach(initFilterSheet);
 
     initConfirm();
 }
