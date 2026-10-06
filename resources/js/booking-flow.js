@@ -37,7 +37,10 @@ function initBookingFlow() {
     const root = document.getElementById(FLOW_ID);
     if (!root) return;
 
-    setBookingView(root, root.getAttribute("data-current-view") || ENTRY_VIEW);
+    setBookingView(
+        root,
+        root.getAttribute("data-current-view") || entryViewOf(root),
+    );
 
     // Each of these fires once its step's own AJAX submit succeeds.
     root.addEventListener("booking:personal-information-saved", () =>
@@ -78,6 +81,11 @@ function initBookingFlow() {
     );
 }
 
+// Reschedule mode starts at Event Schedule: client and event details come from the original booking.
+function entryViewOf(root) {
+    return root.dataset.rescheduleId ? "event-schedule" : ENTRY_VIEW;
+}
+
 function advanceTo(root, view) {
     setBookingView(root, view);
 }
@@ -86,7 +94,7 @@ function goToPrevious(root) {
     const current = root.getAttribute("data-current-view");
     const index = STEP_ORDER.indexOf(current);
 
-    if (index > STEP_ORDER.indexOf(ENTRY_VIEW)) {
+    if (index > STEP_ORDER.indexOf(entryViewOf(root))) {
         setBookingView(root, STEP_ORDER[index - 1]);
         return;
     }
@@ -115,9 +123,9 @@ function setBookingView(root, view) {
         if (isTarget) matched = true;
     });
 
-    root.setAttribute("data-current-view", matched ? view : ENTRY_VIEW);
+    root.setAttribute("data-current-view", matched ? view : entryViewOf(root));
     if (!matched) {
-        setBookingView(root, ENTRY_VIEW);
+        setBookingView(root, entryViewOf(root));
     }
 }
 
