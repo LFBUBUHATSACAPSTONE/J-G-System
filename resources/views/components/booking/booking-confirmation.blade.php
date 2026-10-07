@@ -2,19 +2,20 @@
   <div class="booking-confirmation__card">
     <svg class="booking-confirmation__check" width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <circle cx="32" cy="32" r="29" stroke="currentColor" stroke-width="3" />
-      <path d="M20 33.5 L28 41.5 L44 24" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M32 18 V32 L41 38" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
     </svg>
 
-    <h2 class="booking-confirmation__title">Booking Successful!</h2>
+    <h2 class="booking-confirmation__title">Awaiting Verification</h2>
 
     <p class="booking-confirmation__body">
+      Your payment has been submitted and is waiting to be verified.
       Your booking reference number is
       <span class="booking-confirmation__ref">#{{ $referenceNumber ?? 'JG00000' }}</span>
     </p>
 
     <p class="booking-confirmation__body">
-      You will receive the official confirmation message shortly via your
-      registered email or contact number.
+      Once your payment is verified, you will receive the official
+      confirmation message via your registered email or contact number.
     </p>
 
     <p class="booking-confirmation__thanks">
