@@ -596,6 +596,179 @@
     }
 }
 
+// Small viewports (phones). Dashboard only: `.admin-card` is shared, so every rule is scoped.
+@media (max-width: 575.98px) {
+    .admin-dashboard {
+        // The sticky top bar (see _sidebar.scss) replaces the hamburger gap.
+        .admin-page-header {
+            padding-left: 0;
+            margin-bottom: 1rem;
+        }
+        .admin-page-header__title {
+            font-size: clamp(1.5rem, 1.2rem + 2vw, 2.5rem);
+        }
+        .admin-page-header__subtitle {
+            font-size: 0.875rem;
+        }
+
+        &__stats,
+        &__grid {
+            gap: 0.75rem;
+        }
+        &__stats {
+            margin-bottom: 0.75rem;
+        }
+
+        .admin-card {
+            padding: 1rem;
+        }
+        .admin-card__title {
+            font-size: 1rem;
+        }
+
+        // KPI cards: compact, chip and caption never wrap.
+        .admin-stat {
+            min-height: 0;
+            gap: 0.5rem;
+            padding: 0.875rem 1rem;
+        }
+        .admin-stat__label {
+            font-size: 0.9rem;
+        }
+        .admin-stat__value {
+            font-size: 2.25rem;
+        }
+        .admin-stat__body {
+            flex-wrap: nowrap;
+            gap: 0.5rem;
+        }
+        .admin-stat__delta,
+        .admin-stat__caption {
+            white-space: nowrap;
+        }
+        .admin-stat__caption {
+            font-size: 0.8rem;
+        }
+
+        // Needs your attention: stacked, full-width action.
+        .admin-attn__item {
+            padding: 0.875rem 1rem;
+        }
+        .admin-attn__who {
+            display: flex;
+            flex-direction: column;
+        }
+        .admin-attn__ref {
+            margin-left: 0;
+        }
+        .admin-attn__pkg,
+        .admin-attn__req {
+            display: block;
+        }
+        .admin-attn__dot {
+            display: none;
+        }
+        .admin-attn__action {
+            justify-self: stretch;
+            justify-content: center;
+            min-height: 2.75rem;
+        }
+
+        // Upcoming events: title and link on one row, time on one line.
+        .admin-dashboard__upcoming .admin-card__head {
+            flex-wrap: nowrap;
+            align-items: center;
+        }
+        .admin-card__more--head {
+            margin-top: 0;
+            white-space: nowrap;
+        }
+        .admin-upcoming__item {
+            padding: 0.75rem;
+        }
+        .admin-upcoming__when {
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 0 0.5rem;
+
+            strong,
+            span {
+                white-space: nowrap;
+            }
+        }
+
+        // Package Rate: smaller centred donut, two-column legend, caption under the title.
+        .admin-package-rate__body {
+            justify-content: center;
+            gap: 1rem;
+        }
+        .admin-package-rate__figure {
+            width: 10rem;
+            height: 10rem;
+        }
+        .admin-package-rate__caption {
+            display: block;
+        }
+        .admin-package-rate__legend {
+            flex-basis: 100%;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.75rem;
+        }
+        .admin-package-rate__count,
+        .admin-package-rate__share {
+            display: block;
+        }
+        .admin-package-rate__sep {
+            display: none;
+        }
+    }
+}
+
+// Narrow phones (320px): the four small KPI cards become full-width rows.
+@media (max-width: 399.98px) {
+    .admin-dashboard {
+        &__stats {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .admin-stat {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            grid-template-areas:
+                "label body"
+                "caption body";
+            align-items: center;
+            column-gap: 0.75rem;
+        }
+        .admin-stat__label {
+            grid-area: label;
+        }
+        .admin-stat__body {
+            grid-area: body;
+        }
+        .admin-stat__caption {
+            grid-area: caption;
+        }
+
+        // "View calendar" keeps its accessible name but shows only "calendar".
+        .admin-card__more-prefix {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip-path: inset(50%);
+            white-space: nowrap;
+        }
+    }
+}
+
+// Package Rate title note (all sizes).
+.admin-package-rate__caption {
+    color: $admin-text-muted;
+    font-size: 0.8em;
+    font-weight: 400;
+}
+
 // Windows high-contrast: use the system highlight for focus. (The donut needs nothing extra:
 // the legend carries name, count and percentage, so no information depends on slice colour.)
 @media (forced-colors: active) {

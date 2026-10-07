@@ -3,9 +3,7 @@
     margin: 0 0 1.5rem;
     font-family: $admin-font-family; // Poppins (via $font-family-text)
 
-    // Leaves room for the fixed mobile menu button (< lg).
-    padding-left: 3.25rem;
-
+    // Mobile: no side padding. The menu button is now a top bar, so it no longer overlaps the title.
     @media (min-width: $admin-sidebar-breakpoint) {
         padding-left: 1.5rem;
     }
