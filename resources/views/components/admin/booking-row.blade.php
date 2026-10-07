@@ -174,7 +174,7 @@ $booking['client']['name'], $ref, $package['name'], $event['type'] ?? '', $statu
           value="{{ $action['action'] }}"
           class="admin-pill admin-pill--{{ $action['tone'] }}"
           @if ($blocked) disabled aria-describedby="day-full-{{ $booking['id'] }}" title="This day already has the maximum number of approved events." @endif
-          aria-label="" {{ $action['label'] }}, booking {{ $ref }}">
+          aria-label="{{ $action['label'] }}, booking {{ $ref }}">
           {{ $action['label'] }}
         </button>
       </form>

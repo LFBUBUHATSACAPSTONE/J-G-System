@@ -1,10 +1,10 @@
-{{-- Admin Bookings page (front end only). Variables from the controller
+{{-- Admin Bookings page. Variables from the route
        $bookings => list of bookings
        $packages => [['id' => 'budget-lite', 'name' => 'Budget Lite'], ...]  (admin-managed)
        $fullDates => ['2026-10-14', ...] days already at the event limit (config/scheduling.php);
                      optional, a pending booking on one of them can't be approved (docs/event-capacity.md)
      Filtering, sorting and search run in the browser (resources/js/admin/bookings.js).
-     Nothing here is hard-coded; status badge + actions come from config/admin/bookings.php. 
+     Status badge + actions come from config/admin/bookings.php.
 
 --}}
 <!DOCTYPE html>
@@ -28,6 +28,7 @@
     @if (session('error'))
     <p class="admin-alert admin-alert--danger" role="alert">{{ session('error') }}</p>
     @endif
+    <p class="admin-alert" role="status" tabindex="-1" data-bookings-feedback hidden></p>
 
     {{-- Filters
          Below 768px: search + a "Filters" button; Sort / Status / Package live in a bottom sheet

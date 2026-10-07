@@ -77,18 +77,18 @@ $venueTypes = config('admin.bookings.venue_types', ['Indoor', 'Outdoor', 'Both']
 
               <div class="admin-field">
                 <label for="bm-contact-person" class="admin-field__label">Event Contact Person</label>
-                <input type="text" id="bm-contact-person" name="venue_contact_person" class="admin-field__control" readonly
-                  placeholder="--" data-booking-field="event.contact_person" data-editable>
+                <input type="text" id="bm-contact-person" class="admin-field__control" readonly
+                  placeholder="--" data-booking-field="event.contact_person">
               </div>
 
               <div class="admin-field">
                 <label for="bm-guests" class="admin-field__label">Number of Guests</label>
                 <div class="admin-field__row">
-                  <input type="text" id="bm-guests" name="guest_count" class="admin-field__control" readonly
+                  <input type="text" id="bm-guests" class="admin-field__control" readonly
                     inputmode="numeric" pattern="[0-9]*" placeholder="--"
-                    data-booking-field="event.guests" data-editable>
-                  <select name="venue_type" class="admin-field__control" aria-label="Venue type" disabled
-                    data-booking-field="event.venue_type" data-editable>
+                    data-booking-field="event.guests">
+                  <select class="admin-field__control" aria-label="Venue type" disabled
+                    data-booking-field="event.venue_type">
                     <option value="">--</option>
                     @foreach ($venueTypes as $venueType)
                     <option value="{{ $venueType }}">{{ $venueType }}</option>
