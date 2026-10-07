@@ -286,6 +286,23 @@
         }
     }
 
+    // Live "% of package cost" readout under the amount field
+    &__percent {
+        display: block;
+        margin-top: 0.4rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: $auth-text-secondary;
+
+        &.is-low {
+            color: $auth-danger;
+        }
+
+        &.is-ok {
+            color: $auth-accent;
+        }
+    }
+
     // How-to-pay steps
     &__instructions {
         list-style: none;

@@ -12,7 +12,8 @@
  *   - Down Payment reveals a numbers-only amount input
  *     (input[data-down-payment-input]). The amount must be at least 30%
  *     of the package cost, read from form[data-package-cost] (the
- *     controller's $packageCost). It is checked live on every keystroke:
+ *     controller's $packageCost). A live "% of package cost" readout sits
+ *     under the field. It is checked live on every keystroke:
  *     below that, an inline error says so (and again on submit, where
  *     nothing is sent). Full Payment hides and clears the input.
  *   - the same fetch() AJAX submit shape as event-schedule.js /
@@ -98,6 +99,7 @@ function initPaymentOptionToggle() {
             } else if (amountInput) {
                 amountInput.value = "";
                 clearAmountError(form);
+                updatePercent(form);
             }
         });
     });
@@ -108,6 +110,7 @@ function initPaymentOptionToggle() {
         // asks for an amount.
         amountInput.addEventListener("input", () => {
             amountInput.value = sanitizeAmount(amountInput.value);
+            updatePercent(form);
             if (amountInput.value === "" || amountInput.value === ".") {
                 clearAmountError(form);
                 return;
@@ -146,6 +149,29 @@ function updateDownPaymentHelp(form) {
     const cost = packageCostCents(form);
     if (!help || !cost) return;
     help.textContent = `Package cost: ${formatPhp(cost)}. Enter at least 30% (${formatPhp(minDownPaymentCents(form))}). Numbers only.`;
+}
+
+// Live readout: what share of the package cost the typed amount is.
+// Truncated (not rounded) to 1 decimal so 29.96% never reads as "30%".
+function updatePercent(form) {
+    const el = form.querySelector("[data-down-payment-percent]");
+    const input = form.querySelector("[data-down-payment-input]");
+    if (!el || !input) return;
+
+    const cost = packageCostCents(form);
+    const cents = toCents(input.value);
+    if (!cost || !input.value || !Number.isFinite(cents) || cents <= 0) {
+        el.textContent = "";
+        el.classList.add("d-none");
+        el.classList.remove("is-low", "is-ok");
+        return;
+    }
+
+    const percent = Math.floor((cents / cost) * 1000) / 10;
+    el.textContent = `${percent}% of your package cost`;
+    el.classList.remove("d-none");
+    el.classList.toggle("is-low", cents < minDownPaymentCents(form));
+    el.classList.toggle("is-ok", cents >= minDownPaymentCents(form));
 }
 
 // Returns the amount in pesos when valid, otherwise shows the error and returns null.

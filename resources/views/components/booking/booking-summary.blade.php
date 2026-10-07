@@ -134,6 +134,7 @@
                     aria-describedby="down-payment-help down-payment-error"
                     data-down-payment-input>
                 </div>
+                <small class="booking-summary__percent d-none" aria-live="polite" data-down-payment-percent></small>
                 <small id="down-payment-error" class="booking-summary__field-error d-none" role="alert" data-field-error="down_payment_amount"></small>
                 <p id="down-payment-help" class="booking-summary__option-hint" data-down-payment-help>Enter at least 30% of your selected package cost. Numbers only.</p>
               </div>
