@@ -24,6 +24,11 @@
  *   422 {"message": "…", "errors": {"payment_option": ["…"]}} -> rejected
  *   422 {"message": "…", "full_dates": ["YYYY-MM-DD", …]}
  *       -> a chosen day reached the event limit meanwhile;
+ *
+ * Reschedule mode (form[data-reschedule-id]): the
+ * payment is carried over, so there is no payment option to pick. The body is
+ * { reschedule_id } instead of { payment_option }; 403 {message} if the booking can't be
+ * rescheduled. The "Confirm Reschedule" button sits in the actions row (form="payment-form").
  */
 
 import { getCsrfToken } from "../auth/csrf.js";
@@ -95,12 +100,15 @@ async function submitPayment(form) {
     clearError(form);
 
     const hiddenInput = form.querySelector("[data-payment-option-input]");
-    if (!hiddenInput?.value) {
+    const rescheduleId = form.dataset.rescheduleId;
+    if (!rescheduleId && !hiddenInput?.value) {
         showError(form, "Please select a payment option.");
         return;
     }
 
-    const submitBtn = form.querySelector('[form="payment-form"]');
+    const submitBtn = document.querySelector(
+        '[form="payment-form"][type="submit"]',
+    );
     if (submitBtn) submitBtn.disabled = true;
 
     try {
@@ -111,7 +119,11 @@ async function submitPayment(form) {
                 "Content-Type": "application/json",
                 "X-CSRF-TOKEN": getCsrfToken(form),
             },
-            body: JSON.stringify({ payment_option: hiddenInput.value }),
+            body: JSON.stringify(
+                rescheduleId
+                    ? { reschedule_id: rescheduleId }
+                    : { payment_option: hiddenInput.value },
+            ),
         });
 
         const data = await response.json().catch(() => ({}));

@@ -54,7 +54,7 @@
         }
     }
 
-    // Calendar 
+    // Calendar
     &__calendar {
         position: relative;
         background: $auth-field-bg;
@@ -206,7 +206,7 @@
         box-shadow: inset 0 0 0 1px $auth-danger;
     }
 
-    // Times 
+    // Times
     &__times {
         flex: 1;
         display: flex;
@@ -339,6 +339,36 @@
             display: block;
             color: $auth-text-primary;
             margin-bottom: 0.2rem;
+        }
+    }
+
+    // Reschedule mode (docs/reschedule-within-original-month.md)
+    &__notice {
+        margin: 0 0 1rem;
+        font-size: 0.85rem;
+        color: $auth-text-secondary;
+
+        strong {
+            color: $auth-text-primary;
+        }
+    }
+
+    &__empty {
+        padding: 2rem 1rem;
+        text-align: center;
+        color: $auth-text-secondary;
+
+        strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 1.05rem;
+            color: $auth-text-primary;
+        }
+
+        p {
+            margin: 0;
+            font-size: 0.85rem;
+            line-height: 1.5;
         }
     }
 

@@ -1,3 +1,4 @@
+@php($reschedule = $reschedule ?? null)
 <div class="booking-summary position-relative z-1">
   <div class="booking-summary__card">
     <div class="booking-summary__grid">
@@ -75,6 +76,7 @@
 
         <form
           id="payment-form"
+          @if ($reschedule) data-reschedule-id="{{ $reschedule['booking_id'] }}" @endif
           method="POST"
           action="{{ route('booking.booking-summary') }}"
           novalidate>
@@ -83,7 +85,13 @@
 
           <div class="booking-summary__payment-grid">
 
-            {{-- Payment Option --}}
+            {{-- Payment Option (a reschedule carries the original payment over instead) --}}
+            @if ($reschedule)
+            <div class="booking-summary__payment-panel" data-payment-carried-over>
+              <h3 class="booking-summary__payment-heading">Payment carried over from {{ $reschedule['reference'] }}</h3>
+              <p class="booking-summary__option-hint">The payment from your cancelled booking applies to this reschedule, so there is nothing to pay again. After you confirm, the booking goes back to pending until the admin approves the new dates.</p>
+            </div>
+            @else
             <div class="booking-summary__payment-panel">
               <h3 class="booking-summary__payment-heading">Payment Option</h3>
 
@@ -117,6 +125,8 @@
                 <li>Booking is only secured after payment is processed.</li>
               </ul>
             </div>
+
+            @endif
 
             {{-- Payment Summary --}}
             <div class="booking-summary__payment-panel">
@@ -156,7 +166,8 @@
               </dl>
             </div>
 
-            {{-- GCash QR --}}
+            {{-- GCash QR (not shown when rescheduling) --}}
+            @unless ($reschedule)
             <div class="booking-summary__payment-panel booking-summary__payment-panel--qr">
               <div class="booking-summary__qr-code" role="img" aria-label="GCash payment QR code">
                 @if(!empty($qrCodeUrl))
@@ -174,6 +185,7 @@
                 <li><strong>Confirmation</strong> - You will be directed to the Confirmation page and notified once verified.</li>
               </ol>
             </div>
+            @endunless
           </div>
 
           <p class="booking-summary__error text-danger d-none" role="alert" data-payment-error></p>
@@ -185,5 +197,8 @@
   <div class="booking-summary__actions">
     <x-button type="button" class="btn-color-gradient--secondary client-info__btn--cancel text-pale--white rounded-2" data-booking-cancel>Cancel</x-button>
     <x-button type="button" class="btn-color-gradient--secondary client-info__btn--cancel text-pale--white rounded-2" data-booking-previous>Previous</x-button>
+    @if ($reschedule)
+    <x-button type="submit" form="payment-form" class="client-info__btn--confirm btn-color-gradient--primary font-button--responsive text-pale--white rounded-2">Confirm Reschedule</x-button>
+    @endif
   </div>
 </div>
