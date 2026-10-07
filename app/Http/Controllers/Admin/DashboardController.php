@@ -85,6 +85,7 @@ class DashboardController extends Controller
             ]);
 
         $packageRate = Booking::query()
+            ->whereIn('status', ['approved', 'completed'])
             ->selectRaw('package_id, package_name, COUNT(*) AS booking_count')
             ->groupBy('package_id', 'package_name')
             ->orderByDesc('booking_count')

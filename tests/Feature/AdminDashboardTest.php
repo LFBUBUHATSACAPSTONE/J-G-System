@@ -79,15 +79,26 @@ class AdminDashboardTest extends TestCase
             'created_at' => '2026-09-20 09:00:00',
             'updated_at' => '2026-09-20 09:00:00',
         ]);
+        $this->createBooking([
+            'reference' => 'JG20266',
+            'status' => 'completed',
+            'package_id' => 'modern-glam',
+            'package_name' => 'Modern Glam',
+        ]);
 
         $this->get(route('admin.dashboard'))
             ->assertOk()
             ->assertViewIs('admin.dashboard')
-            ->assertSee('data-admin-dashboard', false);
+            ->assertSee('data-admin-dashboard', false)
+            ->assertSee('data-dashboard-stats', false)
+            ->assertSee('data-dashboard-attention', false)
+            ->assertSee('data-dashboard-upcoming', false)
+            ->assertSee('data-dashboard-package-rate', false)
+            ->assertSee('(approved)', false);
 
         $response = $this->getJson(route('admin.dashboard.data'))->assertOk();
         $this->assertSame([
-            'total' => ['value' => 4, 'change' => 2],
+            'total' => ['value' => 5, 'change' => 3],
             'confirmed' => ['value' => 1, 'change' => 1],
             'pending' => ['value' => 1, 'change' => 1],
             'payment' => ['value' => 1, 'change' => 1],
@@ -106,10 +117,7 @@ class AdminDashboardTest extends TestCase
         $counts = array_column($response->json('packageRate'), 'count', 'id');
         ksort($counts);
         $this->assertSame([
-            'budget-lite' => 1,
-            'budget-party' => 1,
-            'luxe-lite' => 1,
-            'modern-glam' => 1,
+            'modern-glam' => 2,
         ], $counts);
     }
 

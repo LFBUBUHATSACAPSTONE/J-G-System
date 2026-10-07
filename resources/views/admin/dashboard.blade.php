@@ -27,7 +27,7 @@ $dashboardConfig = [
 <body>
   <x-admin.sidebar />
 
-  <main class="admin-content admin-dashboard p-4" data-admin-dashboard
+  <main class="admin-content admin-dashboard p-3 p-sm-4" data-admin-dashboard
     data-endpoint="{{ route('admin.dashboard.data') }}"
     data-config="{{ json_encode($dashboardConfig, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_HEX_TAG) }}"
     aria-busy="true">
@@ -51,7 +51,7 @@ $dashboardConfig = [
           <h2 id="upcoming-title" class="admin-card__title">Upcoming Events</h2>
           <a href="{{ route('admin.calendar') }}" class="admin-card__more admin-card__more--head"
             data-dashboard-calendar>
-            View calendar <i class="ph ph-arrow-right" aria-hidden="true"></i>
+            <span class="admin-card__more-prefix">View </span>calendar <i class="ph ph-arrow-right" aria-hidden="true"></i>
           </a>
         </div>
         <div data-dashboard-upcoming>
@@ -60,7 +60,7 @@ $dashboardConfig = [
       </section>
 
       <section class="admin-card admin-package-rate admin-dashboard__rate" aria-labelledby="package-rate-title">
-        <h2 id="package-rate-title" class="admin-card__title">Package Rate</h2>
+        <h2 id="package-rate-title" class="admin-card__title">Package Rate <span class="admin-package-rate__caption admin-package-rate__caption--blue">(approved)</span></h2>
         <div data-dashboard-package-rate>
           <p class="admin-empty">Loading package totals...</p>
         </div>

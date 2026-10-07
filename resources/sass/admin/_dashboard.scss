@@ -767,6 +767,10 @@
     color: $admin-text-muted;
     font-size: 0.8em;
     font-weight: 400;
+
+    &--blue {
+        color: #2563eb;
+    }
 }
 
 // Windows high-contrast: use the system highlight for focus. (The donut needs nothing extra:
