@@ -183,11 +183,10 @@ body {
     }
 }
 
-// Dashboard only (for now): below the sidebar breakpoint the menu button becomes a sticky top bar
-// that takes its own space, so it can no longer float over the section titles. To roll this out
-// to every admin page, drop the `body:has(.admin-dashboard)` scope.
+// Below the sidebar breakpoint the menu button is a sticky top bar on every admin page. It takes its
+// own space, so it never floats over the section titles.
 @media (max-width: #{$admin-sidebar-breakpoint - 0.02}) {
-    body:has(.admin-dashboard) .admin-sidebar-toggle {
+    .admin-sidebar-toggle {
         position: sticky;
         top: 0;
         left: auto;
