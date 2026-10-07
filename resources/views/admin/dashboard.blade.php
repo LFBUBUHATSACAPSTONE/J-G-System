@@ -6,7 +6,7 @@
      Nothing here is hard-coded: card titles, filters and limits come from config/admin/dashboard.php,
      status look from config/admin/bookings.php. Every link goes to Bookings (or Calendar) with query
      params that resources/js/admin/bookings.js reads: ?status= ?package= ?booking= --}}
-     
+
 @php
 // Route::has() keeps the dashboard rendering before the other pages exist.
 $bookingsUrl = fn (array $query = []) => Route::has('admin.bookings') ? route('admin.bookings', $query) : '#';
@@ -31,7 +31,7 @@ $calendarUrl = Route::has('admin.calendar') ? route('admin.calendar', ['month' =
 <body>
   <x-admin.sidebar />
 
-  <main class="admin-content admin-dashboard p-4">
+  <main class="admin-content admin-dashboard p-3 p-sm-4">
     <x-admin.page-header />
 
     {{-- KPI cards: each one opens Bookings already filtered to what it counts. --}}
@@ -81,9 +81,10 @@ $calendarUrl = Route::has('admin.calendar') ? route('admin.calendar', ['month' =
                 <span class="admin-attn__ref">{{ $item['reference'] }}</span>
               </p>
               <p class="admin-attn__meta">
-                {{ $item['package'] }} ·
-                <time datetime="{{ $item['date']->toDateString() }}">{{ $item['date']->format('M j, Y') }}</time>
-                · requested <time datetime="{{ $item['submitted_at']->toIso8601String() }}">{{ $item['submitted_at']->diffForHumans() }}</time>
+                <span class="admin-attn__pkg">{{ $item['package'] }} ·
+                  <time datetime="{{ $item['date']->toDateString() }}">{{ $item['date']->format('M j, Y') }}</time></span>
+                <span class="admin-attn__dot" aria-hidden="true">·</span>
+                <span class="admin-attn__req">requested <time datetime="{{ $item['submitted_at']->toIso8601String() }}">{{ $item['submitted_at']->diffForHumans() }}</time></span>
               </p>
             </div>
 
@@ -110,7 +111,7 @@ $calendarUrl = Route::has('admin.calendar') ? route('admin.calendar', ['month' =
         <div class="admin-card__head">
           <h2 id="upcoming-title" class="admin-card__title">Upcoming Events</h2>
           <a href="{{ $calendarUrl }}" class="admin-card__more admin-card__more--head">
-            View calendar <i class="ph ph-arrow-right" aria-hidden="true"></i>
+            <span class="admin-card__more-prefix">View </span>calendar <i class="ph ph-arrow-right" aria-hidden="true"></i>
           </a>
         </div>
 
