@@ -9,6 +9,11 @@
  *     aria-checked pattern as event-information's venue-type checkboxes,
  *     writing the chosen value into the hidden
  *     input[data-payment-option-input] that gets submitted with the form.
+ *   - Down Payment reveals a numbers-only amount input
+ *     (input[data-down-payment-input]). The amount must be at least 30%
+ *     of the package cost, read from form[data-package-cost] (the
+ *     controller's $packageCost). Below that, an inline error says so
+ *     and nothing is sent. Full Payment hides and clears the input.
  *   - the same fetch() AJAX submit shape as event-schedule.js /
  *     client-information.js: clear errors -> require a payment option ->
  *     disable submit -> fetch() with Accept / Content-Type /
@@ -19,9 +24,15 @@
  *     event-schedule.js / client-information.js use — neither button
  *     lives inside <form> here, so nothing calls submit() directly.
  *
+ * Request body: { payment_option: "full" } or
+ * { payment_option: "down", down_payment_amount: <number> }. The server
+ * must re-check down_payment_amount >= 30% of the STORED package cost
+ * (this file's check is only a convenience).
+ *
  * Expected back-end contract for `booking.payment`:
  *   200 JSON -> saved, caller advances to the Confirmation step
  *   422 {"message": "…", "errors": {"payment_option": ["…"]}} -> rejected
+ *   422 {"message": "…", "errors": {"down_payment_amount": ["…"]}} -> amount rejected
  *   422 {"message": "…", "full_dates": ["YYYY-MM-DD", …]}
  *       -> a chosen day reached the event limit meanwhile;
  *
@@ -34,6 +45,7 @@
 import { getCsrfToken } from "../auth/csrf.js";
 
 const FORM_ID = "payment-form";
+const MIN_DOWN_PAYMENT_RATE = 0.3;
 
 function initBookingSummary() {
     initPaymentOptionToggle();
@@ -59,6 +71,9 @@ function initPaymentOptionToggle() {
     const hiddenInput = document.querySelector("[data-payment-option-input]");
     if (!group || !hiddenInput) return;
 
+    const form = group.closest("form");
+    const panel = form?.querySelector("[data-down-payment-panel]");
+    const amountInput = form?.querySelector("[data-down-payment-input]");
     const buttons = group.querySelectorAll("[data-payment-option]");
 
     buttons.forEach((btn) => {
@@ -69,13 +84,118 @@ function initPaymentOptionToggle() {
             btn.setAttribute("aria-checked", "true");
             hiddenInput.value = btn.dataset.paymentOption;
 
-            const form = btn.closest("form");
             const errorEl = form?.querySelector(
                 '[data-field-error="payment_option"]',
             );
             errorEl?.classList.add("d-none");
+
+            const isDown = btn.dataset.paymentOption === "down";
+            panel?.classList.toggle("d-none", !isDown);
+            if (isDown) {
+                updateDownPaymentHelp(form);
+                amountInput?.focus();
+            } else if (amountInput) {
+                amountInput.value = "";
+                clearAmountError(form);
+            }
         });
     });
+
+    if (amountInput) {
+        amountInput.addEventListener("input", () => {
+            amountInput.value = sanitizeAmount(amountInput.value);
+            clearAmountError(form);
+        });
+        amountInput.addEventListener("blur", () => {
+            if (amountInput.value !== "") validateDownPayment(form);
+        });
+    }
+}
+
+// Numbers only: digits plus one decimal point, at most 2 decimals.
+function sanitizeAmount(raw) {
+    const cleaned = raw.replace(/[^\d.]/g, "");
+    const [whole, ...rest] = cleaned.split(".");
+    return rest.length ? `${whole}.${rest.join("").slice(0, 2)}` : whole;
+}
+
+const toCents = (value) => Math.round(Number(value) * 100);
+
+const formatPhp = (cents) =>
+    `Php ${(cents / 100).toLocaleString("en-PH", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    })}`;
+
+function packageCostCents(form) {
+    const cost = Number(form.dataset.packageCost);
+    return Number.isFinite(cost) && cost > 0 ? toCents(cost) : 0;
+}
+
+function minDownPaymentCents(form) {
+    return Math.ceil(packageCostCents(form) * MIN_DOWN_PAYMENT_RATE);
+}
+
+function updateDownPaymentHelp(form) {
+    const help = form.querySelector("[data-down-payment-help]");
+    const cost = packageCostCents(form);
+    if (!help || !cost) return;
+    help.textContent = `Package cost: ${formatPhp(cost)}. Enter at least 30% (${formatPhp(minDownPaymentCents(form))}). Numbers only.`;
+}
+
+// Returns the amount in pesos when valid, otherwise shows the error and returns null.
+function validateDownPayment(form) {
+    const input = form.querySelector("[data-down-payment-input]");
+    if (!input) return null;
+
+    const cents = toCents(input.value);
+    if (!input.value || !Number.isFinite(cents) || cents <= 0) {
+        showAmountError(form, "Please enter your down payment amount.");
+        return null;
+    }
+
+    const cost = packageCostCents(form);
+    const min = minDownPaymentCents(form);
+    if (cost && cents < min) {
+        showAmountError(
+            form,
+            `The down payment you entered (${formatPhp(cents)}) is lower than 30% of your selected package cost (${formatPhp(cost)}). The minimum is ${formatPhp(min)}.`,
+        );
+        return null;
+    }
+
+    return cents / 100;
+}
+
+function showAmountError(form, message) {
+    const errorEl = form.querySelector(
+        '[data-field-error="down_payment_amount"]',
+    );
+    if (errorEl) {
+        errorEl.textContent = message;
+        errorEl.classList.remove("d-none");
+    }
+    form.querySelector(".booking-summary__amount")?.classList.add("is-invalid");
+    form.querySelector("[data-down-payment-input]")?.setAttribute(
+        "aria-invalid",
+        "true",
+    );
+}
+
+function clearAmountError(form) {
+    const errorEl = form?.querySelector(
+        '[data-field-error="down_payment_amount"]',
+    );
+    if (errorEl) {
+        errorEl.textContent = "";
+        errorEl.classList.add("d-none");
+    }
+    form?.querySelector(".booking-summary__amount")?.classList.remove(
+        "is-invalid",
+    );
+    form?.querySelector("[data-down-payment-input]")?.removeAttribute(
+        "aria-invalid",
+    );
 }
 
 function wireActionButtons(scope = document) {
@@ -106,6 +226,15 @@ async function submitPayment(form) {
         return;
     }
 
+    let downPaymentAmount = null;
+    if (!rescheduleId && hiddenInput.value === "down") {
+        downPaymentAmount = validateDownPayment(form);
+        if (downPaymentAmount === null) {
+            form.querySelector("[data-down-payment-input]")?.focus();
+            return;
+        }
+    }
+
     const submitBtn = document.querySelector(
         '[form="payment-form"][type="submit"]',
     );
@@ -122,7 +251,12 @@ async function submitPayment(form) {
             body: JSON.stringify(
                 rescheduleId
                     ? { reschedule_id: rescheduleId }
-                    : { payment_option: hiddenInput.value },
+                    : downPaymentAmount !== null
+                      ? {
+                            payment_option: hiddenInput.value,
+                            down_payment_amount: downPaymentAmount,
+                        }
+                      : { payment_option: hiddenInput.value },
             ),
         });
 
@@ -140,6 +274,12 @@ async function submitPayment(form) {
                         },
                     }),
                 );
+                return;
+            }
+
+            const amountError = data.errors?.down_payment_amount?.[0];
+            if (amountError) {
+                showAmountError(form, amountError);
                 return;
             }
 

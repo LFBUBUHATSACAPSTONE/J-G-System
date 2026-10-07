@@ -70,13 +70,14 @@
         </div>
       </div>
 
-      {{-- Right column: payment option, payment summary, and GCash QR --}}
+      {{-- Right column: payment option (with down payment amount) and how-to steps --}}
       <div class="booking-summary__column">
         <h2 class="booking-summary__title">Payment</h2>
 
         <form
           id="payment-form"
           @if ($reschedule) data-reschedule-id="{{ $reschedule['booking_id'] }}" @endif
+          data-package-cost="{{ $packageCost ?? 0 }}"
           method="POST"
           action="{{ route('booking.booking-summary') }}"
           novalidate>
@@ -114,7 +115,27 @@
                   data-payment-option="down">
                   Down Payment
                 </button>
-                <p class="booking-summary__option-hint">Pay 30% now to reserve your slot; remaining balance can be paid before or on the event day.</p>
+                <p class="booking-summary__option-hint">Pay at least 30% now to reserve your slot; remaining balance can be paid before or on the event day.</p>
+              </div>
+
+              {{-- Shown by booking-summary.js only while Down Payment is selected --}}
+              <div class="booking-summary__down-payment d-none" data-down-payment-panel>
+                <label class="booking-summary__input-label" for="down-payment-amount">Down payment amount</label>
+                <div class="booking-summary__amount">
+                  <span class="booking-summary__amount-prefix" aria-hidden="true">Php</span>
+                  <input
+                    id="down-payment-amount"
+                    class="booking-summary__amount-input"
+                    type="text"
+                    inputmode="decimal"
+                    autocomplete="off"
+                    placeholder="0.00"
+                    name="down_payment_amount"
+                    aria-describedby="down-payment-help down-payment-error"
+                    data-down-payment-input>
+                </div>
+                <small id="down-payment-error" class="booking-summary__field-error d-none" role="alert" data-field-error="down_payment_amount"></small>
+                <p id="down-payment-help" class="booking-summary__option-hint" data-down-payment-help>Enter at least 30% of your selected package cost. Numbers only.</p>
               </div>
 
               <small class="booking-summary__field-error d-none" data-field-error="payment_option"></small>
@@ -126,66 +147,17 @@
               </ul>
             </div>
 
-            @endif
-
-            {{-- Payment Summary --}}
+            {{-- How to complete this step --}}
             <div class="booking-summary__payment-panel">
-              <h3 class="booking-summary__payment-heading">
-                Payment Summary <span class="booking-summary__ref">- #{{ $referenceNumber ?? 'JG00000' }}</span>
-              </h3>
-
-              <dl class="booking-summary__summary-list">
-                <div class="booking-summary__summary-row">
-                  <dt>Date</dt>
-                  <dd>{{ $eventDate ?? '' }}</dd>
-                </div>
-                <div class="booking-summary__summary-row">
-                  <dt>Time</dt>
-                  <dd>{{ $bookedAt ?? '' }}</dd>
-                </div>
-                <div class="booking-summary__summary-row">
-                  <dt>Package</dt>
-                  <dd>{{ $packageName ?? '' }}</dd>
-                </div>
-                <div class="booking-summary__summary-row">
-                  <dt>Package Cost</dt>
-                  <dd>Php {{ number_format($packageCost ?? 0, 2) }}</dd>
-                </div>
-                <div class="booking-summary__summary-row">
-                  <dt>Transportation fee</dt>
-                  <dd>Php {{ number_format($transportationFee ?? 0, 2) }}</dd>
-                </div>
-                <div class="booking-summary__summary-row">
-                  <dt>Payment Method</dt>
-                  <dd>{{ $paymentMethod ?? 'Gcash' }}</dd>
-                </div>
-                <div class="booking-summary__summary-row booking-summary__summary-row--total">
-                  <dt>Total</dt>
-                  <dd>Php {{ number_format($totalCost ?? 0, 2) }}</dd>
-                </div>
-              </dl>
-            </div>
-
-            {{-- GCash QR (not shown when rescheduling) --}}
-            @unless ($reschedule)
-            <div class="booking-summary__payment-panel booking-summary__payment-panel--qr">
-              <div class="booking-summary__qr-code" role="img" aria-label="GCash payment QR code">
-                @if(!empty($qrCodeUrl))
-                <img src="{{ $qrCodeUrl }}" alt="GCash payment QR code">
-                @else
-                <span>QR Code</span>
-                @endif
-              </div>
-
-              <ol class="booking-summary__qr-steps">
-                <li><strong>Confirm Details</strong> - Ensure all event information is correct before paying.</li>
-                <li><strong>Select Payment Type</strong> - Choose Full Payment or Downpayment. Amount due will be displayed.</li>
-                <li><strong>Scan &amp; Pay</strong> - Scan the GCash QR code to complete your transaction.</li>
-                <li><strong>Final &amp; Verified</strong> - Payment is final and non-reversible once scanned.</li>
-                <li><strong>Confirmation</strong> - You will be directed to the Confirmation page and notified once verified.</li>
+              <h3 class="booking-summary__payment-heading">How to pay</h3>
+              <ol class="booking-summary__instructions">
+                <li><strong>Check your details</strong> - Make sure the booking summary on the left is correct.</li>
+                <li><strong>Choose a payment option</strong> - Select Full Payment or Down Payment.</li>
+                <li><strong>Enter your down payment</strong> - If you chose Down Payment, type the amount in numbers only. It must be at least 30% of your package cost.</li>
+                <li><strong>Continue</strong> - Click Continue to move on to the Confirmation step.</li>
               </ol>
             </div>
-            @endunless
+            @endif
           </div>
 
           <p class="booking-summary__error text-danger d-none" role="alert" data-payment-error></p>
@@ -195,10 +167,11 @@
   </div>
 
   <div class="booking-summary__actions">
-    <x-button type="button" class="btn-color-gradient--secondary client-info__btn--cancel text-pale--white rounded-2" data-booking-cancel>Cancel</x-button>
     <x-button type="button" class="btn-color-gradient--secondary client-info__btn--cancel text-pale--white rounded-2" data-booking-previous>Previous</x-button>
     @if ($reschedule)
     <x-button type="submit" form="payment-form" class="client-info__btn--confirm btn-color-gradient--primary font-button--responsive text-pale--white rounded-2">Confirm Reschedule</x-button>
+    @else
+    <x-button type="submit" form="payment-form" class="client-info__btn--confirm btn-color-gradient--primary font-button--responsive text-pale--white rounded-2">Continue</x-button>
     @endif
   </div>
 </div>
