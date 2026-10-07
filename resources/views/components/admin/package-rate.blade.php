@@ -26,7 +26,7 @@ $summary = $items->map(fn ($i) => "{$i['label']} {$i['count']}")->join(', ');
 @endphp
 
 <section {{ $attributes->class(['admin-card', 'admin-package-rate']) }} aria-labelledby="package-rate-title">
-  <h2 id="package-rate-title" class="admin-card__title">Package Rate (approved)</h2>
+  <h2 id="package-rate-title" class="admin-card__title">Package Rate <span class="admin-package-rate__caption">(approved)</span></h2>
 
   @if ($total > 0)
   <div class="admin-package-rate__body">
@@ -71,7 +71,7 @@ $summary = $items->map(fn ($i) => "{$i['label']} {$i['count']}")->join(', ');
         @else
         <span class="admin-package-rate__name">{{ $package['label'] }}@isset($package['more']) <span class="admin-package-rate__more">({{ $package['more'] }} {{ \Illuminate\Support\Str::plural('package', $package['more']) }})</span>@endisset</span>
         @endif
-        <span class="admin-package-rate__pct">{{ $package['count'] }} {{ \Illuminate\Support\Str::plural('booking', $package['count']) }} · {{ $pct }}%</span>
+        <span class="admin-package-rate__pct"><span class="admin-package-rate__count">{{ $package['count'] }} {{ \Illuminate\Support\Str::plural('booking', $package['count']) }}</span><span class="admin-package-rate__sep"> · </span><span class="admin-package-rate__share">{{ $pct }}%</span></span>
       </li>
       @endforeach
     </ul>
