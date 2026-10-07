@@ -13,9 +13,4 @@ $classes = [];
 $classString = implode(' ', $classes);
 @endphp
 
-<button
-  type="{{ $type }}"
-  {{ $attributes->merge(['class' => $classString]) }}
-  @if($disabled) disabled @endif>
-  <span>{{ $slot }}</span>
-</button>
+<button type="{{ $type }}" {{ $attributes->merge(['class' => $classString]) }} @if($disabled) disabled @endif><span>{{ $slot }}</span></button>
