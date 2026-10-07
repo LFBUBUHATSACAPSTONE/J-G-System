@@ -277,6 +277,10 @@ class RegisterWebTest extends TestCase
         $this->get(route('user.landing'))
             ->assertOk()
             ->assertDontSee('data-chat-open', false)
+            ->assertSee('data-auth-view="signup"', false)
+            ->assertSee('data-auth-view="login"', false)
+            ->assertSee('class="rounded-3 btn-color-gradient--primary px-3 py-2"', false)
+            ->assertSee('class="rounded-3 btn-color-gradient--secondary px-3 py-2"', false)
             ->assertSee('id="landing-book-now" data-bs-toggle="modal"', false)
             ->assertSee('class="package-card__cta" data-package-select data-bs-toggle="modal"', false);
 

@@ -23,21 +23,11 @@ $extraFeatures = array_slice($features, $previewCount);
   <p class="package-card__price">Php {{ number_format((float) $price) }}</p>
 
   @auth
-  <a
-    class="package-card__cta"
-    data-package-select
-    href="{{ route('user.booking') }}">
+  <a class="package-card__cta" data-package-select href="{{ route('user.booking') }}">
     Book Now
   </a>
   @else
-  <x-button type="button"
-    class="package-card__cta"
-    data-package-select
-    data-bs-toggle="modal"
-    data-bs-target="#authModal"
-    data-auth-view="login">
-    Book Now
-  </x-button>
+  <button type="button" class="package-card__cta" data-package-select data-bs-toggle="modal" data-bs-target="#authModal" data-auth-view="login"><span>Book Now</span></button>
   @endauth
 
   <div class="package-card__divider"></div>
