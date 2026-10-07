@@ -56,16 +56,33 @@
     }
 
     &__nav {
+        --cal-arrow: 2.75rem;
+        --cal-title-em: 8.6; // widest "Month YYYY" in Poppins Bold is September, about 8.4em
+        --cal-gap: 0.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 1rem;
+        gap: var(--cal-gap);
+
+        @container (min-width: 30rem) {
+            --cal-gap: 1rem;
+        }
     }
 
     &__month {
+        flex: 0 0 auto;
+        inline-size: calc(var(--cal-title-em) * 1em);
         margin: 0;
-        font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem);
+        font-size: clamp(
+            1rem,
+            calc(
+                (100cqi - 2 * var(--cal-arrow) - 2 * var(--cal-gap)) /
+                    var(--cal-title-em)
+            ),
+            2.25rem
+        );
         font-weight: 700;
+        white-space: nowrap;
         text-align: center;
         background: $admin-heading-gradient;
         -webkit-background-clip: text;
@@ -82,9 +99,10 @@
 
     &__nav-link {
         display: grid;
+        flex: 0 0 auto;
         place-items: center;
-        width: 2.75rem;
-        height: 2.75rem;
+        width: var(--cal-arrow, 2.75rem);
+        height: var(--cal-arrow, 2.75rem);
         border-radius: $admin-radius-pill;
         color: $admin-text-primary;
         font-size: 1.5rem;

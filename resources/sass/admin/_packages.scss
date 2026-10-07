@@ -1,3 +1,5 @@
+// Phones: the package cards show a few features and a "See more" toggle. Same 768px switch as the user
+// landing package cards, and the same as the grid's two-column breakpoint.
 .admin-btn--light {
     background: $admin-panel-bg;
     color: $admin-text-primary;
@@ -40,11 +42,6 @@ button.admin-pill--solid.admin-pill--danger:hover {
     font-family: $admin-font-family;
 
     &__top {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 1rem;
         margin-bottom: 1.5rem;
 
         .admin-page-header {
@@ -52,36 +49,80 @@ button.admin-pill--solid.admin-pill--danger:hover {
         }
     }
 
+    // Floating "Add New Package": fixed to the bottom-right corner of the screen. A round icon button on
+    // phones (the label stays for screen readers), an extended pill with the label from 576px.
+    // z-index 1030 (Bootstrap's "fixed" layer) keeps it under the sidebar offcanvas and the modals.
     &__add {
+        position: fixed;
+        right: calc(1.25rem + env(safe-area-inset-right, 0px));
+        bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+        z-index: 1030;
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: 0.5rem;
-        min-height: 3rem;
-        margin-left: 3.25rem; // lines up with the page header beside the mobile menu button
-        padding: 0.5rem 1.5rem;
+        min-width: 3.5rem;
+        min-height: 3.5rem;
+        padding: 0.5rem;
         border: 0;
-        border-radius: $admin-radius-lg;
-        background: $admin-surface;
-        color: $admin-text-primary;
+        border-radius: $admin-radius-pill;
+        background: $admin-brand;
+        color: $admin-on-brand;
         font: inherit;
         font-weight: 600;
+        box-shadow: 0 6px 18px $admin-shadow-black;
         cursor: pointer;
+        transition:
+            background 0.2s ease,
+            box-shadow 0.2s ease;
 
-        @media (min-width: $admin-sidebar-breakpoint) {
-            margin-left: 0;
+        .ph {
+            font-size: 1.5rem;
         }
 
         &:hover {
-            background: $admin-panel-bg;
+            background: $admin-brand-hover;
+            box-shadow: 0 8px 24px $admin-shadow-black;
         }
 
         &:focus-visible {
             outline: $admin-focus-ring-width solid $admin-focus-ring;
             outline-offset: $admin-focus-ring-offset;
         }
+
+        @media (prefers-reduced-motion: reduce) {
+            transition: none;
+        }
+
+        @media (min-width: 576px) {
+            right: calc(1.75rem + env(safe-area-inset-right, 0px));
+            bottom: calc(1.75rem + env(safe-area-inset-bottom, 0px));
+            padding: 0.5rem 1.5rem 0.5rem 1.25rem;
+        }
+    }
+
+    // Phones: icon only. Visually hidden, not display:none, so the button keeps its name.
+    &__add-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+
+        @media (min-width: 576px) {
+            position: static;
+            width: auto;
+            height: auto;
+            overflow: visible;
+            clip: auto;
+        }
     }
 
     &__grid {
+        // Room under the last card so the floating Add button never covers an Available / Unavailable
+        // button. (Margin, not padding: the page's `p-4` utility sets padding with !important.)
+        margin-bottom: 5.5rem;
         display: grid;
         grid-template-columns: minmax(0, 1fr);
         gap: 1.25rem;
@@ -96,6 +137,7 @@ button.admin-pill--solid.admin-pill--danger:hover {
     }
 
     &__empty {
+        margin-bottom: 5.5rem;
         padding: 1.5rem 0.5rem;
         text-align: center;
     }
@@ -135,6 +177,7 @@ button.admin-pill--solid.admin-pill--danger:hover {
         font-weight: 600;
     }
 
+    // "Features" heading. Below 768px it holds the See more toggle; from 768px it is a plain label.
     &__label {
         margin: 0 0 0.25rem;
         color: $admin-brand-text;
@@ -142,14 +185,102 @@ button.admin-pill--solid.admin-pill--danger:hover {
         font-weight: 600;
     }
 
-    &__features {
+    // Features block grows so the availability buttons line up at the bottom of equal-height cards.
+    &__features-block {
         flex: 1;
-        margin: 0 0 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    &__features {
+        margin: 0;
         padding-left: 1.1rem;
         font-size: 0.95rem;
 
         li + li {
             margin-top: 0.15rem;
+        }
+
+        &--extra {
+            margin-top: 0.15rem; // same gap as between two bullets, so both lists read as one
+        }
+    }
+
+    // "See more" toggle (below 768px). From 768px the button is inert and everything is visible.
+    &__toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        width: 100%;
+        min-height: 2.5rem; // comfortable tap target
+        padding: 0.25rem 0;
+        border: 0;
+        background: none;
+        color: inherit;
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+
+        &:focus-visible {
+            outline: $admin-focus-ring-width solid $admin-focus-ring;
+            outline-offset: $admin-focus-ring-offset;
+            border-radius: 4px;
+        }
+
+        @media (min-width: $admin-package-collapse-breakpoint) {
+            min-height: 0;
+            padding: 0;
+            cursor: default;
+            pointer-events: none;
+        }
+    }
+
+    &__toggle-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: $admin-text-primary;
+        font-size: 0.85rem;
+        font-weight: 500;
+
+        @media (min-width: $admin-package-collapse-breakpoint) {
+            display: none;
+        }
+    }
+
+    // The label swaps with the collapsed state, no JS needed.
+    &__toggle-less,
+    &__toggle:not(.collapsed) &__toggle-more {
+        display: none;
+    }
+
+    &__toggle:not(.collapsed) &__toggle-less {
+        display: inline;
+    }
+
+    &__chevron {
+        width: 0.5rem;
+        height: 0.5rem;
+        border-right: 2px solid currentColor;
+        border-bottom: 2px solid currentColor;
+        transform: translateY(-2px) rotate(45deg);
+        transition: transform 0.25s ease;
+
+        .admin-package-card__toggle:not(.collapsed) & {
+            transform: translateY(1px) rotate(-135deg);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            transition: none;
+        }
+    }
+
+    // From 768px the extra features are always open, whatever Bootstrap's collapse state is.
+    &__more {
+        @media (min-width: $admin-package-collapse-breakpoint) {
+            display: block !important;
+            height: auto !important;
+            visibility: visible !important;
         }
     }
 

@@ -76,7 +76,7 @@
         Packages
     </h2>
 
-    <div class="package-selection__grid">
+    <div class="package-selection__grid" id="package-grid">
         @foreach ($packages as $package)
         <x-package-card
             :name="$package['name']"

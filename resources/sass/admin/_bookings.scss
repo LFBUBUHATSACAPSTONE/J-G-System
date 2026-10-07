@@ -2,8 +2,6 @@
 // Mobile-first: below 1200px each booking is a stacked card; from 1200px it is a table row,
 // like the mockup (the sidebar takes 312px, so 992px is too narrow for six columns).
 
-$admin-bookings-table-breakpoint: 1200px;
-
 // Small shared pieces (links, pills, buttons, fields, alert)
 .admin-link {
     padding: 0;
@@ -338,6 +336,193 @@ button.admin-pill {
         &::placeholder {
             color: $admin-text-subtle;
             opacity: 1;
+        }
+    }
+}
+
+// Filter bar on phones: search + "Filters" button, chips, and a bottom sheet for the selects.
+// From 768px the sheet is `display: contents`, so the four pills sit inline as before.
+$admin-filter-sheet-breakpoint: 768px;
+
+.admin-bookings__filters {
+    @media (max-width: #{$admin-filter-sheet-breakpoint - 0.02px}) {
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+
+        .admin-filter--search {
+            order: 1;
+            flex: 1 1 0;
+            min-width: 0;
+            padding-inline: 1.1rem;
+        }
+
+        .admin-filters-toggle {
+            order: 2;
+        }
+
+        .admin-filter-chips {
+            order: 3;
+        }
+    }
+}
+
+.admin-filters-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 3.25rem;
+    padding: 0.25rem 1.25rem;
+    border: 0;
+    border-radius: $admin-radius-pill;
+    background: $admin-surface;
+    color: $admin-text-primary;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+
+    .ph {
+        font-size: 1.25rem;
+    }
+
+    &:focus-visible {
+        outline: $admin-focus-ring-width solid $admin-focus-ring;
+        outline-offset: $admin-focus-ring-offset;
+    }
+
+    &__badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.4rem;
+        height: 1.4rem;
+        padding: 0 0.35rem;
+        border-radius: $admin-radius-pill;
+        background: $admin-brand;
+        color: $admin-on-brand;
+        font-size: 0.75rem;
+        font-weight: 600;
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
+    @media (min-width: $admin-filter-sheet-breakpoint) {
+        display: none;
+    }
+}
+
+.admin-filter-chips {
+    display: flex;
+    flex: 0 0 100%;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+
+    &[hidden] {
+        display: none;
+    }
+
+    @media (min-width: $admin-filter-sheet-breakpoint) {
+        display: none;
+    }
+}
+
+.admin-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.25rem;
+    padding: 0.25rem 0.85rem;
+    border: 0;
+    border-radius: $admin-radius-pill;
+    background: $admin-brand-soft;
+    color: $admin-brand-text;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+
+    .ph {
+        font-size: 0.9rem;
+    }
+
+    &:hover {
+        background: $admin-brand-soft-hover;
+    }
+
+    &:focus-visible {
+        outline: $admin-focus-ring-width solid $admin-focus-ring;
+        outline-offset: $admin-focus-ring-offset;
+    }
+
+    // "Clear all": text only, no fill
+    &--clear {
+        background: transparent;
+        text-decoration: underline;
+    }
+}
+
+// The sheet itself (Bootstrap .offcanvas-md .offcanvas-bottom supplies position, slide and backdrop).
+.admin-filter-sheet {
+    font-family: $admin-font-family;
+    --bs-offcanvas-bg: #{$admin-page-bg};
+    --bs-offcanvas-color: #{$admin-text-primary};
+    --bs-offcanvas-height: auto;
+    --bs-offcanvas-border-width: 0;
+    --bs-offcanvas-padding-x: 1.25rem;
+    --bs-offcanvas-padding-y: 1rem;
+    border-radius: $admin-radius-xl $admin-radius-xl 0 0;
+
+    .offcanvas-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .offcanvas-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding-top: 0;
+    }
+
+    // Pills stack at full width; drop the row-layout flex-basis (it would become a height here).
+    .admin-filter {
+        flex: none;
+    }
+
+    &__actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+
+        .admin-btn {
+            padding-inline: 1rem;
+
+            &:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+        }
+    }
+}
+
+@media (min-width: $admin-filter-sheet-breakpoint) {
+    .admin-bookings__filters .admin-filter-sheet {
+        display: contents;
+
+        .offcanvas-body {
+            display: contents;
+        }
+
+        .admin-filter {
+            flex: 1 1 14rem;
+        }
+
+        .admin-filter-sheet__actions {
+            display: none;
         }
     }
 }

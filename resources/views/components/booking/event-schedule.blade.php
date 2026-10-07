@@ -1,6 +1,14 @@
+@php($reschedule = $reschedule ?? null)
+@php($rescheduleMonthLabel = $reschedule ? \Carbon\Carbon::createFromFormat('!Y-m', $reschedule['month'])->format('F Y') : null)
 <div class="event-schedule position-relative z-1">
   <div class="event-schedule__card">
     <h2 class="event-schedule__title">Event Schedule</h2>
+
+    @if ($reschedule)
+    <p class="event-schedule__notice" data-reschedule-notice>
+      Rescheduling is limited to <strong>{{ $rescheduleMonthLabel }}</strong>.
+    </p>
+    @endif
 
     <form
       id="event-schedule-form"
@@ -10,7 +18,8 @@
       @csrf
 
       <div class="event-schedule__body">
-        <div class="event-schedule__calendar" data-calendar data-availability-url="{{ route('booking.availability') }}">
+        <div class="event-schedule__calendar" data-calendar data-availability-url="{{ route('booking.availability') }}"
+          @if ($reschedule) data-reschedule-month="{{ $reschedule['month'] }}" @endif>
           <div class="event-schedule__calendar-header">
             <button type="button" class="event-schedule__nav-btn is-invisible" data-calendar-prev aria-label="Previous month">
               <svg width="10" height="16" viewBox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -80,6 +89,13 @@
           </p>
         </div>
       </div>
+
+      @if ($reschedule)
+      <div class="event-schedule__empty d-none" role="status" data-reschedule-empty>
+        <strong>No available dates left in this month</strong>
+        <p>Every remaining day in {{ $rescheduleMonthLabel }} is past or fully booked. Please message us through the chat widget and we will help you with another option.</p>
+      </div>
+      @endif
 
       <p class="event-schedule__error text-danger d-none" role="alert" data-event-schedule-error></p>
     </form>

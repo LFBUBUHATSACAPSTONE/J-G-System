@@ -29,6 +29,14 @@
  *     This step fires it on a 422 that carries `full_dates`; the Booking
  *     Summary step fires it too, and booking-flow.js sends the client back here.
  *
+ * Reschedule mode: when the calendar has
+ * data-reschedule-month="YYYY-MM" it opens on that month, both month arrows are hidden and
+ * disabled, and no other month can be reached. If no day is left (all past or full) the calendar
+ * and Continue are replaced by an empty state. The submit also sends `reschedule_id` (from
+ * #bookingFlow[data-reschedule-id]). The server takes the month from the STORED booking and
+ * answers 422 `errors.event_start_date` for dates outside it, and 403 {message} when the booking
+ * can't be rescheduled (not user-cancelled, already rescheduled, month passed).
+ *
  * Expected back-end contract for `booking.event-schedule`:
  *   200 JSON -> saved, caller advances to the next step
  *   422 {"message": "…", "errors": {"event_start_date": ["…"], …}} -> rejected
@@ -105,8 +113,23 @@ function initCalendar(form) {
     const rangeLabel = form.querySelector("[data-selected-range]");
 
     const today = startOfDay(new Date());
-    const minView = { year: today.getFullYear(), month: today.getMonth() };
+    // Reschedule mode: locked to one month ("YYYY-MM"), see the header comment.
+    const lockedMonth = /^\d{4}-(0[1-9]|1[0-2])$/.test(
+        root.dataset.rescheduleMonth ?? "",
+    )
+        ? root.dataset.rescheduleMonth
+        : null;
+    const minView = lockedMonth
+        ? {
+              year: Number(lockedMonth.slice(0, 4)),
+              month: Number(lockedMonth.slice(5, 7)) - 1,
+          }
+        : { year: today.getFullYear(), month: today.getMonth() };
     const view = { ...minView };
+    const emptyEl = form.querySelector("[data-reschedule-empty]");
+    const continueBtn = document.querySelector(
+        `[form="${form.id}"][type="submit"]`,
+    );
     const selection = { start: null, end: null };
     const availabilityUrl = root.dataset.availabilityUrl;
     const fullDates = new Set(); // days at the event limit, as local YYYY-MM-DD strings
@@ -117,6 +140,13 @@ function initCalendar(form) {
             "is-invisible",
             view.year === minView.year && view.month === minView.month,
         );
+        if (lockedMonth) {
+            [prevBtn, nextBtn].forEach((btn) => {
+                btn.classList.add("is-invisible");
+                btn.disabled = true;
+                btn.tabIndex = -1;
+            });
+        }
 
         daysEl.innerHTML = "";
         const firstDay = new Date(view.year, view.month, 1);
@@ -160,6 +190,24 @@ function initCalendar(form) {
         }
 
         updateRangeLabel();
+        updateEmptyState();
+    };
+
+    // Reschedule mode only: no selectable day left in the locked month -> empty state, no Continue.
+    const updateEmptyState = () => {
+        if (!lockedMonth || !emptyEl) return;
+        const daysInMonth = new Date(view.year, view.month + 1, 0).getDate();
+        let open = false;
+        for (let day = 1; day <= daysInMonth && !open; day++) {
+            const date = new Date(view.year, view.month, day);
+            open = date >= today && !fullDates.has(toIso(date));
+        }
+        emptyEl.classList.toggle("d-none", open);
+        form.querySelector(".event-schedule__body")?.classList.toggle(
+            "d-none",
+            !open,
+        );
+        continueBtn?.classList.toggle("d-none", !open);
     };
 
     const updateRangeLabel = () => {
@@ -285,7 +333,7 @@ function initCalendar(form) {
 
         // Show the month of the first full day so the client sees what changed.
         const first = [...dates].sort()[0];
-        if (first) {
+        if (first && !lockedMonth) {
             const [y, m] = first.split("-").map(Number);
             if (
                 y > minView.year ||
@@ -462,6 +510,8 @@ async function submitEventSchedule(form) {
         `[form="${form.id}"][type="submit"]`,
     );
 
+    const rescheduleId = form.closest("#bookingFlow")?.dataset.rescheduleId;
+
     clearError(form);
 
     const checks = [
@@ -517,6 +567,7 @@ async function submitEventSchedule(form) {
                 "X-CSRF-TOKEN": getCsrfToken(form),
             },
             body: JSON.stringify({
+                ...(rescheduleId ? { reschedule_id: rescheduleId } : {}),
                 event_start_date: startDateInput.value,
                 event_end_date: endDateInput.value,
                 start_time: `${startTimeInput.value.trim()} ${getPeriod(startAmpmGroup)}`,
