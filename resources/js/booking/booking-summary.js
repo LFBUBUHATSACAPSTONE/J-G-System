@@ -12,8 +12,9 @@
  *   - Down Payment reveals a numbers-only amount input
  *     (input[data-down-payment-input]). The amount must be at least 30%
  *     of the package cost, read from form[data-package-cost] (the
- *     controller's $packageCost). Below that, an inline error says so
- *     and nothing is sent. Full Payment hides and clears the input.
+ *     controller's $packageCost). It is checked live on every keystroke:
+ *     below that, an inline error says so (and again on submit, where
+ *     nothing is sent). Full Payment hides and clears the input.
  *   - the same fetch() AJAX submit shape as event-schedule.js /
  *     client-information.js: clear errors -> require a payment option ->
  *     disable submit -> fetch() with Accept / Content-Type /
@@ -102,12 +103,16 @@ function initPaymentOptionToggle() {
     });
 
     if (amountInput) {
+        // Live validation: re-check on every keystroke. An empty (or "."
+        // only) field stays quiet while typing; the submit check still
+        // asks for an amount.
         amountInput.addEventListener("input", () => {
             amountInput.value = sanitizeAmount(amountInput.value);
-            clearAmountError(form);
-        });
-        amountInput.addEventListener("blur", () => {
-            if (amountInput.value !== "") validateDownPayment(form);
+            if (amountInput.value === "" || amountInput.value === ".") {
+                clearAmountError(form);
+                return;
+            }
+            validateDownPayment(form);
         });
     }
 }
@@ -147,6 +152,8 @@ function updateDownPaymentHelp(form) {
 function validateDownPayment(form) {
     const input = form.querySelector("[data-down-payment-input]");
     if (!input) return null;
+
+    clearAmountError(form);
 
     const cents = toCents(input.value);
     if (!input.value || !Number.isFinite(cents) || cents <= 0) {
