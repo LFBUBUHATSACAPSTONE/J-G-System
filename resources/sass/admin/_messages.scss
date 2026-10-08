@@ -28,7 +28,7 @@
 
     &__title {
         margin: 0 0 0.75rem;
-        font-size: 1.375rem;
+        font-size: admin-fluid(1.375);
         font-weight: 600;
         color: $admin-text-primary;
     }
@@ -146,7 +146,7 @@
         text-overflow: ellipsis;
         white-space: nowrap;
         color: $admin-text-muted;
-        font-size: 0.9375rem;
+        font-size: admin-fluid(0.9375);
     }
     &__meta {
         flex: none;
@@ -197,7 +197,7 @@
         min-width: 0;
         margin: 0;
         overflow: hidden;
-        font-size: 1rem;
+        font-size: admin-fluid(1);
         font-weight: 600;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -223,7 +223,7 @@
         text-decoration: none;
         .chat-icon {
             color: $admin-brand-text;
-            font-size: 1.25rem;
+            font-size: admin-fluid(1.25);
         }
         &:hover span {
             text-decoration: underline;

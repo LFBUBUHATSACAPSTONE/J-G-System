@@ -1,4 +1,4 @@
-//  Admin dropdown (enhances <select>, see resources/js/admin/dropdown.js) 
+//  Admin dropdown (enhances <select>, see resources/js/admin/dropdown.js)
 
 .admin-dropdown {
     position: relative;
@@ -30,7 +30,7 @@
         background: transparent;
         color: $admin-text-primary;
         font: inherit;
-        font-size: 0.9rem;
+        font-size: admin-fluid(0.9);
         text-align: left;
         cursor: pointer;
 
@@ -53,7 +53,7 @@
 
     &__chevron {
         flex: none;
-        font-size: 1rem;
+        font-size: admin-fluid(1);
         color: $admin-text-primary;
         transition: transform 0.2s ease;
     }
@@ -98,7 +98,7 @@
         padding: 0.5rem 0.875rem;
         border-radius: $admin-radius-md;
         color: $admin-text-primary;
-        font-size: 0.9rem;
+        font-size: admin-fluid(0.9);
         line-height: 1.3;
         cursor: pointer;
         user-select: none;
@@ -120,7 +120,7 @@
 
     &__check {
         flex: none;
-        font-size: 1rem;
+        font-size: admin-fluid(1);
         opacity: 0;
 
         [aria-selected="true"] > & {

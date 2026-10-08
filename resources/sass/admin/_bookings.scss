@@ -31,7 +31,7 @@
     border: 1px solid transparent;
     border-radius: $admin-radius-pill;
     background: transparent;
-    font-size: 0.95rem;
+    font-size: admin-fluid(0.95);
     font-weight: 500;
     text-align: center;
 
@@ -114,7 +114,7 @@ button.admin-pill {
     white-space: nowrap;
 
     .ph {
-        font-size: 1.1rem;
+        font-size: admin-fluid(1.1);
     }
 
     &--warning {
@@ -167,7 +167,7 @@ button.admin-pill {
     padding: 0.5rem 2.5rem;
     border: 0;
     border-radius: $admin-radius-lg;
-    font-size: 1rem;
+    font-size: admin-fluid(1);
     font-weight: 600;
     cursor: pointer;
 
@@ -207,11 +207,11 @@ button.admin-pill {
         min-height: 2.25rem;
         padding: 0.25rem 1rem;
         border-radius: $admin-radius-pill;
-        font-size: 0.9rem;
+        font-size: admin-fluid(0.9);
         white-space: nowrap;
 
         .ph {
-            font-size: 1.1rem;
+            font-size: admin-fluid(1.1);
         }
     }
 
@@ -284,7 +284,7 @@ button.admin-pill {
 
     &__label {
         color: $admin-text-primary;
-        font-size: 0.9rem;
+        font-size: admin-fluid(0.9);
         font-weight: 500;
         white-space: nowrap;
     }
@@ -303,7 +303,7 @@ button.admin-pill {
         background: transparent;
         color: $admin-text-primary;
         font: inherit;
-        font-size: 0.9rem;
+        font-size: admin-fluid(0.9);
         appearance: none;
         cursor: pointer;
     }
@@ -319,7 +319,7 @@ button.admin-pill {
 
     &__icon {
         color: $admin-text-primary;
-        font-size: 1.375rem;
+        font-size: admin-fluid(1.375);
     }
 
     &__input {
@@ -331,7 +331,7 @@ button.admin-pill {
         background: transparent;
         color: $admin-text-primary;
         font: inherit;
-        font-size: 0.9rem;
+        font-size: admin-fluid(0.9);
 
         &::placeholder {
             color: $admin-text-subtle;
@@ -377,13 +377,13 @@ $admin-filter-sheet-breakpoint: 768px;
     background: $admin-surface;
     color: $admin-text-primary;
     font: inherit;
-    font-size: 0.9rem;
+    font-size: admin-fluid(0.9);
     font-weight: 500;
     white-space: nowrap;
     cursor: pointer;
 
     .ph {
-        font-size: 1.25rem;
+        font-size: admin-fluid(1.25);
     }
 
     &:focus-visible {
@@ -445,7 +445,7 @@ $admin-filter-sheet-breakpoint: 768px;
     cursor: pointer;
 
     .ph {
-        font-size: 0.9rem;
+        font-size: admin-fluid(0.9);
     }
 
     &:hover {
@@ -476,7 +476,7 @@ $admin-filter-sheet-breakpoint: 768px;
     border-radius: $admin-radius-xl $admin-radius-xl 0 0;
 
     .offcanvas-title {
-        font-size: 1.1rem;
+        font-size: admin-fluid(1.1);
         font-weight: 600;
     }
 
@@ -560,7 +560,7 @@ $admin-filter-sheet-breakpoint: 768px;
     border-radius: $admin-radius-xl;
     background: $admin-surface;
     color: $admin-text-primary;
-    font-size: 0.95rem;
+    font-size: admin-fluid(0.95);
 
     &[hidden] {
         display: none !important;
@@ -664,7 +664,7 @@ $admin-filter-sheet-breakpoint: 768px;
                 padding: 0.9rem 1rem;
                 background: $admin-brand;
                 color: $admin-on-brand;
-                font-size: 0.95rem;
+                font-size: admin-fluid(0.95);
                 font-weight: 600;
                 text-align: center;
 
@@ -743,7 +743,7 @@ $admin-filter-sheet-breakpoint: 768px;
 
         .admin-pill {
             padding: 0.35rem 1.1rem;
-            font-size: 0.9rem;
+            font-size: admin-fluid(0.9);
         }
     }
 }
@@ -798,7 +798,7 @@ $admin-filter-sheet-breakpoint: 768px;
         margin: 0 0 1rem;
         line-height: 2.25rem;
         color: $admin-text-primary;
-        font-size: 1.25rem;
+        font-size: admin-fluid(1.25);
         font-weight: 700;
     }
 
@@ -836,18 +836,18 @@ $admin-filter-sheet-breakpoint: 768px;
     }
 
     &__package-name {
-        font-size: 1.1rem;
+        font-size: admin-fluid(1.1);
     }
 
     &__package-price {
-        font-size: 2.25rem;
+        font-size: admin-fluid(2.25);
         font-weight: 500;
         line-height: 1.2;
     }
 
     // payment.state: paid | partial | pending. Text colours are the AAA status tokens.
     &__package-status {
-        font-size: 0.95rem;
+        font-size: admin-fluid(0.95);
         font-weight: 500;
         color: $admin-text-muted;
 
@@ -884,7 +884,7 @@ $admin-filter-sheet-breakpoint: 768px;
 
     &__label {
         color: $admin-brand-text;
-        font-size: 0.95rem;
+        font-size: admin-fluid(0.95);
     }
 
     &__row {
@@ -902,7 +902,7 @@ $admin-filter-sheet-breakpoint: 768px;
         background: $admin-field-bg;
         color: $admin-text-primary;
         font: inherit;
-        font-size: 0.95rem;
+        font-size: admin-fluid(0.95);
         appearance: none;
 
         &::placeholder {

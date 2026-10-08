@@ -176,3 +176,19 @@ $admin-dropdown-menu-bg: $admin-surface;
 $admin-dropdown-hover-bg: $admin-panel-bg;
 $admin-dropdown-selected-bg: $admin-brand-soft; // text on it is $admin-brand-text (AAA)
 $admin-dropdown-border: oklch(88% 0 0);
+
+// Fluid type for the admin. admin-fluid(<desktop size in rem, unitless>) returns a clamp() that scales
+// linearly from a smaller size at 320px wide to the full size at 1200px wide (and stays there).
+// Body-sized text (<= 0.875rem) is never shrunk, so it stays readable on phones; larger text shrinks
+// progressively, down to 65% for 2.5rem and up. No division, so it works with every Sass version.
+@function admin-fluid($max) {
+    @if $max <= 0.875 {
+        @return #{$max}rem;
+    }
+    $factor: if($max >= 2.5, 0.65, 1 - ($max - 0.875) * 0.21538);
+    $min: $max * $factor;
+    $diff: $max - $min;
+    $intercept: $min - $diff * 0.363636;
+    $slope: $diff * 1.818182;
+    @return clamp(#{$min}rem, #{$intercept}rem + #{$slope}vw, #{$max}rem);
+}
