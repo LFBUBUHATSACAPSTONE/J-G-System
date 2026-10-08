@@ -6,6 +6,10 @@
 .booking-page {
     min-height: 100vh;
     background: $auth-bg;
+    // Column layout so the flow can take the height left under the tracker; the Confirmation
+    // step uses it to centre its card (see .booking-flow__view below).
+    display: flex;
+    flex-direction: column;
 
     &__bg {
         position: fixed;
@@ -21,6 +25,10 @@
 .booking-flow {
     position: relative;
     z-index: 1;
+    flex: 1 0 auto; // fills the page height under the tracker
+    display: flex;
+    flex-direction: column;
+    width: 100%;
     max-width: 1040px;
     margin: 0 auto;
     // Top padding = the gap between the sticky progress tracker and the first card (24px).
@@ -35,6 +43,16 @@
     @media (min-width: 992px) {
         padding: $sp-6 $sp-8 $sp-6;
     }
+}
+
+// Confirmation is the only step that centres: its card sits in the middle of the space under
+// the tracker. The other steps keep their normal top-aligned flow. (A hidden view carries
+// Bootstrap's d-none, which wins over this display.)
+.booking-flow__view[data-view="booking-confirmation"] {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 // Card surface shared by every step (same look as .modal-content).
