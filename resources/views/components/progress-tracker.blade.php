@@ -12,11 +12,11 @@
 @php
 $trackerSteps = [
 ['key' => 'package', 'label' => 'Package', 'number' => 1],
-['key' => 'client-information', 'label' => 'Client Information', 'number' => 2],
+['key' => 'client-information', 'label' => 'Personal Information', 'number' => 2],
 ['key' => 'event-information', 'label' => 'Event Information', 'number' => 3],
 ['key' => 'event-schedule', 'label' => 'Event Schedule', 'number' => 4],
 ['key' => 'booking-summary', 'label' => 'Payment', 'number' => 5],
-['key' => 'booking-confirmation', 'label' => 'Confirmation', 'number' => 6],
+['key' => 'booking-confirmation', 'label' => 'Submitted', 'number' => 6],
 ];
 @endphp
 
