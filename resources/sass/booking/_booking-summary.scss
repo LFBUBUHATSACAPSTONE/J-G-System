@@ -1,90 +1,104 @@
+// Payment step (view "booking-summary"): Booking Summary | Payment | Instructions.
+//
+// Columns follow the CARD's width (container query), not the screen's: at 992px the
+// sidebar-less page still leaves less room than the viewport suggests.
+//   < 560px    one column, stacked
+//   560-799px  Booking Summary | Payment, Instructions full width underneath
+//   >= 800px   three columns
+// Reschedule mode renders no Instructions column, so it stays at two columns from 560px.
+
 .booking-summary {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+    @include booking-step;
     align-items: stretch;
 
-    // Card — same surface/radius/glow language as .modal-content /
-    // .client-info__card / .event-info__card / .event-schedule__card.
-    // This is the ONLY card in the component; the two columns inside it
-    // share this single surface rather than each getting their own.
     &__card {
-        position: relative;
-        width: 100%;
-        background: $auth-surface;
-        border-radius: $auth-radius-xl;
-        padding: 2rem 2.25rem 2.5rem;
-        color: $auth-text-primary;
-        isolation: isolate;
-        overflow: hidden;
-
-        &::before {
-            content: "";
-            position: absolute;
-            inset: -20% -20% auto auto;
-            width: 70%;
-            height: 60%;
-            background: radial-gradient(
-                circle at top right,
-                $auth-glow-violet 0%,
-                $auth-glow-rose 45%,
-                transparent 75%
-            );
-            opacity: 0.35;
-            filter: blur(60px);
-            z-index: -1;
-            pointer-events: none;
-        }
+        @include booking-card;
+        container: summary / inline-size;
     }
 
     &__grid {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: $sp-6;
 
-        @media (min-width: 992px) {
-            flex-direction: row;
-            align-items: stretch;
+        @container summary (min-width: 560px) {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        @container summary (min-width: 800px) {
+            &:has(.booking-summary__column--guide) {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
         }
     }
 
+    // Each column is its own container so the recap can switch layout on the column's width.
     &__column {
-        flex: 1;
+        container-type: inline-size;
         min-width: 0;
 
-        // Vertical divider between the two columns, desktop only —
-        // same $auth-border token _event-schedule.scss / this file's
-        // own __divider rule already use.
-        @media (min-width: 992px) {
-            &:not(:first-child) {
-                padding-left: 2rem;
+        // Stacked: a rule and 24px above every column after the first.
+        & + & {
+            border-top: 1px solid $auth-border;
+            padding-top: $sp-6;
+        }
+
+        // Side by side: the rule moves to the left edge (24px of space on both sides of it).
+        @container summary (min-width: 560px) {
+            & + & {
+                border-top: 0;
+                padding-top: 0;
                 border-left: 1px solid $auth-border;
+                padding-left: $sp-6;
+            }
+
+            // Instructions sit under the two columns, full width.
+            & + &--guide {
+                grid-column: 1 / -1;
+                border-left: 0;
+                padding-left: 0;
+                border-top: 1px solid $auth-border;
+                padding-top: $sp-6;
+            }
+        }
+
+        @container summary (min-width: 800px) {
+            .booking-summary__grid:has(&--guide) &--guide {
+                grid-column: auto;
+                border-top: 0;
+                padding-top: 0;
+                border-left: 1px solid $auth-border;
+                padding-left: $sp-6;
             }
         }
     }
 
     &__title {
-        font-size: 1.4rem;
-        font-weight: 700;
-        margin-bottom: 1.75rem;
+        @include booking-title;
     }
 
-    // A grid, not flex: .booking-summary__row is display:contents so its
-    // label/value pair flows straight into this grid instead of forming
-    // its own two-column box. That's what makes every value line up at
-    // the same x position across ALL rows (including across dividers),
-    // regardless of how long "Event Contact Person" is next to "Email" —
-    // a per-row flex/space-between only aligns within that one row.
+    // Recap. A grid whose rows are display:contents, so every value lines up at the same x
+    // across all rows and dividers. In a narrow column the label sits above its value.
     &__receipt {
         display: grid;
-        grid-template-columns: max-content 1fr;
-        column-gap: 1.5rem;
-        row-gap: 0.7rem;
+        grid-template-columns: max-content minmax(0, 1fr);
+        column-gap: $sp-6;
+        row-gap: $sp-3;
         align-items: baseline;
+
+        @container (max-width: 359px) {
+            grid-template-columns: minmax(0, 1fr);
+        }
     }
 
     &__row {
         display: contents;
+
+        @container (max-width: 359px) {
+            display: flex;
+            flex-direction: column;
+            gap: $sp-1;
+        }
     }
 
     &__label {
@@ -94,8 +108,7 @@
         font-weight: 600;
         white-space: nowrap;
 
-        // Colon lives here, not in the Blade markup, so a value can be
-        // dropped in later without anyone having to remember to type it.
+        // The colon lives here so a value can be dropped in without typing it.
         &::after {
             content: ":";
         }
@@ -104,74 +117,66 @@
     &__value {
         grid-column: 2;
         color: $auth-text-primary;
-        font-size: 0.9rem;
+        font-size: admin-fluid(0.9);
         font-weight: 600;
         text-align: left;
+        overflow-wrap: anywhere;
+
+        @container (max-width: 359px) {
+            grid-column: auto;
+        }
+    }
+
+    &__label {
+        @container (max-width: 359px) {
+            grid-column: auto;
+            white-space: normal;
+        }
     }
 
     &__section {
         grid-column: 1 / -1;
-        font-size: 1rem;
+        font-size: admin-fluid(1);
         font-weight: 700;
         color: $auth-accent;
-        margin: 0 0 0.2rem;
-
-        // First section sits right under the card title with no divider
-        // above it, so it doesn't need the same breathing room the two
-        // later sections get after a __divider.
-        &:first-child {
-            margin-top: 0;
-        }
+        margin: 0;
     }
 
     &__divider {
         grid-column: 1 / -1;
         height: 1px;
         background: $auth-border;
-        margin: 0.25rem 0 0.75rem;
+        margin: $sp-1 0;
     }
 
-    // Payment card's three sub-panels.
-    //
-    // This intentionally never switches to flex-direction: row. The
-    // Payment column here is capped well below the viewport — it's at
-    // most ~half of .booking-summary__card, and that card itself is
-    // capped at .booking-flow's 1040px max-width, so this column tops
-    // out around 400-450px no matter how wide the screen gets. Fitting
-    // three panels (option buttons, instructions) across that
-    // isn't a "needs a wider screen" problem — there's no screen width
-    // this component will ever render at where that's enough room, so a
-    // min-width breakpoint here only produces the exact overlap this was
-    // written to fix (dt/dd text bleeding into the neighboring panel).
-    // Stacked, each panel gets the column's full width instead of a
-    // third of it.
+    // Panels inside the Payment and Instructions columns.
     &__payment-grid {
         display: flex;
         flex-direction: column;
-        gap: 1.25rem;
+        gap: $sp-6;
     }
 
     &__payment-panel {
-        flex: 1;
         min-width: 0;
         background: $auth-field-bg;
         border: 1px solid $auth-border;
         border-radius: $auth-radius-lg;
-        padding: 1.25rem;
+        padding: $sp-4;
     }
 
     &__payment-heading {
-        font-size: 1rem;
+        font-size: admin-fluid(1);
         font-weight: 700;
         color: $auth-accent;
-        margin-bottom: 1rem;
+        margin-bottom: $sp-4;
     }
 
-    // Payment Option toggle buttons
+    // Payment Option toggle buttons: each hint stays close to its button (4px),
+    // the gap between the two options is larger (16px).
     &__option-group {
         display: flex;
         flex-direction: column;
-        gap: 0.4rem;
+        gap: $sp-1;
     }
 
     &__option-btn {
@@ -181,7 +186,7 @@
         border-radius: $auth-radius-md;
         color: $auth-text-primary;
         font-weight: 700;
-        padding: 0.75rem;
+        padding: $sp-3 $sp-4;
         text-align: center;
         cursor: pointer;
         transition:
@@ -206,7 +211,7 @@
     &__option-hint {
         font-size: 0.78rem;
         color: $auth-text-muted;
-        margin: 0.35rem 0 1rem;
+        margin: $sp-1 0 $sp-4;
         line-height: 1.5;
 
         &:last-child {
@@ -216,11 +221,15 @@
 
     &__reminder-list {
         list-style: disc;
-        padding-left: 1.1rem;
-        margin: 1.25rem 0 0;
+        padding-left: $sp-4;
+        margin: $sp-6 0 0;
         font-size: 0.78rem;
         color: $auth-text-secondary;
         line-height: 1.6;
+
+        li + li {
+            margin-top: $sp-1;
+        }
 
         strong {
             color: $auth-accent;
@@ -229,7 +238,7 @@
 
     // Down payment amount (numbers only, shown while Down Payment is selected)
     &__down-payment {
-        margin-top: 1rem;
+        margin-top: $sp-4;
     }
 
     &__input-label {
@@ -237,7 +246,7 @@
         font-size: 0.85rem;
         font-weight: 600;
         color: $auth-text-secondary;
-        margin-bottom: 0.4rem;
+        margin-bottom: $sp-2;
     }
 
     &__amount {
@@ -262,7 +271,7 @@
     &__amount-prefix {
         display: flex;
         align-items: center;
-        padding: 0 0.85rem;
+        padding: 0 $sp-3;
         font-weight: 700;
         color: $auth-text-secondary;
         border-right: 1px solid $auth-border;
@@ -275,7 +284,7 @@
         border: 0;
         color: $auth-text-primary;
         font-weight: 600;
-        padding: 0.75rem;
+        padding: $sp-3 $sp-4;
 
         &::placeholder {
             color: $auth-text-muted;
@@ -284,12 +293,14 @@
         &:focus {
             outline: none;
         }
+
+        @include booking-autofill($auth-surface);
     }
 
     // Live "% of package cost" readout under the amount field
     &__percent {
         display: block;
-        margin-top: 0.4rem;
+        margin-top: $sp-1;
         font-size: 0.8rem;
         font-weight: 600;
         color: $auth-text-secondary;
@@ -303,7 +314,7 @@
         }
     }
 
-    // How-to-pay steps
+    // How-to-pay steps (Instructions column)
     &__instructions {
         list-style: none;
         counter-reset: pay-step;
@@ -315,10 +326,9 @@
 
         li {
             counter-increment: pay-step;
-            margin-bottom: 0.5rem;
 
-            &:last-child {
-                margin-bottom: 0;
+            & + li {
+                margin-top: $sp-3;
             }
         }
 
@@ -336,29 +346,27 @@
 
     &__field-error {
         display: block;
-        margin-top: 0.35rem;
+        margin-top: $sp-1;
         color: $auth-danger;
         font-size: 0.78rem;
     }
 
     &__error {
         font-size: 0.85rem;
-        margin-top: 1rem;
+        margin-top: $sp-4;
     }
 
-    // Actions row — full width, side by side (this step has no side
-    // column to dock actions into, unlike the earlier steps).
+    // Actions row: full width, side by side from 480px.
     &__actions {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: $sp-4;
         width: 100%;
 
         @media (min-width: 480px) {
             flex-direction: row;
 
-            // Every button in the row shares the width equally (with or
-            // without Cancel), so Previous and Continue stay the same size.
+            // Same width for Previous and Continue.
             .client-info__btn--cancel,
             .client-info__btn--confirm {
                 flex: 1 1 0;
