@@ -11,7 +11,7 @@
 <body>
   <x-admin.sidebar />
 
-  <main class="admin-content p-4">
+  <main class="admin-content">
     <h1>Welcome Admin!</h1>
   </main>
 </body>

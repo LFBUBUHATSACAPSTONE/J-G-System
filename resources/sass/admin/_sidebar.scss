@@ -174,8 +174,20 @@ body {
 
 // Page content sits beside the fixed column. Wrap each admin page's content in this.
 .admin-content {
+    --admin-pad: #{$admin-pad-xs};
+    padding: var(--admin-pad);
     background: $admin-page-bg;
     min-height: 100vh;
+
+    @media (min-width: 576px) {
+        --admin-pad: #{$admin-pad-sm};
+    }
+    @media (min-width: $admin-sidebar-breakpoint) {
+        --admin-pad: #{$admin-pad-lg};
+    }
+    @media (min-width: 1400px) {
+        --admin-pad: #{$admin-pad-xl};
+    }
 
     @media (min-width: $admin-sidebar-breakpoint) {
         margin-left: $admin-sidebar-width;

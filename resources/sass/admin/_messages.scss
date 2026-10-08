@@ -17,7 +17,7 @@
         }
 
         // Desktop shows both side by side, so the data-view switch no longer applies.
-        @media (min-width: $admin-sidebar-breakpoint) {
+        @media (min-width: $admin-messages-split-breakpoint) {
             grid-template-columns: minmax(17rem, 27rem) minmax(0, 1fr);
             &[data-view] .admin-messages__panels,
             &[data-view] .admin-messages__side {
@@ -103,7 +103,8 @@
         }
     }
 
-    &__panels {
+    &__panels,
+    &__side {
         min-width: 0;
     }
 }
@@ -186,19 +187,36 @@
         flex: none;
         display: flex;
         align-items: center;
-        gap: 0.875rem;
-        margin: 0 1.25rem;
-        padding: 1rem 0;
+        gap: 0.75rem;
+        margin: 0 1rem;
+        padding: 0.75rem 0;
         border-bottom: 1px solid $admin-panel-bg;
     }
     &__name {
-        flex: 1;
+        flex: 1 1 auto;
+        min-width: 0;
         margin: 0;
+        overflow: hidden;
         font-size: 1rem;
         font-weight: 600;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
     &__phone {
+        flex: none;
         display: inline-flex;
+        white-space: nowrap;
+        // Phones: icon only (the number stays in the DOM for screen readers) so the name keeps its room.
+        @media (max-width: 575.98px) {
+            span {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                clip: rect(0 0 0 0);
+                white-space: nowrap;
+            }
+        }
         align-items: center;
         gap: 0.5rem;
         color: $admin-text-primary;
@@ -221,13 +239,43 @@
         width: 2.5rem;
         height: 2.5rem;
         border: 0;
+        flex: none;
         border-radius: 50%;
         background: $admin-panel-bg;
         color: $admin-text-primary;
         cursor: pointer;
+        // Only needed while list and conversation are switched.
+        @media (min-width: $admin-messages-split-breakpoint) {
+            display: none;
+        }
         &:focus-visible {
             outline: $admin-focus-ring-width solid $admin-focus-ring;
             outline-offset: $admin-focus-ring-offset;
+        }
+    }
+}
+
+// Roomier chat chrome from tablets up; phones keep the tighter spacing above and below.
+@media (min-width: 576px) {
+    .chat-panel__head {
+        gap: 0.875rem;
+        margin: 0 1.25rem;
+        padding: 1rem 0;
+    }
+}
+
+// Phones: tighter thread and composer so the message box keeps a usable width at 320px.
+@media (max-width: 575.98px) {
+    .admin-messages .chat-panel {
+        min-height: 0;
+        .chat-log {
+            padding: 0.75rem 1rem;
+        }
+        .chat-composer {
+            padding: 0.625rem 1rem 0.875rem;
+        }
+        .chat-composer__input {
+            min-height: 2.625rem;
         }
     }
 }

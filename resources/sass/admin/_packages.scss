@@ -121,7 +121,7 @@ button.admin-pill--solid.admin-pill--danger:hover {
 
     &__grid {
         // Room under the last card so the floating Add button never covers an Available / Unavailable
-        // button. (Margin, not padding: the page's `p-4` utility sets padding with !important.)
+        // button. (Margin, not padding.)
         margin-bottom: 5.5rem;
         display: grid;
         grid-template-columns: minmax(0, 1fr);
