@@ -2,27 +2,56 @@
 $tracker-circle: 36px;
 $tracker-circle-sm: 28px;
 
-.progress-tracker {
-    position: relative;
-    z-index: 1;
-    max-width: 960px;
-    margin: 0 auto;
-    padding: $sp-6 $sp-4 $sp-4;
+// Top padding of the steps box. The track line is centred on the circles, so it reads the
+// same values: change them here and the line follows.
+$tracker-pad-top: $sp-3; // phones
+$tracker-pad-top-md: $sp-4; // from 576px
 
-    // Same side padding as .booking-flow so both edges line up.
-    @media (min-width: 576px) {
-        padding: $sp-8 $sp-6 $sp-6;
+.progress-tracker {
+    // Pinned to the top while the step scrolls (sticky, so it stays in the page flow and the
+    // first card needs no top offset). The nav is the full-width frosted bar; the 960px box
+    // that holds the steps is __inner.
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    width: 100%;
+    border-bottom: 1px solid $auth-border;
+
+    // Frosted glass: a translucent tint of the page colour plus a blur of whatever scrolls
+    // underneath. The solid line is the fallback for browsers without color-mix().
+    background: $auth-bg;
+    background: color-mix(in oklch, #{$auth-bg} 80%, transparent);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+
+    // No blur support: go back to an opaque bar so the cards never show through unreadably.
+    @supports not (
+        (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+    ) {
+        background: $auth-bg;
     }
 
-    @media (min-width: 992px) {
-        padding-left: $sp-8;
-        padding-right: $sp-8;
+    &__inner {
+        position: relative; // the track is positioned against this box, not the full-width nav
+        max-width: 960px;
+        margin: 0 auto;
+        padding: $tracker-pad-top $sp-4 $sp-3;
+
+        // Same side padding as .booking-flow so both edges line up.
+        @media (min-width: 576px) {
+            padding: $tracker-pad-top-md $sp-6 $sp-3;
+        }
+
+        @media (min-width: 992px) {
+            padding-left: $sp-8;
+            padding-right: $sp-8;
+        }
     }
 
     &__track {
         position: absolute;
         top: calc(
-            #{$sp-6} + #{$tracker-circle-sm} / 2 - 1px
+            #{$tracker-pad-top} + #{$tracker-circle-sm} / 2 - 1px
         ); // center of the phone circles
         left: calc(
             100% / 12
@@ -34,7 +63,7 @@ $tracker-circle-sm: 28px;
         overflow: hidden;
 
         @media (min-width: 576px) {
-            top: calc(#{$sp-8} + #{$tracker-circle} / 2 - 1px);
+            top: calc(#{$tracker-pad-top-md} + #{$tracker-circle} / 2 - 1px);
         }
     }
 

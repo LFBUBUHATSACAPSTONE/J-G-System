@@ -23,14 +23,17 @@
     z-index: 1;
     max-width: 1040px;
     margin: 0 auto;
-    padding: 0 $sp-4 $sp-8;
+    // Top padding = the gap between the sticky progress tracker and the first card (24px).
+    // Bottom padding is kept small from 992px so a whole step, buttons included, fits a
+    // laptop-height window without scrolling.
+    padding: $sp-6 $sp-4 $sp-8;
 
     @media (min-width: 576px) {
-        padding: 0 $sp-6 $sp-8;
+        padding: $sp-6 $sp-6 $sp-8;
     }
 
     @media (min-width: 992px) {
-        padding: 0 $sp-8 $sp-12;
+        padding: $sp-6 $sp-8 $sp-6;
     }
 }
 
@@ -105,6 +108,6 @@
     align-items: flex-start;
 
     @media (min-width: 992px) {
-        gap: $sp-8;
+        gap: $sp-6; // card to Cancel/Continue row
     }
 }
