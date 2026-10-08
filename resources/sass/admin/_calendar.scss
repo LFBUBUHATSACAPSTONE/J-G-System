@@ -20,7 +20,10 @@
     &__wrap {
         flex: 1 1 auto;
         min-width: 0;
-        padding: 1rem;
+        padding: 0.5rem; // phones: more width for the seven columns
+        @media (min-width: 576px) {
+            padding: 1rem;
+        }
         border-radius: $admin-radius-xl;
         background: $admin-calendar-wrap-bg;
         container-type: inline-size; // the day names switch on the calendar's own width, not the screen's
@@ -229,7 +232,37 @@
         color: $admin-calendar-holiday-text; // purple on every weekday, weekend or not
         font-size: 0.75rem;
         line-height: 1.2;
-        overflow-wrap: anywhere;
+        overflow-wrap: break-word; // wrap between words; only split a word that cannot fit at all
+        hyphens: auto;
+    }
+
+    // Narrow calendars (phones): seven columns of ~45px cannot hold holiday names without breaking
+    // them letter by letter. The label becomes a small dot (the name stays in the DOM for screen
+    // readers, hidden by font-size 0) and the grid gets more room: less padding around and inside it.
+    @container (max-width: 26rem) {
+        &__holiday {
+            flex: none;
+            width: 0.375rem;
+            height: 0.375rem;
+            margin-top: 0.125rem;
+            border-radius: 50%;
+            background: $admin-calendar-holiday-text;
+            font-size: 0; // keep the text for assistive tech; show only the dot
+            line-height: 0;
+            overflow: hidden;
+        }
+
+        &__cell {
+            padding: 0.125rem;
+        }
+
+        &__day {
+            padding: 0.1rem;
+        }
+
+        &__dow {
+            padding: 0.625rem 0.125rem;
+        }
     }
 
     // Booked dates: soft tint, black text. Hover / selected / focus: the solid colour plus the
@@ -305,6 +338,22 @@
         }
     }
 
+    // Phones: the reference/package preview cannot fit a 45px cell, and the panel under the grid already
+    // shows the booking, so selecting a date only highlights it. Kept after the hover/selected rules above.
+    @container (max-width: 26rem) {
+        button#{&}__day[aria-pressed="true"] &__peek,
+        button#{&}__day:focus-visible &__peek,
+        button#{&}__day:hover &__peek {
+            display: none;
+        }
+
+        button#{&}__day[aria-pressed="true"] &__holiday,
+        button#{&}__day:focus-visible &__holiday,
+        button#{&}__day:hover &__holiday {
+            display: block;
+        }
+    }
+
     //  Legend
     &__legend {
         display: flex;
@@ -343,7 +392,10 @@
     //  Side panel
     &__panel {
         width: 100%;
-        padding: 1.25rem;
+        padding: 1rem;
+        @media (min-width: 576px) {
+            padding: 1.25rem;
+        }
         border-radius: $admin-radius-xl;
         background: $admin-surface;
 
