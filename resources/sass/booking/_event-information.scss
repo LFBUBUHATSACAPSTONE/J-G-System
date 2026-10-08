@@ -1,60 +1,31 @@
 .event-info {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    align-items: flex-start;
+    @include booking-step;
 
     &__card {
-        position: relative;
+        @include booking-card;
         flex: 1;
-        width: 100%;
-        background: $auth-surface;
-        border-radius: $auth-radius-xl;
-        padding: 2rem 2.25rem 2.5rem;
-        color: $auth-text-primary;
-        isolation: isolate;
-        overflow: hidden;
-
-        &::before {
-            content: "";
-            position: absolute;
-            inset: -20% -20% auto auto;
-            width: 70%;
-            height: 60%;
-            background: radial-gradient(
-                circle at top right,
-                $auth-glow-violet 0%,
-                $auth-glow-rose 45%,
-                transparent 75%
-            );
-            opacity: 0.35;
-            filter: blur(60px);
-            z-index: -1;
-            pointer-events: none;
-        }
     }
 
     &__title {
-        font-size: 1.4rem;
-        font-weight: 700;
-        margin-bottom: 1.75rem;
+        @include booking-title;
     }
 
     &__field {
         position: relative;
-        margin-bottom: 1.4rem;
+        margin-bottom: $sp-6;
 
         label,
         legend {
             display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
+            margin-bottom: $sp-2;
+            font-size: admin-fluid(0.9);
             font-weight: 600;
             color: $auth-text-primary;
             padding: 0;
         }
 
-        label span:nth-of-type(2),
+        // Second span is the red required asterisk, except the "(Optional)" tag.
+        label span:nth-of-type(2):not(.event-info__optional-tag),
         legend span:nth-of-type(2) {
             color: $auth-danger;
         }
@@ -64,9 +35,9 @@
             background: $auth-field-bg;
             border: 1px solid transparent;
             border-radius: $auth-radius-md;
-            padding: 0.85rem 1rem;
+            padding: $sp-3 $sp-4;
             color: $auth-text-primary;
-            font-size: 0.9rem;
+            font-size: admin-fluid(0.9);
 
             &::placeholder {
                 color: $auth-text-muted;
@@ -81,42 +52,45 @@
             &.is-invalid {
                 border-color: $auth-danger;
             }
+
+            @include booking-autofill;
         }
     }
 
+    // "(Optional)": muted, never the red of the required asterisk, and never split from its word.
     &__optional-tag {
         font-weight: 400;
         font-style: italic;
         color: $auth-text-muted;
-        margin-left: 0.25rem;
+        margin-left: 0;
+        white-space: nowrap;
     }
 
     &__field-error {
         display: block;
-        margin-top: 0.35rem;
+        margin-top: $sp-1;
         color: $auth-danger;
         font-size: 0.78rem;
     }
 
     &__error {
         font-size: 0.85rem;
-        margin-bottom: 1rem;
+        margin-bottom: $sp-4;
     }
 
-    // Custom select — a button that opens a listbox, a hidden input
-    // carries the actual form value.
+    // Custom select: a button that opens a listbox; a hidden input carries the value.
     &__select-btn {
         width: 100%;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 0.75rem;
+        gap: $sp-3;
         background: $auth-field-bg;
         border: 1px solid transparent;
         border-radius: $auth-radius-md;
-        padding: 0.85rem 1rem;
+        padding: $sp-3 $sp-4;
         color: $auth-text-primary;
-        font-size: 0.9rem;
+        font-size: admin-fluid(0.9);
         text-align: left;
         cursor: pointer;
 
@@ -154,20 +128,20 @@
         left: 0;
         right: 0;
         z-index: 5;
-        margin-top: 0.4rem;
+        margin-top: $sp-1;
         max-height: 240px;
         overflow-y: auto;
         list-style: none;
-        padding: 0.4rem;
+        padding: $sp-1;
         background: $auth-surface;
         border: 1px solid $auth-border;
         border-radius: $auth-radius-md;
         box-shadow: 0 12px 32px $auth-shadow-black;
 
         li {
-            padding: 0.6rem 0.75rem;
+            padding: $sp-2 $sp-3;
             border-radius: $auth-radius-md - 4px;
-            font-size: 0.9rem;
+            font-size: admin-fluid(0.9);
             color: $auth-text-primary;
             cursor: pointer;
 
@@ -183,23 +157,20 @@
         }
     }
 
-    // The fieldset wrapping the whole Venue Type field (legend + checkbox
-    // row + error) — reuses .event-info__field for title/spacing (a
-    // <fieldset> has no default margin/border reset otherwise) and only
-    // adds what's specific to a fieldset here.
+    // Fieldset around the whole Venue Type field (a fieldset needs its border/padding reset).
     &__venue-type-field {
         border: none;
         padding: 0;
+        min-width: 0;
     }
 
-    // Indoor / Outdoor / Both — same checkbox look as
-    // .auth-modal__row input[type="checkbox"], mutually exclusive via JS.
+    // Indoor / Outdoor / Both on one row; wraps by whole option only if the row truly cannot fit.
     &__venue-type {
         position: relative;
         display: flex;
         align-items: center;
-        gap: 1.25rem;
         flex-wrap: wrap;
+        gap: $sp-2 $sp-4;
     }
 
     &__venue-type-field.is-invalid
@@ -208,12 +179,17 @@
         border-color: $auth-danger;
     }
 
+    // Raised specificity: `.event-info__field label` (block, bold, 8px bottom margin) would
+    // otherwise win over these rules and break the checkbox + text alignment.
+    &__field &__checkbox,
     &__checkbox {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: $sp-2;
         margin: 0;
-        font-size: 0.9rem;
+        font-size: admin-fluid(0.9);
+        font-weight: 500;
+        white-space: nowrap;
         color: $auth-text-primary;
         cursor: pointer;
 
