@@ -42,7 +42,7 @@ button.admin-pill--solid.admin-pill--danger:hover {
     font-family: $admin-font-family;
 
     &__top {
-        margin-bottom: 1.5rem;
+        margin-bottom: $sp-6;
 
         .admin-page-header {
             margin-bottom: 0;
@@ -60,10 +60,10 @@ button.admin-pill--solid.admin-pill--danger:hover {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 0.5rem;
+        gap: $sp-2;
         min-width: 3.5rem;
         min-height: 3.5rem;
-        padding: 0.5rem;
+        padding: $sp-2;
         border: 0;
         border-radius: $admin-radius-pill;
         background: $admin-brand;
@@ -77,7 +77,7 @@ button.admin-pill--solid.admin-pill--danger:hover {
             box-shadow 0.2s ease;
 
         .ph {
-            font-size: 1.5rem;
+            font-size: admin-fluid(1.5);
         }
 
         &:hover {
@@ -97,7 +97,7 @@ button.admin-pill--solid.admin-pill--danger:hover {
         @media (min-width: 576px) {
             right: calc(1.75rem + env(safe-area-inset-right, 0px));
             bottom: calc(1.75rem + env(safe-area-inset-bottom, 0px));
-            padding: 0.5rem 1.5rem 0.5rem 1.25rem;
+            padding: $sp-2 $sp-6;
         }
     }
 
@@ -121,13 +121,14 @@ button.admin-pill--solid.admin-pill--danger:hover {
 
     &__grid {
         // Room under the last card so the floating Add button never covers an Available / Unavailable
-        // button. (Margin, not padding: the page's `p-4` utility sets padding with !important.)
-        margin-bottom: 5.5rem;
+        // button. (Margin, not padding.)
+        margin-bottom: $sp-16;
         display: grid;
         grid-template-columns: minmax(0, 1fr);
-        gap: 1.25rem;
+        gap: $sp-4;
 
         @media (min-width: $admin-packages-grid-md) {
+            gap: $sp-6;
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
@@ -137,8 +138,8 @@ button.admin-pill--solid.admin-pill--danger:hover {
     }
 
     &__empty {
-        margin-bottom: 5.5rem;
-        padding: 1.5rem 0.5rem;
+        margin-bottom: $sp-16;
+        padding: $sp-6 $sp-2;
         text-align: center;
     }
 }
@@ -147,7 +148,7 @@ button.admin-pill--solid.admin-pill--danger:hover {
 .admin-package-card {
     display: flex;
     flex-direction: column;
-    padding: 1.5rem 1.25rem 0.75rem;
+    padding: $sp-6 $sp-6 $sp-3;
     border-radius: $admin-radius-xl;
     background: $admin-surface;
     color: $admin-text-primary;
@@ -161,47 +162,47 @@ button.admin-pill--solid.admin-pill--danger:hover {
         display: flex;
         align-items: baseline;
         justify-content: space-between;
-        gap: 1rem;
+        gap: $sp-4;
     }
 
     &__name {
         margin: 0;
         color: $admin-brand-text;
-        font-size: 1.75rem;
+        font-size: admin-fluid(1.75);
         font-weight: 600;
     }
 
     &__price {
-        margin: 0.25rem 0 1rem;
-        font-size: 1.25rem;
+        margin: $sp-1 0 $sp-4;
+        font-size: admin-fluid(1.25);
         font-weight: 600;
     }
 
     // "Features" heading. Below 768px it holds the See more toggle; from 768px it is a plain label.
     &__label {
-        margin: 0 0 0.25rem;
+        margin: 0 0 $sp-1;
         color: $admin-brand-text;
-        font-size: 0.9rem;
+        font-size: admin-fluid(0.9);
         font-weight: 600;
     }
 
     // Features block grows so the availability buttons line up at the bottom of equal-height cards.
     &__features-block {
         flex: 1;
-        margin-bottom: 1.5rem;
+        margin-bottom: $sp-6;
     }
 
     &__features {
         margin: 0;
-        padding-left: 1.1rem;
-        font-size: 0.95rem;
+        padding-left: $sp-4;
+        font-size: admin-fluid(0.95);
 
         li + li {
-            margin-top: 0.15rem;
+            margin-top: $sp-1;
         }
 
         &--extra {
-            margin-top: 0.15rem; // same gap as between two bullets, so both lists read as one
+            margin-top: $sp-1; // same gap as between two bullets, so both lists read as one
         }
     }
 
@@ -210,10 +211,10 @@ button.admin-pill--solid.admin-pill--danger:hover {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 0.75rem;
+        gap: $sp-3;
         width: 100%;
         min-height: 2.5rem; // comfortable tap target
-        padding: 0.25rem 0;
+        padding: $sp-1 0;
         border: 0;
         background: none;
         color: inherit;
@@ -238,7 +239,7 @@ button.admin-pill--solid.admin-pill--danger:hover {
     &__toggle-action {
         display: inline-flex;
         align-items: center;
-        gap: 0.4rem;
+        gap: $sp-2;
         color: $admin-text-primary;
         font-size: 0.85rem;
         font-weight: 500;
@@ -287,7 +288,7 @@ button.admin-pill--solid.admin-pill--danger:hover {
     // Two buttons stacked, same width as the card body (mockup).
     &__availability {
         display: grid;
-        gap: 0.5rem;
+        gap: $sp-2;
         margin: 0 -0.25rem 0.5rem;
 
         // Form wrappers must not shrink the pill.
@@ -326,27 +327,27 @@ button.admin-pill--solid.admin-pill--danger:hover {
     }
 
     &__body {
-        padding: 1.5rem 1.5rem 1rem;
+        padding: $sp-6 $sp-6 $sp-4;
     }
 
     &__head {
         display: flex;
         align-items: baseline;
         justify-content: space-between;
-        gap: 1rem;
-        margin-bottom: 1rem;
+        gap: $sp-4;
+        margin-bottom: $sp-4;
     }
 
     &__heading {
         margin: 0;
-        font-size: 1.25rem;
+        font-size: admin-fluid(1.25);
         font-weight: 700;
     }
 
     &__panel {
         display: grid;
-        gap: 1rem;
-        padding: 1.25rem;
+        gap: $sp-4;
+        padding: $sp-6;
         border-radius: $admin-radius-xl;
         background: $admin-panel-bg;
     }
@@ -355,11 +356,11 @@ button.admin-pill--solid.admin-pill--danger:hover {
     &__features {
         min-height: 9rem;
         margin: 0;
-        padding: 0.75rem 0.75rem 0.75rem 2rem;
+        padding: $sp-3 $sp-3 $sp-3 $sp-8;
         border: 1px solid $admin-field-border;
         border-radius: $admin-radius-md;
         background: $admin-field-bg;
-        font-size: 0.95rem;
+        font-size: admin-fluid(0.95);
     }
 
     &__textarea {
@@ -369,14 +370,14 @@ button.admin-pill--solid.admin-pill--danger:hover {
 
     &__footer {
         flex-wrap: nowrap;
-        gap: 0.75rem;
-        padding: 0 1.5rem 1.5rem;
+        gap: $sp-3;
+        padding: 0 $sp-6;
         border: 0;
 
         // Back, or Cancel + Save: the visible buttons share the row equally.
         .admin-btn {
             flex: 1 1 0;
-            padding-inline: 1rem;
+            padding-inline: $sp-4;
         }
     }
 

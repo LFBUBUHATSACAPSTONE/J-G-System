@@ -56,7 +56,7 @@ $next = $month->copy()->addMonth()->format('Y-m');
 <body>
   <x-admin.sidebar />
 
-  <main class="admin-content admin-cal p-4" data-calendar>
+  <main class="admin-content admin-cal" data-calendar>
     <x-admin.page-header />
 
     <div class="admin-cal__layout">

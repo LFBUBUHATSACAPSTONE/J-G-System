@@ -8,7 +8,7 @@
     &__layout {
         display: flex;
         flex-direction: column;
-        gap: 1.25rem;
+        gap: $sp-4;
 
         @media (min-width: $admin-cal-panel-breakpoint) {
             flex-direction: row;
@@ -20,7 +20,10 @@
     &__wrap {
         flex: 1 1 auto;
         min-width: 0;
-        padding: 1rem;
+        padding: $sp-2; // phones: more width for the seven columns
+        @media (min-width: 576px) {
+            padding: $sp-4;
+        }
         border-radius: $admin-radius-xl;
         background: $admin-calendar-wrap-bg;
         container-type: inline-size; // the day names switch on the calendar's own width, not the screen's
@@ -31,9 +34,9 @@
     // (equal side columns). The legend wraps inside its column if it ever needs to.
     &__bar {
         display: grid;
-        gap: 0.5rem;
+        gap: $sp-2;
         justify-items: center;
-        margin-bottom: 1rem;
+        margin-bottom: $sp-4;
     }
 
     @container (min-width: 40rem) {
@@ -105,7 +108,7 @@
         height: var(--cal-arrow, 2.75rem);
         border-radius: $admin-radius-pill;
         color: $admin-text-primary;
-        font-size: 1.5rem;
+        font-size: admin-fluid(1.5);
         text-decoration: none;
 
         &:hover {
@@ -127,7 +130,7 @@
     }
 
     &__dow {
-        padding: 0.75rem 0.25rem;
+        padding: $sp-3 $sp-1;
         background: $admin-calendar-header-bg;
         color: $admin-calendar-header-text;
         font-size: clamp(0.8rem, 0.7rem + 0.5vw, 1rem);
@@ -174,7 +177,7 @@
 
     &__cell {
         height: $admin-cal-cell-height;
-        padding: 0.25rem;
+        padding: $sp-1;
         background: $admin-calendar-day-bg;
         vertical-align: top;
         color: $admin-calendar-day-text;
@@ -202,10 +205,10 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 0.1rem;
+        gap: 0;
         width: 100%;
         height: 100%;
-        padding: 0.15rem;
+        padding: $sp-1;
         border: 0;
         border-radius: $admin-radius-lg;
         background: transparent;
@@ -229,7 +232,37 @@
         color: $admin-calendar-holiday-text; // purple on every weekday, weekend or not
         font-size: 0.75rem;
         line-height: 1.2;
-        overflow-wrap: anywhere;
+        overflow-wrap: break-word; // wrap between words; only split a word that cannot fit at all
+        hyphens: auto;
+    }
+
+    // Narrow calendars (phones): seven columns of ~45px cannot hold holiday names without breaking
+    // them letter by letter. The label becomes a small dot (the name stays in the DOM for screen
+    // readers, hidden by font-size 0) and the grid gets more room: less padding around and inside it.
+    @container (max-width: 26rem) {
+        &__holiday {
+            flex: none;
+            width: 0.375rem;
+            height: 0.375rem;
+            margin-top: $sp-1;
+            border-radius: 50%;
+            background: $admin-calendar-holiday-text;
+            font-size: 0; // keep the text for assistive tech; show only the dot
+            line-height: 0;
+            overflow: hidden;
+        }
+
+        &__cell {
+            padding: $sp-1;
+        }
+
+        &__day {
+            padding: 0;
+        }
+
+        &__dow {
+            padding: $sp-3 $sp-1;
+        }
     }
 
     // Booked dates: soft tint, black text. Hover / selected / focus: the solid colour plus the
@@ -305,22 +338,38 @@
         }
     }
 
+    // Phones: the reference/package preview cannot fit a 45px cell, and the panel under the grid already
+    // shows the booking, so selecting a date only highlights it. Kept after the hover/selected rules above.
+    @container (max-width: 26rem) {
+        button#{&}__day[aria-pressed="true"] &__peek,
+        button#{&}__day:focus-visible &__peek,
+        button#{&}__day:hover &__peek {
+            display: none;
+        }
+
+        button#{&}__day[aria-pressed="true"] &__holiday,
+        button#{&}__day:focus-visible &__holiday,
+        button#{&}__day:hover &__holiday {
+            display: block;
+        }
+    }
+
     //  Legend
     &__legend {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
-        gap: 0.25rem 1.25rem;
+        gap: $sp-1 $sp-4;
         margin: 0;
         padding: 0;
         list-style: none;
         color: $admin-text-primary;
-        font-size: 0.9rem;
+        font-size: admin-fluid(0.9);
 
         li {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: $sp-2;
         }
     }
 
@@ -343,7 +392,10 @@
     //  Side panel
     &__panel {
         width: 100%;
-        padding: 1.25rem;
+        padding: $sp-4;
+        @media (min-width: 576px) {
+            padding: $sp-6;
+        }
         border-radius: $admin-radius-xl;
         background: $admin-surface;
 
@@ -358,21 +410,21 @@
     &__panel-title {
         margin: 0;
         color: $admin-brand-text;
-        font-size: 1.25rem;
+        font-size: admin-fluid(1.25);
         font-weight: 700;
     }
 
     &__panel-sub {
-        margin: 0.35rem 0 0;
+        margin: $sp-1 0 0;
         color: $admin-text-muted;
-        font-size: 0.95rem;
+        font-size: admin-fluid(0.95);
     }
 
     &__panel-body {
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
-        margin-top: 1rem;
+        gap: $sp-3;
+        margin-top: $sp-4;
 
         &:empty {
             display: none;
@@ -381,7 +433,7 @@
 
     //  Booking card in the panel
     &__event {
-        padding: 1rem;
+        padding: $sp-4;
         border-left: 4px solid transparent;
         border-radius: $admin-radius-lg;
         background: $admin-panel-bg;
@@ -399,17 +451,17 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 0.5rem;
+        gap: $sp-2;
     }
 
     &__event-ref {
         color: $admin-brand-text;
-        font-size: 0.9rem;
+        font-size: admin-fluid(0.9);
         font-weight: 700;
     }
 
     &__badge {
-        padding: 0.15rem 0.7rem;
+        padding: $sp-1 $sp-3;
         border-radius: $admin-radius-pill;
         color: $admin-text-primary;
         font-size: 0.8rem;
@@ -425,17 +477,17 @@
     }
 
     &__event-name {
-        margin: 0.5rem 0 0.6rem;
-        font-size: 1.05rem;
+        margin: $sp-2 0 $sp-2;
+        font-size: admin-fluid(1.05);
         font-weight: 700;
     }
 
     &__event-list {
         display: grid;
         grid-template-columns: auto 1fr;
-        gap: 0.25rem 0.75rem;
-        margin: 0 0 0.75rem;
-        font-size: 0.9rem;
+        gap: $sp-1 $sp-3;
+        margin: 0 0 $sp-3;
+        font-size: admin-fluid(0.9);
 
         dt {
             color: $admin-text-muted;
@@ -449,7 +501,7 @@
     }
 
     &__event-link {
-        font-size: 0.9rem;
+        font-size: admin-fluid(0.9);
         font-weight: 600;
     }
 }

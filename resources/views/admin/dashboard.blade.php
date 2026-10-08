@@ -1,20 +1,20 @@
 @php
 $dashboardConfig = [
-  'cards' => collect(config('admin.dashboard.cards', []))->map(fn ($card, $key) => [
-    'key' => $key,
-    'label' => $card['label'],
-    'status' => $card['status'] ?? 'all',
-    'higher' => $card['higher'] ?? 'neutral',
-    'hint' => $card['hint'] ?? null,
-    'featured' => $card['featured'] ?? false,
-  ])->values(),
-  'statuses' => config('admin.bookings.statuses', []),
-  'attentionActions' => config('admin.dashboard.attention_actions', []),
-  'attentionLimit' => config('admin.dashboard.attention_limit', 5),
-  'upcomingLimit' => config('admin.dashboard.upcoming_limit', 5),
-  'chartTop' => config('admin.dashboard.chart_top', 5),
-  'bookingsUrl' => route('admin.bookings'),
-  'calendarUrl' => route('admin.calendar'),
+'cards' => collect(config('admin.dashboard.cards', []))->map(fn ($card, $key) => [
+'key' => $key,
+'label' => $card['label'],
+'status' => $card['status'] ?? 'all',
+'higher' => $card['higher'] ?? 'neutral',
+'hint' => $card['hint'] ?? null,
+'featured' => $card['featured'] ?? false,
+])->values(),
+'statuses' => config('admin.bookings.statuses', []),
+'attentionActions' => config('admin.dashboard.attention_actions', []),
+'attentionLimit' => config('admin.dashboard.attention_limit', 5),
+'upcomingLimit' => config('admin.dashboard.upcoming_limit', 5),
+'chartTop' => config('admin.dashboard.chart_top', 5),
+'bookingsUrl' => route('admin.bookings'),
+'calendarUrl' => route('admin.calendar'),
 ];
 @endphp
 <!DOCTYPE html>
@@ -27,7 +27,7 @@ $dashboardConfig = [
 <body>
   <x-admin.sidebar />
 
-  <main class="admin-content admin-dashboard p-3 p-sm-4" data-admin-dashboard
+  <main class="admin-content admin-dashboard" data-admin-dashboard
     data-endpoint="{{ route('admin.dashboard.data') }}"
     data-config="{{ json_encode($dashboardConfig, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_HEX_TAG) }}"
     aria-busy="true">
