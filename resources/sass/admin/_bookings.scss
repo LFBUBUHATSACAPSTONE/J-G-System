@@ -27,7 +27,7 @@
     justify-content: center;
     width: 100%;
     min-height: 3rem;
-    padding: 0.5rem 1rem;
+    padding: $sp-2 $sp-4;
     border: 1px solid transparent;
     border-radius: $admin-radius-pill;
     background: transparent;
@@ -105,8 +105,8 @@ button.admin-pill {
 .admin-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.3rem 0.9rem 0.3rem 0.7rem;
+    gap: $sp-2;
+    padding: $sp-1 $sp-4 $sp-1 $sp-3;
     border-radius: $admin-radius-pill;
     font-size: 0.875rem;
     font-weight: 600;
@@ -164,7 +164,7 @@ button.admin-pill {
     align-items: center;
     justify-content: center;
     min-height: 3rem;
-    padding: 0.5rem 2.5rem;
+    padding: $sp-2 $sp-12;
     border: 0;
     border-radius: $admin-radius-lg;
     font-size: admin-fluid(1);
@@ -203,9 +203,9 @@ button.admin-pill {
 
     // Small: compact, one line, optional leading icon.
     &--sm {
-        gap: 0.4rem;
+        gap: $sp-2;
         min-height: 2.25rem;
-        padding: 0.25rem 1rem;
+        padding: $sp-1 $sp-4;
         border-radius: $admin-radius-pill;
         font-size: admin-fluid(0.9);
         white-space: nowrap;
@@ -222,8 +222,8 @@ button.admin-pill {
 }
 
 .admin-alert {
-    margin: 0 0 1.25rem;
-    padding: 0.75rem 1.25rem;
+    margin: 0 0 $sp-6;
+    padding: $sp-3 $sp-6;
     border: 1px solid $admin-success-border;
     border-radius: $admin-radius-lg;
     background: $admin-success-soft;
@@ -244,18 +244,18 @@ button.admin-pill {
     &__filters {
         display: flex;
         flex-wrap: wrap;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
+        gap: $sp-4;
+        margin-bottom: $sp-6;
     }
 
     &__panel {
-        padding: 0.25rem 1.25rem 0.5rem;
+        padding: $sp-1 $sp-6 $sp-2;
         border-radius: $admin-radius-xl;
         background: $admin-panel-bg;
     }
 
     &__empty {
-        padding: 1.5rem 0.5rem;
+        padding: $sp-6 $sp-2;
         text-align: center;
     }
 }
@@ -265,10 +265,10 @@ button.admin-pill {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: $sp-3;
     flex: 1 1 14rem;
     min-height: 3.25rem;
-    padding: 0.25rem 1.5rem;
+    padding: $sp-1 $sp-6;
     border-radius: $admin-radius-pill;
     background: $admin-surface;
 
@@ -297,7 +297,7 @@ button.admin-pill {
 
     &__select {
         width: 100%;
-        padding: 0.5rem 1.75rem 0.5rem 0;
+        padding: $sp-2 $sp-8 $sp-2 0;
         border: 0;
         outline: 0;
         background: transparent;
@@ -325,7 +325,7 @@ button.admin-pill {
     &__input {
         flex: 1;
         min-width: 0;
-        padding: 0.5rem 0;
+        padding: $sp-2 0;
         border: 0;
         outline: 0;
         background: transparent;
@@ -346,14 +346,14 @@ $admin-filter-sheet-breakpoint: 768px;
 
 .admin-bookings__filters {
     @media (max-width: #{$admin-filter-sheet-breakpoint - 0.02px}) {
-        gap: 0.75rem;
-        margin-bottom: 1.25rem;
+        gap: $sp-3;
+        margin-bottom: $sp-6;
 
         .admin-filter--search {
             order: 1;
             flex: 1 1 0;
             min-width: 0;
-            padding-inline: 1.1rem;
+            padding-inline: $sp-4;
         }
 
         .admin-filters-toggle {
@@ -369,9 +369,9 @@ $admin-filter-sheet-breakpoint: 768px;
 .admin-filters-toggle {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: $sp-2;
     min-height: 3.25rem;
-    padding: 0.25rem 1.25rem;
+    padding: $sp-1 $sp-6;
     border: 0;
     border-radius: $admin-radius-pill;
     background: $admin-surface;
@@ -397,7 +397,7 @@ $admin-filter-sheet-breakpoint: 768px;
         justify-content: center;
         min-width: 1.4rem;
         height: 1.4rem;
-        padding: 0 0.35rem;
+        padding: 0 $sp-1;
         border-radius: $admin-radius-pill;
         background: $admin-brand;
         color: $admin-on-brand;
@@ -418,7 +418,7 @@ $admin-filter-sheet-breakpoint: 768px;
     display: flex;
     flex: 0 0 100%;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: $sp-2;
 
     &[hidden] {
         display: none;
@@ -432,9 +432,9 @@ $admin-filter-sheet-breakpoint: 768px;
 .admin-chip {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: $sp-2;
     min-height: 2.25rem;
-    padding: 0.25rem 0.85rem;
+    padding: $sp-1 $sp-3;
     border: 0;
     border-radius: $admin-radius-pill;
     background: $admin-brand-soft;
@@ -471,7 +471,7 @@ $admin-filter-sheet-breakpoint: 768px;
     --bs-offcanvas-color: #{$admin-text-primary};
     --bs-offcanvas-height: auto;
     --bs-offcanvas-border-width: 0;
-    --bs-offcanvas-padding-x: 1.25rem;
+    --bs-offcanvas-padding-x: #{$sp-6};
     --bs-offcanvas-padding-y: 1rem;
     border-radius: $admin-radius-xl $admin-radius-xl 0 0;
 
@@ -483,7 +483,7 @@ $admin-filter-sheet-breakpoint: 768px;
     .offcanvas-body {
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: $sp-3;
         padding-top: 0;
     }
 
@@ -495,11 +495,11 @@ $admin-filter-sheet-breakpoint: 768px;
     &__actions {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 0.75rem;
-        margin-top: 0.5rem;
+        gap: $sp-3;
+        margin-top: $sp-2;
 
         .admin-btn {
-            padding-inline: 1rem;
+            padding-inline: $sp-4;
 
             &:disabled {
                 opacity: 0.5;
@@ -553,9 +553,9 @@ $admin-filter-sheet-breakpoint: 768px;
     position: relative;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.75rem 1rem;
-    margin-bottom: 1.1rem;
-    padding: 1.25rem;
+    gap: $sp-3 $sp-4;
+    margin-bottom: $sp-6; // rows are separate groups: further apart than the items inside a row
+    padding: $sp-6;
     border: 2px solid transparent;
     border-radius: $admin-radius-xl;
     background: $admin-surface;
@@ -567,7 +567,7 @@ $admin-filter-sheet-breakpoint: 768px;
     }
 
     &.is-pending {
-        margin-top: 1.5rem; // room for the chip
+        margin-top: $sp-6; // room for the chip
         border-color: $admin-warning-border;
     }
 }
@@ -599,14 +599,14 @@ $admin-filter-sheet-breakpoint: 768px;
 }
 
 .admin-bookings__ref {
-    margin-left: 0.5rem;
+    margin-left: $sp-2;
     color: $admin-brand-text;
 }
 
 // "Day full" note under the reference when the event limit blocks Approve.
 .admin-bookings__note {
     display: block;
-    margin-top: 0.25rem;
+    margin-top: $sp-1;
     color: $admin-danger-text;
     font-size: 0.85rem;
     font-weight: 600;
@@ -616,7 +616,7 @@ $admin-filter-sheet-breakpoint: 768px;
     position: absolute;
     top: -1.15rem;
     left: 1.25rem;
-    padding: 0.1rem 0.75rem;
+    padding: 0 $sp-3;
     border-radius: $admin-radius-pill;
     background: $admin-status-pending-chip-bg;
     color: $admin-text-primary;
@@ -629,7 +629,7 @@ $admin-filter-sheet-breakpoint: 768px;
 .admin-bookings__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: $sp-3;
 
     > * {
         flex: 1 1 8rem;
@@ -661,7 +661,7 @@ $admin-filter-sheet-breakpoint: 768px;
             display: table-header-group;
 
             th {
-                padding: 0.9rem 1rem;
+                padding: $sp-4;
                 background: $admin-brand;
                 color: $admin-on-brand;
                 font-size: admin-fluid(0.95);
@@ -695,7 +695,7 @@ $admin-filter-sheet-breakpoint: 768px;
 
         // Round cards are painted by the cells (a <tr> can't have rounded corners here).
         .admin-bookings__cell {
-            padding: 1.1rem 1rem;
+            padding: $sp-4;
             background: $admin-surface;
             vertical-align: middle;
 
@@ -705,12 +705,12 @@ $admin-filter-sheet-breakpoint: 768px;
 
             &:first-child {
                 position: relative;
-                padding-left: 1.5rem;
+                padding-left: $sp-6;
                 border-radius: $admin-radius-xl 0 0 $admin-radius-xl;
             }
 
             &:last-child {
-                padding-right: 1.25rem;
+                padding-right: $sp-6;
                 border-radius: 0 $admin-radius-xl $admin-radius-xl 0;
             }
         }
@@ -742,7 +742,7 @@ $admin-filter-sheet-breakpoint: 768px;
         }
 
         .admin-pill {
-            padding: 0.35rem 1.1rem;
+            padding: $sp-1 $sp-4;
             font-size: admin-fluid(0.9);
         }
     }
@@ -765,13 +765,13 @@ $admin-filter-sheet-breakpoint: 768px;
 
     &__body {
         display: grid;
-        gap: 1.5rem;
-        padding: 1.5rem;
+        gap: $sp-6;
+        padding: $sp-6;
 
         @media (min-width: 992px) {
             grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
-            gap: 1.75rem;
-            padding: 1.5rem 1.75rem;
+            gap: $sp-6;
+            padding: $sp-6 $sp-8;
         }
     }
 
@@ -786,8 +786,8 @@ $admin-filter-sheet-breakpoint: 768px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 1rem;
-        margin-bottom: 1rem;
+        gap: $sp-4;
+        margin-bottom: $sp-4;
 
         .admin-booking-modal__heading {
             margin: 0;
@@ -795,7 +795,7 @@ $admin-filter-sheet-breakpoint: 768px;
     }
 
     &__heading {
-        margin: 0 0 1rem;
+        margin: 0 0 $sp-4;
         line-height: 2.25rem;
         color: $admin-text-primary;
         font-size: admin-fluid(1.25);
@@ -804,15 +804,15 @@ $admin-filter-sheet-breakpoint: 768px;
 
     &__panel {
         display: grid;
-        gap: 1rem;
-        padding: 1.25rem;
+        gap: $sp-4;
+        padding: $sp-6;
         border-radius: $admin-radius-xl;
         background: $admin-panel-bg;
 
         &--event {
             @media (min-width: 768px) {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 1.5rem;
+                gap: $sp-6;
             }
         }
     }
@@ -820,11 +820,11 @@ $admin-filter-sheet-breakpoint: 768px;
     &__col {
         display: grid;
         align-content: start;
-        gap: 1rem;
+        gap: $sp-4;
     }
 
     &__package {
-        padding: 0.75rem 1rem;
+        padding: $sp-3 $sp-4;
         border: 1px solid $admin-field-border;
         border-radius: $admin-radius-md;
         background: $admin-field-bg;
@@ -862,12 +862,12 @@ $admin-filter-sheet-breakpoint: 768px;
 
     &__footer {
         justify-content: flex-end;
-        gap: 0.75rem;
-        padding: 0 1.5rem 1.5rem;
+        gap: $sp-3;
+        padding: 0 $sp-6;
         border: 0;
 
         @media (min-width: 992px) {
-            padding: 0 1.75rem 1.5rem;
+            padding: 0 $sp-8 $sp-6;
         }
     }
 
@@ -879,7 +879,7 @@ $admin-filter-sheet-breakpoint: 768px;
 
 .admin-field {
     display: grid;
-    gap: 0.25rem;
+    gap: $sp-1;
     min-width: 0;
 
     &__label {
@@ -890,13 +890,13 @@ $admin-filter-sheet-breakpoint: 768px;
     &__row {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.75rem;
+        gap: $sp-3;
     }
 
     &__control {
         width: 100%;
         min-height: 2.5rem;
-        padding: 0.4rem 0.75rem;
+        padding: $sp-2 $sp-3;
         border: 1px solid $admin-field-border;
         border-radius: $admin-radius-md;
         background: $admin-field-bg;

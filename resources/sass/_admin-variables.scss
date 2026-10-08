@@ -21,11 +21,22 @@ $admin-sidebar-active-border: $auth-accent-strong;
 $admin-sidebar-focus-ring: oklch(71.8% 0.16169 293.012);
 $admin-sidebar-width: 19.5rem;
 $admin-sidebar-breakpoint: 992px;
+// Spacing scale: a 4px grid (4, 8, 12, 16, 24, 32, 48, 64). Every padding, margin and gap in the admin
+// uses these tokens, so spacing stays on the grid at every breakpoint.
+$sp-1: 0.25rem; // 4px   icon-to-label, tight pairs
+$sp-2: 0.5rem; // 8px   related elements
+$sp-3: 0.75rem; // 12px  components inside one group
+$sp-4: 1rem; // 16px  card padding (phones), gaps between components
+$sp-6: 1.5rem; // 24px  card padding, gaps between groups
+$sp-8: 2rem; // 32px  gaps between sections
+$sp-12: 3rem; // 48px  large section / page gaps
+$sp-16: 4rem; // 64px
+
 // Page padding (every admin page): 16px on phones, growing with the viewport.
 $admin-pad-xs: 1rem; // < 576px
 $admin-pad-sm: 1.5rem; // >= 576px
 $admin-pad-lg: 2rem; // >= 992px (sidebar visible)
-$admin-pad-xl: 2.5rem; // >= 1400px
+$admin-pad-xl: 3rem; // >= 1400px (48px)
 // Messages shows list + conversation side by side only when the content area is wide enough.
 // At 992px the sidebar leaves ~680px, too narrow for two columns, so it keeps the list/chat switch.
 $admin-messages-split-breakpoint: 1280px;

@@ -23,9 +23,9 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 0.75rem;
+        gap: $sp-3;
         width: 100%;
-        padding: 0.5rem 0;
+        padding: $sp-2 0;
         border: 0;
         background: transparent;
         color: $admin-text-primary;
@@ -67,7 +67,7 @@
         position: fixed;
         z-index: 1080; // above modals (Bootstrap modal is 1055)
         margin: 0;
-        padding: 0.375rem;
+        padding: $sp-2;
         list-style: none;
         overflow-y: auto;
         overscroll-behavior: contain;
@@ -93,9 +93,9 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 1rem;
+        gap: $sp-4;
         min-height: 2.5rem;
-        padding: 0.5rem 0.875rem;
+        padding: $sp-2 $sp-4;
         border-radius: $admin-radius-md;
         color: $admin-text-primary;
         font-size: admin-fluid(0.9);
@@ -104,7 +104,7 @@
         user-select: none;
 
         & + & {
-            margin-top: 0.125rem;
+            margin-top: $sp-1;
         }
 
         &.is-active {
@@ -130,7 +130,7 @@
 
     // ---- Form-field variant (booking modal): looks like the other fields -------
     &--field &__trigger {
-        padding: 0.4rem 0.75rem;
+        padding: $sp-2 $sp-3;
         border: 1px solid $admin-field-border;
         border-radius: $admin-radius-md;
         background: $admin-field-bg;
