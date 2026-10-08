@@ -1,36 +1,40 @@
+// Circle sizes are fixed so the track line can sit on their centers.
+$tracker-circle: 36px;
+$tracker-circle-sm: 28px;
+
 .progress-tracker {
     position: relative;
+    z-index: 1;
     max-width: 960px;
     margin: 0 auto;
-    padding: 2.5rem 1.5rem 1.5rem;
+    padding: $sp-6 $sp-4 $sp-4;
 
-    @media (max-width: 575.98px) {
-        padding: 1.75rem 0.75rem 1rem;
+    // Same side padding as .booking-flow so both edges line up.
+    @media (min-width: 576px) {
+        padding: $sp-8 $sp-6 $sp-6;
     }
 
-    // Keeps side padding in step with .booking-flow below it (same
-    // breakpoint, same values) so both containers' edges stay aligned
-    // rather than the tracker looking narrower once .booking-flow gains
-    // its own extra breathing room on larger screens.
     @media (min-width: 992px) {
-        padding-left: 2rem;
-        padding-right: 2rem;
+        padding-left: $sp-8;
+        padding-right: $sp-8;
     }
 
     &__track {
         position: absolute;
-        top: calc(2.5rem + 17px); // vertical center of the 36px circles
+        top: calc(
+            #{$sp-6} + #{$tracker-circle-sm} / 2 - 1px
+        ); // center of the phone circles
         left: calc(
             100% / 12
-        ); // half a step-column (6 steps), so it starts/ends at the dot centers
+        ); // half a step column (6 steps): starts/ends at the dot centers
         right: calc(100% / 12);
         height: 2px;
         background: $auth-border;
         border-radius: $auth-radius-pill;
         overflow: hidden;
 
-        @media (max-width: 575.98px) {
-            top: calc(1.75rem + 13px); // recentered for the 28px circles below
+        @media (min-width: 576px) {
+            top: calc(#{$sp-8} + #{$tracker-circle} / 2 - 1px);
         }
     }
 
@@ -56,21 +60,14 @@
         flex: 1 1 0;
         flex-direction: column;
         align-items: center;
-        gap: 0.65rem;
-        // The step column is only as wide as the track slice it sits in
-        // (parent's justify-content: space-between splits 100% five ways).
-        // Without a hard width cap, align-items: center lets the circle
-        // and label size to their own content instead of the column, so
-        // a two-word label like "Client Information" renders at its full
-        // intrinsic width and visually bleeds into the next step's column
-        // on narrow screens — that's the "sticks on top of each other"
-        // overlap. min-width: 0 lets the column actually shrink below
-        // that content width so the cap below can take effect.
+        gap: $sp-1;
+        // min-width 0 lets the column shrink below its label's width so labels wrap
+        // inside their own column instead of overlapping the next one.
         min-width: 0;
         max-width: 100%;
 
-        @media (max-width: 575.98px) {
-            gap: 0.4rem;
+        @media (min-width: 576px) {
+            gap: $sp-2;
         }
     }
 
@@ -78,14 +75,14 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 36px;
-        height: 36px;
+        width: $tracker-circle-sm;
+        height: $tracker-circle-sm;
         flex-shrink: 0;
         border-radius: $auth-radius-pill;
         border: 2px solid $auth-border;
         background: $auth-surface;
         color: $auth-text-muted;
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         font-weight: 700;
         padding: 0;
         cursor: not-allowed;
@@ -95,10 +92,10 @@
             color 0.3s ease,
             transform 0.3s ease;
 
-        @media (max-width: 575.98px) {
-            width: 28px;
-            height: 28px;
-            font-size: 0.7rem;
+        @media (min-width: 576px) {
+            width: $tracker-circle;
+            height: $tracker-circle;
+            font-size: 0.85rem;
         }
 
         &:not(:disabled) {
@@ -118,44 +115,47 @@
         display: none;
     }
 
+    // Phones: the label is not shown (it breaks letter by letter in a 1/6 column); it stays
+    // in the DOM for screen readers and the step's card title names the step on screen.
     &__label {
-        // Fill the step column instead of sizing to content — this is
-        // the fix that actually stops the overlap (see the comment on
-        // &__step above). Wrapping rules keep a long single word from
-        // forcing the column wider than its column share.
         width: 100%;
         font-size: 0.8rem;
+        line-height: 1.3;
         color: $auth-text-secondary;
         text-align: center;
         overflow-wrap: break-word;
-        word-break: break-word;
         transition:
             color 0.3s ease,
             font-weight 0.3s ease;
 
         @media (max-width: 575.98px) {
-            font-size: 0.65rem;
-            line-height: 1.2;
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+            border: 0;
         }
     }
 
-    // Locked — lock icon, muted, not reachable yet
+    // Locked: lock icon, muted, not reachable yet
     &__step.is-locked {
         .progress-tracker__icon-lock {
             display: block;
         }
     }
 
-    // Open — visited via forward progress, currently behind the active
-    // step (reached again by clicking Previous). Filled, no icon/number.
+    // Open: reached before, now behind the active step. Filled, no icon/number.
     &__step.is-open .progress-tracker__circle {
         background: $auth-accent;
         border-color: $auth-accent;
         color: $auth-white;
     }
 
-    // Numbered — current step, or a step fully completed and behind the
-    // current one. Filled, shows its step number, bold label.
+    // Numbered: current step, or completed and behind it. Filled, shows its number, bold label.
     &__step.is-numbered {
         .progress-tracker__circle {
             background: $auth-accent;
