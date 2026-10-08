@@ -1,0 +1,110 @@
+// Booking page shell + shared mixins. Import BEFORE the other booking partials.
+// Needs $sp-* and admin-fluid() from _admin-variables.scss (already imported by app.scss).
+
+// Page background: fixed to the viewport so it never ends where the first screen ends
+// (the old absolute <img> was one viewport tall, so scrolling exposed white).
+.booking-page {
+    min-height: 100vh;
+    background: $auth-bg;
+
+    &__bg {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 0;
+        pointer-events: none;
+    }
+}
+
+.booking-flow {
+    position: relative;
+    z-index: 1;
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 0 $sp-4 $sp-8;
+
+    @media (min-width: 576px) {
+        padding: 0 $sp-6 $sp-8;
+    }
+
+    @media (min-width: 992px) {
+        padding: 0 $sp-8 $sp-12;
+    }
+}
+
+// Card surface shared by every step (same look as .modal-content).
+@mixin booking-card {
+    position: relative;
+    width: 100%;
+    background: $auth-surface;
+    border-radius: $auth-radius-xl;
+    padding: $sp-6 $sp-4;
+    color: $auth-text-primary;
+    isolation: isolate;
+    overflow: hidden;
+
+    @media (min-width: 576px) {
+        padding: $sp-6;
+    }
+
+    &::before {
+        content: "";
+        position: absolute;
+        inset: -20% -20% auto auto;
+        width: 70%;
+        height: 60%;
+        background: radial-gradient(
+            circle at top right,
+            $auth-glow-violet 0%,
+            $auth-glow-rose 45%,
+            transparent 75%
+        );
+        opacity: 0.35;
+        filter: blur(60px);
+        z-index: -1;
+        pointer-events: none;
+    }
+}
+
+// Card title: 24px to the content on phones, 32px from 992px.
+@mixin booking-title($size: 1.4) {
+    font-size: admin-fluid($size);
+    font-weight: 700;
+    margin-bottom: $sp-6;
+
+    @media (min-width: 992px) {
+        margin-bottom: $sp-8;
+    }
+}
+
+// Keeps Chrome's light-blue autofill from painting over the dark inputs.
+@mixin booking-autofill($bg: $auth-field-bg) {
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus {
+        -webkit-text-fill-color: $auth-text-primary;
+        caret-color: $auth-text-primary;
+        box-shadow: 0 0 0 1000px $bg inset;
+        transition: background-color 9999s ease-out 0s;
+    }
+
+    &:-webkit-autofill:focus {
+        box-shadow:
+            0 0 0 1000px $bg inset,
+            0 0 0 3px $auth-focus-ring-soft;
+    }
+}
+
+// Stacked card + actions column used by every step.
+@mixin booking-step {
+    display: flex;
+    flex-direction: column;
+    gap: $sp-6;
+    align-items: flex-start;
+
+    @media (min-width: 992px) {
+        gap: $sp-8;
+    }
+}
