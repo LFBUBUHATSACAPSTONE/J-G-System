@@ -13,6 +13,12 @@
  * listener, same relationship auth-modal.js has to login.js / signup.js
  * / forgot-password.js / etc.
  *
+ * Locking: once the flow reaches Booking Confirmation (the payment was
+ * submitted and now awaits verification) the root gets `data-flow-locked`.
+ * From then on setBookingView() refuses any other view, so Previous, the
+ * progress tracker and the schedule-conflict handler cannot reopen an
+ * earlier step. Only Continue (leaves the flow) remains.
+ *
  * Package is step 1 in STEP_ORDER (so the progress tracker can show it
  * as complete) but has no view here: it's chosen on the landing page,
  * whose "Book Now" links to /user/booking. ENTRY_VIEW is where the flow
@@ -23,6 +29,8 @@ const FLOW_ID = "bookingFlow";
 const VIEW_SELECTOR = ".booking-flow__view";
 
 const ENTRY_VIEW = "client-information";
+const FINAL_VIEW = "booking-confirmation";
+const LOCK_ATTR = "data-flow-locked";
 
 const STEP_ORDER = [
     "package",
@@ -91,6 +99,9 @@ function advanceTo(root, view) {
 }
 
 function goToPrevious(root) {
+    // Payment already submitted: no step behind Confirmation is reachable.
+    if (root.hasAttribute(LOCK_ATTR)) return;
+
     const current = root.getAttribute("data-current-view");
     const index = STEP_ORDER.indexOf(current);
 
@@ -114,6 +125,9 @@ function toCamelCase(kebab) {
 }
 
 function setBookingView(root, view) {
+    if (root.hasAttribute(LOCK_ATTR) && view !== FINAL_VIEW) return;
+    if (view === FINAL_VIEW) root.setAttribute(LOCK_ATTR, "");
+
     const views = root.querySelectorAll(VIEW_SELECTOR);
     let matched = false;
 

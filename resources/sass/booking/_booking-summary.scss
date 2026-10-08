@@ -138,7 +138,7 @@
     // most ~half of .booking-summary__card, and that card itself is
     // capped at .booking-flow's 1040px max-width, so this column tops
     // out around 400-450px no matter how wide the screen gets. Fitting
-    // three panels (buttons, a label/value list, a QR box) across that
+    // three panels (option buttons, instructions) across that
     // isn't a "needs a wider screen" problem — there's no screen width
     // this component will ever render at where that's enough room, so a
     // min-width breakpoint here only produces the exact overlap this was
@@ -158,13 +158,6 @@
         border: 1px solid $auth-border;
         border-radius: $auth-radius-lg;
         padding: 1.25rem;
-
-        &--qr {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: left;
-        }
     }
 
     &__payment-heading {
@@ -172,12 +165,6 @@
         font-weight: 700;
         color: $auth-accent;
         margin-bottom: 1rem;
-    }
-
-    &__ref {
-        font-weight: 400;
-        color: $auth-text-secondary;
-        font-size: 0.85rem;
     }
 
     // Payment Option toggle buttons
@@ -240,93 +227,86 @@
         }
     }
 
-    // Payment Summary key/value rows
-    &__summary-list {
-        margin: 0;
+    // Down payment amount (numbers only, shown while Down Payment is selected)
+    &__down-payment {
+        margin-top: 1rem;
     }
 
-    &__summary-row {
+    &__input-label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: $auth-text-secondary;
+        margin-bottom: 0.4rem;
+    }
+
+    &__amount {
         display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 1rem;
-        padding: 0.55rem 0;
-        border-bottom: 1px solid $auth-border;
+        align-items: stretch;
+        background: $auth-surface;
+        border: 1px solid $auth-border;
+        border-radius: $auth-radius-md;
+        overflow: hidden;
+        transition: border-color 0.15s ease-in-out;
 
-        // Flex items default to min-width: auto, which refuses to shrink
-        // a child below its own content's intrinsic width — even though
-        // .booking-summary__payment-panel above it has min-width: 0 and
-        // is willing to shrink. At the narrow width three panels leaves
-        // each column (see the Payment Summary panel in particular),
-        // that mismatch meant dt/dd refused to shrink or wrap, so the
-        // row rendered wider than its panel and visually bled into the
-        // QR panel next to it — the "not spanning"-looking cut/overlap
-        // in the Payment column. min-width: 0 here lets them actually
-        // wrap/shrink to the panel's real width instead.
-        dt,
-        dd {
-            min-width: 0;
+        &:focus-within {
+            border-color: $auth-accent;
+            box-shadow: 0 0 0 3px $auth-focus-ring-soft;
         }
 
-        dt {
-            color: $auth-text-secondary;
-            font-size: 0.85rem;
-        }
-
-        dd {
-            margin: 0;
-            font-weight: 600;
-            text-align: right;
-            overflow-wrap: break-word;
-        }
-
-        &:last-child {
-            border-bottom: none;
-        }
-
-        &--total {
-            border-top: 1px solid $auth-border;
-            border-bottom: none;
-            margin-top: 0.25rem;
-            padding-top: 0.85rem;
-
-            dt,
-            dd {
-                font-weight: 700;
-                font-size: 1rem;
-                color: $auth-text-primary;
-            }
+        &.is-invalid {
+            border-color: $auth-danger;
         }
     }
 
-    // QR panel
-    &__qr-code {
-        width: 100%;
-        max-width: 220px;
-        aspect-ratio: 1 / 1;
-        background: $auth-white;
-        border-radius: $auth-radius-md;
+    &__amount-prefix {
         display: flex;
         align-items: center;
-        justify-content: center;
-        margin-bottom: 1rem;
-        overflow: hidden;
+        padding: 0 0.85rem;
+        font-weight: 700;
+        color: $auth-text-secondary;
+        border-right: 1px solid $auth-border;
+    }
 
-        img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
+    &__amount-input {
+        flex: 1;
+        min-width: 0;
+        background: transparent;
+        border: 0;
+        color: $auth-text-primary;
+        font-weight: 600;
+        padding: 0.75rem;
+
+        &::placeholder {
+            color: $auth-text-muted;
         }
 
-        span {
-            color: $auth-black;
-            font-weight: 700;
+        &:focus {
+            outline: none;
         }
     }
 
-    &__qr-steps {
+    // Live "% of package cost" readout under the amount field
+    &__percent {
+        display: block;
+        margin-top: 0.4rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: $auth-text-secondary;
+
+        &.is-low {
+            color: $auth-danger;
+        }
+
+        &.is-ok {
+            color: $auth-accent;
+        }
+    }
+
+    // How-to-pay steps
+    &__instructions {
         list-style: none;
-        counter-reset: qr-step;
+        counter-reset: pay-step;
         padding: 0;
         margin: 0;
         font-size: 0.78rem;
@@ -334,7 +314,7 @@
         line-height: 1.6;
 
         li {
-            counter-increment: qr-step;
+            counter-increment: pay-step;
             margin-bottom: 0.5rem;
 
             &:last-child {
@@ -343,7 +323,7 @@
         }
 
         li::before {
-            content: counter(qr-step) ". ";
+            content: counter(pay-step) ". ";
             font-weight: 700;
             color: $auth-accent;
         }
@@ -377,8 +357,11 @@
         @media (min-width: 480px) {
             flex-direction: row;
 
-            .client-info__btn--cancel {
-                flex: 1;
+            // Every button in the row shares the width equally (with or
+            // without Cancel), so Previous and Continue stay the same size.
+            .client-info__btn--cancel,
+            .client-info__btn--confirm {
+                flex: 1 1 0;
             }
         }
     }
