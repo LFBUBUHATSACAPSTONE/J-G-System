@@ -780,27 +780,6 @@ $admin-filter-sheet-breakpoint: 768px;
         grid-column: 1 / -1;
     }
 
-    // Wide screens: Client Information and Package stack in the left column, Event Information
-    // fills the right column across both rows. Below 992px the sections stack in DOM order
-    // (client, event, package).
-    @media (min-width: 992px) {
-        &__section--client {
-            grid-column: 1;
-            grid-row: 1;
-        }
-
-        &__section--event {
-            grid-column: 2;
-            grid-row: 1 / span 2;
-        }
-
-        &__section--package {
-            grid-column: 1;
-            grid-row: 2;
-            align-self: start;
-        }
-    }
-
     // Heading row: the heading and the Edit button share one 2.25rem line, so both columns'
     // panels start at the same height.
     &__section-head {
@@ -844,8 +823,11 @@ $admin-filter-sheet-breakpoint: 768px;
         gap: $sp-4;
     }
 
-    &__panel--package {
-        gap: $sp-2;
+    // Package strip: spans both event columns. From 768px name, price and status sit in one row.
+    &__package-field {
+        @media (min-width: 768px) {
+            grid-column: 1 / -1;
+        }
     }
 
     &__package {
@@ -857,6 +839,26 @@ $admin-filter-sheet-breakpoint: 768px;
 
         p {
             margin: 0;
+        }
+
+        @media (min-width: 768px) {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            align-items: center;
+            gap: $sp-4;
+            padding: $sp-2 $sp-4;
+
+            > :first-child {
+                text-align: left;
+            }
+
+            > :last-child {
+                text-align: right;
+            }
+
+            .admin-booking-modal__package-price {
+                font-size: admin-fluid(1.75);
+            }
         }
     }
 
@@ -916,14 +918,6 @@ $admin-filter-sheet-breakpoint: 768px;
         &__panel {
             gap: $sp-3;
             padding: $sp-4;
-        }
-
-        &__package {
-            padding: $sp-2 $sp-4;
-        }
-
-        &__package-price {
-            font-size: admin-fluid(1.75);
         }
 
         &__footer {
