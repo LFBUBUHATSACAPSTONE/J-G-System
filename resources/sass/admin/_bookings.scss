@@ -823,6 +823,14 @@ $admin-filter-sheet-breakpoint: 768px;
         gap: $sp-4;
     }
 
+    // Package strip: spans both event columns from 768px. Name, price and status are stacked and
+    // centered at every width (same look as the phone layout).
+    &__package-field {
+        @media (min-width: 768px) {
+            grid-column: 1 / -1;
+        }
+    }
+
     &__package {
         padding: $sp-3 $sp-4;
         border: 1px solid $admin-field-border;
@@ -860,20 +868,75 @@ $admin-filter-sheet-breakpoint: 768px;
         }
     }
 
+    // Footer buttons: the body scrolls (modal-dialog-scrollable) and the footer stays put, so it
+    // needs its own padding on every side: top keeps the buttons off the clipped content above,
+    // bottom (same as the sides) keeps them off the card's rounded edge.
+    // Bootstrap's own margin on the footer's children is zeroed so `gap` is the only spacing.
     &__footer {
         justify-content: flex-end;
         gap: $sp-3;
-        padding: 0 $sp-6;
+        padding: $sp-3 $sp-6 $sp-6;
         border: 0;
 
+        > * {
+            margin: 0;
+        }
+
+        // Phones: stacked, full-width buttons are easier to tap than a ragged pair.
+        @media (max-width: 575.98px) {
+            flex-direction: column;
+            align-items: stretch;
+
+            > * {
+                width: 100%;
+            }
+        }
+
         @media (min-width: 992px) {
-            padding: 0 $sp-8 $sp-6;
+            padding: $sp-3 $sp-8 $sp-6;
+        }
+    }
+
+    // Wide but short viewports (laptops, browser windows with toolbars): tighten the vertical
+    // rhythm so the whole modal fits without an inner scroll. Horizontal spacing is untouched.
+    // Spacing stays on the 4px grid and the group gaps still exceed the gaps inside a group.
+    @media (min-width: 992px) and (max-height: 860px) {
+        &__body {
+            gap: $sp-4;
+            padding: $sp-4 $sp-6;
+        }
+
+        &__section-head {
+            margin-bottom: $sp-2;
+        }
+
+        &__heading {
+            margin-bottom: $sp-2;
+        }
+
+        &__panel {
+            gap: $sp-3;
+            padding: $sp-4;
+        }
+
+        &__footer {
+            padding: $sp-3 $sp-6 $sp-4;
         }
     }
 
     // While editing, the unlocked fields get the focus colour on their border.
-    &.is-editing [data-editable] {
+    &.is-editing [data-editable]:not(.is-locked) {
         border-color: $admin-brand-text;
+    }
+
+    &__error {
+        margin: 0;
+        padding: $sp-2 $sp-3;
+        border: 1px solid $admin-danger-border;
+        border-radius: $admin-radius-md;
+        background: $admin-danger-soft;
+        color: $admin-danger-text;
+        font-size: 0.875rem;
     }
 }
 
@@ -917,4 +980,69 @@ $admin-filter-sheet-breakpoint: 768px;
     }
 
     // Selects are drawn by the custom dropdown (_dropdown.scss), so no native arrow is needed.
+
+    // Small pill next to a label ("Others") or under a field ("Edited"). Text, not colour alone.
+    &__tag {
+        display: inline-block;
+        padding: $sp-1 $sp-2;
+        border-radius: $admin-radius-md;
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1.2;
+
+        &--edited {
+            background: $admin-warning-soft;
+            color: $admin-warning-text;
+        }
+
+        &--others {
+            margin-inline-start: $sp-2;
+            border: 1px solid $admin-field-border;
+            color: $admin-brand-text;
+        }
+    }
+
+    // "Edited . Originally: ..." under a changed field.
+    &__edited {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: $sp-2;
+        margin: 0;
+        color: $admin-text-muted;
+        font-size: 0.875rem;
+        overflow-wrap: anywhere;
+    }
+
+    // Explanation under a locked field.
+    &__note {
+        display: flex;
+        align-items: center;
+        gap: $sp-2;
+        margin: 0;
+        color: $admin-text-muted;
+        font-size: 0.875rem;
+    }
+
+    // Text field + the small "back to the list" button (Event type = Others).
+    &__row--action {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+    }
+}
+
+// Invalid look. Scoped to the modal so it beats the editing border above (and also reaches the
+// styled dropdown button, which sits next to the hidden native <select>).
+// The field error text is scoped here too: the Package modal reuses the .admin-field__error class
+// for its own messages and must keep its current look.
+.admin-booking-modal {
+    .admin-field__error {
+        color: $admin-danger-text;
+        font-size: 0.875rem;
+    }
+
+    .admin-field__control.is-invalid,
+    .admin-dropdown .is-invalid ~ .admin-dropdown__trigger {
+        border-color: $admin-danger-border;
+    }
 }

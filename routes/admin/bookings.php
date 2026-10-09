@@ -59,7 +59,7 @@ Route::get('/admin/bookings', function () use ($adminStubFullDates) {
           'start_time' => '6:00 PM',
           'end_time' => '11:00 PM',
         ],
-        'payment' => ['label' => 'GCash - Down Payment', 'status' => 'Awaiting verification', 'state' => 'pending'],
+        'payment' => ['label' => 'GCash - Down Payment', 'status' => 'Awaiting verification', 'state' => 'pending', 'down_payment_amount' => 3600],
         'package' => ['id' => 'budget-party', 'name' => 'Budget Party', 'price' => 12000],
       ],
       [
@@ -81,6 +81,8 @@ Route::get('/admin/bookings', function () use ($adminStubFullDates) {
         ],
         'payment' => ['label' => 'GCash - Full Payment', 'status' => 'Fully Paid', 'state' => 'paid'],
         'package' => ['id' => 'modern-glam', 'name' => 'Modern Glam', 'price' => 35000],
+        // STUB: fields the admin changed after the client booked => original value (the "Edited" label).
+        'edited' => ['event.location' => 'San Rafael Riverside', 'client.phone' => '0912 345 6700'],
       ],
       [
         'id' => 3,
@@ -99,7 +101,7 @@ Route::get('/admin/bookings', function () use ($adminStubFullDates) {
           'start_time' => '10:00 AM',
           'end_time' => '10:00 PM',
         ],
-        'payment' => ['label' => 'GCash - Down Payment', 'status' => 'Awaiting verification', 'state' => 'pending'],
+        'payment' => ['label' => 'GCash - Down Payment', 'status' => 'Awaiting verification', 'state' => 'pending', 'down_payment_amount' => 8000],
         'package' => ['id' => 'luxe-lite', 'name' => 'Luxe Lite', 'price' => 20000],
       ],
       [
@@ -110,6 +112,7 @@ Route::get('/admin/bookings', function () use ($adminStubFullDates) {
         'event' => [
           'name' => 'Sample Event',
           'type' => 'Others',
+          'type_other' => 'Anniversary Celebration',
           'location' => 'Sample Venue, Bulacan',
           'contact_person' => null,
           'guests' => null,
@@ -162,6 +165,48 @@ Route::get('/admin/bookings', function () use ($adminStubFullDates) {
         'payment' => [],
         'package' => ['id' => 'luxe-lite', 'name' => 'Luxe Lite', 'price' => 20000],
       ],
+      // STUB: two bookings relative to today so the Event Location lock can be tried at any date.
+      // #7 starts in 10 days (location editable); #8 starts tomorrow (location locked).
+      [
+        'id' => 7,
+        'reference' => '#JG70007',
+        'status' => 'pending',
+        'client' => ['name' => 'Mika Santos', 'email' => 'mika@example.com', 'phone' => '0917 000 0007', 'address' => 'Sample Barangay, Sample City, Bulacan'],
+        'event' => [
+          'name' => 'Mika Wedding Reception',
+          'type' => 'Wedding',
+          'location' => 'Sample Garden, Bulacan',
+          'contact_person' => null,
+          'guests' => 100,
+          'venue_type' => 'Outdoor',
+          'start_date' => Carbon::today()->addDays(10),
+          'end_date' => Carbon::today()->addDays(10),
+          'start_time' => '4:00 PM',
+          'end_time' => '10:00 PM',
+        ],
+        'payment' => [],
+        'package' => ['id' => 'budget-wedding', 'name' => 'Budget Wedding', 'price' => 25000],
+      ],
+      [
+        'id' => 8,
+        'reference' => '#JG80008',
+        'status' => 'approved',
+        'client' => ['name' => 'Carlo Mendoza', 'email' => 'carlo@example.com', 'phone' => '0917 000 0008', 'address' => 'Sample Barangay, Sample City, Bulacan'],
+        'event' => [
+          'name' => 'Mendoza Team Building',
+          'type' => 'Team-Building Event',
+          'location' => 'Sample Resort, Bulacan',
+          'contact_person' => '0917 000 0088',
+          'guests' => 60,
+          'venue_type' => 'Both',
+          'start_date' => Carbon::tomorrow(),
+          'end_date' => Carbon::tomorrow(),
+          'start_time' => '9:00 AM',
+          'end_time' => '5:00 PM',
+        ],
+        'payment' => ['label' => 'GCash - Full Payment', 'status' => 'Fully Paid', 'state' => 'paid'],
+        'package' => ['id' => 'elite-symphony', 'name' => 'Elite Symphony', 'price' => 60000],
+      ],
     ],
   ]);
 })->name('admin.bookings');
@@ -206,7 +251,10 @@ Route::post('/admin/bookings/{booking}/status', function (Request $request, $boo
   return back()->with('status', $message);
 })->name('admin.bookings.status');
 
-// "Save changes" in the booking modal (editable event fields only).
+// "Save changes" in the booking modal. UNCHANGED stub: it only checks the event fields below and
+// ignores the extra fields the modal now posts (client_name, client_email, client_phone,
+// client_address, event_type, event_type_other). The new rules for those live in the front end
+// (bookings.js) and in docs/backend-impact.md, section 16, for the real controller to enforce.
 Route::patch('/admin/bookings/{booking}', function (Request $request, $booking) {
   $request->validate([
     'event_name' => ['nullable', 'string', 'max:255'],

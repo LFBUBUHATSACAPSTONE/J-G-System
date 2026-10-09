@@ -4,7 +4,8 @@
      View Details button carries the modal's content.
      History page: pass :history="true" and the row resolves its look from the event dates
      (Upcoming / Ongoing / Completed) using config/admin/history.php, with no action buttons.
-     Cancelled and Declined bookings keep their own badge. Bookings page: nothing changes.
+     Cancelled and Declined bookings keep their own badge. In History the modal is view-only
+     (payload editable = false) but still shows the "Edited" labels. Bookings page: Edit is on.
      Two separate cells on purpose: STATUS is a read-only badge, ACTIONS holds every button
      (View Details + the status's actions from config/admin/bookings.php). A status must never look
      like a button, so the two never share a cell or a shape. --}}
@@ -69,13 +70,51 @@ $statusUrl = Route::has('admin.bookings.status')
 ? route('admin.bookings.status', ['booking' => $booking['id']])
 : '#';
 
+// Event type shown to the admin: for "Others" it is the text the client specified.
+$typeLabel = (($event['type'] ?? null) === 'Others' && filled($event['type_other'] ?? null))
+? $event['type_other']
+: ($event['type'] ?? null);
+
+// Event type for the modal's dropdown. A stored type that is not in the user-side list (older
+// bookings) is shown as "Others" with its own text, so Edit never forces the admin to re-pick it.
+$rawType = $event['type'] ?? null;
+$knownTypes = config('admin.bookings.event_types', []);
+if ($rawType !== null && $rawType !== 'Others' && ! in_array($rawType, $knownTypes, true)) {
+$typeValue = 'Others';
+$typeOther = $rawType;
+} else {
+$typeValue = $rawType;
+$typeOther = $rawType === 'Others' ? ($event['type_other'] ?? null) : null;
+}
+
+// Down payment: show the share of the package cost the client chose (user side: at least 30%).
+// The backend may pass payment.down_payment_percent, or payment.down_payment_amount (pesos) and the
+// percentage is worked out from the package price. Full payments and missing data are left as is.
+$payment = $booking['payment'] ?? [];
+$downPercent = $payment['down_payment_percent']
+?? ((! empty($payment['down_payment_amount']) && ! empty($package['price']))
+? $payment['down_payment_amount'] / $package['price'] * 100
+: null);
+if ($downPercent !== null && ! empty($payment['label']) && ! str_contains($payment['label'], '%')) {
+$payment['label'] .= ' (' . rtrim(rtrim(number_format($downPercent, 1), '0'), '.') . '%)';
+}
+
+// Down payment value in pesos, shown in the modal's "Down Payment Value" field.
+if (! empty($payment['down_payment_amount'])) {
+$amount = (float) $payment['down_payment_amount'];
+$payment['down_payment_label'] = 'Php ' . number_format($amount, fmod($amount, 1.0) == 0.0 ? 0 : 2);
+}
+
 $payload = [
 'id' => $booking['id'],
 'reference' => $ref,
 'client' => $booking['client'],
 'event' => [
 'name' => $event['name'] ?? null,
-'type' => $event['type'] ?? null,
+'type' => $typeLabel,
+'type_value' => $typeValue,
+'type_other' => $typeOther,
+'start_date' => $start->toDateString(), // the modal works out the Event Location lock from it
 'location' => $event['location'] ?? null,
 'contact_person' => $event['contact_person'] ?? null,
 'guests' => $event['guests'] ?? null,
@@ -84,8 +123,11 @@ $payload = [
 'start_time' => $event['start_time'] ?? null,
 'end_time' => $event['end_time'] ?? null,
 ],
-'editable' => $status['editable'] ?? true, // false hides Edit in the modal (History: Completed, Cancelled)
-'payment' => $booking['payment'] ?? [],
+'editable' => ! $history, // History is a record: the modal there is view-only
+// Fields the admin changed after the client booked: { 'event.location' => 'original value', ... }.
+// Keys are the modal's data-booking-field paths. Empty array = nothing edited.
+'edited' => $booking['edited'] ?? [],
+'payment' => $payment,
 'package' => [
 'name' => $package['name'],
 'price_label' => isset($package['price']) ? 'Php ' . number_format($package['price']) : null,
@@ -93,7 +135,7 @@ $payload = [
 ];
 
 $search = Str::lower(implode(' ', [
-$booking['client']['name'], $ref, $package['name'], $event['type'] ?? '', $status['label'], $schedule,
+$booking['client']['name'], $ref, $package['name'], $typeLabel ?? '', $status['label'], $schedule,
 ]));
 @endphp
 
@@ -131,7 +173,7 @@ $booking['client']['name'], $ref, $package['name'], $event['type'] ?? '', $statu
 
   <td role="cell" class="admin-bookings__cell" data-label="Package">{{ $package['name'] }}</td>
 
-  <td role="cell" class="admin-bookings__cell" data-label="Event Type">{{ $event['type'] ?? '--' }}</td>
+  <td role="cell" class="admin-bookings__cell" data-label="Event Type">{{ $typeLabel ?? '--' }}</td>
 
   <td role="cell" class="admin-bookings__cell admin-bookings__cell--status" data-label="Status">
     <span class="admin-badge admin-badge--{{ $badge['tone'] }}{{ ($badge['solid'] ?? false) ? ' admin-badge--solid' : '' }}">
