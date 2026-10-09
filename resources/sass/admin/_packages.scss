@@ -368,11 +368,19 @@ button.admin-pill--solid.admin-pill--danger:hover {
         resize: vertical;
     }
 
+    // Footer buttons: the body scrolls (modal-dialog-scrollable) and the footer stays put, so it
+    // needs its own padding on every side: top keeps the buttons off the clipped content above,
+    // bottom (same as the sides) keeps them off the card's rounded edge.
+    // Bootstrap's own margin on the footer's children is zeroed so `gap` is the only spacing.
     &__footer {
         flex-wrap: nowrap;
         gap: $sp-3;
-        padding: 0 $sp-6;
+        padding: $sp-3 $sp-6 $sp-6;
         border: 0;
+
+        > * {
+            margin: 0;
+        }
 
         // Back, or Cancel + Save: the visible buttons share the row equally.
         .admin-btn {

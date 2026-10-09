@@ -823,7 +823,8 @@ $admin-filter-sheet-breakpoint: 768px;
         gap: $sp-4;
     }
 
-    // Package strip: spans both event columns. From 768px name, price and status sit in one row.
+    // Package strip: spans both event columns from 768px. Name, price and status are stacked and
+    // centered at every width (same look as the phone layout).
     &__package-field {
         @media (min-width: 768px) {
             grid-column: 1 / -1;
@@ -839,26 +840,6 @@ $admin-filter-sheet-breakpoint: 768px;
 
         p {
             margin: 0;
-        }
-
-        @media (min-width: 768px) {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-            align-items: center;
-            gap: $sp-4;
-            padding: $sp-2 $sp-4;
-
-            > :first-child {
-                text-align: left;
-            }
-
-            > :last-child {
-                text-align: right;
-            }
-
-            .admin-booking-modal__package-price {
-                font-size: admin-fluid(1.75);
-            }
         }
     }
 
@@ -887,14 +868,32 @@ $admin-filter-sheet-breakpoint: 768px;
         }
     }
 
+    // Footer buttons: the body scrolls (modal-dialog-scrollable) and the footer stays put, so it
+    // needs its own padding on every side: top keeps the buttons off the clipped content above,
+    // bottom (same as the sides) keeps them off the card's rounded edge.
+    // Bootstrap's own margin on the footer's children is zeroed so `gap` is the only spacing.
     &__footer {
         justify-content: flex-end;
         gap: $sp-3;
-        padding: 0 $sp-6;
+        padding: $sp-3 $sp-6 $sp-6;
         border: 0;
 
+        > * {
+            margin: 0;
+        }
+
+        // Phones: stacked, full-width buttons are easier to tap than a ragged pair.
+        @media (max-width: 575.98px) {
+            flex-direction: column;
+            align-items: stretch;
+
+            > * {
+                width: 100%;
+            }
+        }
+
         @media (min-width: 992px) {
-            padding: 0 $sp-8 $sp-6;
+            padding: $sp-3 $sp-8 $sp-6;
         }
     }
 
@@ -921,18 +920,13 @@ $admin-filter-sheet-breakpoint: 768px;
         }
 
         &__footer {
-            padding: 0 $sp-6 $sp-4;
+            padding: $sp-3 $sp-6 $sp-4;
         }
     }
 
     // While editing, the unlocked fields get the focus colour on their border.
     &.is-editing [data-editable]:not(.is-locked) {
         border-color: $admin-brand-text;
-    }
-
-    // `hidden` must win over the display set on .admin-field__row (the Event type swap uses it).
-    [hidden] {
-        display: none !important;
     }
 
     &__error {
@@ -987,12 +981,6 @@ $admin-filter-sheet-breakpoint: 768px;
 
     // Selects are drawn by the custom dropdown (_dropdown.scss), so no native arrow is needed.
 
-    // Validation message under a field (same wording as the user side).
-    &__error {
-        color: $admin-danger-text;
-        font-size: 0.875rem;
-    }
-
     // Small pill next to a label ("Others") or under a field ("Edited"). Text, not colour alone.
     &__tag {
         display: inline-block;
@@ -1045,7 +1033,14 @@ $admin-filter-sheet-breakpoint: 768px;
 
 // Invalid look. Scoped to the modal so it beats the editing border above (and also reaches the
 // styled dropdown button, which sits next to the hidden native <select>).
+// The field error text is scoped here too: the Package modal reuses the .admin-field__error class
+// for its own messages and must keep its current look.
 .admin-booking-modal {
+    .admin-field__error {
+        color: $admin-danger-text;
+        font-size: 0.875rem;
+    }
+
     .admin-field__control.is-invalid,
     .admin-dropdown .is-invalid ~ .admin-dropdown__trigger {
         border-color: $admin-danger-border;
