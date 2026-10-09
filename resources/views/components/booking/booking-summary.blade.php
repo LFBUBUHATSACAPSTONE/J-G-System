@@ -3,7 +3,7 @@
   <div class="booking-summary__card">
     <div class="booking-summary__grid">
 
-      {{-- Left column: read-only recap of every prior step --}}
+      {{-- First column: read-only recap of every prior step --}}
       <div class="booking-summary__column">
         <h2 class="booking-summary__title">Booking Summary</h2>
 
@@ -70,7 +70,7 @@
         </div>
       </div>
 
-      {{-- Right column: payment option (with down payment amount) and how-to steps --}}
+      {{-- Middle column: payment option (with down payment amount) --}}
       <div class="booking-summary__column">
         <h2 class="booking-summary__title">Payment</h2>
 
@@ -147,23 +147,31 @@
                 <li>Booking is only secured after payment is processed.</li>
               </ul>
             </div>
-
-            {{-- How to complete this step --}}
-            <div class="booking-summary__payment-panel">
-              <h3 class="booking-summary__payment-heading">How to pay</h3>
-              <ol class="booking-summary__instructions">
-                <li><strong>Check your details</strong> - Make sure the booking summary on the left is correct.</li>
-                <li><strong>Choose a payment option</strong> - Select Full Payment or Down Payment.</li>
-                <li><strong>Enter your down payment</strong> - If you chose Down Payment, type the amount in numbers only. It must be at least 30% of your package cost.</li>
-                <li><strong>Continue</strong> - Click Continue to move on to the Confirmation step.</li>
-              </ol>
-            </div>
             @endif
           </div>
 
           <p class="booking-summary__error text-danger d-none" role="alert" data-payment-error></p>
         </form>
       </div>
+
+      {{-- Third column: how to complete this step (not shown when rescheduling, the payment is carried over) --}}
+      @unless ($reschedule)
+      <div class="booking-summary__column booking-summary__column--guide">
+        <h2 class="booking-summary__title">Instructions</h2>
+
+        <div class="booking-summary__payment-grid">
+          <div class="booking-summary__payment-panel">
+            <h3 class="booking-summary__payment-heading">How to pay</h3>
+            <ol class="booking-summary__instructions">
+              <li><strong>Check your details</strong> - Make sure the booking summary on the left is correct.</li>
+              <li><strong>Choose a payment option</strong> - Select Full Payment or Down Payment.</li>
+              <li><strong>Enter your down payment</strong> - If you chose Down Payment, type the amount in numbers only. It must be at least 30% of your package cost.</li>
+              <li><strong>Continue</strong> - Click Continue to move on to the Confirmation step.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      @endunless
     </div>
   </div>
 

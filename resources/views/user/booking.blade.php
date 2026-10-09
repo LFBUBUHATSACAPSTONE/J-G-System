@@ -7,8 +7,8 @@
   <x-site-head></x-site-head>
 </head>
 
-<body>
-  <img src="{{ asset('images/backgrounds/design/landing_bg.webp') }}" alt="" class="position-absolute z-0 w-100 h-100">
+<body class="booking-page">
+  <img src="{{ asset('images/backgrounds/design/landing_bg.webp') }}" alt="" class="booking-page__bg">
 
   {{--
     Booking flow container — booking-flow.js reads/writes
@@ -21,7 +21,7 @@
     final Confirmation step. Both point at the landing page for now —
     swap either independently once there's somewhere more specific for
     it to go (e.g. a user dashboard for "continue"). --}}
-    
+
   {{-- Reschedule mode: the controller passes $reschedule = ['booking_id', 'reference', 'month' => 'YYYY-MM'].
        Absent on a normal booking.  --}}
   @php($reschedule = $reschedule ?? null)
