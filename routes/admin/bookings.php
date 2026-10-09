@@ -59,7 +59,7 @@ Route::get('/admin/bookings', function () use ($adminStubFullDates) {
           'start_time' => '6:00 PM',
           'end_time' => '11:00 PM',
         ],
-        'payment' => ['label' => 'GCash - Down Payment', 'status' => 'Awaiting verification', 'state' => 'pending'],
+        'payment' => ['label' => 'GCash - Down Payment', 'status' => 'Awaiting verification', 'state' => 'pending', 'down_payment_amount' => 3600],
         'package' => ['id' => 'budget-party', 'name' => 'Budget Party', 'price' => 12000],
       ],
       [
@@ -99,7 +99,7 @@ Route::get('/admin/bookings', function () use ($adminStubFullDates) {
           'start_time' => '10:00 AM',
           'end_time' => '10:00 PM',
         ],
-        'payment' => ['label' => 'GCash - Down Payment', 'status' => 'Awaiting verification', 'state' => 'pending'],
+        'payment' => ['label' => 'GCash - Down Payment', 'status' => 'Awaiting verification', 'state' => 'pending', 'down_payment_amount' => 8000],
         'package' => ['id' => 'luxe-lite', 'name' => 'Luxe Lite', 'price' => 20000],
       ],
       [

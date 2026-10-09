@@ -74,6 +74,18 @@ $typeLabel = (($event['type'] ?? null) === 'Others' && filled($event['type_other
 ? $event['type_other']
 : ($event['type'] ?? null);
 
+// Down payment: show the share of the package cost the client chose (user side: at least 30%).
+// The backend may pass payment.down_payment_percent, or payment.down_payment_amount (pesos) and the
+// percentage is worked out from the package price. Full payments and missing data are left as is.
+$payment = $booking['payment'] ?? [];
+$downPercent = $payment['down_payment_percent']
+?? ((! empty($payment['down_payment_amount']) && ! empty($package['price']))
+? $payment['down_payment_amount'] / $package['price'] * 100
+: null);
+if ($downPercent !== null && ! empty($payment['label']) && ! str_contains($payment['label'], '%')) {
+$payment['label'] .= ' (' . rtrim(rtrim(number_format($downPercent, 1), '0'), '.') . '%)';
+}
+
 $payload = [
 'id' => $booking['id'],
 'reference' => $ref,
@@ -90,7 +102,7 @@ $payload = [
 'end_time' => $event['end_time'] ?? null,
 ],
 'editable' => $status['editable'] ?? true, // false hides Edit in the modal (History: Completed, Cancelled)
-'payment' => $booking['payment'] ?? [],
+'payment' => $payment,
 'package' => [
 'name' => $package['name'],
 'price_label' => isset($package['price']) ? 'Php ' . number_format($package['price']) : null,
