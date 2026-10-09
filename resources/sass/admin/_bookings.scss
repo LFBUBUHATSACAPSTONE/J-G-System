@@ -780,6 +780,27 @@ $admin-filter-sheet-breakpoint: 768px;
         grid-column: 1 / -1;
     }
 
+    // Wide screens: Client Information and Package stack in the left column, Event Information
+    // fills the right column across both rows. Below 992px the sections stack in DOM order
+    // (client, event, package).
+    @media (min-width: 992px) {
+        &__section--client {
+            grid-column: 1;
+            grid-row: 1;
+        }
+
+        &__section--event {
+            grid-column: 2;
+            grid-row: 1 / span 2;
+        }
+
+        &__section--package {
+            grid-column: 1;
+            grid-row: 2;
+            align-self: start;
+        }
+    }
+
     // Heading row: the heading and the Edit button share one 2.25rem line, so both columns'
     // panels start at the same height.
     &__section-head {
@@ -821,6 +842,10 @@ $admin-filter-sheet-breakpoint: 768px;
         display: grid;
         align-content: start;
         gap: $sp-4;
+    }
+
+    &__panel--package {
+        gap: $sp-2;
     }
 
     &__package {
@@ -868,6 +893,41 @@ $admin-filter-sheet-breakpoint: 768px;
 
         @media (min-width: 992px) {
             padding: 0 $sp-8 $sp-6;
+        }
+    }
+
+    // Wide but short viewports (laptops, browser windows with toolbars): tighten the vertical
+    // rhythm so the whole modal fits without an inner scroll. Horizontal spacing is untouched.
+    // Spacing stays on the 4px grid and the group gaps still exceed the gaps inside a group.
+    @media (min-width: 992px) and (max-height: 860px) {
+        &__body {
+            gap: $sp-4;
+            padding: $sp-4 $sp-6;
+        }
+
+        &__section-head {
+            margin-bottom: $sp-2;
+        }
+
+        &__heading {
+            margin-bottom: $sp-2;
+        }
+
+        &__panel {
+            gap: $sp-3;
+            padding: $sp-4;
+        }
+
+        &__package {
+            padding: $sp-2 $sp-4;
+        }
+
+        &__package-price {
+            font-size: admin-fluid(1.75);
+        }
+
+        &__footer {
+            padding: 0 $sp-6 $sp-4;
         }
     }
 
