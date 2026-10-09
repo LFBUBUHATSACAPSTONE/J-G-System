@@ -926,8 +926,23 @@ $admin-filter-sheet-breakpoint: 768px;
     }
 
     // While editing, the unlocked fields get the focus colour on their border.
-    &.is-editing [data-editable] {
+    &.is-editing [data-editable]:not(.is-locked) {
         border-color: $admin-brand-text;
+    }
+
+    // `hidden` must win over the display set on .admin-field__row (the Event type swap uses it).
+    [hidden] {
+        display: none !important;
+    }
+
+    &__error {
+        margin: 0;
+        padding: $sp-2 $sp-3;
+        border: 1px solid $admin-danger-border;
+        border-radius: $admin-radius-md;
+        background: $admin-danger-soft;
+        color: $admin-danger-text;
+        font-size: 0.875rem;
     }
 }
 
@@ -971,4 +986,68 @@ $admin-filter-sheet-breakpoint: 768px;
     }
 
     // Selects are drawn by the custom dropdown (_dropdown.scss), so no native arrow is needed.
+
+    // Validation message under a field (same wording as the user side).
+    &__error {
+        color: $admin-danger-text;
+        font-size: 0.875rem;
+    }
+
+    // Small pill next to a label ("Others") or under a field ("Edited"). Text, not colour alone.
+    &__tag {
+        display: inline-block;
+        padding: $sp-1 $sp-2;
+        border-radius: $admin-radius-md;
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1.2;
+
+        &--edited {
+            background: $admin-warning-soft;
+            color: $admin-warning-text;
+        }
+
+        &--others {
+            margin-inline-start: $sp-2;
+            border: 1px solid $admin-field-border;
+            color: $admin-brand-text;
+        }
+    }
+
+    // "Edited . Originally: ..." under a changed field.
+    &__edited {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: $sp-2;
+        margin: 0;
+        color: $admin-text-muted;
+        font-size: 0.875rem;
+        overflow-wrap: anywhere;
+    }
+
+    // Explanation under a locked field.
+    &__note {
+        display: flex;
+        align-items: center;
+        gap: $sp-2;
+        margin: 0;
+        color: $admin-text-muted;
+        font-size: 0.875rem;
+    }
+
+    // Text field + the small "back to the list" button (Event type = Others).
+    &__row--action {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+    }
+}
+
+// Invalid look. Scoped to the modal so it beats the editing border above (and also reaches the
+// styled dropdown button, which sits next to the hidden native <select>).
+.admin-booking-modal {
+    .admin-field__control.is-invalid,
+    .admin-dropdown .is-invalid ~ .admin-dropdown__trigger {
+        border-color: $admin-danger-border;
+    }
 }
