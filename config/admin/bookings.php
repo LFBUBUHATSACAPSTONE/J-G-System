@@ -113,4 +113,9 @@ return [
 
   // Venue type choices in the booking modal (same values as the user-side form).
   'venue_types' => ['Indoor', 'Outdoor', 'Both'],
+
+  // Event Type dropdown in the View Details modal. Same list, same order as the user-side booking
+  // form (resources/views/components/booking/event-information.blade.php). "Others" turns the
+  // dropdown into a text field (see booking-modal.blade.php); keep it last.
+  'event_types' => ['Baby Shower', 'Bridal Shower', 'Birthday Party', 'Concert', 'Family Reunion', 'Team-Building Event', 'Wedding', 'Others'],
 ];
