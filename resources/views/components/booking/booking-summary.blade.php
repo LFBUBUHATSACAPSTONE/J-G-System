@@ -160,6 +160,39 @@
                 <li>Your booking and payment amount are recorded for admin review.</li>
               </ul>
             </div>
+
+            {{-- Proof that the payment details form was submitted (screenshot of the confirmation).
+                 Sent with the form as `payment_proof`; shown only for a new payment, not a reschedule. --}}
+            <div class="booking-summary__payment-panel">
+              <h3 class="booking-summary__payment-heading">Upload Proof of Submission</h3>
+              <p class="booking-summary__option-hint">After you submit the payment details form, upload a screenshot of its confirmation page. JPG, PNG or WebP, up to 5 MB.</p>
+
+              <div class="booking-summary__upload" data-proof-upload>
+                <input
+                  id="payment-proof"
+                  class="booking-summary__file-input"
+                  type="file"
+                  name="payment_proof"
+                  accept="image/jpeg,image/png,image/webp"
+                  aria-describedby="payment-proof-error"
+                  data-proof-input>
+
+                <label class="booking-summary__dropzone" for="payment-proof" data-proof-dropzone>
+                  <span class="booking-summary__dropzone-title">Choose an image</span>
+                  <span class="booking-summary__dropzone-hint">or drag and drop it here</span>
+                </label>
+
+                <div class="booking-summary__preview d-none" data-proof-preview>
+                  <img class="booking-summary__preview-img" alt="Preview of your uploaded proof of submission" data-proof-image>
+                  <div class="booking-summary__preview-meta">
+                    <span class="booking-summary__preview-name" data-proof-name></span>
+                    <button type="button" class="booking-summary__preview-remove" data-proof-remove>Remove</button>
+                  </div>
+                </div>
+              </div>
+
+              <small id="payment-proof-error" class="booking-summary__field-error d-none" role="alert" data-field-error="payment_proof"></small>
+            </div>
             @endif
           </div>
 
@@ -179,8 +212,24 @@
               <li><strong>Check your details</strong> - Make sure the booking summary on the left is correct.</li>
               <li><strong>Choose a payment option</strong> - Select Full Payment or Down Payment.</li>
               <li><strong>Enter your down payment</strong> - If you chose Down Payment, type the amount in numbers only. It must be at least 30% of your package cost.</li>
+              <li><strong>Fill in the payment details form</strong> - Open the form below, enter your payment details and submit it.</li>
+              <li><strong>Upload your proof</strong> - Upload a screenshot of the form's confirmation page.</li>
               <li><strong>Continue</strong> - Click Continue to move on to the Confirmation step.</li>
             </ol>
+          </div>
+
+          {{-- Dummy link: replace the href with the real payment details form. --}}
+          <div class="booking-summary__payment-panel">
+            <h3 class="booking-summary__payment-heading">Payment Details Form</h3>
+            <p class="booking-summary__option-hint">Open the form in a new tab, complete it, then come back to upload your proof.</p>
+            <a
+              class="booking-summary__link-btn"
+              href="https://docs.google.com/forms/d/e/1FAIpQLSewtDFH_r6z7yOCf2svoDvZpQJqCwj2XaJuMUnNZdQfs6baQg/viewform"
+              target="_blank"
+              rel="noopener noreferrer">
+              Open payment details form
+              <span class="visually-hidden">(opens in a new tab)</span>
+            </a>
           </div>
         </div>
       </div>

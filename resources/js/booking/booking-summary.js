@@ -38,6 +38,14 @@
  *   422 {"message": "…", "full_dates": ["YYYY-MM-DD", …]}
  *       -> a chosen day reached the event limit meanwhile;
  *
+ * Proof of submission: a new payment also needs one image (input[data-proof-input], name
+ * "payment_proof": JPG, PNG or WebP, up to 5 MB) showing the payment details form was
+ * submitted. Chosen by click or drag and drop, previewed with a Remove button, checked in the
+ * browser (convenience only; the server must check it again). Because a file is sent, the
+ * request becomes multipart FormData (payment_option, down_payment_amount, payment_proof);
+ * Content-Type is left for the browser to set. 422 {"errors": {"payment_proof": ["…"]}} shows
+ * under the upload. Reschedules send no file and keep the JSON body.
+ *
  * Reschedule mode (form[data-reschedule-id]): the
  * payment is carried over, so there is no payment option to pick. The body is
  * { reschedule_id } instead of { payment_option }; 403 {message} if the booking can't be
@@ -48,9 +56,12 @@ import { getCsrfToken } from "../auth/csrf.js";
 
 const FORM_ID = "payment-form";
 const MIN_DOWN_PAYMENT_RATE = 0.3;
+const PROOF_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const PROOF_MAX_BYTES = 5 * 1024 * 1024;
 
 function initBookingSummary() {
     initPaymentOptionToggle();
+    initProofUpload();
 
     const form = document.getElementById(FORM_ID);
     if (!form) return;
@@ -118,6 +129,108 @@ function initPaymentOptionToggle() {
             validateDownPayment(form);
         });
     }
+}
+
+// ---- Proof of submission upload ------------------------------------------------------------
+
+function initProofUpload() {
+    const wrap = document.querySelector("[data-proof-upload]");
+    if (!wrap) return;
+
+    const input = wrap.querySelector("[data-proof-input]");
+    const dropzone = wrap.querySelector("[data-proof-dropzone]");
+    const preview = wrap.querySelector("[data-proof-preview]");
+    const image = wrap.querySelector("[data-proof-image]");
+    const name = wrap.querySelector("[data-proof-name]");
+    const remove = wrap.querySelector("[data-proof-remove]");
+    const form = wrap.closest("form");
+    let previewUrl = null;
+
+    const reset = () => {
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        previewUrl = null;
+        input.value = "";
+        image.removeAttribute("src");
+        preview.classList.add("d-none");
+        wrap.classList.remove("is-filled");
+    };
+
+    const accept = (file) => {
+        clearProofError(form);
+        const problem = proofProblem(file);
+        if (problem) {
+            reset();
+            showProofError(form, problem);
+            return;
+        }
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        previewUrl = URL.createObjectURL(file);
+        image.src = previewUrl;
+        name.textContent = file.name;
+        preview.classList.remove("d-none");
+        wrap.classList.add("is-filled");
+    };
+
+    input.addEventListener("change", () => {
+        if (input.files[0]) accept(input.files[0]);
+        else reset();
+    });
+
+    remove.addEventListener("click", () => {
+        reset();
+        clearProofError(form);
+        input.focus();
+    });
+
+    ["dragenter", "dragover"].forEach((type) =>
+        dropzone.addEventListener(type, (event) => {
+            event.preventDefault();
+            dropzone.classList.add("is-dragover");
+        }),
+    );
+    ["dragleave", "drop"].forEach((type) =>
+        dropzone.addEventListener(type, () =>
+            dropzone.classList.remove("is-dragover"),
+        ),
+    );
+    dropzone.addEventListener("drop", (event) => {
+        event.preventDefault();
+        const file = event.dataTransfer?.files?.[0];
+        if (!file) return;
+        const transfer = new DataTransfer();
+        transfer.items.add(file);
+        input.files = transfer.files;
+        accept(file);
+    });
+}
+
+// Returns a message when the file can't be used, otherwise null.
+function proofProblem(file) {
+    if (!file)
+        return "Please upload a screenshot showing you submitted the payment details form.";
+    if (!PROOF_TYPES.includes(file.type))
+        return "Please upload a JPG, PNG or WebP image.";
+    if (file.size > PROOF_MAX_BYTES)
+        return "The image is larger than 5 MB. Please choose a smaller one.";
+    return null;
+}
+
+function showProofError(form, message) {
+    const el = form?.querySelector('[data-field-error="payment_proof"]');
+    if (el) {
+        el.textContent = message;
+        el.classList.remove("d-none");
+    }
+    form?.querySelector("[data-proof-upload]")?.classList.add("is-invalid");
+}
+
+function clearProofError(form) {
+    const el = form?.querySelector('[data-field-error="payment_proof"]');
+    if (el) {
+        el.textContent = "";
+        el.classList.add("d-none");
+    }
+    form?.querySelector("[data-proof-upload]")?.classList.remove("is-invalid");
 }
 
 // Numbers only: digits plus one decimal point, at most 2 decimals.
@@ -268,29 +381,50 @@ async function submitPayment(form) {
         }
     }
 
+    // New payments also need the proof image (a reschedule has no upload panel).
+    const proofInput = form.querySelector("[data-proof-input]");
+    clearProofError(form);
+    if (!rescheduleId && proofInput) {
+        const problem = proofProblem(proofInput.files[0]);
+        if (problem) {
+            showProofError(form, problem);
+            form.querySelector("[data-proof-dropzone]")?.scrollIntoView({
+                block: "center",
+                behavior: "smooth",
+            });
+            return;
+        }
+    }
+
     const submitBtn = document.querySelector(
         '[form="payment-form"][type="submit"]',
     );
     if (submitBtn) submitBtn.disabled = true;
 
     try {
+        // A file goes up, so a new payment is multipart FormData (no Content-Type: the browser
+        // adds the boundary). A reschedule has no file and keeps its JSON body.
+        const headers = {
+            Accept: "application/json",
+            "X-CSRF-TOKEN": getCsrfToken(form),
+        };
+        let body;
+        if (rescheduleId) {
+            headers["Content-Type"] = "application/json";
+            body = JSON.stringify({ reschedule_id: rescheduleId });
+        } else {
+            body = new FormData();
+            body.append("payment_option", hiddenInput.value);
+            if (downPaymentAmount !== null) {
+                body.append("down_payment_amount", downPaymentAmount);
+            }
+            body.append("payment_proof", proofInput.files[0]);
+        }
+
         const response = await fetch(form.action, {
             method: "POST",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": getCsrfToken(form),
-            },
-            body: JSON.stringify(
-                rescheduleId
-                    ? { reschedule_id: rescheduleId }
-                    : downPaymentAmount !== null
-                      ? {
-                            payment_option: hiddenInput.value,
-                            down_payment_amount: downPaymentAmount,
-                        }
-                      : { payment_option: hiddenInput.value },
-            ),
+            headers,
+            body,
         });
 
         const data = await response.json().catch(() => ({}));
@@ -313,6 +447,12 @@ async function submitPayment(form) {
             const amountError = data.errors?.down_payment_amount?.[0];
             if (amountError) {
                 showAmountError(form, amountError);
+                return;
+            }
+
+            const proofError = data.errors?.payment_proof?.[0];
+            if (proofError) {
+                showProofError(form, proofError);
                 return;
             }
 

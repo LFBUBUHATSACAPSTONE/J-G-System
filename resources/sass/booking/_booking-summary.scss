@@ -344,6 +344,157 @@
         }
     }
 
+    // Link to the (dummy) payment details form. Optical padding: 8px by 16px.
+    &__link-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        gap: $sp-2;
+        padding: $sp-2 $sp-4;
+        min-height: 44px;
+        background: $auth-accent-strong;
+        border: 1px solid $auth-accent-strong;
+        border-radius: $auth-radius-md;
+        color: $auth-text-primary;
+        font-weight: 700;
+        text-align: center;
+        text-decoration: none;
+        transition: filter 0.15s ease-in-out;
+
+        &:hover {
+            filter: brightness(1.1);
+            color: $auth-text-primary;
+        }
+
+        &:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px $auth-focus-ring-soft;
+        }
+    }
+
+    // Proof-of-submission upload. The real <input type="file"> is visually hidden but stays
+    // focusable; its <label> is the dropzone.
+    &__upload {
+        position: relative;
+    }
+
+    &__file-input {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+
+        // The preview replaces the dropzone once a file is chosen.
+        .is-filled > & {
+            display: none;
+        }
+
+        &:focus-visible + .booking-summary__dropzone {
+            border-color: $auth-accent;
+            box-shadow: 0 0 0 3px $auth-focus-ring-soft;
+        }
+    }
+
+    &__dropzone {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: $sp-1;
+        padding: $sp-6 $sp-4;
+        background: $auth-surface;
+        border: 1px dashed $auth-border;
+        border-radius: $auth-radius-md;
+        text-align: center;
+        cursor: pointer;
+        transition:
+            border-color 0.15s ease-in-out,
+            background 0.15s ease-in-out;
+
+        &:hover,
+        &.is-dragover {
+            border-color: $auth-accent;
+        }
+
+        .is-filled > & {
+            display: none;
+        }
+
+        .is-invalid > & {
+            border-color: $auth-danger;
+        }
+    }
+
+    &__dropzone-title {
+        font-weight: 700;
+        color: $auth-text-primary;
+    }
+
+    &__dropzone-hint {
+        font-size: 0.78rem;
+        color: $auth-text-muted;
+    }
+
+    &__preview {
+        display: flex;
+        flex-direction: column;
+        gap: $sp-3;
+        padding: $sp-3;
+        background: $auth-surface;
+        border: 1px solid $auth-border;
+        border-radius: $auth-radius-md;
+    }
+
+    &__preview-img {
+        display: block;
+        width: 100%;
+        max-height: 240px;
+        object-fit: contain;
+        border-radius: $auth-radius-md;
+    }
+
+    &__preview-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: $sp-3;
+        min-width: 0;
+    }
+
+    &__preview-name {
+        min-width: 0;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: $auth-text-secondary;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &__preview-remove {
+        flex: none;
+        padding: $sp-1 $sp-3;
+        background: transparent;
+        border: 1px solid $auth-border;
+        border-radius: $auth-radius-md;
+        color: $auth-text-primary;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+
+        &:hover {
+            border-color: $auth-danger;
+            color: $auth-danger;
+        }
+
+        &:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px $auth-focus-ring-soft;
+        }
+    }
+
     &__field-error {
         display: block;
         margin-top: $sp-1;
