@@ -110,6 +110,7 @@ Route::get('/admin/bookings', function () use ($adminStubFullDates) {
         'event' => [
           'name' => 'Sample Event',
           'type' => 'Others',
+          'type_other' => 'Anniversary Celebration',
           'location' => 'Sample Venue, Bulacan',
           'contact_person' => null,
           'guests' => null,

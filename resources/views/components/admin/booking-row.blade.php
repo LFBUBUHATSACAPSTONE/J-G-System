@@ -69,13 +69,18 @@ $statusUrl = Route::has('admin.bookings.status')
 ? route('admin.bookings.status', ['booking' => $booking['id']])
 : '#';
 
+// Event type shown to the admin: for "Others" it is the text the client specified.
+$typeLabel = (($event['type'] ?? null) === 'Others' && filled($event['type_other'] ?? null))
+? $event['type_other']
+: ($event['type'] ?? null);
+
 $payload = [
 'id' => $booking['id'],
 'reference' => $ref,
 'client' => $booking['client'],
 'event' => [
 'name' => $event['name'] ?? null,
-'type' => $event['type'] ?? null,
+'type' => $typeLabel,
 'location' => $event['location'] ?? null,
 'contact_person' => $event['contact_person'] ?? null,
 'guests' => $event['guests'] ?? null,
@@ -93,7 +98,7 @@ $payload = [
 ];
 
 $search = Str::lower(implode(' ', [
-$booking['client']['name'], $ref, $package['name'], $event['type'] ?? '', $status['label'], $schedule,
+$booking['client']['name'], $ref, $package['name'], $typeLabel ?? '', $status['label'], $schedule,
 ]));
 @endphp
 
@@ -131,7 +136,7 @@ $booking['client']['name'], $ref, $package['name'], $event['type'] ?? '', $statu
 
   <td role="cell" class="admin-bookings__cell" data-label="Package">{{ $package['name'] }}</td>
 
-  <td role="cell" class="admin-bookings__cell" data-label="Event Type">{{ $event['type'] ?? '--' }}</td>
+  <td role="cell" class="admin-bookings__cell" data-label="Event Type">{{ $typeLabel ?? '--' }}</td>
 
   <td role="cell" class="admin-bookings__cell admin-bookings__cell--status" data-label="Status">
     <span class="admin-badge admin-badge--{{ $badge['tone'] }}{{ ($badge['solid'] ?? false) ? ' admin-badge--solid' : '' }}">
