@@ -86,6 +86,12 @@ if ($downPercent !== null && ! empty($payment['label']) && ! str_contains($payme
 $payment['label'] .= ' (' . rtrim(rtrim(number_format($downPercent, 1), '0'), '.') . '%)';
 }
 
+// Down payment value in pesos, shown in the modal's "Down Payment Value" field.
+if (! empty($payment['down_payment_amount'])) {
+$amount = (float) $payment['down_payment_amount'];
+$payment['down_payment_label'] = 'Php ' . number_format($amount, fmod($amount, 1.0) == 0.0 ? 0 : 2);
+}
+
 $payload = [
 'id' => $booking['id'],
 'reference' => $ref,

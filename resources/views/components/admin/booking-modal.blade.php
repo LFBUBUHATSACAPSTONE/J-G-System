@@ -125,6 +125,12 @@ $venueTypes = config('admin.bookings.venue_types', ['Indoor', 'Outdoor', 'Both']
               </div>
 
               <div class="admin-field">
+                <label for="bm-down-payment" class="admin-field__label">Down Payment Value</label>
+                <input type="text" id="bm-down-payment" class="admin-field__control" readonly
+                  placeholder="--" data-booking-field="payment.down_payment_label">
+              </div>
+
+              <div class="admin-field">
                 <span id="bm-package-label" class="admin-field__label">Package</span>
                 <div class="admin-booking-modal__package" role="group" aria-labelledby="bm-package-label">
                   <p class="admin-booking-modal__package-name" data-booking-field="package.name"></p>
