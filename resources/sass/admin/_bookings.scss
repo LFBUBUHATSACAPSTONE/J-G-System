@@ -853,6 +853,40 @@ $admin-filter-sheet-breakpoint: 768px;
         line-height: 1.2;
     }
 
+    // Proof of submission: same box look as the package strip. A thumbnail (max 160px tall) that
+    // opens the full image, or a centred "No proof uploaded".
+    &__proof {
+        padding: $sp-3 $sp-4;
+        border: 1px solid $admin-field-border;
+        border-radius: $admin-radius-md;
+        background: $admin-field-bg;
+        text-align: center;
+    }
+
+    &__proof-link {
+        display: block;
+        border-radius: $admin-radius-md;
+
+        &:focus-visible {
+            outline: 2px solid $admin-text-primary;
+            outline-offset: $sp-1;
+        }
+    }
+
+    &__proof-img {
+        display: block;
+        width: 100%;
+        max-height: 160px;
+        object-fit: contain;
+        border-radius: $admin-radius-md;
+    }
+
+    &__proof-empty {
+        margin: 0;
+        font-size: admin-fluid(0.95);
+        color: $admin-text-muted;
+    }
+
     // payment.state: paid | partial | pending. Text colours are the AAA status tokens.
     &__package-status {
         font-size: admin-fluid(0.95);
