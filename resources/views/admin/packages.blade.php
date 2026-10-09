@@ -14,7 +14,7 @@
 <body>
   <x-admin.sidebar />
 
-  <main class="admin-content admin-packages p-4">
+  <main class="admin-content admin-packages">
     <div class="admin-packages__top">
       <x-admin.page-header />
     </div>

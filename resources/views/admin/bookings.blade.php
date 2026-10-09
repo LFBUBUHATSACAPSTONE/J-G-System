@@ -17,7 +17,7 @@
 <body>
   <x-admin.sidebar />
 
-  <main class="admin-content admin-bookings p-4">
+  <main class="admin-content admin-bookings">
     <x-admin.page-header />
 
     @if (session('status'))
