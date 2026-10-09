@@ -4,7 +4,8 @@
      View Details button carries the modal's content.
      History page: pass :history="true" and the row resolves its look from the event dates
      (Upcoming / Ongoing / Completed) using config/admin/history.php, with no action buttons.
-     Cancelled and Declined bookings keep their own badge. Bookings page: nothing changes.
+     Cancelled and Declined bookings keep their own badge. In History the modal is view-only
+     (payload editable = false) but still shows the "Edited" labels. Bookings page: Edit is on.
      Two separate cells on purpose: STATUS is a read-only badge, ACTIONS holds every button
      (View Details + the status's actions from config/admin/bookings.php). A status must never look
      like a button, so the two never share a cell or a shape. --}}
@@ -74,6 +75,18 @@ $typeLabel = (($event['type'] ?? null) === 'Others' && filled($event['type_other
 ? $event['type_other']
 : ($event['type'] ?? null);
 
+// Event type for the modal's dropdown. A stored type that is not in the user-side list (older
+// bookings) is shown as "Others" with its own text, so Edit never forces the admin to re-pick it.
+$rawType = $event['type'] ?? null;
+$knownTypes = config('admin.bookings.event_types', []);
+if ($rawType !== null && $rawType !== 'Others' && ! in_array($rawType, $knownTypes, true)) {
+$typeValue = 'Others';
+$typeOther = $rawType;
+} else {
+$typeValue = $rawType;
+$typeOther = $rawType === 'Others' ? ($event['type_other'] ?? null) : null;
+}
+
 // Down payment: show the share of the package cost the client chose (user side: at least 30%).
 // The backend may pass payment.down_payment_percent, or payment.down_payment_amount (pesos) and the
 // percentage is worked out from the package price. Full payments and missing data are left as is.
@@ -99,6 +112,9 @@ $payload = [
 'event' => [
 'name' => $event['name'] ?? null,
 'type' => $typeLabel,
+'type_value' => $typeValue,
+'type_other' => $typeOther,
+'start_date' => $start->toDateString(), // the modal works out the Event Location lock from it
 'location' => $event['location'] ?? null,
 'contact_person' => $event['contact_person'] ?? null,
 'guests' => $event['guests'] ?? null,
@@ -107,7 +123,10 @@ $payload = [
 'start_time' => $event['start_time'] ?? null,
 'end_time' => $event['end_time'] ?? null,
 ],
-'editable' => $status['editable'] ?? true, // false hides Edit in the modal (History: Completed, Cancelled)
+'editable' => ! $history, // History is a record: the modal there is view-only
+// Fields the admin changed after the client booked: { 'event.location' => 'original value', ... }.
+// Keys are the modal's data-booking-field paths. Empty array = nothing edited.
+'edited' => $booking['edited'] ?? [],
 'payment' => $payment,
 'package' => [
 'name' => $package['name'],
