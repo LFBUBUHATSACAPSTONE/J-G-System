@@ -359,7 +359,9 @@
     // Actions row: full width, side by side from 480px.
     &__actions {
         display: flex;
-        flex-direction: column;
+        // Phones: Continue on top, Cancel/Previous under it (the markup keeps Cancel first so
+        // the desktop row reads Cancel | Continue). From 480px the row goes side by side.
+        flex-direction: column-reverse;
         gap: $sp-4;
         width: 100%;
 
