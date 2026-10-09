@@ -1,16 +1,26 @@
 {{-- One modal shared by every row. bookings.js fills it from the clicked row's
      data-booking JSON, so there is no per-row modal markup.
-     Client Information is always read-only. Event Information has an Edit toggle that
-     unlocks the fields marked data-editable and shows "Save changes" (PATCH to
-     admin.bookings.update). Schedule, payment and package stay read-only. --}}
+     The Edit toggle unlocks every field marked data-editable (client details + event name, type,
+     location, contact person, guests, venue type) and shows "Save changes" (PATCH to
+     admin.bookings.update). Schedule, payment and package stay read-only.
+     Event Location locks `location_lock_days` before the event (config/scheduling.php).
+     On the History page the payload has editable = false, so Edit is hidden and the modal only
+     shows the data plus the "Edited" labels. Validation lives in bookings.js (same rules as the
+     user-side booking form). --}}
 @php
 $clientFields = [
-['id' => 'client-name', 'label' => 'Client Name', 'path' => 'client.name'],
-['id' => 'client-email', 'label' => 'Email', 'path' => 'client.email'],
-['id' => 'client-phone', 'label' => 'Contact Number', 'path' => 'client.phone'],
-['id' => 'client-address', 'label' => 'Address', 'path' => 'client.address'],
+['id' => 'client-name', 'name' => 'client_name', 'label' => 'Client Name', 'path' => 'client.name'],
+['id' => 'client-email', 'name' => 'client_email', 'label' => 'Email', 'path' => 'client.email'],
+['id' => 'client-phone', 'name' => 'client_phone', 'label' => 'Contact Number', 'path' => 'client.phone'],
+['id' => 'client-address', 'name' => 'client_address', 'label' => 'Address', 'path' => 'client.address'],
 ];
 $venueTypes = config('admin.bookings.venue_types', ['Indoor', 'Outdoor', 'Both']);
+$eventTypes = config('admin.bookings.event_types', ['Baby Shower', 'Bridal Shower', 'Birthday Party', 'Concert', 'Family Reunion', 'Team-Building Event', 'Wedding', 'Others']);
+$lockDays = (int) config('scheduling.location_lock_days', 1);
+
+// Only used after a failed save (the backend redirects back with errors + old input and flashes
+// edit_booking_id): bookings.js reopens that booking in edit mode and shows the messages.
+$serverErrors = isset($errors) ? $errors->toArray() : [];
 @endphp
 
 <div
@@ -19,6 +29,10 @@ $venueTypes = config('admin.bookings.venue_types', ['Indoor', 'Outdoor', 'Both']
   tabindex="-1"
   aria-labelledby="bookingModalTitle"
   aria-hidden="true"
+  data-location-lock-days="{{ $lockDays }}"
+  data-server-errors="{{ json_encode($serverErrors) }}"
+  data-server-old="{{ json_encode(session()->getOldInput()) }}"
+  data-server-booking="{{ session('edit_booking_id') }}"
   data-update-url-template="{{ Route::has('admin.bookings.update') ? route('admin.bookings.update', ['booking' => '__ID__']) : '#' }}">
   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
     <form class="modal-content admin-booking-modal__card" method="POST" action="#" novalidate>
@@ -38,8 +52,11 @@ $venueTypes = config('admin.bookings.venue_types', ['Indoor', 'Outdoor', 'Both']
             @foreach ($clientFields as $field)
             <div class="admin-field">
               <label for="bm-{{ $field['id'] }}" class="admin-field__label">{{ $field['label'] }}</label>
-              <input type="text" id="bm-{{ $field['id'] }}" class="admin-field__control" readonly
-                placeholder="--" data-booking-field="{{ $field['path'] }}">
+              <input type="text" id="bm-{{ $field['id'] }}" name="{{ $field['name'] }}" class="admin-field__control" readonly
+                placeholder="--" aria-describedby="bm-err-{{ $field['id'] }}"
+                data-booking-field="{{ $field['path'] }}" data-editable>
+              <small class="admin-field__error d-none" id="bm-err-{{ $field['id'] }}" data-field-error="{{ $field['name'] }}"></small>
+              <x-admin.edited-note :path="$field['path']" />
             </div>
             @endforeach
           </div>
@@ -60,25 +77,68 @@ $venueTypes = config('admin.bookings.venue_types', ['Indoor', 'Outdoor', 'Both']
               <div class="admin-field">
                 <label for="bm-event-name" class="admin-field__label">Event Name</label>
                 <input type="text" id="bm-event-name" name="event_name" class="admin-field__control" readonly
-                  placeholder="--" data-booking-field="event.name" data-editable>
+                  placeholder="--" aria-describedby="bm-err-event-name" data-booking-field="event.name" data-editable>
+                <small class="admin-field__error d-none" id="bm-err-event-name" data-field-error="event_name"></small>
+                <x-admin.edited-note path="event.name" />
               </div>
 
-              <div class="admin-field">
-                <label for="bm-event-type" class="admin-field__label">Event type</label>
+              {{-- Event type: view mode shows the text; Edit swaps in the dropdown. Choosing "Others"
+                   swaps the dropdown for a text field IN THE SAME SPOT (no extra field) and the label
+                   gets an "Others" tag. The arrow button beside it goes back to the list.
+                   Posts event_type and, for Others, event_type_other (same names as the user side). --}}
+              <div class="admin-field" data-type-field>
+                <label for="bm-event-type" class="admin-field__label" data-type-label>
+                  Event type
+                  <span class="admin-field__tag admin-field__tag--others" data-others-tag hidden>Others</span>
+                </label>
                 <input type="text" id="bm-event-type" class="admin-field__control" readonly
-                  placeholder="--" data-booking-field="event.type">
+                  placeholder="--" data-booking-field="event.type" data-type-display>
+
+                <div data-type-select-wrap hidden>
+                  <select id="bm-event-type-select" name="event_type" class="admin-field__control" disabled
+                    aria-describedby="bm-err-event-type" data-booking-field="event.type_value" data-editable>
+                    <option value="">Select event type</option>
+                    @foreach ($eventTypes as $eventType)
+                    <option value="{{ $eventType }}">{{ $eventType }}</option>
+                    @endforeach
+                  </select>
+                </div>
+
+                <div class="admin-field__row admin-field__row--action" data-type-other-wrap hidden>
+                  <input type="text" id="bm-event-type-other" name="event_type_other" class="admin-field__control" readonly
+                    placeholder="Type the event type" aria-describedby="bm-err-event-type-other"
+                    data-booking-field="event.type_other" data-editable>
+                  <button type="button" class="admin-btn admin-btn--outline admin-btn--sm" data-type-change
+                    aria-label="Choose the event type from the list">
+                    <i class="ph ph-caret-down" aria-hidden="true"></i>
+                  </button>
+                </div>
+
+                <small class="admin-field__error d-none" id="bm-err-event-type" data-field-error="event_type"></small>
+                <small class="admin-field__error d-none" id="bm-err-event-type-other" data-field-error="event_type_other"></small>
+                <x-admin.edited-note path="event.type" />
               </div>
 
               <div class="admin-field">
                 <label for="bm-event-location" class="admin-field__label">Event Location</label>
                 <input type="text" id="bm-event-location" name="event_location" class="admin-field__control" readonly
-                  placeholder="--" data-booking-field="event.location" data-editable>
+                  placeholder="--" aria-describedby="bm-err-event-location bm-location-lock"
+                  data-booking-field="event.location" data-editable>
+                <small class="admin-field__error d-none" id="bm-err-event-location" data-field-error="event_location"></small>
+                <p class="admin-field__note" id="bm-location-lock" data-location-lock hidden>
+                  <i class="ph ph-lock-simple" aria-hidden="true"></i>
+                  Locked: the location can't be changed within {{ $lockDays }} {{ Str::plural('day', $lockDays) }} of the event.
+                </p>
+                <x-admin.edited-note path="event.location" />
               </div>
 
               <div class="admin-field">
                 <label for="bm-contact-person" class="admin-field__label">Event Contact Person</label>
                 <input type="text" id="bm-contact-person" name="venue_contact_person" class="admin-field__control" readonly
-                  placeholder="--" data-booking-field="event.contact_person" data-editable>
+                  inputmode="numeric" placeholder="--" aria-describedby="bm-err-contact-person"
+                  data-booking-field="event.contact_person" data-editable>
+                <small class="admin-field__error d-none" id="bm-err-contact-person" data-field-error="venue_contact_person"></small>
+                <x-admin.edited-note path="event.contact_person" />
               </div>
 
               <div class="admin-field">
@@ -95,6 +155,10 @@ $venueTypes = config('admin.bookings.venue_types', ['Indoor', 'Outdoor', 'Both']
                     @endforeach
                   </select>
                 </div>
+                <small class="admin-field__error d-none" data-field-error="guest_count"></small>
+                <small class="admin-field__error d-none" data-field-error="venue_type"></small>
+                <x-admin.edited-note path="event.guests" />
+                <x-admin.edited-note path="event.venue_type" />
               </div>
             </div>
 
@@ -144,6 +208,7 @@ $venueTypes = config('admin.bookings.venue_types', ['Indoor', 'Outdoor', 'Both']
           </div>
         </section>
 
+        <p class="admin-booking-modal__error" role="alert" data-booking-error hidden></p>
       </div>
 
       <div class="modal-footer admin-booking-modal__footer">
