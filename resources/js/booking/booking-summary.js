@@ -143,7 +143,7 @@ function initProofUpload() {
     const image = wrap.querySelector("[data-proof-image]");
     const name = wrap.querySelector("[data-proof-name]");
     const remove = wrap.querySelector("[data-proof-remove]");
-    const form = wrap.closest("form");
+    const form = document.getElementById(FORM_ID);
     let previewUrl = null;
 
     const reset = () => {
@@ -215,22 +215,30 @@ function proofProblem(file) {
     return null;
 }
 
+// The upload sits in its own column, outside <form> (it joins the form through its
+// form="payment-form" attribute), so these look it up in the whole step instead of the form.
+const stepOf = (form) => form?.closest(".booking-flow__view") || document;
+
 function showProofError(form, message) {
-    const el = form?.querySelector('[data-field-error="payment_proof"]');
+    const el = stepOf(form).querySelector('[data-field-error="payment_proof"]');
     if (el) {
         el.textContent = message;
         el.classList.remove("d-none");
     }
-    form?.querySelector("[data-proof-upload]")?.classList.add("is-invalid");
+    stepOf(form)
+        .querySelector("[data-proof-upload]")
+        ?.classList.add("is-invalid");
 }
 
 function clearProofError(form) {
-    const el = form?.querySelector('[data-field-error="payment_proof"]');
+    const el = stepOf(form).querySelector('[data-field-error="payment_proof"]');
     if (el) {
         el.textContent = "";
         el.classList.add("d-none");
     }
-    form?.querySelector("[data-proof-upload]")?.classList.remove("is-invalid");
+    stepOf(form)
+        .querySelector("[data-proof-upload]")
+        ?.classList.remove("is-invalid");
 }
 
 // Numbers only: digits plus one decimal point, at most 2 decimals.
@@ -382,16 +390,15 @@ async function submitPayment(form) {
     }
 
     // New payments also need the proof image (a reschedule has no upload panel).
-    const proofInput = form.querySelector("[data-proof-input]");
+    const proofInput = stepOf(form).querySelector("[data-proof-input]");
     clearProofError(form);
     if (!rescheduleId && proofInput) {
         const problem = proofProblem(proofInput.files[0]);
         if (problem) {
             showProofError(form, problem);
-            form.querySelector("[data-proof-dropzone]")?.scrollIntoView({
-                block: "center",
-                behavior: "smooth",
-            });
+            stepOf(form)
+                .querySelector("[data-proof-dropzone]")
+                ?.scrollIntoView({ block: "center", behavior: "smooth" });
             return;
         }
     }

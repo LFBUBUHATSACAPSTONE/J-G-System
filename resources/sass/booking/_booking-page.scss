@@ -45,6 +45,14 @@
     }
 }
 
+// The Payment step has four columns, so it gets a wider page than the other steps (they stay at
+// 1040px). Side padding stays 16/24/32px, so the card is as wide as the window allows up to 1480px.
+.booking-flow:has(
+    .booking-flow__view[data-view="booking-summary"]:not(.d-none)
+) {
+    max-width: 1480px;
+}
+
 // Confirmation is the only step that centres: its card sits in the middle of the space under
 // the tracker. The other steps keep their normal top-aligned flow. (A hidden view carries
 // Bootstrap's d-none, which wins over this display.)
