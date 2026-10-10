@@ -1,6 +1,7 @@
 @props([
 'name',
 'price',
+'packageId' => null,
 'features' => [],
 'featured' => false,
 'previewCount' => 2, // features always visible on phones; the rest sit behind "See more"
@@ -8,6 +9,7 @@
 
 @php
 $featureId = 'pkg-features-' . \Illuminate\Support\Str::slug($name);
+$packageId = $packageId ?? \Illuminate\Support\Str::slug($name);
 $visibleFeatures = array_slice($features, 0, $previewCount);
 $extraFeatures = array_slice($features, $previewCount);
 @endphp
@@ -23,7 +25,7 @@ $extraFeatures = array_slice($features, $previewCount);
   <p class="package-card__price">Php {{ number_format((float) $price) }}</p>
 
   @auth
-  <a class="package-card__cta" data-package-select href="{{ route('user.booking') }}">
+  <a class="package-card__cta" data-package-select href="{{ route('user.booking', ['package' => $packageId]) }}">
     Book Now
   </a>
   @else

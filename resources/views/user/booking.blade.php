@@ -49,6 +49,9 @@
     data-reschedule-id="{{ $reschedule['booking_id'] }}"
     data-reschedule-month="{{ $reschedule['month'] }}"
     @endif
+    data-package-id="{{ $packageId ?? '' }}"
+    data-package-name="{{ $packageName ?? '' }}"
+    data-package-cost="{{ $packageCost ?? '' }}"
     data-package-url="{{ route('user.landing') }}#packages"
     data-cancel-url="{{ route('user.landing') }}"
     data-continue-url="{{ route('user.landing') }}">
