@@ -2,7 +2,7 @@
      data-booking JSON, so there is no per-row modal markup.
      The Edit toggle unlocks every field marked data-editable (client details + event name, type,
      location, contact person, guests, venue type) and shows "Save changes" (PATCH to
-     admin.bookings.update). Schedule, payment and package stay read-only.
+     admin.bookings.update). Schedule, payment, proof of submission and package stay read-only.
      Event Location locks `location_lock_days` before the event (config/scheduling.php).
      On the History page the payload has editable = false, so Edit is hidden and the modal only
      shows the data plus the "Edited" labels. Validation lives in bookings.js (same rules as the
@@ -192,6 +192,21 @@ $serverErrors = isset($errors) ? $errors->toArray() : [];
                 <label for="bm-down-payment" class="admin-field__label">Down Payment Value</label>
                 <input type="text" id="bm-down-payment" class="admin-field__control" readonly
                   placeholder="--" data-booking-field="payment.down_payment_label">
+              </div>
+
+              {{-- Proof of submission: the screenshot the client uploaded on the Payment step of the
+                   booking flow (payment.proof_url). View-only: no name, never posted, not data-editable.
+                   bookings.js shows the thumbnail (click to open it full size in a new tab) or the
+                   empty text. Same field on Bookings and Booking History (this modal is shared). --}}
+              <div class="admin-field admin-booking-modal__proof-field">
+                <span id="bm-proof-label" class="admin-field__label">Proof of Submission</span>
+                <div class="admin-booking-modal__proof" role="group" aria-labelledby="bm-proof-label" data-booking-proof>
+                  <a class="admin-booking-modal__proof-link" href="#" target="_blank" rel="noopener noreferrer" hidden data-proof-link>
+                    <img class="admin-booking-modal__proof-img" alt="Proof of submission uploaded by the client" loading="lazy" data-proof-img>
+                    <span class="visually-hidden">Open the proof of submission in a new tab</span>
+                  </a>
+                  <p class="admin-booking-modal__proof-empty" data-proof-empty>No proof uploaded</p>
+                </div>
               </div>
             </div>
 

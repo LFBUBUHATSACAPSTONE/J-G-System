@@ -493,6 +493,28 @@ function toMinutes(value, period) {
     return hour * 60 + minute;
 }
 
+// An event must run at least one hour (start to end, across all its days).
+const MIN_EVENT_MINUTES = 60;
+
+// Returns '' when the length is fine or can't be checked yet (a date or time
+// is missing/invalid, which the other checks report).
+function getDurationError(startDate, endDate, startMinutes, endMinutes) {
+    if (!startDate || !endDate || startMinutes === null || endMinutes === null)
+        return "";
+
+    const dayDiff = Math.round(
+        (Date.parse(`${endDate}T00:00:00Z`) -
+            Date.parse(`${startDate}T00:00:00Z`)) /
+            86400000,
+    );
+    const duration = dayDiff * 1440 + endMinutes - startMinutes;
+
+    if (duration <= 0) return "End time must be later than start time.";
+    if (duration < MIN_EVENT_MINUTES)
+        return "The event must be at least 1 hour long.";
+    return "";
+}
+
 async function submitEventSchedule(form) {
     const field = (name) => form.querySelector(`[name="${name}"]`);
     const startDateInput = field("event_start_date");
@@ -534,17 +556,22 @@ async function submitEventSchedule(form) {
         ],
         [
             endTimeInput.closest(".event-schedule__time-field"),
-            // Only a same-day event has a strict, checkable ordering —
-            // a multi-day range can legitimately end earlier in the
-            // clock than it starts (it just spans into the next day).
-            startDateInput.value &&
-            startDateInput.value === endDateInput.value &&
-            !getTimeError(startTimeInput.value, "Start time") &&
-            !getTimeError(endTimeInput.value, "End time") &&
-            toMinutes(endTimeInput.value, getPeriod(endAmpmGroup)) <=
-                toMinutes(startTimeInput.value, getPeriod(startAmpmGroup))
-                ? "End time must be later than start time."
-                : "",
+            // Whole event length (dates + times) must be at least one hour.
+            // A multi-day range can end earlier in the clock than it starts,
+            // so the length is measured across the dates, not the clock alone.
+            getDurationError(
+                startDateInput.value,
+                endDateInput.value,
+                getTimeError(startTimeInput.value, "Start time")
+                    ? null
+                    : toMinutes(
+                          startTimeInput.value,
+                          getPeriod(startAmpmGroup),
+                      ),
+                getTimeError(endTimeInput.value, "End time")
+                    ? null
+                    : toMinutes(endTimeInput.value, getPeriod(endAmpmGroup)),
+            ),
             "end_time",
         ],
     ];
