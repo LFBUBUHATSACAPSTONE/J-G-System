@@ -254,9 +254,9 @@ function initModal(modal) {
             }
         });
 
-        form.action = urlTemplate.replace(
-            "__ID__",
-            encodeURIComponent(booking.id),
+        form.setAttribute(
+            "action",
+            urlTemplate.replace("__ID__", encodeURIComponent(booking.id)),
         );
 
         locationLocked = isLocationLocked(booking);
@@ -541,10 +541,68 @@ function restoreServerErrors(modal) {
 
 //  Confirm destructive actions (Decline / Cancel)
 function initConfirm() {
-    document.addEventListener("submit", (event) => {
-        if (event.defaultPrevented) return;
-        const message = event.target.dataset?.confirm;
-        if (message && !window.confirm(message)) event.preventDefault();
+    document.addEventListener("submit", async (event) => {
+        const form = event.target;
+        if (!(form instanceof HTMLFormElement)) return;
+
+        if (form.dataset.confirm && !window.confirm(form.dataset.confirm)) {
+            event.preventDefault();
+            return;
+        }
+
+        if (
+            !form.matches(".admin-bookings__action-form") &&
+            !form.closest("#bookingModal")
+        ) {
+            return;
+        }
+
+        event.preventDefault();
+        const feedback = document.querySelector("[data-bookings-feedback]");
+        if (feedback) {
+            feedback.hidden = true;
+            feedback.textContent = "";
+            feedback.classList.remove("admin-alert--danger");
+        }
+
+        try {
+            // Status buttons are named "action", which can shadow the form.action
+            // property in some browsers. Read the literal attribute to get the URL.
+            const actionUrl = form.getAttribute("action");
+            if (!actionUrl) {
+                throw new Error("The booking action URL is missing.");
+            }
+
+            const response = await fetch(actionUrl, {
+                method: form.getAttribute("method") || "GET",
+                body: new FormData(form, event.submitter),
+                headers: {
+                    Accept: "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+            });
+            const result = await response.json();
+
+            if (!response.ok) {
+                const message =
+                    result.message ||
+                    Object.values(result.errors || {})
+                        .flat()
+                        .join(" ");
+                throw new Error(message || "The booking could not be updated.");
+            }
+
+            window.location.reload();
+        } catch (error) {
+            if (!feedback) return;
+            feedback.textContent =
+                error instanceof Error
+                    ? error.message
+                    : "The booking could not be updated.";
+            feedback.classList.add("admin-alert--danger");
+            feedback.hidden = false;
+            feedback.focus?.();
+        }
     });
 }
 

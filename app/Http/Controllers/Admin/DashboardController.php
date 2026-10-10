@@ -50,7 +50,7 @@ class DashboardController extends Controller
                 'package' => $booking->package?->name,
                 'event' => $booking->eventDetails?->event_name,
                 'date' => $booking->schedule?->event_start_date?->toDateString(),
-                'submitted_at' => ($booking->submitted_at ?? $booking->created_at)->toIso8601String(),
+                'submitted_at' => ($booking->submitted_at ?? $booking->created_at)?->toIso8601String(),
             ]);
 
         $upcomingEvents = Booking::query()

@@ -153,6 +153,25 @@ class AdminDashboardTest extends TestCase
         ], $counts);
     }
 
+    public function test_dashboard_returns_incomplete_attention_booking_without_failing(): void
+    {
+        $booking = Booking::query()->create([
+            'reference' => 'JG-MISSING-DETAILS',
+            'status' => 'pending',
+            'client_name' => 'Incomplete Client',
+            'client_email' => 'incomplete@example.com',
+        ]);
+
+        $response = $this->getJson(route('admin.dashboard.data'))->assertOk();
+
+        $this->assertSame(
+            $booking->id,
+            $response->json('attention.0.id'),
+        );
+        $this->assertNull($response->json('attention.0.date'));
+        $this->assertNull($response->json('attention.0.package'));
+    }
+
     private function createBooking(array $overrides = []): Booking
     {
         $data = array_merge([
