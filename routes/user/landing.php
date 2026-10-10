@@ -14,4 +14,4 @@ Route::get('/user/landing', function () {
         ->all();
 
     return view('user.landing', compact('packages'));
-})->name('user.landing');
+})->name('user.landing'); 
