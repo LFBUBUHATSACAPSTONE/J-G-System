@@ -82,8 +82,12 @@ class GoogleAuthController extends Controller
                     $user->email_verified_at ??= now();
                     $user->save();
                 } else {
+                    $displayName = trim((string) ($googleUser->getName() ?: strstr($email, '@', true) ?: $email));
+                    $nameParts = preg_split('/\s+/', $displayName, 2) ?: [];
+
                     $user = User::create([
-                        'name' => $googleUser->getName() ?: $email,
+                        'first_name' => $nameParts[0] ?? $displayName,
+                        'last_name' => $nameParts[1] ?? '',
                         'email' => $email,
                         'google_id' => $googleId,
                         'password' => Hash::make(Str::random(40)),

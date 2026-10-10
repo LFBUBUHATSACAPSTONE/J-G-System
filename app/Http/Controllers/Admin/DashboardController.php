@@ -40,14 +40,14 @@ class DashboardController extends Controller
         $attention = Booking::query()
             ->whereIn('status', ['pending', 'pending_payment'])
             ->orderByRaw('COALESCE(submitted_at, created_at) ASC')
-            ->with(['eventDetails', 'schedule', 'packageDetails'])
+            ->with(['eventDetails', 'schedule', 'package'])
             ->get()
             ->map(fn (Booking $booking) => [
                 'id' => $booking->id,
                 'reference' => '#'.$booking->reference,
                 'status' => $booking->status,
                 'client' => $booking->client_name,
-                'package' => $booking->packageDetails?->package_name,
+                'package' => $booking->package?->name,
                 'event' => $booking->eventDetails?->event_name,
                 'date' => $booking->schedule?->event_start_date?->toDateString(),
                 'submitted_at' => ($booking->submitted_at ?? $booking->created_at)->toIso8601String(),
@@ -60,25 +60,25 @@ class DashboardController extends Controller
             ->join('booking_schedules', 'bookings.id', '=', 'booking_schedules.booking_id')
             ->orderBy('booking_schedules.event_start_date')
             ->select('bookings.*')
-            ->with(['eventDetails', 'schedule', 'packageDetails'])
+            ->with(['eventDetails', 'schedule', 'package'])
             ->get()
             ->map(fn (Booking $booking) => [
                 'id' => $booking->id,
                 'date' => $booking->schedule->event_start_date->toDateString(),
                 'event' => $booking->eventDetails?->event_name,
                 'client' => $booking->client_name,
-                'package' => $booking->packageDetails?->package_name,
+                'package' => $booking->package?->name,
                 'time' => $this->formatEventTime(
                     $booking->schedule->event_start_time,
                     $booking->schedule->event_end_time,
                 ),
             ]);
 
-        $packageRate = DB::table('booking_packages')
-            ->join('bookings', 'bookings.id', '=', 'booking_packages.booking_id')
+        $packageRate = DB::table('bookings')
+            ->join('packages', 'packages.id', '=', 'bookings.package_id')
             ->whereIn('bookings.status', ['approved', 'completed'])
-            ->selectRaw('booking_packages.package_id, booking_packages.package_name, COUNT(*) AS booking_count')
-            ->groupBy('booking_packages.package_id', 'booking_packages.package_name')
+            ->selectRaw('packages.id AS package_id, packages.name AS package_name, COUNT(*) AS booking_count')
+            ->groupBy('packages.id', 'packages.name')
             ->orderByDesc('booking_count')
             ->get()
             ->map(fn ($package) => [

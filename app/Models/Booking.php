@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Booking extends Model
@@ -25,9 +26,9 @@ class Booking extends Model
         return $this->hasOne(BookingPayment::class);
     }
 
-    public function packageDetails(): HasOne
+    public function package(): BelongsTo
     {
-        return $this->hasOne(BookingPackage::class);
+        return $this->belongsTo(Package::class);
     }
 
     protected $fillable = [
@@ -37,6 +38,7 @@ class Booking extends Model
         'client_email',
         'client_phone',
         'client_address',
+        'package_id',
         'rescheduled_from_id',
         'submitted_at',
     ];

@@ -49,6 +49,7 @@ class BookingFlowTest extends TestCase
             $table->string('client_email')->index();
             $table->string('client_phone')->nullable();
             $table->text('client_address')->nullable();
+            $table->string('package_id')->nullable()->index();
             $table->unsignedBigInteger('rescheduled_from_id')->nullable()->unique();
             $table->timestamp('submitted_at')->nullable()->index();
             $table->timestamps();
@@ -146,16 +147,12 @@ class BookingFlowTest extends TestCase
             'reference' => $response->json('reference'),
             'status' => 'pending',
             'client_name' => 'Taylor Jones',
+            'package_id' => 'budget-party',
         ]);
         $this->assertDatabaseHas('booking_events', [
             'booking_id' => $booking->id,
             'event_type' => 'Others',
             'event_type_other' => 'Anniversary',
-        ]);
-        $this->assertDatabaseHas('booking_packages', [
-            'booking_id' => $booking->id,
-            'package_id' => 'budget-party',
-            'package_price' => 10000,
         ]);
         $this->assertDatabaseHas('booking_payments', [
             'booking_id' => $booking->id,
@@ -165,8 +162,8 @@ class BookingFlowTest extends TestCase
         $this->assertSame('Anniversary', $booking->eventDetails->event_type_other);
         $this->assertSame($date, $booking->schedule->event_start_date->toDateString());
         $this->assertSame('3000.00', $booking->payment->payment_amount);
-        $this->assertSame('budget-party', $booking->packageDetails->package_id);
-        $this->assertSame('Budget Party', $booking->packageDetails->package->name);
+        $this->assertSame('budget-party', $booking->package->id);
+        $this->assertSame('Budget Party', $booking->package->name);
     }
 
     public function test_availability_reports_dates_at_capacity_as_json(): void
@@ -227,7 +224,7 @@ class BookingFlowTest extends TestCase
         $this->assertSame('3000.00', $rescheduled->payment->payment_amount);
         $this->assertSame('Wedding', $rescheduled->eventDetails->event_type);
         $this->assertSame('down', $rescheduled->payment->payment_method);
-        $this->assertSame('budget-party', $rescheduled->packageDetails->package_id);
+        $this->assertSame('budget-party', $rescheduled->package->id);
 
         $this->get('/user/booking?reschedule='.$original->id)->assertForbidden();
     }
@@ -246,6 +243,7 @@ class BookingFlowTest extends TestCase
             'client_email',
             'client_phone',
             'client_address',
+            'package_id',
             'rescheduled_from_id',
             'submitted_at',
         ]))));
@@ -268,11 +266,6 @@ class BookingFlowTest extends TestCase
             'payment_method' => $data['payment_method'] ?? null,
             'payment_state' => $data['payment_state'] ?? null,
             'payment_amount' => $data['payment_amount'] ?? null,
-        ]);
-        $booking->packageDetails()->create([
-            'package_id' => $data['package_id'] ?? 'budget-party',
-            'package_name' => $data['package_name'] ?? 'Budget Party',
-            'package_price' => $data['package_price'] ?? 10000,
         ]);
 
         return $booking;

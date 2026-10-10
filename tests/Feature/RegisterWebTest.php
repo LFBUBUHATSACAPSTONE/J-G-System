@@ -315,6 +315,8 @@ class RegisterWebTest extends TestCase
         $response->assertRedirect(route('user.landing'));
         $this->assertAuthenticated();
         $this->assertDatabaseHas('users', [
+            'first_name' => 'Google',
+            'last_name' => 'User',
             'email' => 'google-user@example.com',
             'google_id' => 'google-user-123',
         ]);

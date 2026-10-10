@@ -50,6 +50,7 @@ class AdminDashboardTest extends TestCase
             '2026_10_10_100000_create_booking_detail_tables.php',
             '2026_10_10_110000_create_booking_packages_table.php',
             '2026_10_10_120000_remove_normalized_booking_columns.php',
+            '2026_10_10_130000_link_bookings_to_packages.php',
         ] as $migration) {
             Artisan::call('migrate', [
                 '--path' => 'database/migrations/'.$migration,
@@ -177,6 +178,7 @@ class AdminDashboardTest extends TestCase
             'client_email',
             'client_phone',
             'client_address',
+            'package_id',
             'submitted_at',
         ])));
 
@@ -208,11 +210,6 @@ class AdminDashboardTest extends TestCase
             'payment_reference' => $data['payment_reference'] ?? null,
             'payment_receipt_path' => $data['payment_receipt_path'] ?? null,
             'payment_amount' => $data['payment_amount'] ?? null,
-        ]);
-        $booking->packageDetails()->create([
-            'package_id' => $data['package_id'],
-            'package_name' => $data['package_name'],
-            'package_price' => $data['package_price'] ?? null,
         ]);
 
         return $booking;

@@ -105,6 +105,15 @@ class BookingNormalizationMigrationTest extends TestCase
             'package_name' => 'Budget Party',
             'package_price' => 10000,
         ]);
+        Artisan::call('migrate', [
+            '--path' => 'database/migrations/2026_10_10_130000_link_bookings_to_packages.php',
+            '--force' => true,
+        ]);
+        $this->assertDatabaseHas('bookings', [
+            'id' => $bookingId,
+            'package_id' => 'budget-party',
+        ]);
+        $this->assertSame(1, DB::table('booking_packages')->count());
         $this->assertTrue(Schema::hasTable('packages'));
         $this->assertTrue(Schema::hasTable('booking_events'));
         $this->assertFalse(Schema::hasColumn('bookings', 'event_name'));

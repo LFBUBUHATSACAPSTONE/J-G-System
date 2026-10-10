@@ -257,6 +257,7 @@ class BookingController extends Controller
                     [
                         'reference' => $this->newReference(),
                         'status' => 'pending',
+                        'package_id' => $original->package_id,
                         'rescheduled_from_id' => $original->id,
                         'submitted_at' => now(),
                     ],
@@ -282,11 +283,6 @@ class BookingController extends Controller
                         'payment_reference' => $payment->payment_reference,
                         'payment_receipt_path' => $payment->payment_receipt_path,
                         'payment_amount' => $payment->payment_amount,
-                    ],
-                    [
-                        'package_id' => $original->packageDetails->package_id,
-                        'package_name' => $original->packageDetails->package_name,
-                        'package_price' => $original->packageDetails->package_price,
                     ],
                 );
 
@@ -358,6 +354,7 @@ class BookingController extends Controller
                 'client_email' => $draft['client_email'],
                 'client_phone' => $draft['client_phone'],
                 'client_address' => $draft['client_address'],
+                'package_id' => $package->id,
                 'submitted_at' => now(),
             ]);
 
@@ -370,10 +367,6 @@ class BookingController extends Controller
                 'payment_method' => $data['payment_option'],
                 'payment_state' => 'pending',
                 'payment_amount' => number_format($paymentCents / 100, 2, '.', ''),
-            ], [
-                'package_id' => $package->id,
-                'package_name' => $package->name,
-                'package_price' => $package->price,
             ]);
 
             return [$booking, []];
@@ -395,7 +388,11 @@ class BookingController extends Controller
                 $data,
                 $source->eventDetails->toArray(),
                 $source->schedule->toArray(),
-                $source->packageDetails->toArray(),
+                [
+                    'package_id' => $source->package?->id,
+                    'package_name' => $source->package?->name,
+                    'package_price' => $source->package?->price,
+                ],
             );
         } else {
             $data = $source;
@@ -434,12 +431,10 @@ class BookingController extends Controller
         array $event,
         array $schedule,
         array $payment,
-        array $package,
     ): void {
         $booking->eventDetails()->create($event);
         $booking->schedule()->create($schedule);
         $booking->payment()->create($payment);
-        $booking->packageDetails()->create($package);
     }
 
     private function eligibleForReschedule(string $id): array

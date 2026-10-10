@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Package extends Model
 {
-    protected $keyType = 'string';
-
     public $incrementing = false;
+
+    protected $keyType = 'string';
 
     protected $fillable = [
         'id',
@@ -23,7 +23,7 @@ class Package extends Model
     protected function casts(): array
     {
         return [
-            'price' => 'decimal:2',
+            'price' => 'integer',
             'available' => 'boolean',
             'sort_order' => 'integer',
             'features' => 'array',
@@ -32,6 +32,27 @@ class Package extends Model
 
     public function bookings(): HasMany
     {
-        return $this->hasMany(BookingPackage::class);
+        return $this->hasMany(Booking::class);
+    }
+
+    public function toAdminArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'price' => $this->price,
+            'available' => $this->available,
+            'features' => $this->features ?? [],
+        ];
+    }
+
+    public function toPublicArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'price' => $this->price,
+            'features' => $this->features ?? [],
+        ];
     }
 }

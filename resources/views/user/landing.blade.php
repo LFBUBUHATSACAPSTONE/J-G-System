@@ -37,7 +37,7 @@
 
   <x-auth-modal></x-auth-modal>
   @include('components.landing.features')
-  @include('components.booking.package')
+  <x-booking.package :packages="$packages" />
   @include('components.landing.package-comparison')
   @include('components.landing.footer')
 </body>
