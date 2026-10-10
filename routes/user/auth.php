@@ -20,6 +20,22 @@ Auth::routes(['reset' => false]);
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
+Route::get('/logout', function (\Illuminate\Http\Request $request) {
+    Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return redirect()->route('user.landing');
+})->name('logout.get');
+
+Route::get('/login', function () {
+    return redirect()->route('user.landing');
+});
+
+Route::get('/register', function () {
+    return redirect()->route('user.landing');
+});
+
 Route::post('/login', [ModalAuthController::class, 'login'])->name('login');
 Route::post('/register', [RegisterController::class, 'register'])->name('register');
 Route::post('/password/email', [ModalPasswordController::class, 'forgotPassword'])->name('password.email');

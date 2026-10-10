@@ -53,7 +53,8 @@ class RegisterWebTest extends TestCase
         $response->assertOk()->assertJsonPath('ok', true);
         $this->assertDatabaseHas('users', [
             'email' => 'ana@example.com',
-            'name' => 'Ana Cruz',
+            'first_name' => 'Ana',
+            'last_name' => 'Cruz',
         ]);
         $user = User::where('email', 'ana@example.com')->firstOrFail();
         $this->assertNotNull($user->email_verified_at);
@@ -130,7 +131,8 @@ class RegisterWebTest extends TestCase
         Mail::fake();
 
         User::factory()->create([
-            'name' => 'Test User',
+            'first_name' => 'Test',
+            'last_name' => 'User',
             'email' => 'test@example.com',
             'phone' => '09123456789',
             'password' => Hash::make('password123'),
@@ -290,10 +292,27 @@ class RegisterWebTest extends TestCase
             ->assertSee('data-chat-open', false)
             ->assertSee('aria-label="Profile"', false)
             ->assertSee('href="' . route('home') . '"', false)
-            ->assertSee('id="landing-book-now" href="' . route('user.booking') . '"', false)
+            ->assertSee('id="landing-book-now" href="#packages"', false)
             ->assertDontSee('id="landing-book-now" data-bs-toggle="modal"', false)
-            ->assertSee('class="package-card__cta" data-package-select href="' . route('user.booking') . '"', false)
+            ->assertSee('class="package-card__cta" data-package-select href="' . route('user.booking'), false)
             ->assertDontSee('class="package-card__cta" data-package-select data-bs-toggle="modal"', false);
+    }
+
+    public function test_authenticated_user_can_log_out_and_return_to_guest_landing(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post(route('logout'))
+            ->assertRedirect(route('user.landing'));
+
+        $this->assertGuest();
+
+        $this->get(route('user.landing'))
+            ->assertOk()
+            ->assertDontSee('data-chat-open', false)
+            ->assertSee('data-auth-view="signup"', false)
+            ->assertSee('data-auth-view="login"', false);
     }
 
     public function test_google_callback_creates_and_authenticates_verified_user(): void

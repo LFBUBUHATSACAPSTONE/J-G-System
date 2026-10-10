@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 class RegisterRequest extends FormRequest
@@ -26,14 +27,36 @@ class RegisterRequest extends FormRequest
         return [
             'first_name' => ['required', 'string', 'max:255'],
             'last_name'  => ['required', 'string', 'max:255'],
-            'email'      => ['required_without:phone', 'nullable', 'email', 'max:255', 'unique:users,email'],
+            'email'      => [
+                'required_without:phone',
+                'nullable',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->whereNotNull('email_verified_at'),
+            ],
             'phone'      => ['required_without:email', 'nullable', 'string', 'max:20', 'unique:users,phone'],
-            'password'   => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()],
+            'password'   => ['required', Password::min(8)->mixedCase()->numbers()],
         ];
     }
 
     protected function prepareForValidation(): void
     {
+        if ($this->filled('identifier')) {
+            $identifier = trim((string) $this->input('identifier'));
+
+            if (str_contains($identifier, '@')) {
+                $this->merge([
+                    'email' => strtolower($identifier),
+                    'phone' => null,
+                ]);
+            } else {
+                $this->merge([
+                    'phone' => preg_replace('/\D+/', '', $identifier),
+                    'email' => null,
+                ]);
+            }
+        }
+
         if ($this->filled('email')) {
             $this->merge(['email' => strtolower(trim($this->email))]);
         }
@@ -47,6 +70,7 @@ class RegisterRequest extends FormRequest
         return [
             'email.required_without' => 'Please provide an email or a phone number.',
             'phone.required_without' => 'Please provide an email or a phone number.',
+            'email.unique' => 'An account with this email is already verified. Please log in or use Forgot Password.',
         ];
     }
 }

@@ -54,6 +54,41 @@ html {
     }
 }
 
+.dropdown-toggle--no-caret::after {
+    display: none !important;
+}
+
+.landing-nav__dropdown-menu {
+    background: oklch(19.306% 0.00802 285.593 / 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgb(255 255 255 / 0.2);
+    border-radius: 0.75rem;
+    min-width: 14rem;
+
+    .dropdown-item {
+        color: #fff;
+        font-size: 0.875rem;
+        transition: background-color 0.15s ease-in-out;
+
+        &:hover,
+        &:focus {
+            background: rgb(255 255 255 / 0.15);
+            color: #fff;
+        }
+
+        &.text-danger {
+            color: #ff6b6b !important;
+
+            &:hover,
+            &:focus {
+                background: rgb(255 77 77 / 0.15);
+                color: #ff4d4d !important;
+            }
+        }
+    }
+}
+
 .glass-header .navbar-nav .nav-link {
     position: relative;
     display: inline-block;
