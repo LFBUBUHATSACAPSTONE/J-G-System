@@ -624,15 +624,30 @@ $admin-filter-sheet-breakpoint: 768px;
     font-weight: 500;
 }
 
-// Actions cell: View Details plus the status's buttons. In the stacked card they wrap and share the width;
-// from the table breakpoint they sit in one centred row (see below).
+// Actions cell: View Details always on the first line; the status's buttons (Decline, Approve,
+// Cancel, Verify Payment) always sit in their own row below it. In the stacked card each row
+// shares the width; from the table breakpoint both rows are centred (see below).
 .admin-bookings__actions {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: $sp-3;
 
+    > .admin-btn {
+        width: 100%;
+        min-width: 0;
+        min-height: 2.75rem; // comfortable touch target in the card
+    }
+}
+
+// The status buttons never wrap: Decline + Approve (or Cancel, Verify Payment) always sit side by
+// side. In the stacked card they share the row width; in the table the Actions column grows to fit.
+.admin-bookings__actions-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: $sp-2;
+
     > * {
-        flex: 1 1 8rem;
+        flex: 1 1 0;
         min-width: 0;
     }
 
@@ -640,10 +655,11 @@ $admin-filter-sheet-breakpoint: 768px;
         display: flex;
     }
 
-    .admin-pill,
-    .admin-btn--sm {
+    .admin-pill {
         width: 100%;
-        min-height: 2.75rem; // comfortable touch target in the card
+        min-height: 2.75rem;
+        padding-inline: $sp-3;
+        white-space: nowrap;
     }
 }
 
@@ -728,22 +744,28 @@ $admin-filter-sheet-breakpoint: 768px;
     }
 
     .admin-bookings__actions {
+        align-items: center;
+
+        > .admin-btn {
+            width: auto;
+            min-height: 2.5rem;
+            white-space: nowrap;
+        }
+    }
+
+    .admin-bookings__actions-row {
         justify-content: center;
 
         > * {
             flex: 0 0 auto;
         }
 
-        .admin-pill,
-        .admin-btn--sm {
+        .admin-pill {
             width: auto;
             min-height: 2.5rem;
-            white-space: nowrap;
-        }
-
-        .admin-pill {
             padding: $sp-1 $sp-4;
             font-size: admin-fluid(0.9);
+            white-space: nowrap;
         }
     }
 }
