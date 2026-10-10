@@ -1,11 +1,14 @@
-// Payment step (view "booking-summary"): Booking Summary | Payment | Instructions.
+// Payment step (view "booking-summary"): Booking Summary | Payment Type | Payment Form | Instructions.
 //
-// Columns follow the CARD's width (container query), not the screen's: at 992px the
-// sidebar-less page still leaves less room than the viewport suggests.
-//   < 560px    one column, stacked
-//   560-799px  Booking Summary | Payment, Instructions full width underneath
-//   >= 800px   three columns
-// Reschedule mode renders no Instructions column, so it stays at two columns from 560px.
+// Columns follow the CARD's width (container query), not the screen's: at 992px the sidebar-less
+// page still leaves less room than the viewport suggests.
+//   < 560px     one column, stacked
+//   560-1079px  two columns (Summary | Payment Type, then Payment Form | Instructions)
+//   >= 1080px   four columns in one row
+// Reschedule mode renders only Summary and Payment Type, so it stays at two columns from 560px.
+//
+// This step is wider than the others (see .booking-flow:has(...) in _booking-page.scss) so the four
+// columns fit without making the page scroll much.
 
 .booking-summary {
     @include booking-step;
@@ -25,9 +28,9 @@
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
-        @container summary (min-width: 800px) {
+        @container summary (min-width: 1080px) {
             &:has(.booking-summary__column--guide) {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
+                grid-template-columns: repeat(4, minmax(0, 1fr));
             }
         }
     }
@@ -42,34 +45,36 @@
             border-top: 1px solid $auth-border;
             padding-top: $sp-6;
         }
+    }
 
-        // Side by side: the rule moves to the left edge (24px of space on both sides of it).
-        @container summary (min-width: 560px) {
-            & + & {
-                border-top: 0;
-                padding-top: 0;
-                border-left: 1px solid $auth-border;
-                padding-left: $sp-6;
-            }
-
-            // Instructions sit under the two columns, full width.
-            & + &--guide {
-                grid-column: 1 / -1;
-                border-left: 0;
-                padding-left: 0;
-                border-top: 1px solid $auth-border;
-                padding-top: $sp-6;
-            }
+    // Two columns: a vertical rule between the pair; the second row (3rd and 4th column) starts
+    // under a horizontal rule. 24px of space on both sides of every rule.
+    @container summary (min-width: 560px) {
+        &__column + &__column {
+            border-top: 0;
+            padding-top: 0;
+            border-left: 1px solid $auth-border;
+            padding-left: $sp-6;
         }
 
-        @container summary (min-width: 800px) {
-            .booking-summary__grid:has(&--guide) &--guide {
-                grid-column: auto;
-                border-top: 0;
-                padding-top: 0;
-                border-left: 1px solid $auth-border;
-                padding-left: $sp-6;
-            }
+        &__column:nth-child(odd):not(:first-child) {
+            border-left: 0;
+            padding-left: 0;
+        }
+
+        &__column:nth-child(n + 3) {
+            border-top: 1px solid $auth-border;
+            padding-top: $sp-6;
+        }
+    }
+
+    // Four columns in one row: a vertical rule before each, no horizontal rules.
+    @container summary (min-width: 1080px) {
+        &__grid:has(.booking-summary__column--guide) > &__column + &__column {
+            border-top: 0;
+            padding-top: 0;
+            border-left: 1px solid $auth-border;
+            padding-left: $sp-6;
         }
     }
 
@@ -341,6 +346,157 @@
         strong {
             color: $auth-accent;
             font-weight: 700;
+        }
+    }
+
+    // Link to the (dummy) payment details form. Optical padding: 8px by 16px.
+    &__link-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        gap: $sp-2;
+        padding: $sp-2 $sp-4;
+        min-height: 44px;
+        background: $auth-accent-strong;
+        border: 1px solid $auth-accent-strong;
+        border-radius: $auth-radius-md;
+        color: $auth-text-primary;
+        font-weight: 700;
+        text-align: center;
+        text-decoration: none;
+        transition: filter 0.15s ease-in-out;
+
+        &:hover {
+            filter: brightness(1.1);
+            color: $auth-text-primary;
+        }
+
+        &:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px $auth-focus-ring-soft;
+        }
+    }
+
+    // Proof-of-submission upload. The real <input type="file"> is visually hidden but stays
+    // focusable; its <label> is the dropzone.
+    &__upload {
+        position: relative;
+    }
+
+    &__file-input {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+
+        // The preview replaces the dropzone once a file is chosen.
+        .is-filled > & {
+            display: none;
+        }
+
+        &:focus-visible + .booking-summary__dropzone {
+            border-color: $auth-accent;
+            box-shadow: 0 0 0 3px $auth-focus-ring-soft;
+        }
+    }
+
+    &__dropzone {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: $sp-1;
+        padding: $sp-6 $sp-4;
+        background: $auth-surface;
+        border: 1px dashed $auth-border;
+        border-radius: $auth-radius-md;
+        text-align: center;
+        cursor: pointer;
+        transition:
+            border-color 0.15s ease-in-out,
+            background 0.15s ease-in-out;
+
+        &:hover,
+        &.is-dragover {
+            border-color: $auth-accent;
+        }
+
+        .is-filled > & {
+            display: none;
+        }
+
+        .is-invalid > & {
+            border-color: $auth-danger;
+        }
+    }
+
+    &__dropzone-title {
+        font-weight: 700;
+        color: $auth-text-primary;
+    }
+
+    &__dropzone-hint {
+        font-size: 0.78rem;
+        color: $auth-text-muted;
+    }
+
+    &__preview {
+        display: flex;
+        flex-direction: column;
+        gap: $sp-3;
+        padding: $sp-3;
+        background: $auth-surface;
+        border: 1px solid $auth-border;
+        border-radius: $auth-radius-md;
+    }
+
+    &__preview-img {
+        display: block;
+        width: 100%;
+        max-height: 240px;
+        object-fit: contain;
+        border-radius: $auth-radius-md;
+    }
+
+    &__preview-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: $sp-3;
+        min-width: 0;
+    }
+
+    &__preview-name {
+        min-width: 0;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: $auth-text-secondary;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &__preview-remove {
+        flex: none;
+        padding: $sp-1 $sp-3;
+        background: transparent;
+        border: 1px solid $auth-border;
+        border-radius: $auth-radius-md;
+        color: $auth-text-primary;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+
+        &:hover {
+            border-color: $auth-danger;
+            color: $auth-danger;
+        }
+
+        &:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px $auth-focus-ring-soft;
         }
     }
 

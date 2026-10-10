@@ -234,6 +234,28 @@ function initModal(modal) {
               : "bm-event-type-select";
     }
 
+    // Proof of submission (payment.proof_url): thumbnail that opens full size, or the empty text.
+    // Only an http(s) or same-site URL (or an image data: URI) is used, anything else counts as none.
+    const proofLink = modal.querySelector("[data-proof-link]");
+    const proofImg = modal.querySelector("[data-proof-img]");
+    const proofEmpty = modal.querySelector("[data-proof-empty]");
+
+    function renderProof(booking) {
+        const url = booking.payment?.proof_url;
+        const usable =
+            typeof url === "string" &&
+            /^(https?:\/\/|\/|data:image\/)/i.test(url);
+        proofLink.hidden = !usable;
+        proofEmpty.hidden = usable;
+        if (usable) {
+            proofLink.href = url;
+            proofImg.src = url;
+        } else {
+            proofLink.removeAttribute("href");
+            proofImg.removeAttribute("src");
+        }
+    }
+
     function fill(booking) {
         modal.querySelectorAll("[data-booking-field]").forEach((el) => {
             const value = getPath(booking, el.dataset.bookingField);
@@ -263,6 +285,7 @@ function initModal(modal) {
         lockNote.hidden = !(locationLocked && booking.editable !== false);
         locationInput.classList.toggle("is-locked", locationLocked);
         renderEdited(booking);
+        renderProof(booking);
         syncType();
     }
 

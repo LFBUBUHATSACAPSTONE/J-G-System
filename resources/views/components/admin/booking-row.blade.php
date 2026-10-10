@@ -197,30 +197,34 @@ $booking['client']['name'], $ref, $package['name'], $typeLabel ?? '', $status['l
         <span>View Details</span>
       </button>
 
-      @foreach ($status['actions'] ?? [] as $action)
-      @php
-      // Danger actions always confirm. Any other action can opt in with a 'confirm' text in the
-      // config (":ref" becomes the booking reference), e.g. Verify Payment.
-      $confirm = $action['confirm'] ?? (($action['tone'] ?? '') === 'danger' ? $action['label'] . ' booking :ref?' : null);
-      @endphp
-      <form
-        method="POST"
-        action="{{ $statusUrl }}"
-        class="admin-bookings__action-form"
-        @if ($confirm) data-confirm="{{ str_replace(':ref', $ref, $confirm) }}" @endif>
-        @csrf
-        @php $blocked = $dayFull && $action['action'] === 'approve'; @endphp
-        <button
-          type="submit"
-          name="action"
-          value="{{ $action['action'] }}"
-          class="admin-pill admin-pill--{{ $action['tone'] }}"
-          @if ($blocked) disabled aria-describedby="day-full-{{ $booking['id'] }}" title="This day already has the maximum number of approved events." @endif
-          aria-label="{{ $action['label'] }}, booking {{ $ref }}">
-          {{ $action['label'] }}
-        </button>
-      </form>
-      @endforeach
+      @if (! empty($status['actions']))
+      <div class="admin-bookings__actions-row">
+        @foreach ($status['actions'] ?? [] as $action)
+        @php
+        // Danger actions always confirm. Any other action can opt in with a 'confirm' text in the
+        // config (":ref" becomes the booking reference), e.g. Verify Payment.
+        $confirm = $action['confirm'] ?? (($action['tone'] ?? '') === 'danger' ? $action['label'] . ' booking :ref?' : null);
+        @endphp
+        <form
+          method="POST"
+          action="{{ $statusUrl }}"
+          class="admin-bookings__action-form"
+          @if ($confirm) data-confirm="{{ str_replace(':ref', $ref, $confirm) }}" @endif>
+          @csrf
+          @php $blocked = $dayFull && $action['action'] === 'approve'; @endphp
+          <button
+            type="submit"
+            name="action"
+            value="{{ $action['action'] }}"
+            class="admin-pill admin-pill--{{ $action['tone'] }}"
+            @if ($blocked) disabled aria-describedby="day-full-{{ $booking['id'] }}" title="This day already has the maximum number of approved events." @endif
+            aria-label="{{ $action['label'] }}, booking {{ $ref }}">
+            {{ $action['label'] }}
+          </button>
+        </form>
+        @endforeach
+      </div>
+      @endif
     </div>
   </td>
 </tr>
