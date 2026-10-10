@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -39,61 +40,51 @@ class DashboardController extends Controller
         $attention = Booking::query()
             ->whereIn('status', ['pending', 'pending_payment'])
             ->orderByRaw('COALESCE(submitted_at, created_at) ASC')
-            ->get([
-                'id',
-                'reference',
-                'status',
-                'client_name',
-                'event_name',
-                'event_start_date',
-                'package_name',
-                'submitted_at',
-                'created_at',
-            ])
+            ->with(['eventDetails', 'schedule', 'packageDetails'])
+            ->get()
             ->map(fn (Booking $booking) => [
                 'id' => $booking->id,
                 'reference' => '#'.$booking->reference,
                 'status' => $booking->status,
                 'client' => $booking->client_name,
-                'package' => $booking->package_name,
-                'event' => $booking->event_name,
-                'date' => $booking->event_start_date->toDateString(),
+                'package' => $booking->packageDetails?->package_name,
+                'event' => $booking->eventDetails?->event_name,
+                'date' => $booking->schedule?->event_start_date?->toDateString(),
                 'submitted_at' => ($booking->submitted_at ?? $booking->created_at)->toIso8601String(),
             ]);
 
         $upcomingEvents = Booking::query()
             ->where('status', 'approved')
-            ->whereIn('payment_state', ['paid', 'partial'])
-            ->whereDate('event_start_date', '>=', today())
-            ->orderBy('event_start_date')
-            ->get([
-                'id',
-                'event_start_date',
-                'event_name',
-                'client_name',
-                'package_name',
-                'event_start_time',
-                'event_end_time',
-            ])
-            ->map(fn (Booking $booking) => [
-                'id' => $booking->id,
-                'date' => $booking->event_start_date->toDateString(),
-                'event' => $booking->event_name,
-                'client' => $booking->client_name,
-                'package' => $booking->package_name,
-                'time' => $this->formatEventTime($booking->event_start_time, $booking->event_end_time),
-            ]);
-
-        $packageRate = Booking::query()
-            ->whereIn('status', ['approved', 'completed'])
-            ->selectRaw('package_id, package_name, COUNT(*) AS booking_count')
-            ->groupBy('package_id', 'package_name')
-            ->orderByDesc('booking_count')
+            ->whereHas('payment', fn ($query) => $query->whereIn('payment_state', ['paid', 'partial']))
+            ->whereHas('schedule', fn ($query) => $query->whereDate('event_start_date', '>=', today()))
+            ->join('booking_schedules', 'bookings.id', '=', 'booking_schedules.booking_id')
+            ->orderBy('booking_schedules.event_start_date')
+            ->select('bookings.*')
+            ->with(['eventDetails', 'schedule', 'packageDetails'])
             ->get()
             ->map(fn (Booking $booking) => [
-                'id' => $booking->package_id,
-                'label' => $booking->package_name ?: 'Unassigned',
-                'count' => (int) $booking->booking_count,
+                'id' => $booking->id,
+                'date' => $booking->schedule->event_start_date->toDateString(),
+                'event' => $booking->eventDetails?->event_name,
+                'client' => $booking->client_name,
+                'package' => $booking->packageDetails?->package_name,
+                'time' => $this->formatEventTime(
+                    $booking->schedule->event_start_time,
+                    $booking->schedule->event_end_time,
+                ),
+            ]);
+
+        $packageRate = DB::table('booking_packages')
+            ->join('bookings', 'bookings.id', '=', 'booking_packages.booking_id')
+            ->whereIn('bookings.status', ['approved', 'completed'])
+            ->selectRaw('booking_packages.package_id, booking_packages.package_name, COUNT(*) AS booking_count')
+            ->groupBy('booking_packages.package_id', 'booking_packages.package_name')
+            ->orderByDesc('booking_count')
+            ->get()
+            ->map(fn ($package) => [
+                'id' => $package->package_id,
+                'label' => $package->package_name ?: 'Unassigned',
+                'count' => (int) $package->booking_count,
             ]);
 
         return response()->json([
@@ -113,7 +104,7 @@ class DashboardController extends Controller
         }
 
         if (isset($filters['payment_state'])) {
-            $query->whereIn('payment_state', $filters['payment_state']);
+            $query->whereHas('payment', fn ($payment) => $payment->whereIn('payment_state', $filters['payment_state']));
         }
 
         if ($from && $to) {

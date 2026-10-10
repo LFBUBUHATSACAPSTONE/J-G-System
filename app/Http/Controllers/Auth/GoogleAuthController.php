@@ -40,7 +40,7 @@ class GoogleAuthController extends Controller
             10,
             '/',
             null,
-            request()->isSecure(),
+            request()->isSecure() ,
             true,
             false,
             'lax',

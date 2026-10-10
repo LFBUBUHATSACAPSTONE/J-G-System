@@ -12,17 +12,31 @@
 
           <div class="booking-summary__row">
             <span class="booking-summary__label">Full Name</span>
-            <span class="booking-summary__value">{{ $fullName ?? '' }}</span>
+            <span class="booking-summary__value" data-booking-summary="fullName">{{ $fullName ?? '' }}</span>
           </div>
 
           <div class="booking-summary__row">
             <span class="booking-summary__label">Email</span>
-            <span class="booking-summary__value">{{ $email ?? '' }}</span>
+            <span class="booking-summary__value" data-booking-summary="email">{{ $email ?? '' }}</span>
           </div>
 
           <div class="booking-summary__row">
             <span class="booking-summary__label">Contact Number</span>
-            <span class="booking-summary__value">{{ $contactNumber ?? '' }}</span>
+            <span class="booking-summary__value" data-booking-summary="contactNumber">{{ $contactNumber ?? '' }}</span>
+          </div>
+
+          <div class="booking-summary__divider" role="separator"></div>
+
+          <h3 class="booking-summary__section">Selected Package</h3>
+
+          <div class="booking-summary__row">
+            <span class="booking-summary__label">Package</span>
+            <span class="booking-summary__value" data-booking-summary="packageName">{{ $packageName ?? '' }}</span>
+          </div>
+
+          <div class="booking-summary__row">
+            <span class="booking-summary__label">Package Price</span>
+            <span class="booking-summary__value" data-booking-summary="packagePrice">Php {{ number_format((float) ($packageCost ?? 0), 2) }}</span>
           </div>
 
           <div class="booking-summary__divider" role="separator"></div>
@@ -31,22 +45,22 @@
 
           <div class="booking-summary__row">
             <span class="booking-summary__label">Event Name</span>
-            <span class="booking-summary__value">{{ $eventName ?? '' }}</span>
+            <span class="booking-summary__value" data-booking-summary="eventName">{{ $eventName ?? '' }}</span>
           </div>
 
           <div class="booking-summary__row">
             <span class="booking-summary__label">Event Type</span>
-            <span class="booking-summary__value">{{ $eventType ?? '' }}</span>
+            <span class="booking-summary__value" data-booking-summary="eventType">{{ $eventType ?? '' }}</span>
           </div>
 
           <div class="booking-summary__row">
             <span class="booking-summary__label">Event Location</span>
-            <span class="booking-summary__value">{{ $eventLocation ?? '' }}</span>
+            <span class="booking-summary__value" data-booking-summary="eventLocation">{{ $eventLocation ?? '' }}</span>
           </div>
 
           <div class="booking-summary__row">
             <span class="booking-summary__label">Event Contact Person</span>
-            <span class="booking-summary__value">{{ $eventContactPerson ?? '' }}</span>
+            <span class="booking-summary__value" data-booking-summary="eventContactPerson">{{ $eventContactPerson ?? '' }}</span>
           </div>
 
           <div class="booking-summary__divider" role="separator"></div>
@@ -55,17 +69,17 @@
 
           <div class="booking-summary__row">
             <span class="booking-summary__label">Event Date</span>
-            <span class="booking-summary__value">{{ $eventDate ?? '' }}</span>
+            <span class="booking-summary__value" data-booking-summary="eventDate">{{ $eventDate ?? '' }}</span>
           </div>
 
           <div class="booking-summary__row">
             <span class="booking-summary__label">Start In</span>
-            <span class="booking-summary__value">{{ $startTime ?? '' }}</span>
+            <span class="booking-summary__value" data-booking-summary="startTime">{{ $startTime ?? '' }}</span>
           </div>
 
           <div class="booking-summary__row">
             <span class="booking-summary__label">End In</span>
-            <span class="booking-summary__value">{{ $endTime ?? '' }}</span>
+            <span class="booking-summary__value" data-booking-summary="endTime">{{ $endTime ?? '' }}</span>
           </div>
         </div>
       </div>
@@ -105,7 +119,7 @@
                   data-payment-option="full">
                   Full Payment
                 </button>
-                <p class="booking-summary__option-hint">Pay the full amount now to secure your booking.</p>
+                <p class="booking-summary__option-hint">Choose this if you have paid the full package price. The booking remains pending until reviewed.</p>
 
                 <button
                   type="button"
@@ -115,7 +129,7 @@
                   data-payment-option="down">
                   Down Payment
                 </button>
-                <p class="booking-summary__option-hint">Pay at least 30% now to reserve your slot; remaining balance can be paid before or on the event day.</p>
+                <p class="booking-summary__option-hint">Choose this if you have paid at least 30% of the package price; the remaining balance can be settled before or on the event day.</p>
               </div>
 
               {{-- Shown by booking-summary.js only while Down Payment is selected --}}
@@ -142,9 +156,8 @@
               <small class="booking-summary__field-error d-none" data-field-error="payment_option"></small>
 
               <ul class="booking-summary__reminder-list">
-                <li><strong>Reminder:</strong> Downpayment confirms your booking but doesn't cover the full cost. Remaining balance must be settled before or on the event day.</li>
-                <li>Receipts are issued automatically after payment.</li>
-                <li>Booking is only secured after payment is processed.</li>
+                <li><strong>Reminder:</strong> A down payment does not cover the full cost. The remaining balance must be settled before or on the event day.</li>
+                <li>Your booking and payment amount are recorded for admin review.</li>
               </ul>
             </div>
             @endif

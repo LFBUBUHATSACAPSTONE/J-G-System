@@ -325,7 +325,10 @@ async function submitPayment(form) {
         }
 
         form.dispatchEvent(
-            new CustomEvent("booking:payment-saved", { bubbles: true }),
+            new CustomEvent("booking:payment-saved", {
+                bubbles: true,
+                detail: { reference: data.reference },
+            }),
         );
     } catch {
         showError(

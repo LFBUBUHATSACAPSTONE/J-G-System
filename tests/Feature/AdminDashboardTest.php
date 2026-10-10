@@ -3,9 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\Booking;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class AdminDashboardTest extends TestCase
@@ -21,10 +23,39 @@ class AdminDashboardTest extends TestCase
         DB::purge('sqlite');
         DB::setDefaultConnection('sqlite');
 
-        Artisan::call('migrate', [
-            '--path' => 'database/migrations/2026_10_06_120000_create_bookings_table.php',
-            '--force' => true,
-        ]);
+        Schema::create('packages', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->string('name');
+            $table->decimal('price', 10, 2);
+            $table->boolean('available')->default(true);
+            $table->unsignedInteger('sort_order')->default(0);
+            $table->json('features')->nullable();
+            $table->timestamps();
+        });
+        foreach (['budget-party', 'luxe-lite', 'modern-glam', 'budget-lite', 'test-package'] as $packageId) {
+            DB::table('packages')->insert([
+                'id' => $packageId,
+                'name' => $packageId,
+                'price' => 10000,
+                'available' => true,
+                'sort_order' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        foreach ([
+            '2026_10_06_120000_create_bookings_table.php',
+            '2026_10_10_090000_add_payment_and_reschedule_data_to_bookings_table.php',
+            '2026_10_10_100000_create_booking_detail_tables.php',
+            '2026_10_10_110000_create_booking_packages_table.php',
+            '2026_10_10_120000_remove_normalized_booking_columns.php',
+        ] as $migration) {
+            Artisan::call('migrate', [
+                '--path' => 'database/migrations/'.$migration,
+                '--force' => true,
+            ]);
+        }
 
         Carbon::setTestNow('2026-10-06 12:00:00');
     }
@@ -123,7 +154,7 @@ class AdminDashboardTest extends TestCase
 
     private function createBooking(array $overrides = []): Booking
     {
-        $booking = Booking::create(array_merge([
+        $data = array_merge([
             'reference' => 'JG00000',
             'status' => 'pending',
             'client_name' => 'Test Client',
@@ -133,10 +164,21 @@ class AdminDashboardTest extends TestCase
             'event_location' => 'Test Venue',
             'event_start_date' => '2026-12-01',
             'event_end_date' => '2026-12-01',
+            'event_start_time' => '17:00',
+            'event_end_time' => '23:00',
             'package_id' => 'test-package',
             'package_name' => 'Test Package',
             'submitted_at' => '2026-10-01 09:00:00',
-        ], $overrides));
+        ], $overrides);
+        $booking = Booking::create(array_intersect_key($data, array_flip([
+            'reference',
+            'status',
+            'client_name',
+            'client_email',
+            'client_phone',
+            'client_address',
+            'submitted_at',
+        ])));
 
         if (isset($overrides['created_at'])) {
             $booking->forceFill([
@@ -144,6 +186,34 @@ class AdminDashboardTest extends TestCase
                 'updated_at' => $overrides['updated_at'] ?? $overrides['created_at'],
             ])->save();
         }
+
+        $booking->eventDetails()->create([
+            'event_name' => $data['event_name'],
+            'event_type' => $data['event_type'] ?? 'Birthday Party',
+            'event_type_other' => $data['event_type_other'] ?? null,
+            'event_location' => $data['event_location'] ?? 'Test Venue',
+            'event_contact_person' => $data['event_contact_person'] ?? null,
+            'guest_count' => $data['guest_count'] ?? null,
+            'venue_type' => $data['venue_type'] ?? null,
+        ]);
+        $booking->schedule()->create([
+            'event_start_date' => $data['event_start_date'],
+            'event_end_date' => $data['event_end_date'],
+            'event_start_time' => $data['event_start_time'],
+            'event_end_time' => $data['event_end_time'],
+        ]);
+        $booking->payment()->create([
+            'payment_method' => $data['payment_method'] ?? null,
+            'payment_state' => $data['payment_state'] ?? null,
+            'payment_reference' => $data['payment_reference'] ?? null,
+            'payment_receipt_path' => $data['payment_receipt_path'] ?? null,
+            'payment_amount' => $data['payment_amount'] ?? null,
+        ]);
+        $booking->packageDetails()->create([
+            'package_id' => $data['package_id'],
+            'package_name' => $data['package_name'],
+            'package_price' => $data['package_price'] ?? null,
+        ]);
 
         return $booking;
     }

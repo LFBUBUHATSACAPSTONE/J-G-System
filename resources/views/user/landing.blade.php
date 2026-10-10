@@ -26,7 +26,7 @@
 
     <div class="d-flex justify-content-center">
       @auth
-      <a id="landing-book-now" href="{{ route('user.booking') }}" class="btn-color-gradient--primary font-button--responsive text-pale--white position-relative z-1 rounded-5 px-5 py-3 border-0 fw-semibold text-decoration-none">
+      <a id="landing-book-now" href="#packages" class="btn-color-gradient--primary font-button--responsive text-pale--white position-relative z-1 rounded-5 px-5 py-3 border-0 fw-semibold text-decoration-none">
         <span>Book Now</span>
       </a>
       @else

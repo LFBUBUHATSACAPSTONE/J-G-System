@@ -8,9 +8,9 @@
     <h2 class="booking-confirmation__title">Awaiting Verification</h2>
 
     <p class="booking-confirmation__body">
-      Your payment has been submitted and is waiting to be verified.
+      Your booking request and selected payment amount have been recorded and are waiting for admin review.
       Your booking reference number is
-      <span class="booking-confirmation__ref">#{{ $referenceNumber ?? 'JG00000' }}</span>
+      <span class="booking-confirmation__ref" data-booking-reference>#{{ $referenceNumber ?? 'JG00000' }}</span>
     </p>
 
     <p class="booking-confirmation__body">
