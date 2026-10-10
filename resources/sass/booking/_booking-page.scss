@@ -137,3 +137,73 @@
         gap: $sp-6; // card to Cancel/Continue row
     }
 }
+
+// "Reschedule unavailable" page (user.booking with $rescheduleBlocked, HTTP 403): one card centred
+// in the space the page has, so it reads as a deliberate state, not a leftover step.
+.booking-blocked {
+    position: relative;
+    z-index: 1;
+    flex: 1 0 auto; // takes the page height (body is a column), so the card sits in the middle
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: $sp-6 $sp-4;
+
+    @media (min-width: 576px) {
+        padding: $sp-8 $sp-6;
+    }
+
+    &__card {
+        @include booking-card;
+        max-width: 28rem; // 448px: a short message needs a compact card
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: $sp-8 $sp-4;
+        border: 1px solid $auth-border;
+        box-shadow: 0 $sp-4 $sp-12 oklch(0% 0 0 / 0.45);
+
+        @media (min-width: 576px) {
+            padding: $sp-12 $sp-8;
+        }
+    }
+
+    &__icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: $sp-16; // 64px
+        height: $sp-16;
+        margin-bottom: $sp-6;
+        border-radius: 50%;
+        border: 1px solid $auth-border;
+        background: $auth-field-bg;
+        color: $auth-danger;
+    }
+
+    &__title {
+        margin: 0 0 $sp-3;
+        font-size: admin-fluid(1.5);
+        font-weight: 700;
+        line-height: 1.25;
+    }
+
+    &__message {
+        margin: 0 0 $sp-8;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: $auth-text-secondary;
+        text-wrap: balance;
+    }
+
+    &__btn {
+        display: block;
+        width: 100%;
+
+        @media (min-width: 576px) {
+            width: auto;
+            min-width: 12rem;
+        }
+    }
+}
