@@ -69,4 +69,17 @@ class UserAccountTest extends TestCase
       ->assertJsonPath('ok', true)
       ->assertJsonPath('booking.status', 'user_cancelled');
   }
+
+  public function test_messages_page_renders_the_shared_chat(): void
+  {
+    $this->withoutVite();
+
+    $this->get(route('user.account.messages'))
+      ->assertOk()
+      ->assertSee('data-account-chat', false)
+      ->assertSee('data-chat-form', false)
+      ->assertSee(route('user.messages.send'), false)
+      ->assertSee('#JG12345')
+      ->assertSee('1 new');
+  }
 }
