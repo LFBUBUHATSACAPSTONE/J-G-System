@@ -74,7 +74,8 @@ class ModalVerificationController extends Controller
                         $user = new User;
                     }
 
-                    $user->name = $registration['name'];
+                    $user->first_name = $registration['first_name'];
+                    $user->last_name = $registration['last_name'];
                     $user->email = $registration['email'];
                     $user->phone = $registration['phone'];
                     $user->password = $registration['password'];
