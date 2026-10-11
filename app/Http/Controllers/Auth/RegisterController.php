@@ -76,6 +76,16 @@ class RegisterController extends Controller
             ? null
             : preg_replace('/\D+/', '', $identifier);
 
+        // A deleted account keeps its email reserved (deleting is a soft delete, nothing is removed).
+        if (User::onlyTrashed()->whereRaw('LOWER(email) = ?', [$email])->exists()) {
+            return response()->json([
+                'message' => 'This email belongs to a deleted account and cannot be used to sign up again.',
+                'errors' => [
+                    'email' => ['This email belongs to a deleted account and cannot be used to sign up again.'],
+                ],
+            ], 422);
+        }
+
         // Block re-registration of an email that already has a verified account.
         $existing = User::whereRaw('LOWER(email) = ?', [$email])->first();
 
