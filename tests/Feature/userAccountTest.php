@@ -26,6 +26,28 @@ class UserAccountTest extends TestCase
       ->assertSee('Log out');
   }
 
+  public function test_security_page_renders_the_password_form_and_sign_in_methods(): void
+  {
+    $this->withoutVite();
+
+    $this->get(route('user.account.security'))
+      ->assertOk()
+      ->assertSee('id="account-password-form"', false)
+      ->assertSee('name="current_password"', false)
+      ->assertSee('name="password_confirmation"', false)
+      ->assertSee('Sign-in methods')
+      ->assertSee('Google');
+  }
+
+  public function test_password_update_stub_answers_ok_and_saves_nothing(): void
+  {
+    $this->patchJson(route('user.account.password.update'), [
+      'current_password' => 'Old-pass1!',
+      'password' => 'New-pass1!',
+      'password_confirmation' => 'New-pass1!',
+    ])->assertOk()->assertJsonPath('ok', true);
+  }
+
   public function test_delete_account_tab_opens_the_confirmation_modal(): void
   {
     $this->withoutVite();
