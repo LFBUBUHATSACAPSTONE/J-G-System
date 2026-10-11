@@ -42,6 +42,11 @@ return [
   //   subheading  => caption under the heading
   //   description => meta description
   'pages' => [
+    'user.account.messages' => [
+      'heading'     => 'Messages',
+      'subheading'  => 'Chat with J&G Audio Lights and Sounds',
+      'description' => 'Message J&G Audio Lights and Sounds about your packages and bookings.',
+    ],
     'user.account.bookings' => [
       'heading'     => 'My Bookings',
       'subheading'  => 'Track your requests, payments and event dates',
