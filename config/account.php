@@ -55,6 +55,11 @@ return [
       'subheading'  => 'Track your requests, payments and event dates',
       'description' => 'See the status of your J&G Audio Lights and Sounds bookings, cancel one, or reschedule it.',
     ],
+    'user.account.security' => [
+      'heading'     => 'Security',
+      'subheading'  => 'Change your password and see how you sign in',
+      'description' => 'Change your J&G Audio Lights and Sounds password and see your sign-in methods.',
+    ],
     'user.account.profile' => [
       'heading'     => 'Profile',
       'subheading'  => 'Keep your contact details up to date',
