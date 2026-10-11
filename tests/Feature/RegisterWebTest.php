@@ -53,7 +53,8 @@ class RegisterWebTest extends TestCase
         $response->assertOk()->assertJsonPath('ok', true);
         $this->assertDatabaseHas('users', [
             'email' => 'ana@example.com',
-            'name' => 'Ana Cruz',
+            'first_name' => 'Ana',
+            'last_name' => 'Cruz',
         ]);
         $user = User::where('email', 'ana@example.com')->firstOrFail();
         $this->assertNotNull($user->email_verified_at);
@@ -130,7 +131,8 @@ class RegisterWebTest extends TestCase
         Mail::fake();
 
         User::factory()->create([
-            'name' => 'Test User',
+            'first_name' => 'Test',
+            'last_name' => 'User',
             'email' => 'test@example.com',
             'phone' => '09123456789',
             'password' => Hash::make('password123'),
