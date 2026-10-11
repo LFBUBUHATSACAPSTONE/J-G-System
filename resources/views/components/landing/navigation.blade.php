@@ -35,9 +35,9 @@
             <x-chat.icon name="chat" />
           </x-button>
 
-          <a href="{{ route('home') }}"
-            aria-label="Profile"
-            title="Profile"
+          <a href="{{ route('user.account') }}"
+            aria-label="My account"
+            title="My account"
             class="landing-nav__icon-button">
             <x-chat.icon name="user" />
           </a>
