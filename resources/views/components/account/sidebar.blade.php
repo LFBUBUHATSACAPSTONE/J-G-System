@@ -32,6 +32,20 @@
   <nav class="admin-sidebar__nav" aria-label="Account navigation">
     <ul class="admin-sidebar__list">
       @foreach (config('account.nav') as $item)
+      @if (! empty($item['modal']))
+      {{-- Modal tab (Delete Account): a button that opens the modal; there is no page or route behind it. --}}
+      <li>
+        <button
+          type="button"
+          class="admin-sidebar__link account-sidebar__action{{ ! empty($item['danger']) ? ' is-danger' : '' }}"
+          data-bs-toggle="modal"
+          data-bs-target="#{{ $item['modal'] }}">
+          <i class="ph ph-{{ $item['icon'] }}" aria-hidden="true"></i>
+          <span>{{ $item['label'] }}</span>
+        </button>
+      </li>
+      @continue
+      @endif
       @php
       $isActive = request()->routeIs($item['active'] ?? $item['route']);
       $isReady = Route::has($item['route']);

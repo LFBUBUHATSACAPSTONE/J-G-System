@@ -81,6 +81,9 @@
         }
     }
 
+    // Buttons that sit in the nav list or footer (Delete Account, Log out): a <button> gets the browser's
+    // grey fill and centred text, so reset them to look exactly like the links.
+    &__action,
     &__logout {
         width: 100%;
         background: transparent;
