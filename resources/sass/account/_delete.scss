@@ -1,0 +1,46 @@
+// Delete Account modal. Reuses .account-modal, .account-form__field and .account-btn; this file only
+// adds the warning banner and the "what happens" list. Tokens only, 4px grid.
+
+.account-delete {
+    &__warning {
+        display: flex;
+        align-items: flex-start;
+        gap: $sp-3;
+        margin: 0;
+        padding: $sp-4;
+        border-radius: $admin-radius-lg;
+        background: $admin-danger-soft;
+        color: $admin-danger-text;
+        font-size: admin-fluid(0.9);
+
+        i {
+            flex: none;
+            font-size: admin-fluid(1.25);
+            line-height: 1;
+        }
+    }
+
+    &__list {
+        display: flex;
+        flex-direction: column;
+        gap: $sp-3;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        font-size: admin-fluid(0.9);
+
+        li {
+            display: flex;
+            align-items: flex-start;
+            gap: $sp-3;
+            overflow-wrap: anywhere;
+        }
+
+        i {
+            flex: none;
+            color: $admin-text-muted;
+            font-size: admin-fluid(1.125);
+            line-height: 1.4;
+        }
+    }
+}

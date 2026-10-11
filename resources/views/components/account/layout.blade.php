@@ -11,7 +11,9 @@
   // read as nested keys and never match.
   $page = (config('account.pages', []))[Route::currentRouteName() ?? ''] ?? [];
 
+  // Modal tabs (Delete Account) have no route, so they are skipped here.
   $navLabel = collect(config('account.nav', []))
+  ->filter(fn ($item) => ! empty($item['route']))
   ->first(fn ($item) => request()->routeIs($item['active'] ?? $item['route']))['label'] ?? null;
 
   $appName = config('account.name', 'J&G Account');
@@ -66,6 +68,9 @@
 
       {{ $slot }}
     </main>
+
+    {{-- Opened from the Delete Account tab in the sidebar, so it lives here and works on every account page. --}}
+    <x-account.delete-modal />
   </body>
 
   </html>

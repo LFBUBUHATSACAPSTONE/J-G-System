@@ -27,13 +27,16 @@ return [
   //   route  => named route the link points to
   //   active => optional route pattern that keeps the tab highlighted (defaults to `route`)
   //   danger => optional, styles the tab as a destructive action
+  //   modal  => optional, id of a modal the tab opens instead of linking to a route (no `route` needed)
   'nav' => [
     ['label' => 'Profile',        'icon' => 'user',          'route' => 'user.account.profile'],
     ['label' => 'My Bookings',    'icon' => 'calendar-check', 'route' => 'user.account.bookings', 'active' => 'user.account.bookings*'],
     ['label' => 'Payments',       'icon' => 'wallet',        'route' => 'user.account.payments'],
     ['label' => 'Messages',       'icon' => 'chat-circle',   'route' => 'user.account.messages'],
     ['label' => 'Security',       'icon' => 'lock-key',      'route' => 'user.account.security'],
-    ['label' => 'Delete Account', 'icon' => 'trash',         'route' => 'user.account.delete', 'danger' => true],
+    // `modal` instead of `route`: this tab opens the confirmation modal (views/components/account/delete-modal.blade.php)
+    // on whatever account page the user is on, so it needs no page and no route of its own.
+    ['label' => 'Delete Account', 'icon' => 'trash',         'modal' => 'deleteAccountModal', 'danger' => true],
   ],
 
   // Per-page details, keyed by route name.
@@ -56,6 +59,21 @@ return [
       'heading'     => 'Profile',
       'subheading'  => 'Keep your contact details up to date',
       'description' => 'Update your name, phone number and address.',
+    ],
+  ],
+
+  // Delete Account modal (views/components/account/delete-modal.blade.php, js/account/delete.js).
+  // Copy only: the server decides what deletion really does. The list follows the proposal in
+  // docs/user-account.md and must be reworded if the backend rule changes.
+  //   confirm_word => what the user must type before the button unlocks
+  //   items        => what happens, one line each (icon = Phosphor name)
+  'delete' => [
+    'confirm_word' => 'DELETE',
+    'warning'      => 'Deleting your account is permanent. You will not be able to log in again with this email.',
+    'items'        => [
+      ['icon' => 'user-minus',  'text' => 'Your name, contact number and address are removed from our records.'],
+      ['icon' => 'calendar-x',  'text' => 'Active bookings must be cancelled before you can delete your account.'],
+      ['icon' => 'archive',     'text' => 'Past booking records are kept for J&G\'s business records, without your personal details.'],
     ],
   ],
 

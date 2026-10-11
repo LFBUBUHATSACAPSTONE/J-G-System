@@ -26,6 +26,20 @@ class UserAccountTest extends TestCase
       ->assertSee('Log out');
   }
 
+  public function test_delete_account_tab_opens_the_confirmation_modal(): void
+  {
+    $this->withoutVite();
+
+    // The tab is a button for the modal (no route), and the modal renders on every account page.
+    // With no `user.account.destroy` route yet, the modal's delete URL is empty: nothing is sent.
+    $this->get(route('user.account.profile'))
+      ->assertOk()
+      ->assertSee('data-bs-target="#deleteAccountModal"', false)
+      ->assertSee('id="deleteAccountModal"', false)
+      ->assertSee('data-delete-url=""', false)
+      ->assertSee('Type <strong>DELETE</strong> to confirm', false);
+  }
+
   public function test_profile_update_stub_answers_ok(): void
   {
     $this->patchJson(route('user.account.profile.update'), [
