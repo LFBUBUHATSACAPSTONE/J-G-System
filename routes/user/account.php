@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 // from the logged-in user when there is one and from sample values when there is not, and the
 // profile PATCH just answers 200. The JS does the validation (resources/js/account/profile.js).
 // Route NAMES (user.account, user.account.profile, user.account.profile.update, user.account.bookings,
-// user.account.bookings.cancel, user.account.messages) must not change: the navigation, the sidebar (config/account.php)
+// user.account.bookings.cancel, user.account.messages, user.account.security, user.account.password.update) must not change: the navigation, the sidebar (config/account.php)
 // and the JS build from them.
 // When the backend is connected: add the `auth` middleware to these routes and replace the stubs.
 
@@ -174,3 +174,19 @@ Route::get('/user/account/messages', function () {
     ],
   ]]);
 })->name('user.account.messages');
+
+// Security. FRONT-END STUBS, no middleware: the page renders for the logged-in user (sample values when
+// there is none) and the password PATCH just answers 200 and changes nothing. The form
+// (resources/js/account/security.js) only calls the PATCH route when it exists.
+// Optional view variable: 'hasPassword' => false for an account with no password of its own (signed up with
+// Google only); only the backend can tell, so it is not passed here and the view defaults to true.
+Route::get('/user/account/security', fn() => view('user.account.security', ['user' => request()->user()]))
+  ->name('user.account.security');
+
+// Contract the real controller must keep: PATCH JSON {current_password, password, password_confirmation};
+// 200 {ok, message}; 422 {message, errors{field: [msg]}} (wrong current password, rule not met, same as the
+// old one); 401 / 403 {message}. Stub: always succeeds, changes nothing.
+Route::patch('/user/account/password', fn() => response()->json([
+  'ok' => true,
+  'message' => 'Your password has been updated.',
+]))->name('user.account.password.update');
