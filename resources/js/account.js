@@ -4,3 +4,4 @@ import "@phosphor-icons/web/regular";
 
 import "./account/profile.js";
 import "./account/bookings.js";
+import "./account/messages.js";

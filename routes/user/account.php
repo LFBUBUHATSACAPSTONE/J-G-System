@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 // from the logged-in user when there is one and from sample values when there is not, and the
 // profile PATCH just answers 200. The JS does the validation (resources/js/account/profile.js).
 // Route NAMES (user.account, user.account.profile, user.account.profile.update, user.account.bookings,
-// user.account.bookings.cancel) must not change: the navigation, the sidebar (config/account.php)
+// user.account.bookings.cancel, user.account.messages) must not change: the navigation, the sidebar (config/account.php)
 // and the JS build from them.
 // When the backend is connected: add the `auth` middleware to these routes and replace the stubs.
 
@@ -141,3 +141,36 @@ Route::post('/user/account/bookings/{booking}/cancel', fn(string $booking) => re
   'message' => 'Your booking has been cancelled.',
   'booking' => ['id' => $booking, 'status' => 'user_cancelled', 'can_reschedule' => true],
 ]))->whereNumber('booking')->name('user.account.bookings.cancel');
+
+// Messages. FRONT-END STUB: a sample thread (dated relative to now), nothing read or saved. The page
+// reuses the shared chat components and posts to the existing `user.messages.send` route, so there
+// is no new send route. The real controller passes the same `$conversation` as the landing widget
+// (docs/backend-impact.md, section 28).
+Route::get('/user/account/messages', function () {
+  $m = fn(string $from, string $body, $at, array $files = []) => ['type' => 'message', 'from' => $from, 'body' => $body, 'at' => $at, 'attachments' => $files];
+
+  return view('user.account.messages', ['conversation' => [
+    'unread' => 1,
+    'items' => [
+      ['type' => 'booking', 'at' => Carbon::now()->subDay(), 'booking' => [
+        'reference' => '#JG12345',
+        'status' => 'approved',
+        'package' => ['id' => 'modern-glam', 'name' => 'Modern Glam', 'price' => 35000],
+        'event' => [
+          'name' => 'Arjay & Co. Debut',
+          'type' => 'Debut',
+          'location' => 'Marikina Sports Center',
+          'start_date' => Carbon::now()->addDays(20),
+          'end_date' => Carbon::now()->addDays(20),
+          'start_time' => '5:00 PM',
+          'end_time' => '12:00 AM',
+        ],
+      ]],
+      $m('admin', 'Your booking has been approved and confirmed.', Carbon::now()->subHours(5)),
+      $m('client', 'Thank you! Here is my GCash receipt.', Carbon::now()->subHours(4), [['name' => 'gcash-receipt.pdf', 'url' => '#', 'kind' => 'file', 'size' => '240 KB']]),
+      $m('admin', 'Thank you! Your payment has been received.', Carbon::now()->subHours(3)),
+      $m('client', 'Can we change the guest count to 120?', Carbon::now()->subHour()),
+      $m('admin', 'No problem. The event guest count has been updated to 120.', Carbon::now()->subMinutes(20)),
+    ],
+  ]]);
+})->name('user.account.messages');
