@@ -42,10 +42,54 @@ return [
   //   subheading  => caption under the heading
   //   description => meta description
   'pages' => [
+    'user.account.bookings' => [
+      'heading'     => 'My Bookings',
+      'subheading'  => 'Track your requests, payments and event dates',
+      'description' => 'See the status of your J&G Audio Lights and Sounds bookings, cancel one, or reschedule it.',
+    ],
     'user.account.profile' => [
       'heading'     => 'Profile',
       'subheading'  => 'Keep your contact details up to date',
       'description' => 'Update your name, phone number and address.',
+    ],
+  ],
+
+  // My Bookings registry (views/user/account/bookings.blade.php, js/account/bookings.js). Booking
+  // DATA is not here: it comes from the controller. The server decides every status change; the
+  // front end only shows what it is given.
+  //   label => text of the status badge (what the CLIENT sees, not the admin wording)
+  //   icon  => Phosphor icon name (ph-<icon>); decorative, the label carries the meaning
+  //   tone  => badge colour: success | warning | danger | brand | neutral
+  //   group => tab: `active` is Upcoming until the last event day has passed, then Past;
+  //            `past` and `cancelled` are fixed.
+  'bookings' => [
+    'statuses' => [
+      'pending'         => ['label' => 'Awaiting approval',  'icon' => 'hourglass-medium', 'tone' => 'warning', 'group' => 'active'],
+      'pending_payment' => ['label' => 'Payment under review', 'icon' => 'receipt',        'tone' => 'warning', 'group' => 'active'],
+      'approved'        => ['label' => 'Confirmed',          'icon' => 'check-circle',     'tone' => 'success', 'group' => 'active'],
+      'completed'       => ['label' => 'Completed',          'icon' => 'checks',           'tone' => 'success', 'group' => 'past'],
+      'user_cancelled'  => ['label' => 'Cancelled by you',   'icon' => 'x-circle',         'tone' => 'danger',  'group' => 'cancelled'],
+      'cancelled'       => ['label' => 'Cancelled',          'icon' => 'x-circle',         'tone' => 'danger',  'group' => 'cancelled'],
+      'declined'        => ['label' => 'Declined',           'icon' => 'prohibit',         'tone' => 'danger',  'group' => 'cancelled'],
+    ],
+
+    // Statuses the client can still cancel (only before the event starts). The front end only
+    // decides whether to show the button; the backend must enforce the same rule.
+    'cancellable' => ['pending', 'pending_payment', 'approved'],
+
+    // Tabs above the list. Keys match the `group` values above ('all' shows everything).
+    'tabs' => [
+      'all'       => 'All',
+      'upcoming'  => 'Upcoming',
+      'past'      => 'Past',
+      'cancelled' => 'Cancelled',
+    ],
+
+    // payment.state => text shown next to the payment method.
+    'payment_states' => [
+      'paid'    => 'Fully paid',
+      'partial' => 'Down payment paid',
+      'pending' => 'Awaiting verification',
     ],
   ],
 ];
