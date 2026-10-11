@@ -1,0 +1,190 @@
+// Account shell additions on top of the admin sidebar (_sidebar.scss). Tokens only.
+// Rules: 4px grid ($sp-*), outside-in spacing, buttons/pills with smaller vertical than horizontal padding.
+
+.account-sidebar {
+    // "Back to Home" takes the place of the admin logo: left aligned at every width.
+    .admin-sidebar__header {
+        justify-content: space-between;
+
+        @media (min-width: $admin-sidebar-breakpoint) {
+            justify-content: flex-start;
+            padding: $sp-4 0;
+        }
+    }
+
+    &__back {
+        display: inline-flex;
+        align-items: center;
+        gap: $sp-2;
+        padding: $sp-2 $sp-3;
+        border-radius: $admin-radius-md;
+        color: $admin-sidebar-text;
+        font-size: $font-size-base;
+        font-weight: 500;
+        text-decoration: none;
+
+        i {
+            font-size: admin-fluid(1.125);
+            line-height: 1;
+        }
+
+        &:hover {
+            color: $admin-sidebar-text;
+            background: oklch(100% 0 0 / 0.08);
+        }
+
+        &:focus-visible {
+            outline: $admin-focus-ring-width solid $admin-sidebar-focus-ring;
+            outline-offset: $admin-focus-ring-offset;
+        }
+    }
+
+    // Tabs that are not built yet: readable, but clearly not a link.
+    .admin-sidebar__link.is-disabled {
+        color: oklch(78% 0 0);
+        cursor: not-allowed;
+
+        &:hover {
+            background: transparent;
+            color: oklch(78% 0 0);
+        }
+    }
+
+    &__soon {
+        margin-left: auto;
+        padding: $sp-1 $sp-2;
+        border: 1px solid $admin-sidebar-divider;
+        border-radius: $admin-radius-pill;
+        color: oklch(82% 0 0);
+        font-size: 0.75rem;
+        line-height: 1.2;
+    }
+
+    // Destructive tab: lighter red so it keeps contrast on the dark sidebar.
+    .admin-sidebar__link.is-danger {
+        color: oklch(80% 0.12 25);
+
+        &:hover {
+            color: oklch(80% 0.12 25);
+        }
+    }
+
+    // Log out sits at the bottom of the column.
+    &__footer {
+        margin-top: auto;
+        padding: $sp-4;
+        border-top: 1px solid $admin-sidebar-divider;
+
+        @media (min-width: $admin-sidebar-breakpoint) {
+            margin: auto $sp-8 0;
+            padding: $sp-6 0;
+        }
+    }
+
+    &__logout {
+        width: 100%;
+        background: transparent;
+        text-align: left;
+        font-family: $admin-font-family;
+    }
+
+    // The admin sidebar draws its own closing rule on desktop; the footer rule replaces it here.
+    @media (min-width: $admin-sidebar-breakpoint) {
+        &::after {
+            display: none;
+        }
+    }
+}
+
+// Page content: the admin shell, capped so cards stay readable on very wide screens.
+.account-content {
+    font-family: $admin-font-family;
+}
+
+// Shared by every account page.
+.account-card {
+    container-type: inline-size; // fields switch to two columns on the card's own width
+    padding: $sp-4;
+    border-radius: $admin-radius-xl;
+    background: $admin-surface;
+    color: $admin-text-primary;
+
+    @media (min-width: 576px) {
+        padding: $sp-6;
+    }
+
+    &__title {
+        margin: 0 0 $sp-4;
+        font-size: admin-fluid(1.25);
+        font-weight: 600;
+    }
+}
+
+.account-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: $sp-1;
+    padding: $sp-1 $sp-3;
+    border-radius: $admin-radius-pill;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.4;
+
+    i {
+        font-size: 1rem;
+        line-height: 1;
+    }
+
+    &--success {
+        background: $admin-success-soft;
+        color: $admin-success-text;
+    }
+
+    &--warning {
+        background: $admin-warning-soft;
+        color: $admin-warning-text;
+    }
+}
+
+.account-btn {
+    padding: $sp-2 $sp-6;
+    border: 2px solid transparent;
+    border-radius: $admin-radius-md;
+    font-size: $font-size-base;
+    font-weight: 600;
+    line-height: 1.5;
+    cursor: pointer;
+
+    &:focus-visible {
+        outline: $admin-focus-ring-width solid $admin-focus-ring;
+        outline-offset: $admin-focus-ring-offset;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    &--primary {
+        background: $admin-brand;
+        color: $admin-on-brand;
+
+        &:hover:not(:disabled) {
+            background: $admin-brand-hover;
+        }
+    }
+
+    &--secondary {
+        background: $admin-brand-soft;
+        color: $admin-brand-text;
+
+        &:hover:not(:disabled) {
+            background: $admin-brand-soft-hover;
+        }
+    }
+
+    &--danger {
+        background: $admin-danger;
+        color: $admin-on-danger;
+    }
+}

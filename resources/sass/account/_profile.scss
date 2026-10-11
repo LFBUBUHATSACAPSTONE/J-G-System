@@ -1,0 +1,184 @@
+// Account > Profile. Tokens only; spacing on the 4px grid.
+// Proximity: field-to-field 16px inside a card, card-to-card 24px.
+
+.account-profile {
+    display: flex;
+    flex-direction: column;
+    gap: $sp-6;
+    max-width: 60rem;
+}
+
+// Summary card: avatar + name + email + badges
+.account-summary {
+    display: flex;
+    align-items: center;
+    gap: $sp-4;
+
+    &__avatar {
+        display: flex;
+        flex: none;
+        align-items: center;
+        justify-content: center;
+        width: 4rem;
+        height: 4rem;
+        border-radius: 50%;
+        background: $admin-brand;
+        color: $admin-on-brand;
+        font-size: admin-fluid(1.5);
+        font-weight: 600;
+    }
+
+    &__text {
+        min-width: 0;
+    }
+
+    &__name {
+        margin: 0;
+        font-size: admin-fluid(1.25);
+        font-weight: 600;
+        overflow-wrap: anywhere;
+    }
+
+    &__email {
+        margin: 0;
+        color: $admin-text-muted;
+        font-size: admin-fluid(0.9);
+        overflow-wrap: anywhere;
+    }
+
+    &__meta {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: $sp-2 $sp-3;
+        margin-top: $sp-2;
+    }
+
+    &__since {
+        color: $admin-text-muted;
+        font-size: 0.8125rem;
+    }
+}
+
+// Form
+.account-form {
+    display: flex;
+    flex-direction: column;
+    gap: $sp-6;
+
+    &__grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: $sp-4;
+
+        // Two columns once the CARD is wide enough (not the screen: the sidebar takes space at 992px).
+        @container (min-width: 34rem) {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    &__field {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+
+        label {
+            margin-bottom: $sp-2;
+            font-size: admin-fluid(0.9);
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: $sp-3 $sp-4;
+            border: 1px solid $admin-field-border;
+            border-radius: $admin-radius-md;
+            background: $admin-field-bg-on-white;
+            color: $admin-text-primary;
+            font-size: admin-fluid(0.9);
+
+            &::placeholder {
+                color: $admin-text-subtle;
+            }
+
+            &:focus {
+                outline: none;
+                border-color: $admin-focus-ring;
+                box-shadow: 0 0 0 3px $admin-focus-ring-soft;
+            }
+
+            &:focus-visible {
+                outline: $admin-focus-ring-width solid $admin-focus-ring;
+                outline-offset: $admin-focus-ring-offset;
+            }
+
+            &.is-invalid {
+                border-color: $admin-danger-border;
+            }
+
+            &[readonly] {
+                color: $admin-text-muted;
+                cursor: not-allowed;
+            }
+        }
+
+        &--wide {
+            grid-column: 1 / -1;
+        }
+    }
+
+    &__required {
+        color: $admin-danger-text;
+    }
+
+    &__hint,
+    &__error {
+        margin-top: $sp-1;
+        font-size: 0.875rem;
+    }
+
+    &__hint {
+        color: $admin-text-muted;
+    }
+
+    &__error {
+        color: $admin-danger-text;
+    }
+
+    &__status {
+        margin: 0;
+        padding: $sp-3 $sp-4;
+        border-radius: $admin-radius-md;
+        font-size: admin-fluid(0.9);
+
+        &.is-success {
+            background: $admin-success-soft;
+            color: $admin-success-text;
+        }
+
+        &.is-error {
+            background: $admin-danger-soft;
+            color: $admin-danger-text;
+        }
+    }
+
+    // Phones: stacked, primary action first; wider: right aligned side by side.
+    &__actions {
+        display: flex;
+        flex-direction: column-reverse;
+        gap: $sp-3;
+
+        .account-btn {
+            width: 100%;
+        }
+
+        @media (min-width: 576px) {
+            flex-direction: row;
+            justify-content: flex-end;
+
+            .account-btn {
+                width: auto;
+            }
+        }
+    }
+}
