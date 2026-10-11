@@ -1,12 +1,13 @@
 // Shared admin page header. Same look as the dashboard header, as a reusable block.
 .admin-page-header {
-    margin: 0 0 1.5rem;
+    margin: 0 0 $sp-6; // 24px under the title on phones, 32px from the sidebar breakpoint
     font-family: $admin-font-family; // Poppins (via $font-family-text)
 
-    // Mobile: no side padding. The menu button is now a top bar, so it no longer overlaps the title.
     @media (min-width: $admin-sidebar-breakpoint) {
-        padding-left: 1.5rem;
+        margin-bottom: $sp-8;
     }
+
+    // No side padding of its own: the page padding (.admin-content) aligns it with the content.
 
     &__title {
         display: inline-block;
@@ -27,8 +28,8 @@
     }
 
     &__subtitle {
-        margin: 0.25rem 0 0;
+        margin: $sp-1 0 0;
         color: $admin-text-muted;
-        font-size: 0.95rem;
+        font-size: admin-fluid(0.95);
     }
 }

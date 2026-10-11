@@ -13,7 +13,7 @@
 <body>
   <x-admin.sidebar />
 
-  <main class="admin-content admin-messages p-4">
+  <main class="admin-content admin-messages">
     <x-admin.page-header />
 
     <div class="admin-messages__layout" data-messages data-view="list">
@@ -67,7 +67,7 @@
         @foreach ($conversations as $c)
         <div class="chat-panel" id="chat-{{ $c['id'] }}" data-chat @if (! $loop->first) hidden @endif>
           <header class="chat-panel__head">
-            <button type="button" class="chat-panel__back d-lg-none" aria-label="Back to chat list" data-chat-back>
+            <button type="button" class="chat-panel__back" aria-label="Back to chat list" data-chat-back>
               <x-chat.icon name="chevron-left" />
             </button>
             <span class="chat-avatar"><x-chat.icon name="user" /></span>

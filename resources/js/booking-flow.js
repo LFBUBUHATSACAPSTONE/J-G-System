@@ -51,18 +51,24 @@ function initBookingFlow() {
     );
 
     // Each of these fires once its step's own AJAX submit succeeds.
-    root.addEventListener("booking:personal-information-saved", () =>
-        advanceTo(root, "event-information"),
-    );
-    root.addEventListener("booking:event-information-saved", () =>
-        advanceTo(root, "event-schedule"),
-    );
-    root.addEventListener("booking:event-schedule-saved", () =>
-        advanceTo(root, "booking-summary"),
-    );
-    root.addEventListener("booking:payment-saved", () =>
-        advanceTo(root, "booking-confirmation"),
-    );
+    root.addEventListener("booking:personal-information-saved", () => {
+        updatePersonalSummary(root);
+        advanceTo(root, "event-information");
+    });
+    root.addEventListener("booking:event-information-saved", () => {
+        updateEventSummary(root);
+        advanceTo(root, "event-schedule");
+    });
+    root.addEventListener("booking:event-schedule-saved", () => {
+        updateScheduleSummary(root);
+        advanceTo(root, "booking-summary");
+    });
+    root.addEventListener("booking:payment-saved", (event) => {
+        const reference = event.detail?.reference;
+        const referenceEl = root.querySelector("[data-booking-reference]");
+        if (reference && referenceEl) referenceEl.textContent = `#${reference}`;
+        advanceTo(root, "booking-confirmation");
+    });
 
     // A later step was rejected because a chosen day filled up (capacity race). Send the client
     // back to Event Schedule; event-schedule.js listens for the same event to mark the day full.
@@ -87,6 +93,66 @@ function initBookingFlow() {
     root.addEventListener("booking:continue", () =>
         leaveFlow(root, "continue-url"),
     );
+}
+
+function updatePersonalSummary(root) {
+    const form = root.querySelector("#personal-information-form");
+    if (!form) return;
+    const value = (name) => form.elements.namedItem(name)?.value?.trim() ?? "";
+
+    setSummaryValue(root, "fullName", `${value("first_name")} ${value("last_name")}`.trim());
+    setSummaryValue(root, "email", value("email"));
+    setSummaryValue(root, "contactNumber", value("contact_number"));
+}
+
+function updateEventSummary(root) {
+    const form = root.querySelector("#event-information-form");
+    if (!form) return;
+    const value = (name) => form.elements.namedItem(name)?.value?.trim() ?? "";
+    const eventType = value("event_type") === "Others"
+        ? value("event_type_other")
+        : value("event_type");
+
+    setSummaryValue(root, "eventName", value("event_name"));
+    setSummaryValue(root, "eventType", eventType);
+    setSummaryValue(root, "eventLocation", value("event_location"));
+    setSummaryValue(root, "eventContactPerson", value("venue_contact_person"));
+}
+
+function updateScheduleSummary(root) {
+    const form = root.querySelector("#event-schedule-form");
+    if (!form) return;
+    const start = form.elements.namedItem("event_start_date")?.value;
+    const end = form.elements.namedItem("event_end_date")?.value;
+    const formatDate = (value) => {
+        if (!value) return "";
+        const [year, month, day] = value.split("-").map(Number);
+        return new Date(year, month - 1, day).toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+        });
+    };
+    const startDate = formatDate(start);
+    const endDate = formatDate(end);
+
+    setSummaryValue(root, "eventDate", startDate && endDate && start !== end
+        ? `${startDate} – ${endDate}`
+        : startDate);
+    setSummaryValue(root, "startTime", scheduleTime(form, "start_time"));
+    setSummaryValue(root, "endTime", scheduleTime(form, "end_time"));
+}
+
+function scheduleTime(form, name) {
+    const input = form.elements.namedItem(name);
+    const period = input?.closest(".event-schedule__field")
+        ?.querySelector('[aria-pressed="true"]')?.dataset.ampm;
+    return input?.value && period ? `${input.value.trim()} ${period}` : "";
+}
+
+function setSummaryValue(root, key, value) {
+    const target = root.querySelector(`[data-booking-summary="${key}"]`);
+    if (target) target.textContent = value;
 }
 
 // Reschedule mode starts at Event Schedule: client and event details come from the original booking.

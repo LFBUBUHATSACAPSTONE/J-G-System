@@ -7,8 +7,8 @@
   <x-site-head></x-site-head>
 </head>
 
-<body>
-  <img src="{{ asset('images/backgrounds/design/landing_bg.webp') }}" alt="" class="position-absolute z-0 w-100 h-100">
+<body class="booking-page">
+  <img src="{{ asset('images/backgrounds/design/landing_bg.webp') }}" alt="" class="booking-page__bg">
 
   {{--
     Booking flow container — booking-flow.js reads/writes
@@ -21,7 +21,7 @@
     final Confirmation step. Both point at the landing page for now —
     swap either independently once there's somewhere more specific for
     it to go (e.g. a user dashboard for "continue"). --}}
-    
+
   {{-- Reschedule mode: the controller passes $reschedule = ['booking_id', 'reference', 'month' => 'YYYY-MM'].
        Absent on a normal booking.  --}}
   @php($reschedule = $reschedule ?? null)
@@ -31,11 +31,17 @@
   @if ($rescheduleBlocked)
   {{-- Reschedule refused (not user-cancelled, already rescheduled, or the month has passed). The page
        still renders (HTTP 403) so the client sees why, instead of a bare error page. --}}
-  <div class="event-schedule position-relative z-1" data-reschedule-blocked>
-    <div class="event-schedule__card">
-      <h2 class="event-schedule__title">Reschedule unavailable</h2>
-      <p class="event-schedule__notice" role="alert">{{ $rescheduleBlocked }}</p>
-      <a href="{{ route('user.landing') }}" class="btn-color-gradient--primary client-info__btn--confirm font-button--responsive text-pale--white rounded-2 text-decoration-none d-inline-block text-center">Back to home</a>
+  <div class="booking-blocked" data-reschedule-blocked>
+    <div class="booking-blocked__card">
+      <span class="booking-blocked__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4.5" width="18" height="16" rx="3"></rect>
+          <path d="M3 9.5h18M8 2.5v4M16 2.5v4M9.5 13.5l5 5M14.5 13.5l-5 5"></path>
+        </svg>
+      </span>
+      <h1 class="booking-blocked__title">Reschedule unavailable</h1>
+      <p class="booking-blocked__message" role="alert">{{ $rescheduleBlocked }}</p>
+      <a href="{{ route('user.landing') }}" class="btn-color-gradient--primary client-info__btn--confirm font-button--responsive text-pale--white rounded-2 text-decoration-none text-center booking-blocked__btn">Back to home</a>
     </div>
   </div>
   @else

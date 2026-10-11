@@ -22,7 +22,7 @@ $months = collect($bookings)
 <body>
   <x-admin.sidebar />
 
-  <main class="admin-content admin-bookings admin-history p-4">
+  <main class="admin-content admin-bookings admin-history">
     <x-admin.page-header />
 
     @if (session('status'))

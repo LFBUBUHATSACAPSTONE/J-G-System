@@ -8,6 +8,37 @@ const money = (value) => `Php ${Number(value).toLocaleString("en-US")}`;
 const digitsOnly = (value) => String(value ?? "").replace(/\D/g, "");
 const EMPTY = { id: null, name: "", price: null, features: [] };
 
+function setStatus(message, isError = false) {
+    const status = document.querySelector("[data-package-status]");
+    if (!status) return;
+
+    status.textContent = message;
+    status.classList.toggle("admin-alert--danger", isError);
+    status.hidden = !message;
+}
+
+async function sendJson(url, method, csrfToken, payload) {
+    const response = await fetch(url, {
+        method,
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": csrfToken,
+            "X-Requested-With": "XMLHttpRequest",
+        },
+        body: JSON.stringify(payload),
+    });
+
+    let body;
+    try {
+        body = await response.json();
+    } catch {
+        throw new Error("The server returned an invalid JSON response.");
+    }
+
+    return { response, body };
+}
+
 function initModal(modal) {
     const form = modal.querySelector("[data-package-form]");
     const title = modal.querySelector("[data-package-title]");
@@ -171,9 +202,9 @@ function initModal(modal) {
         setMode("view");
     });
 
-    form.addEventListener("submit", (event) => {
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
         if (mode === "view") {
-            event.preventDefault(); // Enter in a read-only field must not post
             return;
         }
 
@@ -198,13 +229,46 @@ function initModal(modal) {
             ]);
 
         if (problems.length) {
-            event.preventDefault();
             problems.forEach(([field, message]) => showError(field, message));
             const [first] = problems[0];
             (first === "price"
                 ? priceInput
                 : modal.querySelector(`[data-package-field="${first}"]`)
             ).focus();
+            return;
+        }
+
+        saveButton.disabled = true;
+        try {
+            const method = mode === "create" ? "POST" : "PATCH";
+            const { response, body } = await sendJson(
+                form.action,
+                method,
+                form.querySelector('[name="_token"]').value,
+                {
+                    name: nameInput.value.trim(),
+                    price: priceValue.value,
+                    features: featuresInput.value,
+                },
+            );
+
+            if (response.status === 422 && body.errors) {
+                Object.entries(body.errors).forEach(([field, messages]) => {
+                    if (modal.querySelector(`[data-package-error="${field}"]`))
+                        showError(field, messages[0]);
+                });
+                return;
+            }
+
+            if (!response.ok)
+                throw new Error(body.message || "Unable to save this package.");
+
+            setStatus(body.message || "Package saved successfully.");
+            window.setTimeout(() => window.location.reload(), 650);
+        } catch (error) {
+            setStatus(error.message || "Unable to save this package.", true);
+        } finally {
+            saveButton.disabled = false;
         }
     });
 
@@ -225,9 +289,64 @@ function initModal(modal) {
     }
 }
 
+function initAvailabilityForms() {
+    document
+        .querySelectorAll("[data-package-card] form")
+        .forEach((form) => {
+            form.addEventListener("submit", async (event) => {
+                event.preventDefault();
+                const message = form.dataset.confirm;
+                if (message && !window.confirm(message)) return;
+
+                const button = form.querySelector('button[type="submit"]');
+                button.disabled = true;
+                try {
+                    const { response, body } = await sendJson(
+                        form.action,
+                        "PATCH",
+                        form.querySelector('[name="_token"]').value,
+                        { availability: form.querySelector('[name="availability"]').value },
+                    );
+
+                    if (!response.ok)
+                        throw new Error(
+                            body.message || "Unable to update package availability.",
+                        );
+
+                    const card = form.closest("[data-package-card]");
+                    card.classList.toggle(
+                        "is-unavailable",
+                        !body.data.available,
+                    );
+                    card.querySelectorAll("form").forEach((stateForm) => {
+                        const active =
+                            (stateForm.querySelector('[name="availability"]').value ===
+                                "available") === body.data.available;
+                        const stateButton = stateForm.querySelector("button");
+                        stateButton.classList.toggle(
+                            "admin-pill--solid",
+                            active,
+                        );
+                        stateButton.setAttribute("aria-pressed", String(active));
+                    });
+                    setStatus(body.message);
+                } catch (error) {
+                    setStatus(
+                        error.message ||
+                            "Unable to update package availability.",
+                        true,
+                    );
+                } finally {
+                    button.disabled = false;
+                }
+            });
+        });
+}
+
 function init() {
     const modal = document.getElementById("packageModal");
     if (modal) initModal(modal);
+    initAvailabilityForms();
 }
 
 if (document.readyState === "loading")

@@ -1,4 +1,4 @@
-{{-- Admin Packages page (front end only). Variable from the controller:
+{{-- Admin Packages page. Variable from the route:
        $packages => list of packages
      Cards, modal and buttons read everything from $packages and config/admin/packages.php.
      Nothing is hard-coded, so the stub route can be replaced by a real controller without view edits.
@@ -14,7 +14,7 @@
 <body>
   <x-admin.sidebar />
 
-  <main class="admin-content admin-packages p-4">
+  <main class="admin-content admin-packages">
     <div class="admin-packages__top">
       <x-admin.page-header />
     </div>
@@ -22,6 +22,7 @@
     @if (session('status'))
     <p class="admin-alert" role="status">{{ session('status') }}</p>
     @endif
+    <p class="admin-alert" role="status" data-package-status hidden></p>
 
     <h2 class="visually-hidden">Packages</h2>
 

@@ -192,24 +192,24 @@ if (dashboard) {
                     makeElement("span", "admin-attn__ref", item.reference),
                 );
                 const meta = makeElement("p", "admin-attn__meta");
-                const eventDate = makeElement(
-                    "time",
-                    "",
-                    dateLabel(item.date, {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                    }),
-                );
-                eventDate.dateTime = item.date;
-                const requested = makeElement(
-                    "time",
-                    "",
-                    relativeTime(item.submitted_at),
-                );
-                requested.dateTime = item.submitted_at;
+                const eventDate = item.date
+                    ? makeElement(
+                          "time",
+                          "",
+                          dateLabel(item.date, {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                          }),
+                      )
+                    : makeElement("span", "", "Event date not set");
+                if (item.date) eventDate.dateTime = item.date;
+                const requested = item.submitted_at
+                    ? makeElement("time", "", relativeTime(item.submitted_at))
+                    : makeElement("span", "", "date unavailable");
+                if (item.submitted_at) requested.dateTime = item.submitted_at;
                 meta.append(
-                    document.createTextNode(`${item.package} · `),
+                    document.createTextNode(`${item.package || "Unassigned"} · `),
                     eventDate,
                     document.createTextNode(" · requested "),
                     requested,
