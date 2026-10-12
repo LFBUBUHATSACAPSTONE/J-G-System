@@ -2,9 +2,10 @@
 //
 // Columns follow the CARD's width (container query), not the screen's: at 992px the sidebar-less
 // page still leaves less room than the viewport suggests.
-//   < 560px     one column, stacked
-//   560-1079px  two columns (Summary | Payment Type, then Payment Form | Instructions)
-//   >= 1080px   four columns in one row
+//   < 560px     one column, stacked: Instructions first, then Summary, Payment Type, Payment Form
+//               (CSS `order` only; the HTML stays Summary | Payment Type | Payment Form | Instructions)
+//   560-1079px  two columns, Instructions first (Instructions | Summary, then Payment Type | Payment Form)
+//   >= 1080px   four columns in one row (Summary | Payment Type | Payment Form | Instructions)
 // Reschedule mode renders only Summary and Payment Type, so it stays at two columns from 560px.
 //
 // This step is wider than the others (see .booking-flow:has(...) in _booking-page.scss) so the four
@@ -65,6 +66,57 @@
         &__column:nth-child(n + 3) {
             border-top: 1px solid $auth-border;
             padding-top: $sp-6;
+        }
+    }
+
+    // Below 1080px the Instructions come first, then the rest in their usual order.
+    // One column (< 560px): only `order` moves it, so the stacking rule above (a rule and 24px above every column after the
+    // first one IN THE HTML) is swapped by hand: no rule above Instructions, one above the Summary.
+    // Reschedule mode has no Instructions column, so nothing changes there.
+    @container summary (max-width: 559.98px) {
+        &__column + &__column--guide {
+            order: -1;
+            border-top: 0;
+            padding-top: 0;
+        }
+
+        &__grid:has(.booking-summary__column--guide) > &__column:first-child {
+            border-top: 1px solid $auth-border;
+            padding-top: $sp-6;
+        }
+    }
+
+    // Two columns (560-1079px), Instructions first: row 1 = Instructions | Summary, row 2 = Payment Type |
+    // Payment Form. The rules above go by position in the HTML, so each column's rules are set by hand
+    // here (vertical rule before the right-hand column, horizontal rule above row 2).
+    @container summary (min-width: 560px) and (max-width: 1079.98px) {
+        &__grid:has(.booking-summary__column--guide) > &__column--guide {
+            order: -1;
+            border-top: 0;
+            padding-top: 0;
+            border-left: 0;
+            padding-left: 0;
+        }
+
+        &__grid:has(.booking-summary__column--guide) > &__column:first-child {
+            border-top: 0;
+            padding-top: 0;
+            border-left: 1px solid $auth-border;
+            padding-left: $sp-6;
+        }
+
+        &__grid:has(.booking-summary__column--guide) > &__column:nth-child(2) {
+            border-top: 1px solid $auth-border;
+            padding-top: $sp-6;
+            border-left: 0;
+            padding-left: 0;
+        }
+
+        &__grid:has(.booking-summary__column--guide) > &__column--form {
+            border-top: 1px solid $auth-border;
+            padding-top: $sp-6;
+            border-left: 1px solid $auth-border;
+            padding-left: $sp-6;
         }
     }
 
