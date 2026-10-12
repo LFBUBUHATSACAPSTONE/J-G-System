@@ -17,7 +17,7 @@ return [
     'total'     => ['label' => 'Total Bookings',    'status' => 'all',       'higher' => 'good',    'hint' => 'All time',                'featured' => true],
     'confirmed' => ['label' => 'Confirmed Events',  'status' => 'approved',  'higher' => 'good',    'hint' => 'Approved and paid'],
     'pending'   => ['label' => 'Pending Approval',  'status' => 'pending',   'higher' => 'neutral', 'hint' => 'Waiting for your review'],
-    'payment'   => ['label' => 'Payment to Verify', 'status' => 'payment',   'higher' => 'neutral', 'hint' => 'GCash proof to check'],
+    'payment'   => ['label' => 'Payment to Verify', 'status' => 'payment',   'higher' => 'neutral', 'hint' => 'Payment proof to check'],
     'cancelled' => ['label' => 'Cancelled Events',  'status' => 'cancelled', 'higher' => 'bad',     'hint' => 'Cancelled and declined'],
   ],
 
