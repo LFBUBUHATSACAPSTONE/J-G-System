@@ -43,10 +43,8 @@
     </label>
     <input type="password" id="signup-password" name="password" placeholder="••••••••" required>
 
-    <x-button type="button" class="auth-modal__toggle-password" data-target="signup-password">
-      <span>
-        <img src="{{ asset('images/icons/auth/show_password.svg')}}" alt="Show Password">
-      </span>
+    <x-button type="button" class="auth-modal__toggle-password" data-target="signup-password" aria-label="Show password" aria-pressed="false">
+      <i class="ph ph-eye" aria-hidden="true"></i>
     </x-button>
     <small class="auth-modal__field-error d-none" data-field-error="password"></small>
   </div>

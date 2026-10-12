@@ -180,7 +180,7 @@
             <p class="booking-summary__option-hint">Open the form in a new tab, complete it, then come back to upload your proof.</p>
             <a
               class="booking-summary__link-btn"
-              href="https://example.com/jg-audio-payment-details-form"
+              href="https://docs.google.com/forms/d/e/1FAIpQLSewtDFH_r6z7yOCf2svoDvZpQJqCwj2XaJuMUnNZdQfs6baQg/viewform"
               target="_blank"
               rel="noopener noreferrer">
               Open payment details form

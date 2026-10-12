@@ -40,7 +40,7 @@ return [
       'badge' => ['tone' => 'warning', 'solid' => false],
     ],
     // Key stays `pending_payment` (routes, calendar and History use it); only the label changed.
-    // Meaning: the admin approved the request, the client's GCash proof (reference number +
+    // Meaning: the admin approved the request, the client's payment proof (reference number +
     // receipt) is in, and the admin still has to check it.
     'pending_payment' => [
       'label'     => 'Payment to Verify',
