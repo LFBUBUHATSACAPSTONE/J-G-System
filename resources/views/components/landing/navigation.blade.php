@@ -25,16 +25,6 @@
 
         <div class="d-flex gap-3 align-items-center justify-content-center mt-3 mt-lg-0">
           @auth
-          <x-button type="button"
-            data-chat-open
-            aria-label="Messages"
-            aria-expanded="false"
-            aria-controls="chatWidgetPanel"
-            title="Messages"
-            class="landing-nav__icon-button">
-            <x-chat.icon name="chat" />
-          </x-button>
-
           <a href="{{ route('user.account') }}"
             aria-label="My account"
             title="My account"
