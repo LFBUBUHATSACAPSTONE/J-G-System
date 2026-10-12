@@ -45,4 +45,14 @@
       @endforeach
     </ul>
   </nav>
+
+  <div class="admin-sidebar__footer">
+    <form method="POST" action="{{ Route::has('logout') ? route('logout') : '#' }}">
+      @csrf
+      <button type="submit" class="admin-sidebar__link admin-sidebar__logout">
+        <i class="ph ph-sign-out" aria-hidden="true"></i>
+        <span>Log out</span>
+      </button>
+    </form>
+  </div>
 </aside>

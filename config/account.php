@@ -9,7 +9,7 @@ return [
   // Shown after the page label in the browser tab: "Profile - J&G Account"
   'name' => 'J&G Account',
 
-  'default_description' => 'Manage your J&G Audio Lights and Sounds profile, bookings and payments.',
+  'default_description' => 'Manage your J&G Audio Lights and Sounds profile and bookings (payment status included).',
 
   'author' => 'J&G Audio Lights and Sounds',
 
@@ -31,7 +31,6 @@ return [
   'nav' => [
     ['label' => 'Profile',        'icon' => 'user',          'route' => 'user.account.profile'],
     ['label' => 'My Bookings',    'icon' => 'calendar-check', 'route' => 'user.account.bookings', 'active' => 'user.account.bookings*'],
-    ['label' => 'Payments',       'icon' => 'wallet',        'route' => 'user.account.payments'],
     ['label' => 'Messages',       'icon' => 'chat-circle',   'route' => 'user.account.messages'],
     ['label' => 'Security',       'icon' => 'lock-key',      'route' => 'user.account.security'],
     // `modal` instead of `route`: this tab opens the confirmation modal (views/components/account/delete-modal.blade.php)
@@ -52,7 +51,7 @@ return [
     ],
     'user.account.bookings' => [
       'heading'     => 'My Bookings',
-      'subheading'  => 'Track your requests, payments and event dates',
+      'subheading'  => 'Track your requests, payment status and event dates',
       'description' => 'See the status of your J&G Audio Lights and Sounds bookings, cancel one, or reschedule it.',
     ],
     'user.account.security' => [

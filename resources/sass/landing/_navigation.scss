@@ -52,6 +52,16 @@ html {
         width: 1.25rem;
         height: 1.25rem;
     }
+
+    // The word is only for the collapsed menu (< lg); see the media query at the end of the file.
+    &__account-label {
+        display: none;
+    }
+
+    &__account-icon {
+        display: grid;
+        place-items: center;
+    }
 }
 
 .glass-header .navbar-nav .nav-link {
@@ -112,5 +122,34 @@ html {
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         border-bottom: 1px solid oklch(100% 0.00011 271.152 / 0.25);
+    }
+
+    // Account link: a plain "Account" word in the list, aligned and coloured like the nav links,
+    // instead of the round icon button (the icon comes back from lg up).
+    .glass-header .landing-nav__icon-button {
+        display: block;
+        width: 100%;
+        height: auto;
+        padding: 0.5rem;
+        border: 0;
+        border-radius: 0;
+        background: none;
+        color: oklch(100% 0.00011 271.152 / 0.6);
+        font-size: 1rem;
+        text-align: left;
+
+        &:hover,
+        &:focus-visible {
+            background: none;
+            color: oklch(100% 0.00011 271.152 / 0.9);
+        }
+    }
+
+    .landing-nav__account-icon {
+        display: none;
+    }
+
+    .landing-nav__account-label {
+        display: block;
     }
 }
