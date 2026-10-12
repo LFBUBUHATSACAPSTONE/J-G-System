@@ -10,8 +10,8 @@
     </label>
     <input type="password" id="new-password" name="password" placeholder="••••••••" required>
 
-    <x-button type="button" class="auth-modal__toggle-password" data-target="new-password">
-      <img src="{{ asset('images/icons/auth/show_password.svg')}}" alt="Show Password">
+    <x-button type="button" class="auth-modal__toggle-password" data-target="new-password" aria-label="Show password" aria-pressed="false">
+      <i class="ph ph-eye" aria-hidden="true"></i>
     </x-button>
     <small class="auth-modal__field-error d-none" data-field-error="password"></small>
   </div>
@@ -23,8 +23,8 @@
     </label>
     <input type="password" id="new-password-confirm" name="password_confirmation" placeholder="••••••••" required>
 
-    <x-button type="button" class="auth-modal__toggle-password" data-target="new-password-confirm">
-      <img src="{{ asset('images/icons/auth/show_password.svg')}}" alt="Show Password">
+    <x-button type="button" class="auth-modal__toggle-password" data-target="new-password-confirm" aria-label="Show password" aria-pressed="false">
+      <i class="ph ph-eye" aria-hidden="true"></i>
     </x-button>
     <small class="auth-modal__field-error d-none" data-field-error="password_confirmation"></small>
   </div>

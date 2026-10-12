@@ -1,6 +1,7 @@
 import "./bootstrap";
 import * as bootstrap from "bootstrap"; //Bootstrap's JS
 import "../sass/app.scss"; //CSS
+import "@phosphor-icons/web/regular"; //Icons (auth modal password toggle)
 
 // LANDING
 import Carousel from "./landing/coverflow-carousel.js";
