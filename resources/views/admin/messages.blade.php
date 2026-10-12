@@ -40,8 +40,8 @@
           @php
           $last = collect($c['items'])->where('type', 'message')->last();
           $first = Str::before($c['client']['name'], ' ');
-          $text = ! empty($last['body']) ? $last['body'] : 'Sent an attachment';
-          $preview = ($last['from'] === 'admin' ? 'You' : $first) . ': ' . $text;
+          $text = $last && ! empty($last['body']) ? $last['body'] : ($last ? 'Sent an attachment' : 'No messages yet');
+          $preview = $last && ($last['from'] === 'admin') ? 'You: ' . $text : ($last ? $first . ': ' . $text : $text);
           @endphp
           <li data-chat-item data-name="{{ Str::lower($c['client']['name']) }}" data-unread="{{ $c['unread'] }}">
             <button type="button" class="chat-item{{ $loop->first ? ' is-active' : '' }}" data-chat-open="chat-{{ $c['id'] }}" aria-controls="chat-{{ $c['id'] }}" @if ($loop->first) aria-current="true" @endif>
@@ -51,7 +51,7 @@
                 <span class="chat-item__preview" data-chat-preview>{{ Str::limit($preview, 34) }}</span>
               </span>
               <span class="chat-item__meta">
-                <time data-chat-when>{{ $last['at']->diffForHumans(null, true, true) }}</time>
+                <time data-chat-when>{{ $last ? $last['at']->diffForHumans(null, true, true) : '' }}</time>
                 <span class="chat-item__badge" data-chat-badge @if (! $c['unread']) hidden @endif>{{ $c['unread'] }}<span class="visually-hidden"> unread</span></span>
               </span>
             </button>

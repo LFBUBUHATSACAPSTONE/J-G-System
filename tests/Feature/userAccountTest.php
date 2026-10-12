@@ -110,12 +110,14 @@ class UserAccountTest extends TestCase
   {
     $this->withoutVite();
 
+    // Guests see the chat shell (empty thread + composer). The thread itself is
+    // filled from the logged-in user's real conversation once the backend is
+    // connected, so no sample reference or unread badge is rendered here.
     $this->get(route('user.account.messages'))
       ->assertOk()
       ->assertSee('data-account-chat', false)
       ->assertSee('data-chat-form', false)
       ->assertSee(route('user.messages.send'), false)
-      ->assertSee('#JG12345')
-      ->assertSee('1 new');
+      ->assertSee('Ask us about packages or your booking', false);
   }
 }
