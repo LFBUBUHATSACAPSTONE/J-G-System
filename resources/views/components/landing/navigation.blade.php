@@ -21,6 +21,9 @@
           <li class="nav-item"><a href="{{ route('user.landing') }}#packages" class="nav-link" data-nav-target="packages">Packages</a></li>
           <li class="nav-item"><a href="{{ route('user.landing') }}#inclusions" class="nav-link" data-nav-target="inclusions">Inclusions</a></li>
           <li class="nav-item"><a href="{{ route('user.landing') }}#about" class="nav-link" data-nav-target="about">About</a></li>
+          @auth
+          <li class="nav-item d-lg-none"><a href="{{ route('user.account') }}" class="nav-link">Account</a></li>
+          @endauth
         </ul>
 
         <div class="d-flex gap-3 align-items-center justify-content-center mt-3 mt-lg-0">
@@ -28,7 +31,7 @@
           <a href="{{ route('user.account') }}"
             aria-label="My account"
             title="My account"
-            class="landing-nav__icon-button">
+            class="landing-nav__icon-button d-none d-lg-grid">
             <x-chat.icon name="user" />
           </a>
           @else
