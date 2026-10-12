@@ -55,7 +55,7 @@ class RegisterController extends Controller
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'identifier' => ['required', 'string', 'max:255'],
-            'password' => ['required', 'string', PasswordRule::min(8)->mixedCase()->numbers()],
+            'password' => ['required', 'string', PasswordRule::min(8)->mixedCase()->numbers()->symbols()],
             'terms' => ['accepted'],
         ]);
 
