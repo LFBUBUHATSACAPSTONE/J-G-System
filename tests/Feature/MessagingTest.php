@@ -953,4 +953,54 @@ class MessagingTest extends TestCase
             ->assertOk()
             ->assertSee('data-chat-bookings-since', false);
     }
+
+    // ----------------------------------------- booking cards trail the chat
+
+    public function test_the_thread_places_booking_cards_after_the_messages(): void
+    {
+        $user = $this->makeUser();
+        $approved = $this->makeBooking($user, 'approved', 'POS-800');
+        $conversation = $this->makeConversation($user, [
+            ['from' => 'client', 'body' => 'First'],
+            ['from' => 'admin', 'body' => 'Second'],
+        ]);
+
+        $thread = Conversation::with([
+            'booking.eventDetails', 'booking.schedule', 'booking.payment', 'booking.package',
+            'messages.replyTo',
+        ])->findOrFail($conversation->id);
+
+        $items = app(MessageService::class)->formatConversationForUser($thread)['items'];
+
+        $this->assertSame(
+            ['message', 'message', 'booking'],
+            array_map(fn ($item) => $item['type'], $items),
+        );
+        $this->assertSame($approved->id, $items[2]['booking']['id']);
+    }
+
+    public function test_the_latest_booking_is_the_last_item_in_the_thread(): void
+    {
+        $user = $this->makeUser();
+        $older = $this->makeBooking($user, 'approved', 'OLD-801');
+        $newer = $this->makeBooking($user, 'approved', 'NEW-802');
+
+        // Both helpers submit "now"; push the older one back a day so the order is
+        // unambiguous, then the newer booking must be the very last item.
+        DB::table('bookings')->where('id', $older->id)->update([
+            'submitted_at' => now()->subDay(),
+        ]);
+
+        $conversation = $this->makeConversation($user, [['from' => 'client', 'body' => 'Hi']]);
+        $thread = Conversation::with([
+            'booking.eventDetails', 'booking.schedule', 'booking.payment', 'booking.package',
+            'messages.replyTo',
+        ])->findOrFail($conversation->id);
+
+        $items = app(MessageService::class)->formatConversationForUser($thread)['items'];
+        $last = end($items);
+
+        $this->assertSame('booking', $last['type']);
+        $this->assertSame($newer->id, $last['booking']['id']);
+    }
 }

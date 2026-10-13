@@ -32,10 +32,16 @@ class MessageService
 
     public function formatConversationForUser(Conversation $conversation): array
     {
-        $items = $this->bookingItems($conversation);
+        $items = [];
 
         foreach ($conversation->messages as $message) {
             $items[] = $this->formatMessage($message);
+        }
+
+        // Booking cards come AFTER the messages, so the client's most recent booking
+        // is the last thing in the thread and easy to pick out while chatting.
+        foreach ($this->bookingItems($conversation) as $item) {
+            $items[] = $item;
         }
 
         return [
@@ -46,7 +52,7 @@ class MessageService
 
     public function formatConversationForAdmin(Conversation $conversation, bool $withMessages = false): array
     {
-        $items = $this->bookingItems($conversation);
+        $items = [];
 
         if ($withMessages) {
             foreach ($conversation->messages as $message) {
@@ -57,6 +63,11 @@ class MessageService
             if ($lastMessage) {
                 $items[] = $this->formatMessage($lastMessage);
             }
+        }
+
+        // Same on the admin side: the booking cards trail the chat, latest booking last.
+        foreach ($this->bookingItems($conversation) as $item) {
+            $items[] = $item;
         }
 
         // The account can be soft-deleted, so `user` may be null here. Never read a
@@ -79,10 +90,15 @@ class MessageService
     }
 
     /**
-     * Booking cards shown at the top of a thread on BOTH sides: every booking the client
-     * owns whose status is listed in config('admin.messages.reflected_booking_statuses')
-     * (approved by default), plus the conversation's own linked booking whatever its
-     * status — so an in-progress request still shows. Deduplicated by id.
+     * Booking cards for a thread, rendered AFTER the messages on BOTH sides: every
+     * booking the client owns whose status is listed in
+     * config('admin.messages.reflected_booking_statuses') (approved by default), plus
+     * the conversation's own linked booking whatever its status — so an in-progress
+     * request still shows. Deduplicated by id and ordered oldest first, so the most
+     * recent booking is the last item and the latest booking is easy to determine.
+     *
+     * `at` is "now" on purpose: the cards trail the chat under a Today heading rather
+     * than claiming an old calendar day after newer messages.
      */
     private function bookingItems(Conversation $conversation): array
     {
@@ -107,7 +123,8 @@ class MessageService
 
         return $bookings->map(fn (Booking $booking) => [
             'type' => 'booking',
-            'at' => $booking->submitted_at ?? $booking->created_at,
+            // Deliberately "now": the cards sit at the foot of the thread under Today.
+            'at' => now(),
             'booking' => $booking->toAdminArray(),
         ])->all();
     }

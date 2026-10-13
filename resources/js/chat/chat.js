@@ -259,23 +259,29 @@ export function appendIncoming(log, message, root) {
 }
 
 // A booking card pushed by the live feed. The server renders the same Blade partial
-// the page uses, so the markup (and its escaping) stays in one place. Returns false
-// when the card is already in the thread, so polling never double-posts it.
+// the page uses, so the markup (and its escaping) stays in one place. A booking that
+// is already in the thread (e.g. it was pending, now approved) is refreshed in place
+// instead of being duplicated.
 export function appendBooking(log, root, booking) {
     if (!log || !booking || !booking.html) return false;
-    if (booking.id && log.querySelector(`[data-booking-id="${booking.id}"]`)) {
-        return false;
-    }
 
-    ensureDay(log);
     const wrap = document.createElement("div");
     wrap.innerHTML = booking.html; // server-rendered, Blade-escaped markup
     const card = wrap.firstElementChild;
     if (!card) return false;
-
     if (booking.id) card.dataset.bookingId = booking.id;
+
+    const existing = booking.id
+        ? log.querySelector(`[data-booking-id="${booking.id}"]`)
+        : null;
+
     card.classList.add("is-new");
-    log.append(card);
+    if (existing) {
+        existing.replaceWith(card);
+    } else {
+        ensureDay(log);
+        log.append(card);
+    }
     window.setTimeout(() => card.classList.remove("is-new"), 2600);
     scrollLog(log);
     return true;
