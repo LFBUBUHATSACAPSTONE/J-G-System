@@ -10,15 +10,21 @@ $items = $conversation['items'] ?? [];
 $unread = (int) ($conversation['unread'] ?? 0);
 $updatesUrl = Route::has('user.messages.updates') ? route('user.messages.updates') : '';
 $readUrl = Route::has('user.messages.read') ? route('user.messages.read') : '';
+$updateUrl = Route::has('user.messages.update') ? route('user.messages.update', ['message' => '__MESSAGE__']) : '';
+$deleteUrl = Route::has('user.messages.destroy') ? route('user.messages.destroy', ['message' => '__MESSAGE__']) : '';
 @endphp
 
 <x-account.layout>
   <section
     class="account-chat"
     data-account-chat
+    data-chat-self="client"
+    data-chat-other="J&amp;G Audio"
     aria-labelledby="account-chat-title"
     @if ($updatesUrl) data-chat-updates-url="{{ $updatesUrl }}" @endif
-    @if ($readUrl) data-chat-read-url="{{ $readUrl }}" @endif>
+    @if ($readUrl) data-chat-read-url="{{ $readUrl }}" @endif
+    @if ($updateUrl) data-chat-update-url="{{ $updateUrl }}" @endif
+    @if ($deleteUrl) data-chat-delete-url="{{ $deleteUrl }}" @endif>
     <header class="account-chat__head">
       <span class="chat-avatar" aria-hidden="true"><x-chat.icon name="chat" /></span>
       <div class="account-chat__heading">

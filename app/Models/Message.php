@@ -5,10 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Message extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
         'conversation_id',
@@ -17,11 +19,14 @@ class Message extends Model
         'body',
         'attachments',
         'read_at',
+        'reply_to_id',
+        'edited_at',
     ];
 
     protected $casts = [
         'attachments' => 'array',
         'read_at' => 'datetime',
+        'edited_at' => 'datetime',
     ];
 
     public function conversation(): BelongsTo
@@ -32,6 +37,13 @@ class Message extends Model
     public function sender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'sender_id');
+    }
+
+    // The quoted parent message. Soft-deleted parents fall outside the SoftDeletes
+    // scope, so a reply to an unsent message simply renders without its quote.
+    public function replyTo(): BelongsTo
+    {
+        return $this->belongsTo(Message::class, 'reply_to_id');
     }
 
     public function markAsRead(): void
@@ -49,5 +61,10 @@ class Message extends Model
     public function isFromClient(): bool
     {
         return $this->sender_type === 'client';
+    }
+
+    public function isEdited(): bool
+    {
+        return ! is_null($this->edited_at);
     }
 }

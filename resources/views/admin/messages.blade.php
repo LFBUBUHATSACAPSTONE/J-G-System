@@ -16,7 +16,8 @@
   <main class="admin-content admin-messages">
     <x-admin.page-header />
 
-    <div class="admin-messages__layout" data-messages data-view="list">
+    <div class="admin-messages__layout" data-messages data-view="list"
+      data-chat-updates-url="{{ Route::has('admin.messages.updates') ? route('admin.messages.updates') : '' }}">
       <section class="admin-messages__side" aria-labelledby="chatListTitle">
         <h2 id="chatListTitle" class="admin-messages__title">Chat List</h2>
 
@@ -65,7 +66,12 @@
 
       <section class="admin-messages__panels" aria-label="Conversation">
         @foreach ($conversations as $c)
-        <div class="chat-panel" id="chat-{{ $c['id'] }}" data-chat data-chat-read-url="{{ Route::has('admin.messages.show') ? route('admin.messages.show', ['conversation' => $c['id']]) : '' }}" @if (! $loop->first) hidden @endif>
+        <div class="chat-panel" id="chat-{{ $c['id'] }}" data-chat data-chat-read-url="{{ Route::has('admin.messages.show') ? route('admin.messages.show', ['conversation' => $c['id']]) : '' }}"
+          data-chat-self="admin"
+          data-chat-other="{{ $c['client']['name'] }}"
+          data-chat-update-url="{{ Route::has('admin.messages.update') ? route('admin.messages.update', ['message' => '__MESSAGE__']) : '' }}"
+          data-chat-delete-url="{{ Route::has('admin.messages.destroy') ? route('admin.messages.destroy', ['message' => '__MESSAGE__']) : '' }}"
+          @if (! $loop->first) hidden @endif>
           <header class="chat-panel__head">
             <button type="button" class="chat-panel__back" aria-label="Back to chat list" data-chat-back>
               <x-chat.icon name="chevron-left" />

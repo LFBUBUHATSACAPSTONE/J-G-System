@@ -13,14 +13,20 @@ $items = $conversation['items'] ?? [];
 $unread = $conversation['unread'] ?? 0;
 $updatesUrl = Route::has('user.messages.updates') ? route('user.messages.updates') : '';
 $readUrl = Route::has('user.messages.read') ? route('user.messages.read') : '';
+$updateUrl = Route::has('user.messages.update') ? route('user.messages.update', ['message' => '__MESSAGE__']) : '';
+$deleteUrl = Route::has('user.messages.destroy') ? route('user.messages.destroy', ['message' => '__MESSAGE__']) : '';
 @endphp
 
 <div
   class="chat-widget"
   data-chat
   data-chat-widget
+  data-chat-self="client"
+  data-chat-other="J&amp;G Audio"
   @if ($authenticated && $updatesUrl) data-chat-updates-url="{{ $updatesUrl }}" @endif
-  @if ($authenticated && $readUrl) data-chat-read-url="{{ $readUrl }}" @endif>
+  @if ($authenticated && $readUrl) data-chat-read-url="{{ $readUrl }}" @endif
+  @if ($authenticated && $updateUrl) data-chat-update-url="{{ $updateUrl }}" @endif
+  @if ($authenticated && $deleteUrl) data-chat-delete-url="{{ $deleteUrl }}" @endif>
   <button type="button" class="chat-widget__fab" aria-expanded="false" aria-controls="chatWidgetPanel" data-chat-toggle>
     <x-chat.icon name="chat" />
     <span class="visually-hidden">Message us{{ $unread ? ", {$unread} unread" : '' }}</span>

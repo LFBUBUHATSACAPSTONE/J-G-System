@@ -19,7 +19,7 @@ View::composer('user.landing', function ($view) {
         if ($user) {
             $thread = Conversation::with([
                 'booking.eventDetails', 'booking.schedule', 'booking.payment',
-                'booking.package', 'messages',
+                'booking.package', 'messages.replyTo',
             ])
                 ->where('user_id', $user->id)
                 ->latest('last_message_at')
@@ -56,6 +56,11 @@ View::composer(['components.landing.navigation', 'components.account.sidebar'], 
 
 // Send message from user (landing widget and account page).
 Route::post('/messages', [MessageController::class, 'store'])->name('user.messages.send');
+
+// Edit or unsend a message the client already sent. Only their own client messages in
+// their own thread are accepted (checked in the controller).
+Route::patch('/messages/{message}', [MessageController::class, 'update'])->name('user.messages.update');
+Route::delete('/messages/{message}', [MessageController::class, 'destroy'])->name('user.messages.destroy');
 
 // Opening the chat on the user side marks only the admin replies read.
 Route::post('/messages/read', [MessageController::class, 'markRead'])->name('user.messages.read');

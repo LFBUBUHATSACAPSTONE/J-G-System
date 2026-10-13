@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
+use Illuminate\Support\Str;
 
 class MessageService
 {
@@ -13,10 +14,13 @@ class MessageService
         return [
             'id' => $message->id,
             'type' => 'message',
+            'conversation_id' => $message->conversation_id,
             'from' => $message->sender_type,
             'body' => $message->body,
             'at' => $message->created_at,
-            'attachments' => $message->attachments ?? [],
+            'edited' => $message->isEdited(),
+            'reply_to' => $this->formatReply($message),
+            'attachments' => $this->formatAttachments($message->attachments ?? []),
         ];
     }
 
@@ -123,5 +127,70 @@ class MessageService
             return number_format($bytes / 1024, 1) . ' KB';
         }
         return $bytes . ' bytes';
+    }
+
+    // A short, safe preview of the message being replied to (null when it is gone).
+    private function formatReply(Message $message): ?array
+    {
+        $parent = $message->replyTo;
+
+        if (! $parent) {
+            return null;
+        }
+
+        return [
+            'id' => $parent->id,
+            'from' => $parent->sender_type,
+            'body' => $this->replyExcerpt($parent),
+        ];
+    }
+
+    private function replyExcerpt(Message $message): string
+    {
+        $body = trim((string) $message->body);
+
+        if ($body !== '') {
+            return Str::limit($body, 120);
+        }
+
+        return count($message->attachments ?? []) ? 'Attachment' : '';
+    }
+
+    private function formatAttachments(array $attachments): array
+    {
+        return array_map(function ($file) {
+            if (is_array($file) && ! empty($file['url'])) {
+                $file['url'] = $this->publicUrl((string) $file['url']);
+            }
+
+            return $file;
+        }, $attachments);
+    }
+
+    /**
+     * Rows written before the URL fix stored a root-relative "/storage/..." path. When
+     * the app is served from a sub-directory (e.g. /J-G-System/public) that path 404s,
+     * so rebuild it against the current request. Absolute external URLs are left alone.
+     */
+    private function publicUrl(string $url): string
+    {
+        if (preg_match('#^https?://#i', $url)) {
+            $path = (string) parse_url($url, PHP_URL_PATH);
+
+            // Not a local storage URL? Leave it exactly as stored.
+            if ($path === '' || ! str_contains($path, '/storage/')) {
+                return $url;
+            }
+
+            $url = $path;
+        }
+
+        $relative = ltrim((string) preg_replace('#^/?storage/#i', '', $url), '/');
+
+        if ($relative === '') {
+            return $url;
+        }
+
+        return asset('storage/' . $relative);
     }
 }
