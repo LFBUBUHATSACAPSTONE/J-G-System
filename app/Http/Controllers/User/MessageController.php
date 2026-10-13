@@ -234,7 +234,9 @@ class MessageController extends Controller
         $conversation = $this->findConversation($user);
 
         if (! $conversation) {
-            return ['unread' => 0, 'items' => []];
+            // No thread yet, but the client may already have bookings: still show the
+            // booking details in their own chat, before they ever send a message.
+            return ['unread' => 0, 'items' => $this->messages->bookingCards($user?->id)];
         }
 
         if ($markRead) {

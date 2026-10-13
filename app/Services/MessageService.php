@@ -90,26 +90,37 @@ class MessageService
     }
 
     /**
-     * Booking cards for a thread, rendered AFTER the messages on BOTH sides: every
-     * booking the client owns, plus the conversation's own linked booking. By default
-     * that is EVERY booking whatever its status (config
-     * 'admin.messages.reflected_booking_statuses' can narrow it to a status list), so a
-     * booking card is never dropped once it appears and each new booking simply adds a
-     * card. Deduplicated by id and ordered oldest first, so the most recent booking is
-     * the last item and the latest booking is easy to determine.
-     *
-     * `at` is "now" on purpose: the cards trail the chat under a Today heading rather
-     * than claiming an old calendar day after newer messages.
+     * Booking cards for a thread, rendered AFTER the messages on BOTH sides. The
+     * conversation only supplies the client id and its own linked booking; the rules live
+     * in bookingCards().
      */
     private function bookingItems(Conversation $conversation): array
+    {
+        return $this->bookingCards($conversation->user_id, $conversation->booking);
+    }
+
+    /**
+     * Booking cards for a client, independent of any conversation: every booking the
+     * client owns, plus an optional linked booking. By default that is EVERY booking
+     * whatever its status (config 'admin.messages.reflected_booking_statuses' can narrow
+     * it to a status list), so a booking card is never dropped once it appears and each
+     * new booking simply adds a card. Deduplicated by id and ordered oldest first, so the
+     * most recent booking is the last item and the latest booking is easy to determine.
+     *
+     * Public and conversation-free on purpose: a client who has booked but has not
+     * messaged yet has no thread, and their own chat still needs to show the bookings.
+     * `at` is "now" so the cards sit at the foot of the thread under Today rather than
+     * claiming an old calendar day after newer messages.
+     */
+    public function bookingCards(?int $userId, ?Booking $linked = null): array
     {
         $statuses = config('admin.messages.reflected_booking_statuses');
 
         $bookings = collect();
 
-        if ($conversation->user_id) {
+        if ($userId) {
             $bookings = Booking::query()
-                ->where('user_id', $conversation->user_id)
+                ->where('user_id', $userId)
                 // A null/empty list means "every booking": nothing is filtered out, so a
                 // status change (e.g. declined) can never make an existing card vanish.
                 ->when(is_array($statuses) && $statuses !== [], fn ($query) => $query->whereIn('status', $statuses))
@@ -119,7 +130,6 @@ class MessageService
                 ->get();
         }
 
-        $linked = $conversation->booking;
         if ($linked && ! $bookings->contains(fn (Booking $booking) => $booking->id === $linked->id)) {
             $bookings->push($linked);
         }

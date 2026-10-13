@@ -28,6 +28,10 @@ View::composer('user.landing', function ($view) {
 
             if ($thread) {
                 $conversation = app(MessageService::class)->formatConversationForUser($thread);
+            } else {
+                // No thread yet, but the client may already have bookings: show them so
+                // the widget on the landing page reflects their bookings too.
+                $conversation['items'] = app(MessageService::class)->bookingCards($user->id);
             }
         }
     } catch (\Throwable) {

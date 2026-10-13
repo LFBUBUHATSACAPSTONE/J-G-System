@@ -762,6 +762,42 @@ class MessagingTest extends TestCase
             ->assertSee('PEN-301');
     }
 
+    public function test_the_landing_chat_widget_reflects_the_users_bookings(): void
+    {
+        $this->withoutVite();
+        $user = $this->makeUser();
+        $this->makeBooking($user, 'approved', 'WIDG-600');
+        $this->makeBooking($user, 'pending', 'WIDG-601');
+
+        $this->makeConversation($user, [['from' => 'client', 'body' => 'Hi']]);
+
+        $this->actingAs($user)->get(route('user.landing'))
+            ->assertOk()
+            ->assertSee('WIDG-600')
+            ->assertSee('WIDG-601')
+            ->assertSee('data-booking-id', false);
+    }
+
+    public function test_the_customer_chat_reflects_bookings_before_any_message(): void
+    {
+        $this->withoutVite();
+        $user = $this->makeUser();
+        $this->makeBooking($user, 'approved', 'NOMSG-700');
+
+        // No conversation exists at all: the client only has a booking so far.
+        $this->assertDatabaseCount('conversations', 0);
+
+        $this->actingAs($user)->get(route('user.account.messages'))
+            ->assertOk()
+            ->assertSee('NOMSG-700')
+            ->assertSee('data-booking-id', false);
+
+        $this->actingAs($user)->get(route('user.landing'))
+            ->assertOk()
+            ->assertSee('NOMSG-700')
+            ->assertSee('data-booking-id', false);
+    }
+
     public function test_the_statuses_config_can_narrow_the_reflected_bookings(): void
     {
         $this->withoutVite();
