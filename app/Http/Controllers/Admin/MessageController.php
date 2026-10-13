@@ -61,6 +61,8 @@ class MessageController extends Controller
     public function updates(Request $request): JsonResponse
     {
         $after = max(0, (int) $request->query('after', 0));
+        $since = $this->messages->since($request->query('since'));
+        $syncedAt = now();
 
         $messages = Message::with('replyTo')
             ->where('sender_type', 'client')
@@ -73,6 +75,8 @@ class MessageController extends Controller
             'ok' => true,
             'unread' => $this->messages->unreadCountForAdmin(),
             'messages' => $messages,
+            'bookings' => $this->messages->updatedBookingCardsForAdmin($since),
+            'bookings_synced_at' => $syncedAt->toIso8601String(),
         ]);
     }
 
@@ -138,6 +142,10 @@ class MessageController extends Controller
             return response()->json(['message' => 'You can only edit replies you sent.'], 403);
         }
 
+        if (! $message->isEditable()) {
+            return response()->json(['message' => 'The editing window for this message has passed.'], 403);
+        }
+
         $validated = $request->validate([
             'body' => ['required', 'string', 'max:' . config('admin.messages.max_length')],
         ]);
@@ -161,6 +169,10 @@ class MessageController extends Controller
     {
         if ($message->sender_type !== 'admin') {
             return response()->json(['message' => 'You can only unsend replies you sent.'], 403);
+        }
+
+        if (! $message->isEditable()) {
+            return response()->json(['message' => 'The editing window for this message has passed.'], 403);
         }
 
         $conversation = $message->conversation;

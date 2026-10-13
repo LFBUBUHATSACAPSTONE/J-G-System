@@ -17,7 +17,8 @@
     <x-admin.page-header />
 
     <div class="admin-messages__layout" data-messages data-view="list"
-      data-chat-updates-url="{{ Route::has('admin.messages.updates') ? route('admin.messages.updates') : '' }}">
+      data-chat-updates-url="{{ Route::has('admin.messages.updates') ? route('admin.messages.updates') : '' }}"
+      data-chat-bookings-since="{{ now()->toIso8601String() }}">
       <section class="admin-messages__side" aria-labelledby="chatListTitle">
         <h2 id="chatListTitle" class="admin-messages__title">Chat List</h2>
 
@@ -69,6 +70,7 @@
         <div class="chat-panel" id="chat-{{ $c['id'] }}" data-chat data-chat-read-url="{{ Route::has('admin.messages.show') ? route('admin.messages.show', ['conversation' => $c['id']]) : '' }}"
           data-chat-self="admin"
           data-chat-other="{{ $c['client']['name'] }}"
+          data-edit-window-minutes="{{ (int) config('admin.messages.edit_window_minutes') }}"
           data-chat-update-url="{{ Route::has('admin.messages.update') ? route('admin.messages.update', ['message' => '__MESSAGE__']) : '' }}"
           data-chat-delete-url="{{ Route::has('admin.messages.destroy') ? route('admin.messages.destroy', ['message' => '__MESSAGE__']) : '' }}"
           @if (! $loop->first) hidden @endif>

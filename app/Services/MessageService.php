@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\Booking;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 class MessageService
@@ -19,6 +21,10 @@ class MessageService
             'body' => $message->body,
             'at' => $message->created_at,
             'edited' => $message->isEdited(),
+            // Edit/unsend window for the sender: the client hides the buttons once this
+            // moment passes and both controllers refuse a late change.
+            'editable' => $message->isEditable(),
+            'edit_expires_at' => $message->editableUntil()?->toIso8601String(),
             'reply_to' => $this->formatReply($message),
             'attachments' => $this->formatAttachments($message->attachments ?? []),
         ];
@@ -26,16 +32,7 @@ class MessageService
 
     public function formatConversationForUser(Conversation $conversation): array
     {
-        $items = [];
-
-        $booking = $conversation->booking;
-        if ($booking) {
-            $items[] = [
-                'type' => 'booking',
-                'at' => $booking->submitted_at ?? $booking->created_at,
-                'booking' => $booking->toAdminArray(),
-            ];
-        }
+        $items = $this->bookingItems($conversation);
 
         foreach ($conversation->messages as $message) {
             $items[] = $this->formatMessage($message);
@@ -49,16 +46,7 @@ class MessageService
 
     public function formatConversationForAdmin(Conversation $conversation, bool $withMessages = false): array
     {
-        $items = [];
-
-        $booking = $conversation->booking;
-        if ($booking) {
-            $items[] = [
-                'type' => 'booking',
-                'at' => $booking->submitted_at ?? $booking->created_at,
-                'booking' => $booking->toAdminArray(),
-            ];
-        }
+        $items = $this->bookingItems($conversation);
 
         if ($withMessages) {
             foreach ($conversation->messages as $message) {
@@ -74,6 +62,7 @@ class MessageService
         // The account can be soft-deleted, so `user` may be null here. Never read a
         // property off it directly: fall back to the booking's client snapshot.
         $user = $conversation->user;
+        $booking = $conversation->booking;
         $fullName = $user ? trim($user->first_name . ' ' . $user->last_name) : '';
 
         return [
@@ -87,6 +76,147 @@ class MessageService
             ],
             'items' => $items,
         ];
+    }
+
+    /**
+     * Booking cards shown at the top of a thread on BOTH sides: every booking the client
+     * owns whose status is listed in config('admin.messages.reflected_booking_statuses')
+     * (approved by default), plus the conversation's own linked booking whatever its
+     * status — so an in-progress request still shows. Deduplicated by id.
+     */
+    private function bookingItems(Conversation $conversation): array
+    {
+        $statuses = config('admin.messages.reflected_booking_statuses', ['approved']);
+
+        $bookings = collect();
+
+        if ($conversation->user_id && ! empty($statuses)) {
+            $bookings = Booking::query()
+                ->where('user_id', $conversation->user_id)
+                ->whereIn('status', $statuses)
+                ->with(['eventDetails', 'schedule', 'payment', 'package'])
+                ->orderBy('submitted_at')
+                ->orderBy('id')
+                ->get();
+        }
+
+        $linked = $conversation->booking;
+        if ($linked && ! $bookings->contains(fn (Booking $booking) => $booking->id === $linked->id)) {
+            $bookings->push($linked);
+        }
+
+        return $bookings->map(fn (Booking $booking) => [
+            'type' => 'booking',
+            'at' => $booking->submitted_at ?? $booking->created_at,
+            'booking' => $booking->toAdminArray(),
+        ])->all();
+    }
+
+    /**
+     * Parse the `since` cursor the chat poll sends back. Anything unparseable means
+     * "no cursor", which yields an EMPTY booking feed rather than replaying every
+     * booking the client has ever made.
+     */
+    public function since($value): ?Carbon
+    {
+        if (! is_string($value) || trim($value) === '') {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($value);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * A booking card for the live feed: the same Blade partial the page renders (so
+     * the markup lives in one place), plus the id/reference/status the client needs
+     * to slot it into the thread and de-duplicate it.
+     */
+    public function formatBookingCard(Booking $booking, bool $admin = false): array
+    {
+        return [
+            'id' => $booking->id,
+            'type' => 'booking',
+            'reference' => $booking->reference,
+            'status' => $booking->status,
+            'at' => ($booking->updated_at ?? $booking->created_at)?->toIso8601String(),
+            'html' => view('components.chat.booking-card', [
+                'booking' => $booking->toAdminArray(),
+                'admin' => $admin,
+            ])->render(),
+        ];
+    }
+
+    /**
+     * Bookings a client OWNS that changed after `since`: a brand-new booking (any
+     * status) and a later status change both pop into their thread live.
+     */
+    public function updatedBookingCardsForUser(int $userId, ?Carbon $since): array
+    {
+        if (! $since) {
+            return [];
+        }
+
+        return Booking::query()
+            ->where('user_id', $userId)
+            ->where('updated_at', '>', $since)
+            ->with(['eventDetails', 'schedule', 'payment', 'package'])
+            ->orderBy('updated_at')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (Booking $booking) => $this->formatBookingCard($booking))
+            ->all();
+    }
+
+    /**
+     * The admin mirror: any client's booking changed after `since`, tagged with the
+     * conversation whose panel should show it. Bookings with no conversation yet are
+     * skipped: there is no panel to drop the card into.
+     */
+    public function updatedBookingCardsForAdmin(?Carbon $since): array
+    {
+        if (! $since) {
+            return [];
+        }
+
+        $bookings = Booking::query()
+            ->where('updated_at', '>', $since)
+            ->with(['eventDetails', 'schedule', 'payment', 'package'])
+            ->orderBy('updated_at')
+            ->orderBy('id')
+            ->get();
+
+        if ($bookings->isEmpty()) {
+            return [];
+        }
+
+        // One query maps each client to the conversation the admin page is showing.
+        $conversations = Conversation::query()
+            ->whereIn('user_id', $bookings->pluck('user_id')->filter()->unique())
+            ->orderByDesc('last_message_at')
+            ->orderByDesc('id')
+            ->get()
+            ->groupBy('user_id')
+            ->map(fn ($group) => $group->first()->id);
+
+        return $bookings
+            ->map(function (Booking $booking) use ($conversations) {
+                $conversationId = $conversations->get($booking->user_id);
+
+                if (! $conversationId) {
+                    return null;
+                }
+
+                return $this->formatBookingCard($booking, true) + [
+                    'conversation_id' => $conversationId,
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
     }
 
     /**

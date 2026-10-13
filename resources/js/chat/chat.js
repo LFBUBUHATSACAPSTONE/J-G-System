@@ -85,19 +85,30 @@ function ensureDay(log) {
 }
 
 // Reply buttons on every message; edit/unsend only on the reader's own messages.
+// `data-edit-window-minutes` on the chat root drives the hint and the client-side
+// guard; the server enforces the same window.
+function editWindowMinutes(root) {
+    const n = Number(root?.dataset.editWindowMinutes || 0);
+    return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
 function messageActions(root, id, own) {
     const wrap = el("span", "chat-msg__actions");
-    const add = (action, label) => {
+    const add = (action, label, title) => {
         const b = el("button", "chat-msg__action", label);
         b.type = "button";
         b.dataset.chatAction = action;
         b.dataset.chatActionId = String(id);
+        if (title) b.title = title;
         wrap.append(b);
     };
     add("reply", "Reply");
     if (own) {
-        add("edit", "Edit");
-        add("unsend", "Unsend");
+        const win = editWindowMinutes(root);
+        const hint =
+            win > 0 ? ` (available for ${win} minute${win === 1 ? "" : "s"})` : "";
+        add("edit", "Edit", `Edit${hint}`);
+        add("unsend", "Unsend", `Unsend${hint}`);
     }
     return wrap;
 }
@@ -247,6 +258,29 @@ export function appendIncoming(log, message, root) {
     return true;
 }
 
+// A booking card pushed by the live feed. The server renders the same Blade partial
+// the page uses, so the markup (and its escaping) stays in one place. Returns false
+// when the card is already in the thread, so polling never double-posts it.
+export function appendBooking(log, root, booking) {
+    if (!log || !booking || !booking.html) return false;
+    if (booking.id && log.querySelector(`[data-booking-id="${booking.id}"]`)) {
+        return false;
+    }
+
+    ensureDay(log);
+    const wrap = document.createElement("div");
+    wrap.innerHTML = booking.html; // server-rendered, Blade-escaped markup
+    const card = wrap.firstElementChild;
+    if (!card) return false;
+
+    if (booking.id) card.dataset.bookingId = booking.id;
+    card.classList.add("is-new");
+    log.append(card);
+    window.setTimeout(() => card.classList.remove("is-new"), 2600);
+    scrollLog(log);
+    return true;
+}
+
 // Live updates for an open chat: polls `data-chat-updates-url` for new admin
 // replies, updates every unread badge, and marks the thread read when the chat is
 // open. Safe on any chat root: no URL, no polling, nothing happens.
@@ -258,6 +292,9 @@ export function initChatStream(root) {
     const form = root.querySelector("[data-chat-form]");
     const updatesUrl = root.dataset.chatUpdatesUrl || "";
     const readUrl = root.dataset.chatReadUrl || "";
+    // Cursor for the booking feed: bookings changed after this moment pop in. It
+    // starts at page render and advances to the server clock on every poll.
+    let since = root.dataset.chatBookingsSince || "";
 
     const setBadge = (count) => {
         const text = count > 9 ? "9+" : String(count);
@@ -301,9 +338,10 @@ export function initChatStream(root) {
     const poll = () => {
         if (!log || !updatesUrl || busy || document.hidden) return;
         busy = true;
-        fetch(`${updatesUrl}?after=${lastId()}`, {
-            headers: { Accept: "application/json" },
-        })
+        fetch(
+            `${updatesUrl}?after=${lastId()}&since=${encodeURIComponent(since)}`,
+            { headers: { Accept: "application/json" } },
+        )
             .then((res) => (res.ok ? res.json() : null))
             .then((data) => {
                 if (!data) return;
@@ -311,6 +349,10 @@ export function initChatStream(root) {
                 (data.messages || []).forEach((m) => {
                     if (appendIncoming(log, m, root)) added += 1;
                 });
+                (data.bookings || []).forEach((booking) =>
+                    appendBooking(log, root, booking),
+                );
+                if (data.bookings_synced_at) since = data.bookings_synced_at;
                 setBadge(data.unread || 0);
                 if (added && isOpen()) markRead();
             })
@@ -452,7 +494,26 @@ export function initChat(root) {
         const cancel = el("button", "chat-edit__cancel", "Cancel");
         cancel.type = "button";
         row.append(save, cancel);
-        editor.append(textarea, row);
+        editor.append(textarea);
+
+        // How long the sender still has to edit, straight from the server window.
+        const until = msg.dataset.editableUntil
+            ? new Date(msg.dataset.editableUntil)
+            : null;
+        if (until && !Number.isNaN(until.getTime())) {
+            const mins = Math.round((until.getTime() - Date.now()) / 60000);
+            editor.append(
+                el(
+                    "p",
+                    "chat-edit__hint",
+                    mins >= 1
+                        ? `You can edit this message for about ${mins} more minute${mins === 1 ? "" : "s"}.`
+                        : "You can only edit this message for a few more seconds.",
+                ),
+            );
+        }
+
+        editor.append(row);
 
         const close = () => {
             editor.remove();
@@ -480,7 +541,10 @@ export function initChat(root) {
                     },
                     body: JSON.stringify({ body }),
                 });
-                if (!res.ok) throw new Error();
+                if (!res.ok) {
+                    const json = await res.json().catch(() => ({}));
+                    throw new Error(json.message || "");
+                }
                 let textEl = bubble.querySelector(".chat-msg__text");
                 if (!textEl) {
                     textEl = el("p", "chat-msg__text");
@@ -493,9 +557,9 @@ export function initChat(root) {
                 textEl.textContent = body;
                 markEdited(msg);
                 close();
-            } catch {
+            } catch (err) {
                 save.disabled = false;
-                setError("Message not updated. Please try again.");
+                setError(err.message || "Message not updated. Please try again.");
             }
         });
 
@@ -517,13 +581,24 @@ export function initChat(root) {
                     "X-CSRF-TOKEN": getCsrfToken(form),
                 },
             });
-            if (!res.ok) throw new Error();
+            if (!res.ok) {
+                const json = await res.json().catch(() => ({}));
+                throw new Error(json.message || "");
+            }
             msg.remove();
             tidyDays(log);
-        } catch {
-            setError("Message not unsent. Please try again.");
+        } catch (err) {
+            setError(err.message || "Message not unsent. Please try again.");
         }
     }
+
+    // Editing past the server window is refused; catch it here first for a clear message.
+    const editWindowPassed = (msg) => {
+        const until = msg.dataset.editableUntil;
+        if (!until) return false;
+        const at = new Date(until);
+        return !Number.isNaN(at.getTime()) && at.getTime() < Date.now();
+    };
 
     root.addEventListener("click", (e) => {
         const btn = e.target.closest("[data-chat-action]");
@@ -532,8 +607,19 @@ export function initChat(root) {
         const id = btn.dataset.chatActionId;
         if (!msg || !id) return;
         if (btn.dataset.chatAction === "reply") startReply(msg, id);
-        else if (btn.dataset.chatAction === "edit") startEdit(msg, id);
-        else if (btn.dataset.chatAction === "unsend") unsend(msg, id);
+        else if (btn.dataset.chatAction === "edit") {
+            if (editWindowPassed(msg)) {
+                setError("The editing window for this message has passed.");
+                return;
+            }
+            startEdit(msg, id);
+        } else if (btn.dataset.chatAction === "unsend") {
+            if (editWindowPassed(msg)) {
+                setError("The editing window for this message has passed.");
+                return;
+            }
+            unsend(msg, id);
+        }
     });
 
     // ---- send ------------------------------------------------------------------
@@ -584,6 +670,9 @@ export function initChat(root) {
             time.setAttribute("datetime", now.toISOString());
             if (json?.message?.id) {
                 msg.dataset.messageId = json.message.id;
+                if (json.message.edit_expires_at) {
+                    msg.dataset.editableUntil = json.message.edit_expires_at;
+                }
                 meta.append(messageActions(root, json.message.id, true));
             }
             root.dispatchEvent(

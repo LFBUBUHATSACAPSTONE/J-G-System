@@ -2,6 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\Booking;
+use App\Models\BookingEvent;
+use App\Models\BookingPayment;
+use App\Models\BookingSchedule;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
@@ -47,6 +51,56 @@ class MessagingTest extends TestCase
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable()->index();
             $table->string('reference')->unique();
+            $table->string('status')->default('pending');
+            $table->string('client_name')->nullable();
+            $table->string('client_email')->nullable();
+            $table->string('client_phone')->nullable();
+            $table->text('client_address')->nullable();
+            $table->unsignedBigInteger('package_id')->nullable();
+            $table->timestamp('submitted_at')->nullable();
+            $table->timestamps();
+        });
+
+        // Booking detail tables: the chat thread renders the client's reflected bookings,
+        // so the minimum columns Booking::toAdminArray() reads must exist.
+        Schema::connection('sqlite')->create('packages', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->string('name');
+            $table->decimal('price', 10, 2)->nullable();
+            $table->timestamps();
+        });
+
+        Schema::connection('sqlite')->create('booking_events', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('booking_id')->index();
+            $table->string('event_name')->nullable();
+            $table->string('event_type')->nullable();
+            $table->string('event_type_other')->nullable();
+            $table->string('event_location')->nullable();
+            $table->string('event_contact_person')->nullable();
+            $table->unsignedInteger('guest_count')->nullable();
+            $table->string('venue_type')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::connection('sqlite')->create('booking_schedules', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('booking_id')->index();
+            $table->date('event_start_date')->nullable();
+            $table->date('event_end_date')->nullable();
+            $table->string('event_start_time')->nullable();
+            $table->string('event_end_time')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::connection('sqlite')->create('booking_payments', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('booking_id')->index();
+            $table->string('payment_method')->nullable();
+            $table->string('payment_state')->nullable();
+            $table->string('payment_reference')->nullable();
+            $table->string('payment_receipt_path')->nullable();
+            $table->decimal('payment_amount', 10, 2)->nullable();
             $table->timestamps();
         });
 
@@ -111,6 +165,52 @@ class MessagingTest extends TestCase
         }
 
         return $conversation->fresh();
+    }
+
+    // An approved/pending booking with the detail rows the chat card reads, so the
+    // "reflected bookings" behaviour can be exercised end to end.
+    private function makeBooking(User $user, string $status, string $reference): Booking
+    {
+        $booking = Booking::create([
+            'user_id' => $user->id,
+            'reference' => $reference,
+            'status' => $status,
+            'client_name' => $user->first_name.' '.$user->last_name,
+            'client_email' => $user->email,
+            'client_phone' => $user->phone,
+            'submitted_at' => now(),
+        ]);
+
+        $booking->eventDetails()->create([
+            'event_name' => 'Birthday',
+            'event_type' => 'Birthday Party',
+            'event_location' => 'Quezon City',
+        ]);
+
+        $booking->schedule()->create([
+            'event_start_date' => now()->addMonth()->toDateString(),
+            'event_end_date' => now()->addMonth()->toDateString(),
+        ]);
+
+        $booking->payment()->create([
+            'payment_method' => 'full',
+            'payment_state' => 'paid',
+            'payment_amount' => 3000,
+        ]);
+
+        return $booking;
+    }
+
+    // A message created outside the edit window by backdating its created_at.
+    private function ageMessage(Message $message, int $minutes): Message
+    {
+        $when = now()->subMinutes($minutes);
+        DB::table('messages')->where('id', $message->id)->update([
+            'created_at' => $when,
+            'updated_at' => $when,
+        ]);
+
+        return $message->refresh();
     }
 
     // --------------------------------------------------------------- user
@@ -612,5 +712,245 @@ class MessagingTest extends TestCase
             ->assertOk()
             ->assertSee('data-chat-updates-url', false)
             ->assertSee(route('admin.messages.updates'), false);
+    }
+
+    // ------------------------------------------------- reflected bookings
+
+    public function test_the_thread_reflects_the_users_approved_bookings(): void
+    {
+        $this->withoutVite();
+        $user = $this->makeUser();
+        $approved = $this->makeBooking($user, 'approved', 'APR-100');
+        $pending = $this->makeBooking($user, 'pending', 'PEN-200');
+
+        $conversation = $this->makeConversation($user, [
+            ['from' => 'client', 'body' => 'Hello'],
+        ]);
+        // The thread is linked to the still-pending request; the approved booking must
+        // STILL show on both sides.
+        $conversation->update(['booking_id' => $pending->id]);
+
+        $this->actingAs($user)->get(route('user.account.messages'))
+            ->assertOk()
+            ->assertSee('APR-100')
+            ->assertSee('PEN-200');
+
+        $this->get(route('admin.messages'))
+            ->assertOk()
+            ->assertSee('APR-100')
+            ->assertSee('PEN-200');
+    }
+
+    public function test_unapproved_bookings_are_not_reflected(): void
+    {
+        $this->withoutVite();
+        $user = $this->makeUser();
+        $this->makeBooking($user, 'declined', 'DEC-300');
+
+        $this->makeConversation($user, [['from' => 'client', 'body' => 'Hello']]);
+
+        $this->actingAs($user)->get(route('user.account.messages'))
+            ->assertOk()
+            ->assertDontSee('DEC-300');
+    }
+
+    // ----------------------------------------------------- edit window
+
+    public function test_format_message_reports_the_edit_window(): void
+    {
+        Config::set('admin.messages.edit_window_minutes', 15);
+
+        $user = $this->makeUser();
+        $conversation = $this->makeConversation($user, [
+            ['from' => 'client', 'body' => 'Fresh'],
+        ]);
+        $message = $conversation->messages()->firstOrFail();
+
+        $fresh = app(MessageService::class)->formatMessage($message);
+        $this->assertTrue($fresh['editable']);
+        $this->assertNotNull($fresh['edit_expires_at']);
+
+        $old = app(MessageService::class)->formatMessage($this->ageMessage($message, 60));
+        $this->assertFalse($old['editable']);
+        $this->assertNotNull($old['edit_expires_at']);
+    }
+
+    public function test_a_zero_edit_window_leaves_messages_editable(): void
+    {
+        Config::set('admin.messages.edit_window_minutes', 0);
+
+        $user = $this->makeUser();
+        $conversation = $this->makeConversation($user, [
+            ['from' => 'client', 'body' => 'Aged'],
+        ]);
+        $old = app(MessageService::class)->formatMessage(
+            $this->ageMessage($conversation->messages()->firstOrFail(), 999),
+        );
+
+        $this->assertTrue($old['editable']);
+        $this->assertNull($old['edit_expires_at']);
+    }
+
+    public function test_a_client_cannot_edit_or_unsend_outside_the_window(): void
+    {
+        Config::set('admin.messages.edit_window_minutes', 15);
+
+        $user = $this->makeUser();
+        $conversation = $this->makeConversation($user, [
+            ['from' => 'client', 'body' => 'Old note'],
+        ]);
+        $message = $this->ageMessage($conversation->messages()->firstOrFail(), 30);
+
+        $this->actingAs($user)
+            ->patchJson(route('user.messages.update', ['message' => $message->id]), ['body' => 'Too late'])
+            ->assertForbidden();
+
+        $this->actingAs($user)
+            ->deleteJson(route('user.messages.destroy', ['message' => $message->id]))
+            ->assertForbidden();
+
+        $this->assertSame('Old note', $message->fresh()->body);
+        $this->assertNull($message->fresh()->deleted_at);
+    }
+
+    public function test_an_admin_cannot_edit_a_reply_outside_the_window(): void
+    {
+        Config::set('admin.messages.edit_window_minutes', 15);
+
+        $user = $this->makeUser();
+        $conversation = $this->makeConversation($user, [
+            ['from' => 'client', 'body' => 'Question'],
+            ['from' => 'admin', 'body' => 'Old answer'],
+        ]);
+        $reply = $this->ageMessage(
+            $conversation->messages()->where('sender_type', 'admin')->firstOrFail(),
+            30,
+        );
+
+        $this->patchJson(route('admin.messages.update', ['message' => $reply->id]), ['body' => 'Late'])
+            ->assertForbidden();
+    }
+
+    public function test_an_old_message_hides_the_edit_and_unsend_buttons(): void
+    {
+        $this->withoutVite();
+        Config::set('admin.messages.edit_window_minutes', 15);
+
+        $user = $this->makeUser();
+        $conversation = $this->makeConversation($user, [
+            ['from' => 'client', 'body' => 'Old note'],
+        ]);
+        $this->ageMessage($conversation->messages()->firstOrFail(), 30);
+
+        $this->actingAs($user)->get(route('user.account.messages'))
+            ->assertOk()
+            ->assertSee('data-chat-action="reply"', false)
+            ->assertDontSee('data-chat-action="edit"', false)
+            ->assertDontSee('data-chat-action="unsend"', false);
+    }
+
+    // ------------------------------------------------- live booking cards
+
+    public function test_the_user_feed_pops_a_new_booking_into_the_thread(): void
+    {
+        $user = $this->makeUser();
+        $this->makeConversation($user, [['from' => 'client', 'body' => 'Hi']]);
+        $booking = $this->makeBooking($user, 'pending', 'NEW-700');
+
+        $response = $this->actingAs($user)
+            ->getJson(route('user.messages.updates', [
+                'since' => now()->subMinutes(5)->toIso8601String(),
+            ]))
+            ->assertOk()
+            ->assertJsonCount(1, 'bookings')
+            ->assertJsonPath('bookings.0.id', $booking->id)
+            ->assertJsonPath('bookings.0.reference', 'NEW-700')
+            ->assertJsonPath('bookings.0.type', 'booking');
+
+        $this->assertStringContainsString('chat-booking', $response->json('bookings.0.html'));
+        $this->assertNotNull($response->json('bookings_synced_at'));
+
+        // Re-polling from the cursor returns nothing, so the card is never doubled.
+        $this->actingAs($user)
+            ->getJson(route('user.messages.updates', [
+                'since' => $response->json('bookings_synced_at'),
+            ]))
+            ->assertOk()
+            ->assertJsonCount(0, 'bookings');
+    }
+
+    public function test_the_user_feed_reports_a_status_change_not_only_new_bookings(): void
+    {
+        $user = $this->makeUser();
+        $this->makeConversation($user, [['from' => 'client', 'body' => 'Hi']]);
+        $booking = $this->makeBooking($user, 'pending_payment', 'UPD-701');
+
+        // The admin approves it: only the status changes, no new booking row.
+        $booking->update(['status' => 'approved']);
+
+        $this->actingAs($user)
+            ->getJson(route('user.messages.updates', [
+                'since' => now()->subMinutes(5)->toIso8601String(),
+            ]))
+            ->assertOk()
+            ->assertJsonCount(1, 'bookings')
+            ->assertJsonPath('bookings.0.status', 'approved');
+    }
+
+    public function test_the_user_feed_needs_a_cursor_to_avoid_replaying_everything(): void
+    {
+        $user = $this->makeUser();
+        $this->makeConversation($user, [['from' => 'client', 'body' => 'Hi']]);
+        $this->makeBooking($user, 'approved', 'OLD-702');
+
+        $this->actingAs($user)
+            ->getJson(route('user.messages.updates'))
+            ->assertOk()
+            ->assertJsonCount(0, 'bookings');
+    }
+
+    public function test_the_admin_feed_pops_a_clients_new_booking_into_their_panel(): void
+    {
+        $user = $this->makeUser();
+        $conversation = $this->makeConversation($user, [['from' => 'client', 'body' => 'Hi']]);
+        $booking = $this->makeBooking($user, 'pending_payment', 'ADM-703');
+
+        $response = $this->getJson(route('admin.messages.updates', [
+            'since' => now()->subMinutes(5)->toIso8601String(),
+        ]))
+            ->assertOk()
+            ->assertJsonCount(1, 'bookings')
+            ->assertJsonPath('bookings.0.id', $booking->id)
+            ->assertJsonPath('bookings.0.conversation_id', $conversation->id);
+
+        $this->assertStringContainsString('chat-booking', $response->json('bookings.0.html'));
+        $this->assertNotNull($response->json('bookings_synced_at'));
+    }
+
+    public function test_the_admin_feed_skips_bookings_with_no_conversation_panel(): void
+    {
+        $user = $this->makeUser();
+        $this->makeBooking($user, 'approved', 'ADM-704');
+
+        $this->getJson(route('admin.messages.updates', [
+            'since' => now()->subMinutes(5)->toIso8601String(),
+        ]))
+            ->assertOk()
+            ->assertJsonCount(0, 'bookings');
+    }
+
+    public function test_the_pages_expose_the_bookings_since_cursor(): void
+    {
+        $this->withoutVite();
+        $user = $this->makeUser();
+        $this->makeConversation($user, [['from' => 'client', 'body' => 'Hi']]);
+
+        $this->actingAs($user)->get(route('user.account.messages'))
+            ->assertOk()
+            ->assertSee('data-chat-bookings-since', false);
+
+        $this->get(route('admin.messages'))
+            ->assertOk()
+            ->assertSee('data-chat-bookings-since', false);
     }
 }

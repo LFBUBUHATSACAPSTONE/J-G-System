@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 class Message extends Model
 {
@@ -66,5 +67,31 @@ class Message extends Model
     public function isEdited(): bool
     {
         return ! is_null($this->edited_at);
+    }
+
+    /**
+     * When the edit/unsend window for this message closes, or null when there is no
+     * limit (config value 0, or a message with no timestamp).
+     */
+    public function editableUntil(): ?Carbon
+    {
+        $minutes = (int) config('admin.messages.edit_window_minutes', 0);
+
+        if ($minutes <= 0 || $this->created_at === null) {
+            return null;
+        }
+
+        return $this->created_at->copy()->addMinutes($minutes);
+    }
+
+    /**
+     * The sender may only change a message inside the window; after that the buttons
+     * are hidden and both controllers refuse the request.
+     */
+    public function isEditable(): bool
+    {
+        $until = $this->editableUntil();
+
+        return $until === null || $until->isFuture();
     }
 }

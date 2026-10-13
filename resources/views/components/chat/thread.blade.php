@@ -11,7 +11,15 @@
 
 @props(['items' => [], 'self' => 'admin', 'other' => 'Client', 'admin' => false])
 
-@php $lastDay = null; @endphp
+@php
+$lastDay = null;
+// Edit/unsend window (config value 0 = no limit). Buttons only render inside it; the
+// controllers enforce the same limit server-side.
+$editWindow = (int) config('admin.messages.edit_window_minutes', 0);
+$editHint = $editWindow > 0
+    ? ' (available for ' . $editWindow . ' minute' . ($editWindow === 1 ? '' : 's') . ' after sending)'
+    : '';
+@endphp
 
 @foreach ($items as $item)
 @php $at = $item['at']; @endphp
@@ -28,8 +36,9 @@
 $out = $item['from'] === $self;
 $id = $item['id'] ?? null;
 $reply = $item['reply_to'] ?? null;
+$editable = $out && ($item['editable'] ?? true);
 @endphp
-<div class="chat-msg chat-msg--{{ $out ? 'out' : 'in' }}" @if ($id) data-message-id="{{ $id }}" @if ($out) data-own="1" @endif @endif>
+<div class="chat-msg chat-msg--{{ $out ? 'out' : 'in' }}" @if ($id) data-message-id="{{ $id }}" @if ($out) data-own="1" @if (! empty($item['edit_expires_at'])) data-editable-until="{{ $item['edit_expires_at'] }}" @endif @endif @endif>
   @if ($reply)
   <div class="chat-msg__quote">
     <span class="chat-msg__quote-name">{{ $reply['from'] === $self ? 'You' : $other }}</span>
@@ -69,9 +78,9 @@ $reply = $item['reply_to'] ?? null;
     @if ($id)
     <span class="chat-msg__actions">
       <button type="button" class="chat-msg__action" data-chat-action="reply" data-chat-action-id="{{ $id }}">Reply<span class="visually-hidden"> to this message</span></button>
-      @if ($out)
-      <button type="button" class="chat-msg__action" data-chat-action="edit" data-chat-action-id="{{ $id }}">Edit<span class="visually-hidden"> this message</span></button>
-      <button type="button" class="chat-msg__action" data-chat-action="unsend" data-chat-action-id="{{ $id }}">Unsend<span class="visually-hidden"> this message</span></button>
+      @if ($editable)
+      <button type="button" class="chat-msg__action" data-chat-action="edit" data-chat-action-id="{{ $id }}" title="Edit{{ $editHint }}">Edit<span class="visually-hidden"> this message</span></button>
+      <button type="button" class="chat-msg__action" data-chat-action="unsend" data-chat-action-id="{{ $id }}" title="Unsend{{ $editHint }}">Unsend<span class="visually-hidden"> this message</span></button>
       @endif
     </span>
     @endif

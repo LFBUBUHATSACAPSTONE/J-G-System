@@ -28,7 +28,7 @@ $schedule = $start->format('F j, Y');
 $time = trim(($event['start_time'] ?? '') . ' – ' . ($event['end_time'] ?? ''), ' –');
 @endphp
 
-<article class="chat-booking{{ $past ? ' is-past' : '' }}" aria-label="Booking {{ $booking['reference'] }}{{ $past ? ', finished' : '' }}">
+<article class="chat-booking{{ $past ? ' is-past' : '' }}" data-booking-id="{{ $booking['id'] }}" aria-label="Booking {{ $booking['reference'] }}{{ $past ? ', finished' : '' }}">
   <header class="chat-booking__head">
     <div>
       <h3 class="chat-booking__package">{{ $booking['package']['name'] }}</h3>

@@ -1,6 +1,6 @@
 // Admin Messages page: chat list (select / search / unread filter), panels, quick replies,
 // mobile list <-> conversation switch. Everything is client-side over the chats on the page.
-import { appendIncoming, initChat, scrollLog } from "../chat/chat.js";
+import { appendBooking, appendIncoming, initChat, scrollLog } from "../chat/chat.js";
 
 const layout = document.querySelector("[data-messages]");
 
@@ -121,6 +121,9 @@ if (layout) {
     // preview + unread badges. `after` is the highest message id already on the page.
     const updatesUrl = layout.dataset.chatUpdatesUrl || "";
     if (updatesUrl) {
+        // Cursor for the booking feed: bookings changed after this moment pop into
+        // their client's panel. Starts at page render, advances to the server clock.
+        let since = layout.dataset.chatBookingsSince || "";
         const maxId = () =>
             [...layout.querySelectorAll("[data-message-id]")].reduce(
                 (max, node) => Math.max(max, Number(node.dataset.messageId) || 0),
@@ -138,9 +141,10 @@ if (layout) {
         const poll = () => {
             if (busy || document.hidden) return;
             busy = true;
-            fetch(`${updatesUrl}?after=${maxId()}`, {
-                headers: { Accept: "application/json" },
-            })
+            fetch(
+                `${updatesUrl}?after=${maxId()}&since=${encodeURIComponent(since)}`,
+                { headers: { Accept: "application/json" } },
+            )
                 .then((res) => (res.ok ? res.json() : null))
                 .then((data) => {
                     if (!data) return;
@@ -190,6 +194,17 @@ if (layout) {
                             markPanelRead(panel);
                         }
                     });
+
+                    // Bookings: drop each new card into its client's panel.
+                    (data.bookings || []).forEach((booking) => {
+                        const panel = document.getElementById(
+                            `chat-${booking.conversation_id}`,
+                        );
+                        const log = panel?.querySelector("[data-chat-log]");
+                        if (log) appendBooking(log, panel, booking);
+                    });
+                    if (data.bookings_synced_at) since = data.bookings_synced_at;
+
                     setSidebarBadge(data.unread || 0);
 
                     // New conversation: reload once so its row and full thread render

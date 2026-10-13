@@ -266,6 +266,29 @@
         background: $chat-past-bg;
         color: $chat-muted;
     }
+
+    // Live feed: the card that just dropped into the thread gives a short pop so the
+    // client notices a booking arrived without a refresh.
+    &.is-new {
+        animation: chat-booking-pop 0.45s ease-out;
+    }
+}
+
+@keyframes chat-booking-pop {
+    from {
+        opacity: 0;
+        transform: translateY(0.5rem) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .chat-booking.is-new {
+        animation: none;
+    }
 }
 
 .chat-status {
@@ -488,6 +511,11 @@
     &__row {
         display: flex;
         gap: 0.5rem;
+    }
+    &__hint {
+        margin: 0;
+        color: $chat-muted;
+        font-size: 0.75rem;
     }
     &__save,
     &__cancel {

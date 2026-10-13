@@ -114,6 +114,10 @@ class MessageController extends Controller
             return response()->json(['message' => 'You can only edit your own messages.'], 403);
         }
 
+        if (! $message->isEditable()) {
+            return response()->json(['message' => 'The editing window for this message has passed.'], 403);
+        }
+
         $validated = $request->validate([
             'body' => ['required', 'string', 'max:' . config('admin.messages.max_length')],
         ]);
@@ -143,6 +147,10 @@ class MessageController extends Controller
 
         if (! $this->ownsClientMessage($user, $message)) {
             return response()->json(['message' => 'You can only unsend your own messages.'], 403);
+        }
+
+        if (! $message->isEditable()) {
+            return response()->json(['message' => 'The editing window for this message has passed.'], 403);
         }
 
         $conversation = $message->conversation;
@@ -188,11 +196,20 @@ class MessageController extends Controller
         }
 
         $after = max(0, (int) $request->query('after', 0));
+        $since = $this->messages->since($request->query('since'));
+        $syncedAt = now();
+        $bookings = $this->messages->updatedBookingCardsForUser($user->id, $since);
         $conversation = $this->findConversation($user);
         $unread = $this->messages->unreadCountForUser($user);
 
         if (! $conversation) {
-            return response()->json(['unread' => $unread, 'conversation_id' => null, 'messages' => []]);
+            return response()->json([
+                'unread' => $unread,
+                'conversation_id' => null,
+                'messages' => [],
+                'bookings' => $bookings,
+                'bookings_synced_at' => $syncedAt->toIso8601String(),
+            ]);
         }
 
         $messages = $conversation->messages()
@@ -207,6 +224,8 @@ class MessageController extends Controller
             'unread' => $unread,
             'conversation_id' => $conversation->id,
             'messages' => $messages,
+            'bookings' => $bookings,
+            'bookings_synced_at' => $syncedAt->toIso8601String(),
         ]);
     }
 

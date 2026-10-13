@@ -8,6 +8,15 @@ return [
   // end date has passed is also grey, whatever its status.
   'past_statuses' => ['completed', 'cancelled', 'declined'],
 
+  // Booking statuses reflected as cards at the top of EVERY chat thread (on both sides), in
+  // addition to the conversation's own linked booking. "approved" = requests the client has
+  // actually secured, so both sides always see them while talking.
+  'reflected_booking_statuses' => ['approved'],
+
+  // How long after sending a message its sender can still edit or unsend it, in minutes.
+  // Outside the window the buttons disappear and the server refuses the change. 0 = no limit.
+  'edit_window_minutes' => 15,
+
   // One-click replies above the admin composer. Clicking fills the box; the admin still presses Send.
   'quick_replies' => [
     'Your booking has been approved and confirmed.',
