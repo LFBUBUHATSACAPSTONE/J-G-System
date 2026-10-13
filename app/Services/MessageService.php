@@ -32,25 +32,19 @@ class MessageService
 
     public function formatConversationForUser(Conversation $conversation): array
     {
-        $items = [];
-
-        foreach ($conversation->messages as $message) {
-            $items[] = $this->formatMessage($message);
-        }
-
-        // Booking cards come AFTER the messages, so the client's most recent booking
-        // is the last thing in the thread and easy to pick out while chatting.
-        foreach ($this->bookingItems($conversation) as $item) {
-            $items[] = $item;
-        }
-
         return [
             'unread' => $conversation->unreadCountFor('client'),
-            'items' => $items,
+            'items' => $this->timeline($conversation, true),
         ];
     }
 
-    public function formatConversationForAdmin(Conversation $conversation, bool $withMessages = false): array
+    /**
+     * Messages and approved-booking cards in ONE chronological list. Every item carries
+     * `at`: a booking card is pinned to the instant its booking was approved, so once it
+     * has shown up it stays put and later messages simply appear after it. A stable sort
+     * (PHP 8) keeps messages before a card that shares their exact timestamp.
+     */
+    private function timeline(Conversation $conversation, bool $withMessages): array
     {
         $items = [];
 
@@ -65,11 +59,17 @@ class MessageService
             }
         }
 
-        // Same on the admin side: the booking cards trail the chat, latest booking last.
         foreach ($this->bookingItems($conversation) as $item) {
             $items[] = $item;
         }
 
+        usort($items, fn (array $a, array $b) => $a['at'] <=> $b['at']);
+
+        return $items;
+    }
+
+    public function formatConversationForAdmin(Conversation $conversation, bool $withMessages = false): array
+    {
         // The account can be soft-deleted, so `user` may be null here. Never read a
         // property off it directly: fall back to the booking's client snapshot.
         $user = $conversation->user;
@@ -85,14 +85,13 @@ class MessageService
                     : ($booking?->client_name ?: 'Deleted client'),
                 'phone' => $user?->phone ?: $booking?->client_phone,
             ],
-            'items' => $items,
+            'items' => $this->timeline($conversation, $withMessages),
         ];
     }
 
     /**
-     * Booking cards for a thread, rendered AFTER the messages on BOTH sides. The
-     * conversation only supplies the client id and its own linked booking; the rules live
-     * in bookingCards().
+     * Booking cards for a thread. The conversation only supplies the client id and its
+     * own linked booking; the rules live in bookingCards().
      */
     private function bookingItems(Conversation $conversation): array
     {
@@ -100,46 +99,74 @@ class MessageService
     }
 
     /**
-     * Booking cards for a client, independent of any conversation: every booking the
-     * client owns, plus an optional linked booking. By default that is EVERY booking
-     * whatever its status (config 'admin.messages.reflected_booking_statuses' can narrow
-     * it to a status list), so a booking card is never dropped once it appears and each
-     * new booking simply adds a card. Deduplicated by id and ordered oldest first, so the
-     * most recent booking is the last item and the latest booking is easy to determine.
+     * Booking cards for a client, independent of any conversation: the client's bookings
+     * in the reflected statuses (approved by default) plus an optional linked booking, as
+     * long as it too is reflected. Each card's `at` is the instant the booking was
+     * approved, so it slots into the timeline there and never moves. Oldest first, so
+     * among cards the latest approval is last.
      *
      * Public and conversation-free on purpose: a client who has booked but has not
      * messaged yet has no thread, and their own chat still needs to show the bookings.
-     * `at` is "now" so the cards sit at the foot of the thread under Today rather than
-     * claiming an old calendar day after newer messages.
      */
     public function bookingCards(?int $userId, ?Booking $linked = null): array
     {
-        $statuses = config('admin.messages.reflected_booking_statuses');
+        $statuses = $this->reflectedStatuses();
 
         $bookings = collect();
 
         if ($userId) {
             $bookings = Booking::query()
                 ->where('user_id', $userId)
-                // A null/empty list means "every booking": nothing is filtered out, so a
-                // status change (e.g. declined) can never make an existing card vanish.
-                ->when(is_array($statuses) && $statuses !== [], fn ($query) => $query->whereIn('status', $statuses))
+                // An empty status list means "every status"; the default only reflects
+                // approved bookings, which is what the chat is meant to surface.
+                ->when($statuses !== [], fn ($query) => $query->whereIn('status', $statuses))
                 ->with(['eventDetails', 'schedule', 'payment', 'package'])
-                ->orderBy('submitted_at')
+                ->orderBy('approved_at')
                 ->orderBy('id')
                 ->get();
         }
 
-        if ($linked && ! $bookings->contains(fn (Booking $booking) => $booking->id === $linked->id)) {
+        if ($linked
+            && ($statuses === [] || in_array($linked->status, $statuses, true))
+            && ! $bookings->contains(fn (Booking $booking) => $booking->id === $linked->id)) {
             $bookings->push($linked);
         }
 
         return $bookings->map(fn (Booking $booking) => [
             'type' => 'booking',
-            // Deliberately "now": the cards sit at the foot of the thread under Today.
-            'at' => now(),
+            'at' => $this->approvedAt($booking),
             'booking' => $booking->toAdminArray(),
         ])->all();
+    }
+
+    /** The configured booking statuses that get a card; [] means "no filter". */
+    private function reflectedStatuses(): array
+    {
+        $statuses = config('admin.messages.reflected_booking_statuses');
+
+        return is_array($statuses) ? array_values($statuses) : [];
+    }
+
+    /**
+     * The instant a booking's card belongs at in the thread. approved_at is stamped once,
+     * when the booking is approved, and never rewritten, so the card never moves.
+     */
+    private function approvedAt(Booking $booking): Carbon
+    {
+        return $booking->approved_at ?? $booking->updated_at ?? $booking->created_at ?? now();
+    }
+
+    /**
+     * A fresh query for bookings that get a card: the reflected statuses (approved by
+     * default) and, defensively, a set approved_at. Callers add their own filters.
+     */
+    private function newlyApprovedBookings(): \Illuminate\Database\Eloquent\Builder
+    {
+        $statuses = $this->reflectedStatuses();
+
+        return Booking::query()
+            ->when($statuses !== [], fn ($query) => $query->whereIn('status', $statuses))
+            ->whereNotNull('approved_at');
     }
 
     /**
@@ -172,7 +199,7 @@ class MessageService
             'type' => 'booking',
             'reference' => $booking->reference,
             'status' => $booking->status,
-            'at' => ($booking->updated_at ?? $booking->created_at)?->toIso8601String(),
+            'at' => $this->approvedAt($booking)->toIso8601String(),
             'html' => view('components.chat.booking-card', [
                 'booking' => $booking->toAdminArray(),
                 'admin' => $admin,
@@ -181,8 +208,9 @@ class MessageService
     }
 
     /**
-     * Bookings a client OWNS that changed after `since`: a brand-new booking (any
-     * status) and a later status change both pop into their thread live.
+     * A client's bookings APPROVED after `since` pop into their thread live. Keyed on
+     * approved_at, not updated_at, so a later edit to an approved booking does not make
+     * its (already placed) card pop up again.
      */
     public function updatedBookingCardsForUser(int $userId, ?Carbon $since): array
     {
@@ -190,11 +218,11 @@ class MessageService
             return [];
         }
 
-        return Booking::query()
+        return $this->newlyApprovedBookings()
             ->where('user_id', $userId)
-            ->where('updated_at', '>', $since)
+            ->where('approved_at', '>', $since)
             ->with(['eventDetails', 'schedule', 'payment', 'package'])
-            ->orderBy('updated_at')
+            ->orderBy('approved_at')
             ->orderBy('id')
             ->get()
             ->map(fn (Booking $booking) => $this->formatBookingCard($booking))
@@ -202,7 +230,7 @@ class MessageService
     }
 
     /**
-     * The admin mirror: any client's booking changed after `since`, tagged with the
+     * The admin mirror: any client's booking approved after `since`, tagged with the
      * conversation whose panel should show it. Bookings with no conversation yet are
      * skipped: there is no panel to drop the card into.
      */
@@ -212,10 +240,10 @@ class MessageService
             return [];
         }
 
-        $bookings = Booking::query()
-            ->where('updated_at', '>', $since)
+        $bookings = $this->newlyApprovedBookings()
+            ->where('approved_at', '>', $since)
             ->with(['eventDetails', 'schedule', 'payment', 'package'])
-            ->orderBy('updated_at')
+            ->orderBy('approved_at')
             ->orderBy('id')
             ->get();
 

@@ -64,6 +64,7 @@ class UserAccountTest extends TestCase
             $table->string('package_id')->nullable()->index();
             $table->unsignedBigInteger('rescheduled_from_id')->nullable()->unique();
             $table->timestamp('submitted_at')->nullable()->index();
+            $table->timestamp('approved_at')->nullable();
             $table->timestamps();
         });
         Schema::connection('sqlite')->create('booking_events', function (Blueprint $table) {

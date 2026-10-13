@@ -58,6 +58,7 @@ class MessagingTest extends TestCase
             $table->text('client_address')->nullable();
             $table->unsignedBigInteger('package_id')->nullable();
             $table->timestamp('submitted_at')->nullable();
+            $table->timestamp('approved_at')->nullable();
             $table->timestamps();
         });
 
@@ -716,53 +717,53 @@ class MessagingTest extends TestCase
 
     // ------------------------------------------------- reflected bookings
 
-    public function test_the_thread_reflects_the_users_approved_bookings(): void
+    public function test_the_thread_reflects_only_approved_bookings(): void
     {
         $this->withoutVite();
         $user = $this->makeUser();
-        $approved = $this->makeBooking($user, 'approved', 'APR-100');
+        $this->makeBooking($user, 'approved', 'APR-100');
         $pending = $this->makeBooking($user, 'pending', 'PEN-200');
+        $this->makeBooking($user, 'declined', 'DEC-201');
 
         $conversation = $this->makeConversation($user, [
             ['from' => 'client', 'body' => 'Hello'],
         ]);
-        // The thread is linked to the still-pending request; the approved booking must
-        // STILL show on both sides.
+        // Linked to the still-pending request: it must NOT be reflected, only approved.
         $conversation->update(['booking_id' => $pending->id]);
 
         $this->actingAs($user)->get(route('user.account.messages'))
             ->assertOk()
             ->assertSee('APR-100')
-            ->assertSee('PEN-200');
+            ->assertDontSee('PEN-200')
+            ->assertDontSee('DEC-201');
 
         $this->get(route('admin.messages'))
             ->assertOk()
             ->assertSee('APR-100')
-            ->assertSee('PEN-200');
+            ->assertDontSee('PEN-200')
+            ->assertDontSee('DEC-201');
     }
 
-    public function test_every_booking_is_reflected_whatever_its_status(): void
+    public function test_the_reflected_statuses_are_configurable(): void
     {
         $this->withoutVite();
+        Config::set('admin.messages.reflected_booking_statuses', ['approved', 'pending']);
+
         $user = $this->makeUser();
-        $this->makeBooking($user, 'declined', 'DEC-300');
-        $this->makeBooking($user, 'pending', 'PEN-301');
+        $this->makeBooking($user, 'approved', 'CFG-410');
+        $this->makeBooking($user, 'pending', 'CFG-411');
+        $this->makeBooking($user, 'declined', 'CFG-412');
 
         $this->makeConversation($user, [['from' => 'client', 'body' => 'Hello']]);
 
-        // Nothing is filtered out: a booking card, once there, must never disappear.
         $this->actingAs($user)->get(route('user.account.messages'))
             ->assertOk()
-            ->assertSee('DEC-300')
-            ->assertSee('PEN-301');
-
-        $this->get(route('admin.messages'))
-            ->assertOk()
-            ->assertSee('DEC-300')
-            ->assertSee('PEN-301');
+            ->assertSee('CFG-410')
+            ->assertSee('CFG-411')
+            ->assertDontSee('CFG-412');
     }
 
-    public function test_the_landing_chat_widget_reflects_the_users_bookings(): void
+    public function test_the_landing_chat_widget_reflects_only_approved_bookings(): void
     {
         $this->withoutVite();
         $user = $this->makeUser();
@@ -774,7 +775,7 @@ class MessagingTest extends TestCase
         $this->actingAs($user)->get(route('user.landing'))
             ->assertOk()
             ->assertSee('WIDG-600')
-            ->assertSee('WIDG-601')
+            ->assertDontSee('WIDG-601')
             ->assertSee('data-booking-id', false);
     }
 
@@ -798,34 +799,52 @@ class MessagingTest extends TestCase
             ->assertSee('data-booking-id', false);
     }
 
-    public function test_the_statuses_config_can_narrow_the_reflected_bookings(): void
+    public function test_an_approved_booking_card_is_pinned_between_the_messages_around_it(): void
     {
-        $this->withoutVite();
-        Config::set('admin.messages.reflected_booking_statuses', ['approved']);
-
         $user = $this->makeUser();
-        $this->makeBooking($user, 'approved', 'ONLY-400');
-        $this->makeBooking($user, 'pending', 'ONLY-401');
+        $conversation = $this->makeConversation($user, [['from' => 'client', 'body' => 'Before']]);
 
-        $this->makeConversation($user, [['from' => 'client', 'body' => 'Hello']]);
+        // The first message happened ten minutes ago...
+        DB::table('messages')->where('conversation_id', $conversation->id)
+            ->update(['created_at' => now()->subMinutes(10)]);
 
-        $this->actingAs($user)->get(route('user.account.messages'))
-            ->assertOk()
-            ->assertSee('ONLY-400')
-            ->assertDontSee('ONLY-401');
+        // ...the booking was approved five minutes ago...
+        $booking = $this->makeBooking($user, 'approved', 'PIN-900');
+        DB::table('bookings')->where('id', $booking->id)
+            ->update(['approved_at' => now()->subMinutes(5)]);
+
+        // ...and a fresh message arrived after it.
+        Message::create([
+            'conversation_id' => $conversation->id,
+            'sender_type' => 'admin',
+            'body' => 'After',
+        ]);
+
+        $thread = Conversation::with([
+            'booking.eventDetails', 'booking.schedule', 'booking.payment', 'booking.package',
+            'messages.replyTo',
+        ])->findOrFail($conversation->id);
+
+        $types = array_map(
+            fn ($item) => $item['type'],
+            app(MessageService::class)->formatConversationForUser($thread)['items'],
+        );
+
+        // The card sits where it was approved and does not drift to the bottom.
+        $this->assertSame(['message', 'booking', 'message'], $types);
     }
 
-    public function test_a_new_booking_adds_a_card_without_removing_the_old_one(): void
+    public function test_a_new_approved_booking_adds_a_card_without_removing_the_old_one(): void
     {
         $user = $this->makeUser();
         $first = $this->makeBooking($user, 'approved', 'KEEP-500');
         $conversation = $this->makeConversation($user, [['from' => 'client', 'body' => 'Hi']]);
 
-        // The first booking is a day older, so the newest is unambiguously last.
-        DB::table('bookings')->where('id', $first->id)->update(['submitted_at' => now()->subDay()]);
-
-        // The client books again: a brand-new pending request.
-        $second = $this->makeBooking($user, 'pending', 'KEEP-501');
+        // The first booking was approved a day ago; the second is approved just now, so
+        // the newest card is unambiguously last.
+        DB::table('bookings')->where('id', $first->id)->update(['approved_at' => now()->subDay()]);
+        $second = $this->makeBooking($user, 'approved', 'KEEP-501');
+        DB::table('bookings')->where('id', $second->id)->update(['approved_at' => now()]);
 
         $thread = Conversation::with([
             'booking.eventDetails', 'booking.schedule', 'booking.payment', 'booking.package',
@@ -835,7 +854,7 @@ class MessagingTest extends TestCase
         $items = app(MessageService::class)->formatConversationForUser($thread)['items'];
         $cards = array_values(array_filter($items, fn ($item) => $item['type'] === 'booking'));
 
-        // Both cards are present, oldest first: booking again never drops the previous one.
+        // Both cards are present, oldest approval first: the new one never drops the old.
         $this->assertSame(
             [$first->id, $second->id],
             array_map(fn ($item) => $item['booking']['id'], $cards),
@@ -939,11 +958,11 @@ class MessagingTest extends TestCase
 
     // ------------------------------------------------- live booking cards
 
-    public function test_the_user_feed_pops_a_new_booking_into_the_thread(): void
+    public function test_the_user_feed_pops_a_newly_approved_booking_into_the_thread(): void
     {
         $user = $this->makeUser();
         $this->makeConversation($user, [['from' => 'client', 'body' => 'Hi']]);
-        $booking = $this->makeBooking($user, 'pending', 'NEW-700');
+        $booking = $this->makeBooking($user, 'approved', 'NEW-700');
 
         $response = $this->actingAs($user)
             ->getJson(route('user.messages.updates', [
@@ -1001,7 +1020,7 @@ class MessagingTest extends TestCase
     {
         $user = $this->makeUser();
         $conversation = $this->makeConversation($user, [['from' => 'client', 'body' => 'Hi']]);
-        $booking = $this->makeBooking($user, 'pending_payment', 'ADM-703');
+        $booking = $this->makeBooking($user, 'approved', 'ADM-703');
 
         $response = $this->getJson(route('admin.messages.updates', [
             'since' => now()->subMinutes(5)->toIso8601String(),
@@ -1044,14 +1063,18 @@ class MessagingTest extends TestCase
 
     // ----------------------------------------- booking cards trail the chat
 
-    public function test_the_thread_places_booking_cards_after_the_messages(): void
+    public function test_a_booking_approved_after_the_messages_trails_them(): void
     {
         $user = $this->makeUser();
-        $approved = $this->makeBooking($user, 'approved', 'POS-800');
         $conversation = $this->makeConversation($user, [
             ['from' => 'client', 'body' => 'First'],
             ['from' => 'admin', 'body' => 'Second'],
         ]);
+
+        // Approved after the two messages, so its card lands below them.
+        $approved = $this->makeBooking($user, 'approved', 'POS-800');
+        DB::table('bookings')->where('id', $approved->id)
+            ->update(['approved_at' => now()->addMinute()]);
 
         $thread = Conversation::with([
             'booking.eventDetails', 'booking.schedule', 'booking.payment', 'booking.package',
@@ -1067,19 +1090,18 @@ class MessagingTest extends TestCase
         $this->assertSame($approved->id, $items[2]['booking']['id']);
     }
 
-    public function test_the_latest_booking_is_the_last_item_in_the_thread(): void
+    public function test_the_latest_approved_booking_is_the_last_item_in_the_thread(): void
     {
         $user = $this->makeUser();
         $older = $this->makeBooking($user, 'approved', 'OLD-801');
         $newer = $this->makeBooking($user, 'approved', 'NEW-802');
-
-        // Both helpers submit "now"; push the older one back a day so the order is
-        // unambiguous, then the newer booking must be the very last item.
-        DB::table('bookings')->where('id', $older->id)->update([
-            'submitted_at' => now()->subDay(),
-        ]);
-
         $conversation = $this->makeConversation($user, [['from' => 'client', 'body' => 'Hi']]);
+
+        // Approvals spread out: the older a day ago, the newer after the message, so the
+        // newer card is unambiguously the very last item.
+        DB::table('bookings')->where('id', $older->id)->update(['approved_at' => now()->subDay()]);
+        DB::table('bookings')->where('id', $newer->id)->update(['approved_at' => now()->addMinute()]);
+
         $thread = Conversation::with([
             'booking.eventDetails', 'booking.schedule', 'booking.payment', 'booking.package',
             'messages.replyTo',

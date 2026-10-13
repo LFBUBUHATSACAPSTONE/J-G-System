@@ -51,6 +51,7 @@ class AdminDashboardTest extends TestCase
             '2026_10_10_110000_create_booking_packages_table.php',
             '2026_10_10_120000_remove_normalized_booking_columns.php',
             '2026_10_10_130000_link_bookings_to_packages.php',
+            '2026_10_13_000001_add_approved_at_to_bookings_table.php',
         ] as $migration) {
             Artisan::call('migrate', [
                 '--path' => 'database/migrations/'.$migration,
