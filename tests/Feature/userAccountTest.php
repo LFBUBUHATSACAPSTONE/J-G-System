@@ -97,6 +97,26 @@ class UserAccountTest extends TestCase
             $table->decimal('payment_amount', 10, 2)->nullable();
             $table->timestamps();
         });
+
+        // Messaging (conversations + messages), used by User\MessageController.
+        Schema::connection('sqlite')->create('conversations', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id')->index();
+            $table->unsignedBigInteger('booking_id')->nullable();
+            $table->integer('unread_count')->default(0);
+            $table->timestamp('last_message_at')->nullable();
+            $table->timestamps();
+        });
+        Schema::connection('sqlite')->create('messages', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('conversation_id')->index();
+            $table->string('sender_type')->default('client');
+            $table->unsignedBigInteger('sender_id')->nullable();
+            $table->text('body')->nullable();
+            $table->json('attachments')->nullable();
+            $table->timestamp('read_at')->nullable();
+            $table->timestamps();
+        });
     }
 
     // ---------------------------------------------------------------- access
@@ -143,18 +163,6 @@ class UserAccountTest extends TestCase
 
     // --------------------------------------------------------------- profile
 
-<<<<<<< HEAD
-    // Guests see the chat shell (empty thread + composer). The thread itself is
-    // filled from the logged-in user's real conversation once the backend is
-    // connected, so no sample reference or unread badge is rendered here.
-    $this->get(route('user.account.messages'))
-      ->assertOk()
-      ->assertSee('data-account-chat', false)
-      ->assertSee('data-chat-form', false)
-      ->assertSee(route('user.messages.send'), false)
-      ->assertSee('Ask us about packages or your booking', false);
-  }
-=======
     public function test_profile_page_renders_the_users_own_details_and_the_sidebar_tabs(): void
     {
         $this->withoutVite();
@@ -645,5 +653,4 @@ class UserAccountTest extends TestCase
 
         return $booking;
     }
->>>>>>> origin
 }

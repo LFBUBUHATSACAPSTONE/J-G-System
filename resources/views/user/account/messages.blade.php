@@ -8,19 +8,24 @@
 @php
 $items = $conversation['items'] ?? [];
 $unread = (int) ($conversation['unread'] ?? 0);
+$updatesUrl = Route::has('user.messages.updates') ? route('user.messages.updates') : '';
+$readUrl = Route::has('user.messages.read') ? route('user.messages.read') : '';
 @endphp
 
 <x-account.layout>
-  <section class="account-chat" data-account-chat aria-labelledby="account-chat-title">
+  <section
+    class="account-chat"
+    data-account-chat
+    aria-labelledby="account-chat-title"
+    @if ($updatesUrl) data-chat-updates-url="{{ $updatesUrl }}" @endif
+    @if ($readUrl) data-chat-read-url="{{ $readUrl }}" @endif>
     <header class="account-chat__head">
       <span class="chat-avatar" aria-hidden="true"><x-chat.icon name="chat" /></span>
       <div class="account-chat__heading">
         <h2 class="account-chat__name" id="account-chat-title">J&amp;G Audio Lights and Sounds</h2>
         <p class="account-chat__sub">Ask about packages or your bookings</p>
       </div>
-      @if ($unread)
-      <span class="account-badge account-badge--brand">{{ $unread }} new<span class="visually-hidden"> unread {{ Str::plural('message', $unread) }}</span></span>
-      @endif
+      <span class="account-badge account-badge--brand" data-chat-badge @if (! $unread) hidden @endif>{{ $unread > 9 ? '9+' : $unread }} new<span class="visually-hidden"> unread {{ Str::plural('message', $unread) }}</span></span>
     </header>
 
     <div class="chat-log" role="log" aria-live="polite" tabindex="0" aria-label="Messages with J&G Audio" data-chat-log>

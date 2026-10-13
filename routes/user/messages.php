@@ -23,6 +23,7 @@ View::composer('user.landing', function ($view) {
             ])
                 ->where('user_id', $user->id)
                 ->latest('last_message_at')
+                ->latest('id')
                 ->first();
 
             if ($thread) {
@@ -36,5 +37,28 @@ View::composer('user.landing', function ($view) {
     $view->with('chatConversation', $conversation);
 });
 
-// Send message from user (landing widget and account page)
+// The unread bubble on the sign-in chat icon and the account sidebar's Messages
+// tab: never queries the DB for guests and never throws for logged-in users.
+View::composer(['components.landing.navigation', 'components.account.sidebar'], function ($view) {
+    $user = auth()->user();
+    $unread = 0;
+
+    if ($user) {
+        try {
+            $unread = app(MessageService::class)->unreadCountForUser($user);
+        } catch (\Throwable) {
+            $unread = 0;
+        }
+    }
+
+    $view->with('chatUnread', $unread);
+});
+
+// Send message from user (landing widget and account page).
 Route::post('/messages', [MessageController::class, 'store'])->name('user.messages.send');
+
+// Opening the chat on the user side marks only the admin replies read.
+Route::post('/messages/read', [MessageController::class, 'markRead'])->name('user.messages.read');
+
+// Light polling feed for an open chat: unread count + admin replies after `after`.
+Route::get('/messages/updates', [MessageController::class, 'updates'])->name('user.messages.updates');

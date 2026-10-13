@@ -65,7 +65,7 @@
 
       <section class="admin-messages__panels" aria-label="Conversation">
         @foreach ($conversations as $c)
-        <div class="chat-panel" id="chat-{{ $c['id'] }}" data-chat @if (! $loop->first) hidden @endif>
+        <div class="chat-panel" id="chat-{{ $c['id'] }}" data-chat data-chat-read-url="{{ Route::has('admin.messages.show') ? route('admin.messages.show', ['conversation' => $c['id']]) : '' }}" @if (! $loop->first) hidden @endif>
           <header class="chat-panel__head">
             <button type="button" class="chat-panel__back" aria-label="Back to chat list" data-chat-back>
               <x-chat.icon name="chevron-left" />

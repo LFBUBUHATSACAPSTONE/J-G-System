@@ -411,15 +411,26 @@
         }
     }
 
-    &__dot {
+    &__badge {
         position: absolute;
-        top: 0.25rem;
-        right: 0.25rem;
-        width: 0.875rem;
-        height: 0.875rem;
-        border-radius: 50%;
+        top: -0.125rem;
+        right: -0.125rem;
+        display: grid;
+        place-items: center;
+        min-width: 1.375rem;
+        height: 1.375rem;
+        padding: 0 0.3125rem;
+        border-radius: $auth-radius-pill;
         background: $chat-danger;
+        color: $auth-white;
         border: 2px solid $auth-white;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        line-height: 1;
+
+        &[hidden] {
+            display: none;
+        }
     }
 
     &__panel {

@@ -112,6 +112,25 @@ body {
         }
     }
 
+    // Unread count on the Message tab.
+    &__badge {
+        flex: none;
+        margin-left: auto;
+        min-width: 1.375rem;
+        padding: 0 $sp-2;
+        border-radius: $admin-radius-pill;
+        background: $admin-brand;
+        color: $admin-on-brand;
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1.4;
+        text-align: center;
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
     //  Desktop: the full column from the mockup
     @media (min-width: $admin-sidebar-breakpoint) {
         position: fixed;

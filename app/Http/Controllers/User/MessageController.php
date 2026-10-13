@@ -21,14 +21,7 @@ class MessageController extends Controller
     public function index(): View
     {
         $user = auth()->user();
-        $conversation = $this->findConversation($user);
-
-        if ($conversation) {
-            $this->markClientRead($conversation);
-            $thread = $this->messages->formatConversationForUser($conversation);
-        } else {
-            $thread = ['unread' => 0, 'items' => []];
-        }
+        $thread = $this->threadFor($user, markRead: true);
 
         return view('user.account.messages', [
             'conversation' => $thread,
@@ -38,14 +31,7 @@ class MessageController extends Controller
     public function indexJson(): JsonResponse
     {
         $user = auth()->user();
-        $conversation = $this->findConversation($user);
-
-        if ($conversation) {
-            $this->markClientRead($conversation);
-            $thread = $this->messages->formatConversationForUser($conversation);
-        } else {
-            $thread = ['unread' => 0, 'items' => []];
-        }
+        $thread = $this->threadFor($user, markRead: true);
 
         return response()->json([
             'conversation' => $thread,
@@ -104,15 +90,91 @@ class MessageController extends Controller
         ]);
     }
 
+    /**
+     * The landing chat widget marks the client's side read the moment the panel
+     * opens, so the unread bubble disappears and stays gone.
+     */
+    public function markRead(): JsonResponse
+    {
+        $user = auth()->user();
+
+        if (! $user) {
+            return response()->json(['message' => 'Please log in to message us.'], 401);
+        }
+
+        $conversation = $this->findConversation($user);
+
+        if ($conversation) {
+            $conversation->markReadFor('client');
+        }
+
+        return response()->json(['ok' => true, 'unread' => 0]);
+    }
+
+    /**
+     * Light polling feed for the open chat: the total unread count (for badges)
+     * plus any admin replies newer than `after` in the active conversation.
+     * Never fails the page: an empty payload is a valid "nothing new" answer.
+     */
+    public function updates(Request $request): JsonResponse
+    {
+        $user = auth()->user();
+
+        if (! $user) {
+            return response()->json(['message' => 'Please log in to message us.'], 401);
+        }
+
+        $after = max(0, (int) $request->query('after', 0));
+        $conversation = $this->findConversation($user);
+        $unread = $this->messages->unreadCountForUser($user);
+
+        if (! $conversation) {
+            return response()->json(['unread' => $unread, 'conversation_id' => null, 'messages' => []]);
+        }
+
+        $messages = $conversation->messages()
+            ->where('id', '>', $after)
+            ->where('sender_type', 'admin')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (Message $message) => $this->messages->formatMessage($message));
+
+        return response()->json([
+            'unread' => $unread,
+            'conversation_id' => $conversation->id,
+            'messages' => $messages,
+        ]);
+    }
+
+    private function threadFor($user, bool $markRead): array
+    {
+        $conversation = $this->findConversation($user);
+
+        if (! $conversation) {
+            return ['unread' => 0, 'items' => []];
+        }
+
+        if ($markRead) {
+            $conversation->markReadFor('client');
+            $conversation->load('messages');
+        }
+
+        return $this->messages->formatConversationForUser($conversation);
+    }
+
     private function findConversation($user, bool $create = false): ?Conversation
     {
         if (! $user) {
             return null;
         }
 
-        $conversation = Conversation::with(['booking.eventDetails', 'booking.schedule', 'booking.payment', 'booking.package', 'messages'])
+        // The user side always shows ONE active thread (the latest), so a user's
+        // history can never split across conversations. If several exist, sending
+        // reuses the latest and keeps the whole story in one place.
+        $conversation = Conversation::with(['booking.eventDetails', 'booking.schedule', 'booking.payment', 'booking.package'])
             ->where('user_id', $user->id)
             ->latest('last_message_at')
+            ->latest('id')
             ->first();
 
         if ($conversation || ! $create) {
@@ -128,15 +190,5 @@ class MessageController extends Controller
             'booking_id' => $latestBooking?->id,
             'last_message_at' => now(),
         ]);
-    }
-
-    private function markClientRead(Conversation $conversation): void
-    {
-        $conversation->messages->each(function ($message) {
-            if ($message->sender_type === 'admin') {
-                $message->markAsRead();
-            }
-        });
-        $conversation->markAsRead();
     }
 }

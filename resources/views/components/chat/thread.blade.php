@@ -21,7 +21,7 @@
 <x-chat.booking-card :booking="$item['booking']" :admin="$admin" />
 @else
 @php $out = $item['from'] === $self; @endphp
-<div class="chat-msg chat-msg--{{ $out ? 'out' : 'in' }}">
+<div class="chat-msg chat-msg--{{ $out ? 'out' : 'in' }}" @if (! empty($item['id'])) data-message-id="{{ $item['id'] }}" @endif>
   <div class="chat-msg__bubble">
     <span class="visually-hidden">{{ $out ? 'You' : $other }}: </span>
     @if (! empty($item['body']))

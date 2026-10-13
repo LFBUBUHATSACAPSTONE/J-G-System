@@ -81,6 +81,145 @@ function appendMessage(log, body, files) {
     return { msg, time };
 }
 
+// Attachment already stored on the server (poll feed): link straight to its URL.
+function serverAttachmentNode(file) {
+    const isImage =
+        file.kind === "image" ||
+        /\.(jpe?g|png|webp|gif)$/i.test(file.name || "");
+    const a = el("a", `chat-attach${isImage ? " chat-attach--image" : ""}`);
+    a.href = file.url || "#";
+    a.target = "_blank";
+    a.rel = "noopener";
+    if (isImage) {
+        const img = el("img");
+        img.src = file.url || "";
+        img.alt = file.name || "Attachment";
+        img.loading = "lazy";
+        a.append(img);
+    } else {
+        a.append(
+            icon("file"),
+            el("span", "chat-attach__name", file.name || "Attachment"),
+            el("span", "chat-attach__size", file.size || ""),
+        );
+    }
+    return a;
+}
+
+// A message that arrived from the other side (admin -> client). Returns false when
+// it is already in the log, so polling can never double-post a message.
+export function appendIncoming(log, message) {
+    if (message.id && log.querySelector(`[data-message-id="${message.id}"]`)) {
+        return false;
+    }
+
+    const key = dayKey();
+    const days = log.querySelectorAll(".chat-day");
+    if (!days.length || days[days.length - 1].dataset.day !== key) {
+        const d = el("p", "chat-day", "Today");
+        d.dataset.day = key;
+        log.querySelector(".chat-empty")?.remove();
+        log.append(d);
+    }
+
+    const msg = el("div", "chat-msg chat-msg--in");
+    if (message.id) msg.dataset.messageId = message.id;
+    const bubble = el("div", "chat-msg__bubble");
+    bubble.append(el("span", "visually-hidden", "J&G Audio: "));
+    if (message.body) bubble.append(el("p", "chat-msg__text", message.body));
+    (message.attachments || []).forEach((f) =>
+        bubble.append(serverAttachmentNode(f)),
+    );
+    const at = message.at ? new Date(message.at) : new Date();
+    const time = el(
+        "time",
+        "chat-msg__time",
+        at.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+    );
+    msg.append(bubble, time);
+    log.append(msg);
+    scrollLog(log);
+    return true;
+}
+
+// Live updates for an open chat: polls `data-chat-updates-url` for new admin
+// replies, updates every unread badge, and marks the thread read when the chat is
+// open. Safe on any chat root: no URL, no polling, nothing happens.
+export function initChatStream(root) {
+    if (!root || root.dataset.chatStreamReady === "1") return;
+    root.dataset.chatStreamReady = "1";
+
+    const log = root.querySelector("[data-chat-log]");
+    const form = root.querySelector("[data-chat-form]");
+    const updatesUrl = root.dataset.chatUpdatesUrl || "";
+    const readUrl = root.dataset.chatReadUrl || "";
+
+    const setBadge = (count) => {
+        const text = count > 9 ? "9+" : String(count);
+        const hidden = !count;
+        root.querySelectorAll("[data-chat-badge]").forEach((b) => {
+            b.textContent = text;
+            b.hidden = hidden;
+        });
+        document.querySelectorAll("[data-chat-unread-badge]").forEach((b) => {
+            b.textContent = text;
+            b.hidden = hidden;
+        });
+    };
+
+    const lastId = () =>
+        [...(log?.querySelectorAll("[data-message-id]") || [])].reduce(
+            (max, node) => Math.max(max, Number(node.dataset.messageId) || 0),
+            0,
+        );
+
+    const isOpen = () => {
+        const panel = root.querySelector("[data-chat-panel]");
+        return panel ? !panel.hidden : true;
+    };
+
+    const markRead = () => {
+        if (!readUrl) return;
+        fetch(readUrl, {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "X-CSRF-TOKEN": getCsrfToken(form),
+            },
+        })
+            .then((res) => (res.ok ? res.json().catch(() => ({})) : {}))
+            .then(() => setBadge(0))
+            .catch(() => {});
+    };
+
+    let busy = false;
+    const poll = () => {
+        if (!log || !updatesUrl || busy || document.hidden) return;
+        busy = true;
+        fetch(`${updatesUrl}?after=${lastId()}`, {
+            headers: { Accept: "application/json" },
+        })
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+                if (!data) return;
+                let added = 0;
+                (data.messages || []).forEach((m) => {
+                    if (appendIncoming(log, m)) added += 1;
+                });
+                setBadge(data.unread || 0);
+                if (added && isOpen()) markRead();
+            })
+            .catch(() => {})
+            .finally(() => {
+                busy = false;
+            });
+    };
+
+    root.addEventListener("chat:opened", markRead);
+    setInterval(poll, 15000);
+    poll();
+}
+
 export function initChat(root) {
     const form = root.querySelector("[data-chat-form]");
     const log = root.querySelector("[data-chat-log]");
@@ -189,7 +328,9 @@ export function initChat(root) {
                     status: res.status,
                 });
             }
+            const json = await res.json().catch(() => ({}));
             time.textContent = timeLabel();
+            if (json?.message?.id) msg.dataset.messageId = json.message.id;
             root.dispatchEvent(
                 new CustomEvent("chat:sent", {
                     bubbles: true,

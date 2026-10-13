@@ -19,24 +19,33 @@ class MessageController extends Controller
 
     public function index(): View
     {
-        $conversations = Conversation::with(['user', 'booking.eventDetails', 'booking.schedule', 'booking.payment', 'booking.package', 'latestMessage'])
+        // `withTrashed()` on the client: a deleted account keeps its message history
+        // visible to the admin instead of turning the relation into null.
+        $conversations = Conversation::with([
+            'user' => fn ($query) => $query->withTrashed(),
+            'booking.eventDetails', 'booking.schedule', 'booking.payment', 'booking.package', 'messages',
+        ])
             ->withCount('messages')
             ->orderByDesc('last_message_at')
             ->get()
-            ->map(fn (Conversation $conversation) => $this->messages->formatConversationForAdmin($conversation));
+            // Full thread, not just the last message: opening a chat always shows the whole history.
+            ->map(fn (Conversation $conversation) => $this->messages->formatConversationForAdmin($conversation, true));
 
         return view('admin.messages', ['conversations' => $conversations]);
     }
 
     public function show(int $id): JsonResponse
     {
-        $conversation = Conversation::with(['user', 'booking.eventDetails', 'booking.schedule', 'booking.payment', 'booking.package', 'messages'])
+        $conversation = Conversation::with([
+            'user' => fn ($query) => $query->withTrashed(),
+            'booking.eventDetails', 'booking.schedule', 'booking.payment', 'booking.package',
+        ])
             ->findOrFail($id);
 
-        $conversation->messages->each(function ($message) {
-            $message->markAsRead();
-        });
-        $conversation->markAsRead();
+        // Opening a chat on the admin side only clears the client messages it was
+        // waiting on; the client's own unread badges are never touched.
+        $conversation->markReadFor('admin');
+        $conversation->load('messages');
 
         return response()->json([
             'conversation' => $this->messages->formatConversationForAdmin($conversation, true),

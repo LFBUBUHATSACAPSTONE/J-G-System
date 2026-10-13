@@ -35,12 +35,53 @@ class Conversation extends Model
 
     public function messages(): HasMany
     {
-        return $this->hasMany(Message::class)->orderBy('created_at');
+        return $this->hasMany(Message::class)->orderBy('created_at')->orderBy('id');
     }
 
     public function latestMessage(): HasOne
     {
         return $this->hasOne(Message::class)->latestOfMany();
+    }
+
+    /**
+     * Unread messages for one side of the chat: messages SENT BY the other side
+     * whose read_at is still null. read_at is the single source of truth, so the
+     * legacy unread_count column (an all-reads counter) can never disagree.
+     */
+    public function unreadCountFor(string $viewer): int
+    {
+        $other = $viewer === 'admin' ? 'client' : 'admin';
+
+        if ($this->relationLoaded('messages')) {
+            return $this->messages
+                ->where('sender_type', $other)
+                ->whereNull('read_at')
+                ->count();
+        }
+
+        return $this->messages()
+            ->where('sender_type', $other)
+            ->whereNull('read_at')
+            ->count();
+    }
+
+    /**
+     * Mark everything the OTHER side sent as read for $viewer. Opening the chat
+     * on either side only clears that side's unread; it never clears the other
+     * side's badge or the shared unread_count column.
+     */
+    public function markReadFor(string $viewer): void
+    {
+        $other = $viewer === 'admin' ? 'client' : 'admin';
+
+        $this->messages()
+            ->where('sender_type', $other)
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
+
+        if ($viewer === 'admin') {
+            $this->update(['unread_count' => 0]);
+        }
     }
 
     public function incrementUnread(): void

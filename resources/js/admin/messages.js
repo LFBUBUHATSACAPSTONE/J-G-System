@@ -17,6 +17,18 @@ if (layout) {
     const first = panels.find((p) => !p.hidden);
     if (first) scrollLog(first.querySelector("[data-chat-log]"));
 
+    // Opening a chat clears its "unread" flag for real: the GET marks the client
+    // messages read in the database, so the badge is gone after a reload too.
+    const readDone = new Set();
+    function markPanelRead(panel) {
+        const url = panel?.dataset.chatReadUrl;
+        if (!url || readDone.has(panel.id)) return;
+        readDone.add(panel.id);
+        fetch(url, { headers: { Accept: "application/json" } }).catch(() =>
+            readDone.delete(panel.id),
+        );
+    }
+
     function open(id) {
         panels.forEach((p) => {
             p.hidden = p.id !== id;
@@ -35,6 +47,7 @@ if (layout) {
         });
         const panel = document.getElementById(id);
         scrollLog(panel.querySelector("[data-chat-log]"));
+        markPanelRead(panel);
         layout.dataset.view = "chat";
         applyFilters();
     }
