@@ -23,13 +23,29 @@ class Booking extends Model
         'package_id',
         'rescheduled_from_id',
         'submitted_at',
+        'approved_at',
     ];
 
     protected function casts(): array
     {
         return [
             'submitted_at' => 'datetime',
+            'approved_at' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        // Stamp the exact moment a booking becomes approved. The chat drops the booking
+        // card at this instant and NEVER moves it, so only a status CHANGE to "approved"
+        // sets it, and only when it is still empty: a later edit keeps the original time.
+        static::saving(function (self $booking): void {
+            if ($booking->isDirty('status')
+                && $booking->status === 'approved'
+                && $booking->approved_at === null) {
+                $booking->approved_at = now();
+            }
+        });
     }
 
     public function user(): BelongsTo

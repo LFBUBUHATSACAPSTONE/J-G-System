@@ -64,6 +64,7 @@ class UserAccountTest extends TestCase
             $table->string('package_id')->nullable()->index();
             $table->unsignedBigInteger('rescheduled_from_id')->nullable()->unique();
             $table->timestamp('submitted_at')->nullable()->index();
+            $table->timestamp('approved_at')->nullable();
             $table->timestamps();
         });
         Schema::connection('sqlite')->create('booking_events', function (Blueprint $table) {
@@ -95,6 +96,26 @@ class UserAccountTest extends TestCase
             $table->string('payment_reference')->nullable();
             $table->string('payment_receipt_path')->nullable();
             $table->decimal('payment_amount', 10, 2)->nullable();
+            $table->timestamps();
+        });
+
+        // Messaging (conversations + messages), used by User\MessageController.
+        Schema::connection('sqlite')->create('conversations', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id')->index();
+            $table->unsignedBigInteger('booking_id')->nullable();
+            $table->integer('unread_count')->default(0);
+            $table->timestamp('last_message_at')->nullable();
+            $table->timestamps();
+        });
+        Schema::connection('sqlite')->create('messages', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('conversation_id')->index();
+            $table->string('sender_type')->default('client');
+            $table->unsignedBigInteger('sender_id')->nullable();
+            $table->text('body')->nullable();
+            $table->json('attachments')->nullable();
+            $table->timestamp('read_at')->nullable();
             $table->timestamps();
         });
     }

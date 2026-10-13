@@ -1,6 +1,6 @@
 // Admin Messages page: chat list (select / search / unread filter), panels, quick replies,
 // mobile list <-> conversation switch. Everything is client-side over the chats on the page.
-import { initChat, scrollLog } from "../chat/chat.js";
+import { appendBooking, appendIncoming, initChat, scrollLog } from "../chat/chat.js";
 
 const layout = document.querySelector("[data-messages]");
 
@@ -16,6 +16,18 @@ if (layout) {
     panels.forEach((p) => initChat(p));
     const first = panels.find((p) => !p.hidden);
     if (first) scrollLog(first.querySelector("[data-chat-log]"));
+
+    // Opening a chat clears its "unread" flag for real: the GET marks the client
+    // messages read in the database, so the badge is gone after a reload too.
+    const readDone = new Set();
+    function markPanelRead(panel) {
+        const url = panel?.dataset.chatReadUrl;
+        if (!url || readDone.has(panel.id)) return;
+        readDone.add(panel.id);
+        fetch(url, { headers: { Accept: "application/json" } }).catch(() =>
+            readDone.delete(panel.id),
+        );
+    }
 
     function open(id) {
         panels.forEach((p) => {
@@ -35,6 +47,7 @@ if (layout) {
         });
         const panel = document.getElementById(id);
         scrollLog(panel.querySelector("[data-chat-log]"));
+        markPanelRead(panel);
         layout.dataset.view = "chat";
         applyFilters();
     }
@@ -101,4 +114,120 @@ if (layout) {
     });
 
     applyFilters();
+
+    // ---- live updates: new client messages arrive without a refresh ----------
+    // Mirrors the user side (chat.js `initChatStream`): poll `admin.messages.updates`,
+    // drop each new client message into its conversation, and refresh the list
+    // preview + unread badges. `after` is the highest message id already on the page.
+    const updatesUrl = layout.dataset.chatUpdatesUrl || "";
+    if (updatesUrl) {
+        // Cursor for the booking feed: bookings changed after this moment pop into
+        // their client's panel. Starts at page render, advances to the server clock.
+        let since = layout.dataset.chatBookingsSince || "";
+        const maxId = () =>
+            [...layout.querySelectorAll("[data-message-id]")].reduce(
+                (max, node) => Math.max(max, Number(node.dataset.messageId) || 0),
+                0,
+            );
+
+        const setSidebarBadge = (n) => {
+            document.querySelectorAll("[data-chat-unread-badge]").forEach((b) => {
+                b.textContent = n > 9 ? "9+" : String(n);
+                b.hidden = !n;
+            });
+        };
+
+        let busy = false;
+        const poll = () => {
+            if (busy || document.hidden) return;
+            busy = true;
+            fetch(
+                `${updatesUrl}?after=${maxId()}&since=${encodeURIComponent(since)}`,
+                { headers: { Accept: "application/json" } },
+            )
+                .then((res) => (res.ok ? res.json() : null))
+                .then((data) => {
+                    if (!data) return;
+                    let sawNewConversation = false;
+                    (data.messages || []).forEach((message) => {
+                        const panel = document.getElementById(
+                            `chat-${message.conversation_id}`,
+                        );
+                        const btn = layout.querySelector(
+                            `[data-chat-open="chat-${message.conversation_id}"]`,
+                        );
+                        if (!panel || !btn) {
+                            // A client's very first message: the conversation did not
+                            // exist when the page rendered, so there is no row/panel yet.
+                            sawNewConversation = true;
+                            return;
+                        }
+                        const log = panel.querySelector("[data-chat-log]");
+                        if (!log || !appendIncoming(log, message, panel)) return;
+
+                        // Refresh the chat-list row: preview, time, then move it up.
+                        const li = btn.closest("[data-chat-item]");
+                        const text =
+                            message.body ||
+                            (message.attachments?.length ? "Sent an attachment" : "");
+                        const nameEl = btn.querySelector(".chat-item__name");
+                        const preview = btn.querySelector("[data-chat-preview]");
+                        if (preview)
+                            preview.textContent = `${nameEl ? nameEl.textContent : "Client"}: ${text}`;
+                        const when = btn.querySelector("[data-chat-when]");
+                        if (when) when.textContent = "now";
+                        if (li) list.prepend(li);
+
+                        if (panel.hidden) {
+                            // Not the open chat: flag it unread.
+                            if (li) {
+                                li.dataset.unread = String((+li.dataset.unread || 0) + 1);
+                                const badge = btn.querySelector("[data-chat-badge]");
+                                if (badge) {
+                                    badge.textContent = li.dataset.unread;
+                                    badge.hidden = false;
+                                }
+                            }
+                        } else {
+                            // Open chat: show it and clear it right away.
+                            readDone.delete(panel.id);
+                            markPanelRead(panel);
+                        }
+                    });
+
+                    // Bookings: drop each new card into its client's panel.
+                    (data.bookings || []).forEach((booking) => {
+                        const panel = document.getElementById(
+                            `chat-${booking.conversation_id}`,
+                        );
+                        const log = panel?.querySelector("[data-chat-log]");
+                        if (log) appendBooking(log, panel, booking);
+                    });
+                    if (data.bookings_synced_at) since = data.bookings_synced_at;
+
+                    setSidebarBadge(data.unread || 0);
+
+                    // New conversation: reload once so its row and full thread render
+                    // in, but never clobber a draft the admin is typing.
+                    if (sawNewConversation) {
+                        const typing = [...layout.querySelectorAll("[data-chat-input]")].some(
+                            (input) => input.value.trim() !== "",
+                        );
+                        if (!typing) {
+                            window.location.reload();
+                            return;
+                        }
+                    }
+
+                    applyFilters();
+                })
+                .catch(() => {})
+                .finally(() => {
+                    busy = false;
+                });
+        };
+
+        setInterval(poll, 5000);
+        poll();
+    }
 }

@@ -15,6 +15,11 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
+    public function conversations(): HasMany
+    {
+        return $this->hasMany(Conversation::class)->latest('last_message_at');
+    }
+
     /**
      * The attributes that are mass assignable.
      *

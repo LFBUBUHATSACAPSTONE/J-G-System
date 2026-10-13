@@ -62,6 +62,9 @@
           @if ($isActive) aria-current="page" @endif>
           <i class="ph ph-{{ $item['icon'] }}" aria-hidden="true"></i>
           <span>{{ $item['label'] }}</span>
+          @if (($item['route'] ?? null) === 'user.account.messages' && ! empty($chatUnread))
+          <span class="admin-sidebar__badge" data-chat-unread-badge>{{ $chatUnread > 9 ? '9+' : $chatUnread }}<span class="visually-hidden"> unread messages</span></span>
+          @endif
         </a>
         @else
         <span class="{{ $linkClass }}" aria-disabled="true">

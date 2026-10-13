@@ -16,7 +16,9 @@
   <main class="admin-content admin-messages">
     <x-admin.page-header />
 
-    <div class="admin-messages__layout" data-messages data-view="list">
+    <div class="admin-messages__layout" data-messages data-view="list"
+      data-chat-updates-url="{{ Route::has('admin.messages.updates') ? route('admin.messages.updates') : '' }}"
+      data-chat-bookings-since="{{ now()->toIso8601String() }}">
       <section class="admin-messages__side" aria-labelledby="chatListTitle">
         <h2 id="chatListTitle" class="admin-messages__title">Chat List</h2>
 
@@ -40,8 +42,8 @@
           @php
           $last = collect($c['items'])->where('type', 'message')->last();
           $first = Str::before($c['client']['name'], ' ');
-          $text = ! empty($last['body']) ? $last['body'] : 'Sent an attachment';
-          $preview = ($last['from'] === 'admin' ? 'You' : $first) . ': ' . $text;
+          $text = $last && ! empty($last['body']) ? $last['body'] : ($last ? 'Sent an attachment' : 'No messages yet');
+          $preview = $last && ($last['from'] === 'admin') ? 'You: ' . $text : ($last ? $first . ': ' . $text : $text);
           @endphp
           <li data-chat-item data-name="{{ Str::lower($c['client']['name']) }}" data-unread="{{ $c['unread'] }}">
             <button type="button" class="chat-item{{ $loop->first ? ' is-active' : '' }}" data-chat-open="chat-{{ $c['id'] }}" aria-controls="chat-{{ $c['id'] }}" @if ($loop->first) aria-current="true" @endif>
@@ -51,7 +53,7 @@
                 <span class="chat-item__preview" data-chat-preview>{{ Str::limit($preview, 34) }}</span>
               </span>
               <span class="chat-item__meta">
-                <time data-chat-when>{{ $last['at']->diffForHumans(null, true, true) }}</time>
+                <time data-chat-when>{{ $last ? $last['at']->diffForHumans(null, true, true) : '' }}</time>
                 <span class="chat-item__badge" data-chat-badge @if (! $c['unread']) hidden @endif>{{ $c['unread'] }}<span class="visually-hidden"> unread</span></span>
               </span>
             </button>
@@ -65,7 +67,13 @@
 
       <section class="admin-messages__panels" aria-label="Conversation">
         @foreach ($conversations as $c)
-        <div class="chat-panel" id="chat-{{ $c['id'] }}" data-chat @if (! $loop->first) hidden @endif>
+        <div class="chat-panel" id="chat-{{ $c['id'] }}" data-chat data-chat-read-url="{{ Route::has('admin.messages.show') ? route('admin.messages.show', ['conversation' => $c['id']]) : '' }}"
+          data-chat-self="admin"
+          data-chat-other="{{ $c['client']['name'] }}"
+          data-edit-window-minutes="{{ (int) config('admin.messages.edit_window_minutes') }}"
+          data-chat-update-url="{{ Route::has('admin.messages.update') ? route('admin.messages.update', ['message' => '__MESSAGE__']) : '' }}"
+          data-chat-delete-url="{{ Route::has('admin.messages.destroy') ? route('admin.messages.destroy', ['message' => '__MESSAGE__']) : '' }}"
+          @if (! $loop->first) hidden @endif>
           <header class="chat-panel__head">
             <button type="button" class="chat-panel__back" aria-label="Back to chat list" data-chat-back>
               <x-chat.icon name="chevron-left" />

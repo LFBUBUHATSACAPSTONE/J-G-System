@@ -10,20 +10,25 @@ $event = $booking['event'];
 $start = $event['start_date'];
 $end = $event['end_date'] ?? $start;
 
-$past = in_array($key, config('admin.messages.past_statuses'), true) || $end->copy()->endOfDay()->isPast();
+$past = in_array($key, config('admin.messages.past_statuses'), true)
+    || ($end !== null && $end->copy()->endOfDay()->isPast());
 $tone = $past ? 'past' : ($status['badge']['tone'] ?? 'warning');
 
-if ($start->isSameDay($end)) {
+if ($start === null) {
+$schedule = 'Date to be scheduled';
+} elseif ($end !== null && $start->isSameDay($end)) {
 $schedule = $start->format('F j, Y');
-} elseif ($start->year === $end->year) {
+} elseif ($end !== null && $start->year === $end->year) {
 $schedule = $start->format('F j') . ' – ' . $end->format('F j, Y');
-} else {
+} elseif ($end !== null) {
 $schedule = $start->format('F j, Y') . ' – ' . $end->format('F j, Y');
+} else {
+$schedule = $start->format('F j, Y');
 }
 $time = trim(($event['start_time'] ?? '') . ' – ' . ($event['end_time'] ?? ''), ' –');
 @endphp
 
-<article class="chat-booking{{ $past ? ' is-past' : '' }}" aria-label="Booking {{ $booking['reference'] }}{{ $past ? ', finished' : '' }}">
+<article class="chat-booking{{ $past ? ' is-past' : '' }}" data-booking-id="{{ $booking['id'] }}" aria-label="Booking {{ $booking['reference'] }}{{ $past ? ', finished' : '' }}">
   <header class="chat-booking__head">
     <div>
       <h3 class="chat-booking__package">{{ $booking['package']['name'] }}</h3>
