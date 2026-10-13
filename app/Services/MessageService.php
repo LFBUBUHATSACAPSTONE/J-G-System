@@ -91,25 +91,28 @@ class MessageService
 
     /**
      * Booking cards for a thread, rendered AFTER the messages on BOTH sides: every
-     * booking the client owns whose status is listed in
-     * config('admin.messages.reflected_booking_statuses') (approved by default), plus
-     * the conversation's own linked booking whatever its status — so an in-progress
-     * request still shows. Deduplicated by id and ordered oldest first, so the most
-     * recent booking is the last item and the latest booking is easy to determine.
+     * booking the client owns, plus the conversation's own linked booking. By default
+     * that is EVERY booking whatever its status (config
+     * 'admin.messages.reflected_booking_statuses' can narrow it to a status list), so a
+     * booking card is never dropped once it appears and each new booking simply adds a
+     * card. Deduplicated by id and ordered oldest first, so the most recent booking is
+     * the last item and the latest booking is easy to determine.
      *
      * `at` is "now" on purpose: the cards trail the chat under a Today heading rather
      * than claiming an old calendar day after newer messages.
      */
     private function bookingItems(Conversation $conversation): array
     {
-        $statuses = config('admin.messages.reflected_booking_statuses', ['approved']);
+        $statuses = config('admin.messages.reflected_booking_statuses');
 
         $bookings = collect();
 
-        if ($conversation->user_id && ! empty($statuses)) {
+        if ($conversation->user_id) {
             $bookings = Booking::query()
                 ->where('user_id', $conversation->user_id)
-                ->whereIn('status', $statuses)
+                // A null/empty list means "every booking": nothing is filtered out, so a
+                // status change (e.g. declined) can never make an existing card vanish.
+                ->when(is_array($statuses) && $statuses !== [], fn ($query) => $query->whereIn('status', $statuses))
                 ->with(['eventDetails', 'schedule', 'payment', 'package'])
                 ->orderBy('submitted_at')
                 ->orderBy('id')

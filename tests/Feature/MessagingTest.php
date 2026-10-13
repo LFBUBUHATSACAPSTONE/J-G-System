@@ -741,17 +741,69 @@ class MessagingTest extends TestCase
             ->assertSee('PEN-200');
     }
 
-    public function test_unapproved_bookings_are_not_reflected(): void
+    public function test_every_booking_is_reflected_whatever_its_status(): void
     {
         $this->withoutVite();
         $user = $this->makeUser();
         $this->makeBooking($user, 'declined', 'DEC-300');
+        $this->makeBooking($user, 'pending', 'PEN-301');
+
+        $this->makeConversation($user, [['from' => 'client', 'body' => 'Hello']]);
+
+        // Nothing is filtered out: a booking card, once there, must never disappear.
+        $this->actingAs($user)->get(route('user.account.messages'))
+            ->assertOk()
+            ->assertSee('DEC-300')
+            ->assertSee('PEN-301');
+
+        $this->get(route('admin.messages'))
+            ->assertOk()
+            ->assertSee('DEC-300')
+            ->assertSee('PEN-301');
+    }
+
+    public function test_the_statuses_config_can_narrow_the_reflected_bookings(): void
+    {
+        $this->withoutVite();
+        Config::set('admin.messages.reflected_booking_statuses', ['approved']);
+
+        $user = $this->makeUser();
+        $this->makeBooking($user, 'approved', 'ONLY-400');
+        $this->makeBooking($user, 'pending', 'ONLY-401');
 
         $this->makeConversation($user, [['from' => 'client', 'body' => 'Hello']]);
 
         $this->actingAs($user)->get(route('user.account.messages'))
             ->assertOk()
-            ->assertDontSee('DEC-300');
+            ->assertSee('ONLY-400')
+            ->assertDontSee('ONLY-401');
+    }
+
+    public function test_a_new_booking_adds_a_card_without_removing_the_old_one(): void
+    {
+        $user = $this->makeUser();
+        $first = $this->makeBooking($user, 'approved', 'KEEP-500');
+        $conversation = $this->makeConversation($user, [['from' => 'client', 'body' => 'Hi']]);
+
+        // The first booking is a day older, so the newest is unambiguously last.
+        DB::table('bookings')->where('id', $first->id)->update(['submitted_at' => now()->subDay()]);
+
+        // The client books again: a brand-new pending request.
+        $second = $this->makeBooking($user, 'pending', 'KEEP-501');
+
+        $thread = Conversation::with([
+            'booking.eventDetails', 'booking.schedule', 'booking.payment', 'booking.package',
+            'messages.replyTo',
+        ])->findOrFail($conversation->id);
+
+        $items = app(MessageService::class)->formatConversationForUser($thread)['items'];
+        $cards = array_values(array_filter($items, fn ($item) => $item['type'] === 'booking'));
+
+        // Both cards are present, oldest first: booking again never drops the previous one.
+        $this->assertSame(
+            [$first->id, $second->id],
+            array_map(fn ($item) => $item['booking']['id'], $cards),
+        );
     }
 
     // ----------------------------------------------------- edit window

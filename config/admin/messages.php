@@ -8,10 +8,12 @@ return [
   // end date has passed is also grey, whatever its status.
   'past_statuses' => ['completed', 'cancelled', 'declined'],
 
-  // Booking statuses reflected as cards at the top of EVERY chat thread (on both sides), in
-  // addition to the conversation's own linked booking. "approved" = requests the client has
-  // actually secured, so both sides always see them while talking.
-  'reflected_booking_statuses' => ['approved'],
+  // Bookings reflected as cards AFTER the messages in EVERY chat thread (both sides), in
+  // addition to the conversation's own linked booking. `null` = EVERY booking the client
+  // has, whatever its status, so once a booking card is in the thread a later status
+  // change never removes it and a new booking simply adds another card. Set a status list
+  // (e.g. ['approved']) to narrow it down instead.
+  'reflected_booking_statuses' => null,
 
   // How long after sending a message its sender can still edit or unsend it, in minutes.
   // Outside the window the buttons disappear and the server refuses the change. 0 = no limit.
