@@ -27,6 +27,9 @@ class BookingHistoryController extends Controller
         // rule is a whereHas on the relation (not a column on `bookings`).
         $bookings = Booking::query()
             ->with(['eventDetails', 'schedule', 'payment', 'package'])
+            // The page and the month filter both key off the event dates, so a booking without a
+            // schedule (incomplete legacy row) is skipped instead of breaking the view.
+            ->whereHas('schedule')
             ->where(function ($query) {
                 $query->whereIn('status', config('admin.history.terminal_statuses'))
                     ->orWhere(function ($query) {

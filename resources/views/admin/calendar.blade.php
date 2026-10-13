@@ -1,4 +1,4 @@
-{{-- Admin Calendar page (front end only). Variables from the controller:
+{{-- Admin Calendar page. Variables from the controller:
        $month    => Carbon, any day in the month to show (the page works out the full grid)
        $events   => bookings that touch the visible grid (shape in docs/admin-bookings.md; the
                     page reads status, reference, client.name, package.name and event.*)
