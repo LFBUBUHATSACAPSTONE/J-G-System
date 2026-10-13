@@ -40,9 +40,9 @@ Route::get('/admin/booking-history', function () {
     'end_time' => $end,
   ];
 
-  $paid = ['label' => 'GCash - Full Payment', 'status' => 'Fully Paid', 'state' => 'paid', 'proof_url' => 'data:image/svg+xml;utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22320%22 height=%22200%22%3E%3Crect width=%22320%22 height=%22200%22 fill=%22%23ddd%22/%3E%3Ctext x=%22160%22 y=%22105%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2218%22 fill=%22%23555%22%3ESample proof%3C/text%3E%3C/svg%3E'];
-  $partial = ['label' => 'GCash - Down Payment', 'status' => 'Down payment paid', 'state' => 'partial'];
-  $unpaid = ['label' => 'GCash - Down Payment', 'status' => 'Awaiting verification', 'state' => 'pending'];
+  $paid = ['label' => 'Full Payment', 'status' => 'Fully Paid', 'state' => 'paid', 'proof_url' => 'data:image/svg+xml;utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22320%22 height=%22200%22%3E%3Crect width=%22320%22 height=%22200%22 fill=%22%23ddd%22/%3E%3Ctext x=%22160%22 y=%22105%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2218%22 fill=%22%23555%22%3ESample proof%3C/text%3E%3C/svg%3E'];
+  $partial = ['label' => 'Down Payment', 'status' => 'Down payment paid', 'state' => 'partial'];
+  $unpaid = ['label' => 'Down Payment', 'status' => 'Awaiting verification', 'state' => 'pending'];
 
   $all = [
     // Completed (from the day after the end date).
@@ -112,7 +112,7 @@ Route::get('/admin/booking-history', function () {
       'status' => 'cancelled',
       'client' => $client('RJ Valmadrid', 'rj@example.com'),
       'event' => $event('Sample Event', 'Others', -5, -5, '3:00 PM', '8:00 PM', null, 'Indoor'),
-      'payment' => ['label' => 'GCash - Full Payment', 'status' => 'Refund pending', 'state' => 'pending'],
+      'payment' => ['label' => 'Full Payment', 'status' => 'Refund pending', 'state' => 'pending'],
       'package' => ['id' => 'budget-lite', 'name' => 'Budget Lite', 'price' => 8000]
     ],
     [

@@ -37,7 +37,7 @@ return [
     'admin.bookings' => [
       'heading'     => 'Bookings',
       'subheading'  => 'Review requests and verify payments',
-      'description' => 'Review, confirm or decline incoming booking requests and verify GCash payments.',
+      'description' => 'Review, confirm or decline incoming booking requests and verify payments.',
     ],
     'admin.messages' => [
       'heading'     => 'Messages',

@@ -43,6 +43,7 @@ class BookingFlowTest extends TestCase
 
         Schema::connection('sqlite')->create('bookings', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id')->nullable()->index();
             $table->string('reference')->unique();
             $table->string('status')->index();
             $table->string('client_name');
@@ -237,6 +238,7 @@ class BookingFlowTest extends TestCase
             'client_address' => 'Test Address',
             'submitted_at' => now(),
         ], array_intersect_key($data, array_flip([
+            'user_id',
             'reference',
             'status',
             'client_name',

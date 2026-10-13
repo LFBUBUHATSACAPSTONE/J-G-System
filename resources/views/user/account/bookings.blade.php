@@ -37,7 +37,10 @@ $method = data_get($b, 'payment.method');
 $paid = data_get($b, 'payment.amount');
 $methodLabel = $method === 'down' ? 'Down payment' : ($method === 'full' ? 'Full payment' : '');
 $stateLabel = $paymentStates[data_get($b, 'payment.state')] ?? '';
-$balance = $method === 'down' && $price !== null && $paid !== null ? max((float) $price - (float) $paid, 0) : null;
+// Balance: price minus what was paid. A fully paid booking has nothing left to pay.
+$balance = $price !== null && $paid !== null && $method === 'down'
+? max((float) $price - (float) $paid, 0)
+: ($method === 'full' && data_get($b, 'payment.state') === 'paid' ? 0 : null);
 
 $canCancel = in_array($status, $cfg['cancellable'] ?? [], true) && $start->gt($today);
 
@@ -144,6 +147,12 @@ $emptyCopy = [
               <dt><i class="ph ph-package" aria-hidden="true"></i><span class="visually-hidden">Package</span></dt>
               <dd>{{ $payload['package'] }}@if ($payload['price']) <span class="account-booking__price">{{ $payload['price'] }}</span>@endif</dd>
             </div>
+            @if ($payload['payment'])
+            <div>
+              <dt><i class="ph ph-wallet" aria-hidden="true"></i><span class="visually-hidden">Payment</span></dt>
+              <dd>{{ $payload['payment'] }}@if ($payload['balance'] && (float) preg_replace('/[^0-9.]/', '', $payload['balance']) > 0) <span class="account-booking__price">Balance {{ $payload['balance'] }}</span>@endif</dd>
+            </div>
+            @endif
           </dl>
 
           <footer class="account-booking__actions" data-booking-actions>
