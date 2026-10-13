@@ -7,8 +7,6 @@
   <x-site-head></x-site-head>
 </head>
 
-<x-chat.widget :conversation="$chatConversation ?? null" :authenticated="auth()->check()" />
-
 <body>
   @include('components.landing.navigation')
 
@@ -40,6 +38,8 @@
   <x-booking.package :packages="$packages" />
   @include('components.landing.package-comparison')
   @include('components.landing.footer')
+
+  <x-chat.widget :conversation="$chatConversation ?? null" :authenticated="auth()->check()" />
 </body>
 
 </html>

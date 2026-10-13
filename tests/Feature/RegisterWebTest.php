@@ -151,7 +151,7 @@ class RegisterWebTest extends TestCase
         $this->assertAuthenticated();
         $this->get(route('user.landing'))
             ->assertOk()
-            ->assertSee('data-chat-open', false)
+            ->assertDontSee('data-chat-open', false)
             ->assertSee('aria-label="Profile"', false);
 
         $forgotResponse = $this->postJson('/password/email', [
@@ -274,7 +274,7 @@ class RegisterWebTest extends TestCase
         Mail::assertNothingOutgoing();
     }
 
-    public function test_landing_header_shows_messages_and_profile_icons_to_authenticated_users(): void
+    public function test_landing_header_shows_profile_icon_to_authenticated_users(): void
     {
         $this->get(route('user.landing'))
             ->assertOk()
@@ -289,7 +289,7 @@ class RegisterWebTest extends TestCase
         $this->actingAs(User::factory()->create())
             ->get(route('user.landing'))
             ->assertOk()
-            ->assertSee('data-chat-open', false)
+            ->assertDontSee('data-chat-open', false)
             ->assertSee('aria-label="Profile"', false)
             ->assertSee('href="' . route('home') . '"', false)
             ->assertSee('id="landing-book-now" href="' . route('user.booking') . '"', false)
@@ -335,5 +335,4 @@ class RegisterWebTest extends TestCase
             ->assertCookie('google_oauth_state', $redirectQuery['state'] ?? null);
         $this->assertNotEmpty($redirectQuery['state'] ?? null);
     }
-
 }

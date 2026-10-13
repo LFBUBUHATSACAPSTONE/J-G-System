@@ -255,6 +255,7 @@ class BookingController extends Controller
                 $booking = Booking::create(array_merge(
                     $original->only(['client_name', 'client_email', 'client_phone', 'client_address']),
                     [
+                        'user_id' => $original->user_id,
                         'reference' => $this->newReference(),
                         'status' => 'pending',
                         'package_id' => $original->package_id,
@@ -337,7 +338,9 @@ class BookingController extends Controller
             ]);
         }
 
-        [$booking, $fullDates] = DB::transaction(function () use ($draft, $package, $data, $paymentCents) {
+        $userId = $request->user()?->id;
+
+        [$booking, $fullDates] = DB::transaction(function () use ($draft, $package, $data, $paymentCents, $userId) {
             $fullDates = $this->fullDatesBetween(
                 Carbon::parse($draft['event_start_date']),
                 Carbon::parse($draft['event_end_date']),
@@ -348,6 +351,7 @@ class BookingController extends Controller
             }
 
             $booking = Booking::create([
+                'user_id' => $userId,
                 'reference' => $this->newReference(),
                 'status' => 'pending',
                 'client_name' => $draft['client_name'],
@@ -443,14 +447,15 @@ class BookingController extends Controller
         if (! $booking) {
             return [null, 'This booking cannot be rescheduled.'];
         }
-        if ($booking->status !== 'user_cancelled') {
-            return [null, 'Only a booking you cancelled can be rescheduled.'];
+
+        // A booking linked to an account can only be rescheduled by that account.
+        if ($booking->user_id !== null && (int) $booking->user_id !== (int) auth()->id()) {
+            return [null, 'This booking cannot be rescheduled.'];
         }
-        if (Booking::where('rescheduled_from_id', $booking->id)->exists()) {
-            return [null, 'This booking was already rescheduled once.'];
-        }
-        if (! $booking->schedule || $booking->schedule->event_start_date->format('Y-m') < now()->format('Y-m')) {
-            return [null, 'The original month has passed, so this booking can no longer be rescheduled.'];
+
+        $reason = $booking->rescheduleBlockReason();
+        if ($reason) {
+            return [null, $reason];
         }
 
         return [$booking, null];

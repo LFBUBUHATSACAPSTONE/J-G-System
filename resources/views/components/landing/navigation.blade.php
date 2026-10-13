@@ -21,25 +21,28 @@
           <li class="nav-item"><a href="{{ route('user.landing') }}#packages" class="nav-link" data-nav-target="packages">Packages</a></li>
           <li class="nav-item"><a href="{{ route('user.landing') }}#inclusions" class="nav-link" data-nav-target="inclusions">Inclusions</a></li>
           <li class="nav-item"><a href="{{ route('user.landing') }}#about" class="nav-link" data-nav-target="about">About</a></li>
+          @auth
+          <li class="nav-item d-lg-none">
+            <a href="{{ route('user.account') }}" class="nav-link">
+              Account
+              @if (($chatUnread ?? 0) > 0)
+              <span class="landing-nav__badge" data-chat-unread-badge>{{ $chatUnread > 9 ? '9+' : $chatUnread }}</span>
+              @endif
+            </a>
+          </li>
+          @endauth
         </ul>
 
         <div class="d-flex gap-3 align-items-center justify-content-center mt-3 mt-lg-0">
           @auth
-          <x-button type="button"
-            data-chat-open
-            aria-label="Messages"
-            aria-expanded="false"
-            aria-controls="chatWidgetPanel"
-            title="Messages"
-            class="landing-nav__icon-button">
-            <x-chat.icon name="chat" />
-          </x-button>
-
-          <a href="{{ route('home') }}"
-            aria-label="Profile"
-            title="Profile"
-            class="landing-nav__icon-button">
+          <a href="{{ route('user.account') }}"
+            aria-label="My account ({{ ($chatUnread ?? 0) > 0 ? ($chatUnread > 9 ? '9+' : $chatUnread).' unread messages' : 'no unread messages' }})"
+            title="My account"
+            class="landing-nav__icon-button d-none d-lg-grid">
             <x-chat.icon name="user" />
+            @if (($chatUnread ?? 0) > 0)
+            <span class="landing-nav__badge" data-chat-unread-badge>{{ $chatUnread > 9 ? '9+' : $chatUnread }}</span>
+            @endif
           </a>
           @else
           <x-button type="button"

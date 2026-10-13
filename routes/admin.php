@@ -16,6 +16,7 @@ require __DIR__ . '/admin/messages.php';
 require __DIR__ . '/admin/booking-history.php';
 require __DIR__ . '/admin/packages.php';
 require __DIR__ . '/admin/calendar.php';
+require __DIR__ . '/admin/account.php';
 
 // When admin login exists, protect every section at once by wrapping the requires above:
 //

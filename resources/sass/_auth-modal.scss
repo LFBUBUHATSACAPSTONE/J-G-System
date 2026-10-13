@@ -335,16 +335,22 @@
     .auth-modal__toggle-password {
         position: absolute;
         right: 0.9rem;
-        top: 2.7rem;
+        top: 2.5rem;
         background: none;
         border: none;
         padding: 0;
         line-height: 1;
 
-        img {
-            width: 18px;
-            height: 18px;
+        i {
+            display: block;
+            font-size: 1.25rem;
+            color: $auth-text-primary;
             opacity: 0.6;
+        }
+
+        &:hover i,
+        &:focus-visible i {
+            opacity: 1;
         }
     }
 

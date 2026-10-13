@@ -1,0 +1,19 @@
+// Account entry: its own Vite entry. It reuses the admin sidebar, page header and tokens so the two
+// areas look the same; only the account-specific pieces live in ./account/.
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+// Shared tokens first, then Bootstrap, then admin tokens
+@import "user-variables";
+@import "bootstrap/scss/bootstrap";
+@import "admin-variables";
+
+@import "./admin/sidebar";
+@import "./admin/page-header";
+
+@import "./account/account";
+@import "./account/profile";
+@import "./account/bookings";
+@import "./chat/chat";
+@import "./account/messages";
+@import "./account/security";
+@import "./account/delete";

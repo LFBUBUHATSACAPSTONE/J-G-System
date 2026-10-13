@@ -1,5 +1,6 @@
-// User-side floating chat: open/close, focus handling, and the shared composer.
-import { initChat, scrollLog } from "./chat.js";
+// User-side floating chat: open/close, focus handling, the shared composer and the
+// live unread/reply stream.
+import { initChat, initChatStream, scrollLog } from "./chat.js";
 
 const root = document.querySelector("[data-chat-widget]");
 
@@ -7,7 +8,6 @@ if (root) {
     const fab = root.querySelector("[data-chat-toggle]");
     const panel = root.querySelector("[data-chat-panel]");
     const log = root.querySelector("[data-chat-log]");
-    const dot = root.querySelector("[data-chat-dot]");
     let returnFocusTarget = fab;
 
     const setOpen = (open, trigger = returnFocusTarget) => {
@@ -17,7 +17,8 @@ if (root) {
             button.setAttribute("aria-expanded", String(open));
         });
         if (open) {
-            dot?.remove(); // unread is cleared by the backend later; here it just hides
+            // The backend marks this client's thread read; the badge clears and stays clear.
+            root.dispatchEvent(new CustomEvent("chat:opened", { bubbles: true }));
             if (log) scrollLog(log);
             (
                 root.querySelector("[data-chat-input]") ||
@@ -40,4 +41,5 @@ if (root) {
     });
 
     initChat(root);
+    initChatStream(root);
 }

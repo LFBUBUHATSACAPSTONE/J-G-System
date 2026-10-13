@@ -40,9 +40,22 @@
           @if ($isActive) aria-current="page" @endif>
           <i class="ph ph-{{ $item['icon'] }}" aria-hidden="true"></i>
           <span>{{ $item['label'] }}</span>
+          @if ($item['route'] === 'admin.messages' && ! empty($adminChatUnread))
+          <span class="admin-sidebar__badge" data-chat-unread-badge>{{ $adminChatUnread > 9 ? '9+' : $adminChatUnread }}<span class="visually-hidden"> unread messages</span></span>
+          @endif
         </a>
       </li>
       @endforeach
     </ul>
   </nav>
+
+  <div class="admin-sidebar__footer">
+    <form method="POST" action="{{ Route::has('logout') ? route('logout') : '#' }}">
+      @csrf
+      <button type="submit" class="admin-sidebar__link admin-sidebar__logout">
+        <i class="ph ph-sign-out" aria-hidden="true"></i>
+        <span>Log out</span>
+      </button>
+    </form>
+  </div>
 </aside>

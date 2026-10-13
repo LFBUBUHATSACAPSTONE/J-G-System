@@ -25,6 +25,16 @@
   </div>
   @endif
 
+  <div class="chat-composer__reply" data-chat-reply hidden>
+    <div class="chat-composer__reply-body">
+      <span class="chat-composer__reply-label">Replying to <span data-chat-reply-who>message</span></span>
+      <span class="chat-composer__reply-text" data-chat-reply-text></span>
+    </div>
+    <button type="button" class="chat-composer__reply-cancel" aria-label="Cancel reply" data-chat-reply-cancel>
+      <x-chat.icon name="x" />
+    </button>
+  </div>
+
   <ul class="chat-composer__files" data-chat-files aria-label="Attached files" hidden></ul>
   <p class="chat-composer__error" role="alert" data-chat-error hidden></p>
 

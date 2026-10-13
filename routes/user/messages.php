@@ -1,48 +1,73 @@
 <?php
 
+use App\Http\Controllers\User\MessageController;
+use App\Models\Conversation;
+use App\Services\MessageService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Route;
 
-// User-side chat (the floating widget on the landing page). Required from routes/user.php.
-// FRONT-END STUB: nothing is saved and nothing reaches the admin Messages page yet.
-// Keep the route NAME `user.messages.send`: the widget builds its form action from it.
-
-// Sample thread so the widget can be previewed. Delete this composer when the real data exists
-// and pass `$chatConversation` from the landing controller instead.
+// Landing page chat widget: give the widget this client's real thread when they
+// are logged in, an empty thread for guests. The query is guarded so a missing
+// table or a DB hiccup never breaks the public landing page.
 View::composer('user.landing', function ($view) {
-  $view->with('chatConversation', [
-    'unread' => 1,
-    'items' => [
-      ['type' => 'booking', 'at' => Carbon::now()->subHours(5), 'booking' => [
-        'reference' => '#JG12345',
-        'status' => 'pending',
-        'package' => ['id' => 'modern-glam', 'name' => 'Modern Glam', 'price' => 35000],
-        'event' => [
-          'name' => 'Arjay & Co. Debut',
-          'type' => 'Debut',
-          'location' => 'Marikina Sports Center',
-          'start_date' => Carbon::now()->addDays(20),
-          'end_date' => Carbon::now()->addDays(20),
-          'start_time' => '5:00 PM',
-          'end_time' => '12:00 AM',
-        ],
-      ]],
-      ['type' => 'message', 'from' => 'admin', 'body' => 'Your booking has been approved and confirmed.', 'at' => Carbon::now()->subHours(3), 'attachments' => []],
-    ],
-  ]);
+    $conversation = ['unread' => 0, 'items' => []];
+
+    try {
+        $user = auth()->user();
+
+        if ($user) {
+            $thread = Conversation::with([
+                'booking.eventDetails', 'booking.schedule', 'booking.payment',
+                'booking.package', 'messages.replyTo',
+            ])
+                ->where('user_id', $user->id)
+                ->latest('last_message_at')
+                ->latest('id')
+                ->first();
+
+            if ($thread) {
+                $conversation = app(MessageService::class)->formatConversationForUser($thread);
+            } else {
+                // No thread yet, but the client may already have bookings: show them so
+                // the widget on the landing page reflects their bookings too.
+                $conversation['items'] = app(MessageService::class)->bookingCards($user->id);
+            }
+        }
+    } catch (\Throwable) {
+        $conversation = ['unread' => 0, 'items' => []];
+    }
+
+    $view->with('chatConversation', $conversation);
 });
 
-// Same contract and limits as admin.messages.send.
-Route::post('/messages', function (Request $request) {
-  $att = config('admin.messages.attachments');
+// The unread bubble on the sign-in chat icon and the account sidebar's Messages
+// tab: never queries the DB for guests and never throws for logged-in users.
+View::composer(['components.landing.navigation', 'components.account.sidebar'], function ($view) {
+    $user = auth()->user();
+    $unread = 0;
 
-  $request->validate([
-    'body'          => ['nullable', 'string', 'max:' . config('admin.messages.max_length'), 'required_without:attachments'],
-    'attachments'   => ['nullable', 'array', 'max:' . $att['max_files']],
-    'attachments.*' => ['file', 'mimes:' . $att['mimes'], 'max:' . $att['max_kb']],
-  ]);
+    if ($user) {
+        try {
+            $unread = app(MessageService::class)->unreadCountForUser($user);
+        } catch (\Throwable) {
+            $unread = 0;
+        }
+    }
 
-  return response()->json(['ok' => true]);
-})->name('user.messages.send');
+    $view->with('chatUnread', $unread);
+});
+
+// Send message from user (landing widget and account page).
+Route::post('/messages', [MessageController::class, 'store'])->name('user.messages.send');
+
+// Edit or unsend a message the client already sent. Only their own client messages in
+// their own thread are accepted (checked in the controller).
+Route::patch('/messages/{message}', [MessageController::class, 'update'])->name('user.messages.update');
+Route::delete('/messages/{message}', [MessageController::class, 'destroy'])->name('user.messages.destroy');
+
+// Opening the chat on the user side marks only the admin replies read.
+Route::post('/messages/read', [MessageController::class, 'markRead'])->name('user.messages.read');
+
+// Light polling feed for an open chat: unread count + admin replies after `after`.
+Route::get('/messages/updates', [MessageController::class, 'updates'])->name('user.messages.updates');

@@ -55,6 +55,22 @@ body {
         padding: $sp-6 $sp-4;
     }
 
+    // Log out sits at the bottom of the column, under a rule.
+    &__footer {
+        margin-top: auto;
+        padding: $sp-4;
+        border-top: 1px solid $admin-sidebar-divider;
+    }
+
+    // A <button> gets the browser's grey fill and centred text, so reset it to look exactly like the links.
+    &__logout {
+        width: 100%;
+        background: transparent;
+        text-align: left;
+        font-family: $admin-font-family;
+        cursor: pointer;
+    }
+
     &__list {
         list-style: none;
         margin: 0;
@@ -96,6 +112,25 @@ body {
         }
     }
 
+    // Unread count on the Message tab.
+    &__badge {
+        flex: none;
+        margin-left: auto;
+        min-width: 1.375rem;
+        padding: 0 $sp-2;
+        border-radius: $admin-radius-pill;
+        background: $admin-brand;
+        color: $admin-on-brand;
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1.4;
+        text-align: center;
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
     //  Desktop: the full column from the mockup
     @media (min-width: $admin-sidebar-breakpoint) {
         position: fixed;
@@ -104,11 +139,10 @@ body {
         display: flex;
         flex-direction: column;
 
-        // Closing rule at the bottom of the column (pushed down by the auto margin).
-        &::after {
-            content: "";
-            margin: auto $sp-8 $sp-6;
-            border-top: 1px solid $admin-sidebar-divider;
+        // The footer (Log out) draws the closing rule at the bottom of the column, pushed down by the auto margin.
+        &__footer {
+            margin: auto $sp-8 0;
+            padding: $sp-6 0;
         }
 
         &__header {

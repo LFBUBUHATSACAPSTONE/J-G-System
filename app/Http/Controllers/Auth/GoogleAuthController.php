@@ -68,6 +68,13 @@ class GoogleAuthController extends Controller
                 return $this->failure('Google did not provide a verified email address for this account.');
             }
 
+            $closed = User::onlyTrashed()
+                ->where(fn ($query) => $query->where('google_id', $googleId)->orWhereRaw('LOWER(email) = ?', [$email]))
+                ->exists();
+            if ($closed) {
+                return $this->failure('This account has been deleted and can no longer be used to sign in.');
+            }
+
             $user = User::where('google_id', $googleId)->first();
 
             if (! $user) {

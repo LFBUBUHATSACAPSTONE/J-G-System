@@ -13,6 +13,7 @@ class Booking extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'reference',
         'status',
         'client_name',
@@ -22,13 +23,34 @@ class Booking extends Model
         'package_id',
         'rescheduled_from_id',
         'submitted_at',
+        'approved_at',
     ];
 
     protected function casts(): array
     {
         return [
             'submitted_at' => 'datetime',
+            'approved_at' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        // Stamp the exact moment a booking becomes approved. The chat drops the booking
+        // card at this instant and NEVER moves it, so only a status CHANGE to "approved"
+        // sets it, and only when it is still empty: a later edit keeps the original time.
+        static::saving(function (self $booking): void {
+            if ($booking->isDirty('status')
+                && $booking->status === 'approved'
+                && $booking->approved_at === null) {
+                $booking->approved_at = now();
+            }
+        });
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function eventDetails(): HasOne
@@ -105,6 +127,70 @@ class Booking extends Model
                 'price' => $package?->price === null ? null : (float) $package->price,
             ],
             'submitted_at' => $this->submitted_at,
+        ];
+    }
+
+    /**
+     * Why this booking cannot be rescheduled, or null when it can. The one place for the rule, used by
+     * the booking flow (BookingController) and by My Bookings (Account\AccountBookingController).
+     *
+     * Pass $alreadyRescheduled when the caller already knows it (a list screen asks once for all
+     * bookings instead of once per booking).
+     */
+    public function rescheduleBlockReason(?bool $alreadyRescheduled = null): ?string
+    {
+        if ($this->status !== 'user_cancelled') {
+            return 'Only a booking you cancelled can be rescheduled.';
+        }
+
+        $alreadyRescheduled ??= static::query()->where('rescheduled_from_id', $this->id)->exists();
+        if ($alreadyRescheduled) {
+            return 'This booking was already rescheduled once.';
+        }
+
+        $this->loadMissing('schedule');
+        if (! $this->schedule
+            || ! $this->schedule->event_start_date
+            || $this->schedule->event_start_date->format('Y-m') < now()->format('Y-m')) {
+            return 'The original month has passed, so this booking can no longer be rescheduled.';
+        }
+
+        return null;
+    }
+
+    /**
+     * The shape the My Bookings page renders (resources/views/user/account/bookings.blade.php):
+     * the admin array without `client`, plain Y-m-d dates, `payment.amount` and the reschedule fields.
+     */
+    public function toAccountArray(?bool $alreadyRescheduled = null): array
+    {
+        $data = $this->toAdminArray();
+        $payment = $this->payment;
+
+        $reason = $this->status === 'user_cancelled'
+            ? $this->rescheduleBlockReason($alreadyRescheduled)
+            : null;
+
+        return [
+            'id' => $data['id'],
+            'reference' => $data['reference'],
+            'status' => $data['status'],
+            'package' => [
+                'id' => $data['package']['id'],
+                'name' => $data['package']['name'],
+                'price' => $data['package']['price'],
+            ],
+            'event' => array_merge($data['event'], [
+                'start_date' => $data['event']['start_date']?->toDateString(),
+                'end_date' => $data['event']['end_date']?->toDateString(),
+            ]),
+            'payment' => [
+                'method' => $data['payment']['method'],
+                'state' => $data['payment']['state'],
+                'amount' => $payment?->payment_amount === null ? null : (float) $payment->payment_amount,
+            ],
+            'can_reschedule' => $this->status === 'user_cancelled' && $reason === null,
+            'reschedule_note' => $reason,
         ];
     }
 

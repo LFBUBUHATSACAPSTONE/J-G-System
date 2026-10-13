@@ -1,0 +1,353 @@
+// Account > My Bookings. Tokens only; spacing on the 4px grid ($sp-*), fluid type via admin-fluid().
+// Proximity: items inside a card 8 to 12px, card to card 16 to 24px.
+// Load order (account.scss): after account/_account.scss, which defines .account-card, .account-badge
+// and .account-btn. This file only adds modifiers to them.
+
+// Badge tones the Profile page did not need.
+.account-badge {
+    &--danger {
+        background: $admin-danger-soft;
+        color: $admin-danger-text;
+    }
+
+    &--brand {
+        background: $admin-brand-soft;
+        color: $admin-brand-text;
+    }
+
+    &--neutral {
+        background: $admin-panel-bg;
+        color: $admin-text-muted;
+    }
+}
+
+// Outline danger button (Cancel booking): the filled .account-btn--danger is kept for the confirm.
+.account-btn--danger-outline {
+    border-color: $admin-danger-border;
+    background: transparent;
+    color: $admin-danger-text;
+
+    &:hover:not(:disabled) {
+        background: $admin-danger-soft;
+    }
+}
+
+a.account-btn {
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
+}
+
+.account-bookings {
+    display: flex;
+    flex-direction: column;
+    gap: $sp-4;
+    max-width: 60rem;
+
+    &__list {
+        display: flex;
+        flex-direction: column;
+        gap: $sp-4;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+
+        @media (min-width: 576px) {
+            gap: $sp-6;
+        }
+    }
+
+    // One empty message per tab, shown by bookings.js.
+    &__empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: $sp-3;
+        padding-block: $sp-8;
+        text-align: center;
+
+        > i {
+            color: $admin-text-subtle;
+            font-size: 2.5rem;
+            line-height: 1;
+        }
+
+        &-title {
+            margin: 0;
+            font-size: admin-fluid(1.125);
+            font-weight: 600;
+        }
+    }
+}
+
+// Filter tabs. They scroll inside their own row at 320px, never the page.
+.account-tabs {
+    display: flex;
+    gap: $sp-2;
+    overflow-x: auto;
+    padding-bottom: $sp-1;
+
+    &__btn {
+        display: inline-flex;
+        flex: none;
+        align-items: center;
+        gap: $sp-2;
+        padding: $sp-2 $sp-4;
+        border: 1px solid transparent;
+        border-radius: $admin-radius-pill;
+        background: $admin-surface;
+        color: $admin-text-primary;
+        font-size: admin-fluid(0.9);
+        font-weight: 500;
+        line-height: 1.5;
+        cursor: pointer;
+
+        &:hover {
+            background: $admin-brand-soft;
+        }
+
+        &:focus-visible {
+            outline: $admin-focus-ring-width solid $admin-focus-ring;
+            outline-offset: $admin-focus-ring-offset;
+        }
+
+        &.is-active {
+            border-color: $admin-brand-text;
+            background: $admin-brand-soft;
+            color: $admin-brand-text;
+            font-weight: 600;
+        }
+    }
+
+    &__count {
+        min-width: 1.5rem;
+        padding: 0 $sp-2;
+        border-radius: $admin-radius-pill;
+        background: $admin-panel-bg;
+        color: $admin-text-muted;
+        font-size: 0.75rem;
+        line-height: 1.5rem;
+        text-align: center;
+
+        .is-active & {
+            background: $admin-surface;
+            color: $admin-brand-text;
+        }
+    }
+}
+
+// One booking card
+.account-booking {
+    container-type: inline-size;
+    padding: $sp-4;
+    border-radius: $admin-radius-xl;
+    background: $admin-surface;
+    color: $admin-text-primary;
+
+    @media (min-width: 576px) {
+        padding: $sp-6;
+    }
+
+    &[hidden] {
+        display: none;
+    }
+
+    &__head {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: $sp-3;
+
+        @container (min-width: 32rem) {
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+    }
+
+    &__heading {
+        min-width: 0;
+    }
+
+    &__title {
+        margin: 0;
+        font-size: admin-fluid(1.25);
+        font-weight: 600;
+        overflow-wrap: anywhere;
+    }
+
+    &__ref {
+        margin: $sp-1 0 0;
+        color: $admin-text-muted;
+        font-size: 0.875rem;
+    }
+
+    &__meta {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: $sp-2 $sp-6;
+        margin: $sp-4 0 0;
+        padding: $sp-4 0 0;
+        border-top: 1px solid $admin-dropdown-border;
+
+        @container (min-width: 32rem) {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        > div {
+            display: flex;
+            align-items: flex-start;
+            gap: $sp-2;
+            min-width: 0;
+        }
+
+        dt {
+            display: flex;
+            flex: none;
+            color: $admin-brand-text;
+            font-size: 1.125rem;
+            line-height: 1.5;
+        }
+
+        dd {
+            margin: 0;
+            font-size: admin-fluid(0.9);
+            overflow-wrap: anywhere;
+        }
+    }
+
+    &__price {
+        margin-left: $sp-1;
+        color: $admin-text-muted;
+    }
+
+    // Phones: stacked, primary action on top; wider: side by side, right aligned.
+    &__actions {
+        display: flex;
+        flex-direction: column-reverse;
+        gap: $sp-3;
+        margin-top: $sp-4;
+
+        .account-btn {
+            width: 100%;
+        }
+
+        @container (min-width: 32rem) {
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-end;
+
+            .account-btn {
+                width: auto;
+            }
+        }
+    }
+
+    &__note {
+        margin: 0;
+        color: $admin-text-muted;
+        font-size: 0.875rem;
+    }
+}
+
+// Modals (details + cancel). Footer spacing follows the admin modal footers: 12px top, 24px sides
+// and bottom, buttons 12px apart, stacked and full width on phones.
+.account-modal {
+    font-family: $admin-font-family;
+
+    .modal-content {
+        border: 0;
+        border-radius: $admin-radius-xl;
+        background: $admin-surface;
+        color: $admin-text-primary;
+    }
+
+    &__header {
+        align-items: flex-start;
+        padding: $sp-6 $sp-6 $sp-4;
+        border: 0;
+    }
+
+    &__title {
+        margin: 0;
+        font-size: admin-fluid(1.25);
+        font-weight: 600;
+        overflow-wrap: anywhere;
+    }
+
+    &__sub {
+        margin: $sp-1 0 0;
+        color: $admin-text-muted;
+        font-size: 0.875rem;
+    }
+
+    &__body {
+        display: flex;
+        flex-direction: column;
+        gap: $sp-6;
+        padding: 0 $sp-6;
+    }
+
+    &__status {
+        margin: 0;
+    }
+
+    &__text {
+        margin: 0;
+        font-size: admin-fluid(0.9);
+    }
+
+    &__heading {
+        margin: 0 0 $sp-3;
+        font-size: admin-fluid(1.0625);
+        font-weight: 600;
+    }
+
+    &__grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: $sp-3 $sp-6;
+        margin: 0;
+        padding: $sp-4;
+        border-radius: $admin-radius-lg;
+        background: $admin-panel-bg;
+
+        @media (min-width: 576px) {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        dt {
+            color: $admin-text-muted;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        dd {
+            margin: 0;
+            font-size: admin-fluid(0.9);
+            overflow-wrap: anywhere;
+        }
+    }
+
+    &__footer {
+        display: flex;
+        flex-direction: column-reverse;
+        gap: $sp-3;
+        padding: $sp-3 $sp-6 $sp-6;
+        border: 0;
+
+        > * {
+            margin: 0;
+            width: 100%;
+        }
+
+        @media (min-width: 576px) {
+            flex-direction: row;
+            justify-content: flex-end;
+
+            > * {
+                width: auto;
+            }
+        }
+    }
+}
