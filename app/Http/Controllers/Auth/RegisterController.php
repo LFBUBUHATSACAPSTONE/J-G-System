@@ -55,7 +55,7 @@ class RegisterController extends Controller
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'identifier' => ['required', 'string', 'max:255'],
-            'password' => ['required', 'string', PasswordRule::min(8)->mixedCase()->numbers()],
+            'password' => ['required', 'string', PasswordRule::min(8)->mixedCase()->numbers()->symbols()],
             'terms' => ['accepted'],
         ]);
 
@@ -75,6 +75,16 @@ class RegisterController extends Controller
         $phone = str_contains($identifier, '@')
             ? null
             : preg_replace('/\D+/', '', $identifier);
+
+        // A deleted account keeps its email reserved (deleting is a soft delete, nothing is removed).
+        if (User::onlyTrashed()->whereRaw('LOWER(email) = ?', [$email])->exists()) {
+            return response()->json([
+                'message' => 'This email belongs to a deleted account and cannot be used to sign up again.',
+                'errors' => [
+                    'email' => ['This email belongs to a deleted account and cannot be used to sign up again.'],
+                ],
+            ], 422);
+        }
 
         // Block re-registration of an email that already has a verified account.
         $existing = User::whereRaw('LOWER(email) = ?', [$email])->first();

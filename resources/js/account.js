@@ -7,3 +7,4 @@ import "./account/bookings.js";
 import "./account/messages.js";
 import "./account/security.js";
 import "./account/delete.js";
+import "./account/logout.js";

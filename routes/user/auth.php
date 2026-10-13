@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\GoogleAuthController;
+use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\ModalAuthController;
 use App\Http\Controllers\Auth\ModalPasswordController;
 use App\Http\Controllers\Auth\ModalVerificationController;
@@ -21,6 +22,9 @@ Auth::routes(['reset' => false]);
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 Route::post('/login', [ModalAuthController::class, 'login'])->name('login');
+
+// Replaces the default Laravel UI logout (a redirect) with a JSON one. Same URI, method and name.
+Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
 Route::post('/register', [RegisterController::class, 'register'])->name('register');
 Route::post('/password/email', [ModalPasswordController::class, 'forgotPassword'])->name('password.email');
 Route::post('/verification/confirm', [ModalVerificationController::class, 'verificationConfirm'])->name('verification.confirm');

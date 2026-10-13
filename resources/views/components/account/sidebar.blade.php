@@ -76,7 +76,12 @@
   </nav>
 
   <div class="account-sidebar__footer">
-    <form method="POST" action="{{ Route::has('logout') ? route('logout') : '#' }}">
+    {{-- account.js sends this as a fetch (the logout route answers JSON) and then goes to the landing page. --}}
+    <form
+      method="POST"
+      action="{{ Route::has('logout') ? route('logout') : '#' }}"
+      data-account-logout
+      data-redirect-url="{{ Route::has('user.landing') ? route('user.landing') : '/' }}">
       @csrf
       <button type="submit" class="admin-sidebar__link account-sidebar__logout">
         <i class="ph ph-sign-out" aria-hidden="true"></i>
