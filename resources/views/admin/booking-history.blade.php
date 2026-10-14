@@ -1,4 +1,4 @@
-{{-- Admin Booking History page (front end only). Variables from the controller:
+{{-- Admin Booking History page. Variables from the controller:
        $bookings => list of bookings (same shape as the Bookings page, see docs/admin-booking-history.md)
        $packages => [['id' => 'budget-lite', 'name' => 'Budget Lite'], ...]  (admin-managed)
      Which bookings are sent is the controller's job (rule in config/admin/history.php).
