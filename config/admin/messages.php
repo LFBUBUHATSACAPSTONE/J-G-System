@@ -14,8 +14,9 @@ return [
   // `null`/[] would mean "every status"; keep this at approved for the intended flow.
   'reflected_booking_statuses' => ['approved'],
 
-  // How long after sending a message its sender can still edit or unsend it, in minutes.
-  // Outside the window the buttons disappear and the server refuses the change. 0 = no limit.
+  // How long after sending a message its sender can still EDIT it, in minutes. Outside
+  // the window the Edit button disappears and the server refuses the edit. 0 = no limit.
+  // Unsending is never time-limited: a sender can always take back their own message.
   'edit_window_minutes' => 15,
 
   // One-click replies above the admin composer. Clicking fills the box; the admin still presses Send.

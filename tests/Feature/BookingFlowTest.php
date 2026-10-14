@@ -6,9 +6,11 @@ use App\Models\Booking;
 use App\Models\Package;
 use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class BookingFlowTest extends TestCase
@@ -17,6 +19,7 @@ class BookingFlowTest extends TestCase
     {
         parent::setUp();
 
+        Storage::fake('public');
         Config::set('database.default', 'sqlite');
         Config::set('database.connections.sqlite.database', ':memory:');
         DB::purge('sqlite');
@@ -131,16 +134,26 @@ class BookingFlowTest extends TestCase
             'end_time' => '10:00 PM',
         ])->assertOk();
 
-        $this->postJson(route('booking.booking-summary'), [
+        $this->post(route('booking.booking-summary'), [
             'payment_option' => 'down',
             'down_payment_amount' => 2900,
-        ])->assertUnprocessable()
+            'payment_proof' => UploadedFile::fake()->create('proof.jpg', 100, 'image/jpeg'),
+        ], ['Accept' => 'application/json'])->assertUnprocessable()
             ->assertJsonValidationErrors('down_payment_amount');
 
-        $response = $this->postJson(route('booking.booking-summary'), [
+        // The payment screenshot is required: posting without it is rejected before the
+        // down-payment amount check even runs.
+        $this->post(route('booking.booking-summary'), [
             'payment_option' => 'down',
             'down_payment_amount' => 3000,
-        ])->assertOk()
+        ], ['Accept' => 'application/json'])->assertUnprocessable()
+            ->assertJsonValidationErrors('payment_proof');
+
+        $response = $this->post(route('booking.booking-summary'), [
+            'payment_option' => 'down',
+            'down_payment_amount' => 3000,
+            'payment_proof' => UploadedFile::fake()->create('proof.jpg', 100, 'image/jpeg'),
+        ], ['Accept' => 'application/json'])->assertOk()
             ->assertJsonPath('ok', true)
             ->assertJsonStructure(['reference']);
 
@@ -161,6 +174,13 @@ class BookingFlowTest extends TestCase
             'payment_method' => 'down',
             'payment_amount' => 3000,
         ]);
+        // The uploaded proof is stored and exposed to the admin modal as payment.proof_url.
+        $this->assertNotNull($booking->payment->payment_receipt_path);
+        Storage::disk('public')->assertExists($booking->payment->payment_receipt_path);
+        $this->assertStringContainsString(
+            $booking->payment->payment_receipt_path,
+            (string) $booking->toAdminArray()['payment']['proof_url'],
+        );
         $this->assertSame('Anniversary', $booking->eventDetails->event_type_other);
         $this->assertSame($date, $booking->schedule->event_start_date->toDateString());
         $this->assertSame('3000.00', $booking->payment->payment_amount);

@@ -18,7 +18,8 @@
 
     <div class="admin-messages__layout" data-messages data-view="list"
       data-chat-updates-url="{{ Route::has('admin.messages.updates') ? route('admin.messages.updates') : '' }}"
-      data-chat-bookings-since="{{ now()->toIso8601String() }}">
+      data-chat-bookings-since="{{ now()->toIso8601String() }}"
+      data-chat-messages-since="{{ now()->toIso8601String() }}">
       <section class="admin-messages__side" aria-labelledby="chatListTitle">
         <h2 id="chatListTitle" class="admin-messages__title">Chat List</h2>
 

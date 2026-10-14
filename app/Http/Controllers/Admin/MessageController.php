@@ -62,6 +62,7 @@ class MessageController extends Controller
     {
         $after = max(0, (int) $request->query('after', 0));
         $since = $this->messages->since($request->query('since'));
+        $changedSince = $this->messages->since($request->query('changed_since'));
         $syncedAt = now();
 
         $messages = Message::with('replyTo')
@@ -75,6 +76,10 @@ class MessageController extends Controller
             'ok' => true,
             'unread' => $this->messages->unreadCountForAdmin(),
             'messages' => $messages,
+            // Every conversation: an edit or unsend on either side updates/removes the
+            // message in its own panel without a refresh.
+            'messages_changed' => $this->messages->changedMessages(null, $changedSince, $after),
+            'messages_synced_at' => $this->messages->changedCursor(),
             'bookings' => $this->messages->updatedBookingCardsForAdmin($since),
             'bookings_synced_at' => $syncedAt->toIso8601String(),
         ]);
@@ -171,10 +176,8 @@ class MessageController extends Controller
             return response()->json(['message' => 'You can only unsend replies you sent.'], 403);
         }
 
-        if (! $message->isEditable()) {
-            return response()->json(['message' => 'The editing window for this message has passed.'], 403);
-        }
-
+        // Unsending is not time-limited: an admin can take back any of their own replies,
+        // however old, and the row is only soft-deleted.
         $conversation = $message->conversation;
         $message->delete();
 

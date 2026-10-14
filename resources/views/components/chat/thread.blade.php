@@ -7,14 +7,15 @@
      $self: which side is looking ('admin' | 'client'); their messages sit right, in purple.
      $other: name read out to screen readers for the other side.
      Edit / unsend buttons are only rendered on the reader's OWN messages; the message id is
-     handed to chat.js, which builds the request URLs from the chat root's data attributes. --}}
+     handed to chat.js, which builds the request URLs from the chat root's data attributes.
+     Editing is limited to the config window; unsending has no time limit. --}}
 
 @props(['items' => [], 'self' => 'admin', 'other' => 'Client', 'admin' => false])
 
 @php
 $lastDay = null;
-// Edit/unsend window (config value 0 = no limit). Buttons only render inside it; the
-// controllers enforce the same limit server-side.
+// EDIT window (config value 0 = no limit). Only the Edit button is gated by it; the
+// controllers enforce the same limit server-side. Unsending is never time-limited.
 $editWindow = (int) config('admin.messages.edit_window_minutes', 0);
 $editHint = $editWindow > 0
     ? ' (available for ' . $editWindow . ' minute' . ($editWindow === 1 ? '' : 's') . ' after sending)'
@@ -80,7 +81,9 @@ $editable = $out && ($item['editable'] ?? true);
       <button type="button" class="chat-msg__action" data-chat-action="reply" data-chat-action-id="{{ $id }}">Reply<span class="visually-hidden"> to this message</span></button>
       @if ($editable)
       <button type="button" class="chat-msg__action" data-chat-action="edit" data-chat-action-id="{{ $id }}" title="Edit{{ $editHint }}">Edit<span class="visually-hidden"> this message</span></button>
-      <button type="button" class="chat-msg__action" data-chat-action="unsend" data-chat-action-id="{{ $id }}" title="Unsend{{ $editHint }}">Unsend<span class="visually-hidden"> this message</span></button>
+      @endif
+      @if ($out)
+      <button type="button" class="chat-msg__action" data-chat-action="unsend" data-chat-action-id="{{ $id }}" title="Unsend">Unsend<span class="visually-hidden"> this message</span></button>
       @endif
     </span>
     @endif

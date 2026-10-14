@@ -1,6 +1,6 @@
 // Admin Messages page: chat list (select / search / unread filter), panels, quick replies,
 // mobile list <-> conversation switch. Everything is client-side over the chats on the page.
-import { appendBooking, appendIncoming, initChat, scrollLog } from "../chat/chat.js";
+import { appendBooking, appendIncoming, applyMessageChange, initChat, scrollLog } from "../chat/chat.js";
 
 const layout = document.querySelector("[data-messages]");
 
@@ -124,6 +124,8 @@ if (layout) {
         // Cursor for the booking feed: bookings changed after this moment pop into
         // their client's panel. Starts at page render, advances to the server clock.
         let since = layout.dataset.chatBookingsSince || "";
+        // Cursor for the edit/unsend feed: messages changed after this moment are re-applied.
+        let changedSince = layout.dataset.chatMessagesSince || "";
         const maxId = () =>
             [...layout.querySelectorAll("[data-message-id]")].reduce(
                 (max, node) => Math.max(max, Number(node.dataset.messageId) || 0),
@@ -142,7 +144,7 @@ if (layout) {
             if (busy || document.hidden) return;
             busy = true;
             fetch(
-                `${updatesUrl}?after=${maxId()}&since=${encodeURIComponent(since)}`,
+                `${updatesUrl}?after=${maxId()}&since=${encodeURIComponent(since)}&changed_since=${encodeURIComponent(changedSince)}`,
                 { headers: { Accept: "application/json" } },
             )
                 .then((res) => (res.ok ? res.json() : null))
@@ -195,6 +197,15 @@ if (layout) {
                         }
                     });
 
+                    // Edits/unsends: update or drop the message wherever it is on the page.
+                    (data.messages_changed || []).forEach((message) => {
+                        const panel = document.getElementById(
+                            `chat-${message.conversation_id}`,
+                        );
+                        const log = panel?.querySelector("[data-chat-log]");
+                        if (log) applyMessageChange(log, message);
+                    });
+
                     // Bookings: drop each new card into its client's panel.
                     (data.bookings || []).forEach((booking) => {
                         const panel = document.getElementById(
@@ -204,6 +215,8 @@ if (layout) {
                         if (log) appendBooking(log, panel, booking);
                     });
                     if (data.bookings_synced_at) since = data.bookings_synced_at;
+                    if (data.messages_synced_at)
+                        changedSince = data.messages_synced_at;
 
                     setSidebarBadge(data.unread || 0);
 

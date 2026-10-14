@@ -85,8 +85,8 @@ function ensureDay(log) {
 }
 
 // Reply buttons on every message; edit/unsend only on the reader's own messages.
-// `data-edit-window-minutes` on the chat root drives the hint and the client-side
-// guard; the server enforces the same window.
+// `data-edit-window-minutes` on the chat root drives the Edit hint and its client-side
+// guard; the server enforces the same window for edits. Unsending has no time limit.
 function editWindowMinutes(root) {
     const n = Number(root?.dataset.editWindowMinutes || 0);
     return Number.isFinite(n) && n > 0 ? n : 0;
@@ -108,7 +108,7 @@ function messageActions(root, id, own) {
         const hint =
             win > 0 ? ` (available for ${win} minute${win === 1 ? "" : "s"})` : "";
         add("edit", "Edit", `Edit${hint}`);
-        add("unsend", "Unsend", `Unsend${hint}`);
+        add("unsend", "Unsend");
     }
     return wrap;
 }
@@ -258,6 +258,41 @@ export function appendIncoming(log, message, root) {
     return true;
 }
 
+// Apply the current state of a message the reader already has: re-render the text of an
+// edited message, or drop one the sender unsent. Returns false when the message is not in
+// this log, so a change to something we never showed is ignored (it travels as a new one).
+export function applyMessageChange(log, message) {
+    if (!log || !message || !message.id) return false;
+
+    const node = log.querySelector(`[data-message-id="${message.id}"]`);
+    if (!node) return false;
+
+    if (message.deleted) {
+        node.remove();
+        tidyDays(log);
+        return true;
+    }
+
+    const bubble = node.querySelector(".chat-msg__bubble");
+    if (!bubble) return false;
+
+    let textEl = bubble.querySelector(".chat-msg__text");
+    if (message.body) {
+        if (!textEl) {
+            textEl = el("p", "chat-msg__text");
+            const anchor = bubble.querySelector(".visually-hidden");
+            if (anchor) anchor.after(textEl);
+            else bubble.prepend(textEl);
+        }
+        textEl.textContent = message.body;
+    } else if (textEl) {
+        textEl.remove();
+    }
+
+    if (message.edited) markEdited(node);
+    return true;
+}
+
 // A booking card pushed by the live feed. The server renders the same Blade partial
 // the page uses, so the markup (and its escaping) stays in one place. A booking that
 // is already in the thread (e.g. it was pending, now approved) is refreshed in place
@@ -301,6 +336,8 @@ export function initChatStream(root) {
     // Cursor for the booking feed: bookings changed after this moment pop in. It
     // starts at page render and advances to the server clock on every poll.
     let since = root.dataset.chatBookingsSince || "";
+    // Cursor for the edit/unsend feed: messages changed after this moment are re-applied.
+    let changedSince = root.dataset.chatMessagesSince || "";
 
     const setBadge = (count) => {
         const text = count > 9 ? "9+" : String(count);
@@ -345,7 +382,7 @@ export function initChatStream(root) {
         if (!log || !updatesUrl || busy || document.hidden) return;
         busy = true;
         fetch(
-            `${updatesUrl}?after=${lastId()}&since=${encodeURIComponent(since)}`,
+            `${updatesUrl}?after=${lastId()}&since=${encodeURIComponent(since)}&changed_since=${encodeURIComponent(changedSince)}`,
             { headers: { Accept: "application/json" } },
         )
             .then((res) => (res.ok ? res.json() : null))
@@ -355,10 +392,16 @@ export function initChatStream(root) {
                 (data.messages || []).forEach((m) => {
                     if (appendIncoming(log, m, root)) added += 1;
                 });
+                // Edits and unsends of messages already in the thread.
+                (data.messages_changed || []).forEach((m) =>
+                    applyMessageChange(log, m),
+                );
                 (data.bookings || []).forEach((booking) =>
                     appendBooking(log, root, booking),
                 );
                 if (data.bookings_synced_at) since = data.bookings_synced_at;
+                if (data.messages_synced_at)
+                    changedSince = data.messages_synced_at;
                 setBadge(data.unread || 0);
                 if (added && isOpen()) markRead();
             })
@@ -494,6 +537,13 @@ export function initChat(root) {
         textarea.rows = 2;
         if (input.maxLength > 0) textarea.maxLength = input.maxLength;
         textarea.value = msg.querySelector(".chat-msg__text")?.textContent || "";
+        // Enter saves the edit (Shift+Enter inserts a newline), same as the composer.
+        textarea.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
+                e.preventDefault();
+                editor.requestSubmit();
+            }
+        });
         const row = el("div", "chat-edit__row");
         const save = el("button", "chat-edit__save", "Save");
         save.type = "submit";
@@ -599,6 +649,7 @@ export function initChat(root) {
     }
 
     // Editing past the server window is refused; catch it here first for a clear message.
+    // Unsending is not time-limited, so it is never blocked here.
     const editWindowPassed = (msg) => {
         const until = msg.dataset.editableUntil;
         if (!until) return false;
@@ -620,10 +671,6 @@ export function initChat(root) {
             }
             startEdit(msg, id);
         } else if (btn.dataset.chatAction === "unsend") {
-            if (editWindowPassed(msg)) {
-                setError("The editing window for this message has passed.");
-                return;
-            }
             unsend(msg, id);
         }
     });

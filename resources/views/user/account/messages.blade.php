@@ -22,6 +22,7 @@ $deleteUrl = Route::has('user.messages.destroy') ? route('user.messages.destroy'
     data-chat-other="J&amp;G Audio"
     data-edit-window-minutes="{{ (int) config('admin.messages.edit_window_minutes') }}"
     data-chat-bookings-since="{{ now()->toIso8601String() }}"
+    data-chat-messages-since="{{ now()->toIso8601String() }}"
     aria-labelledby="account-chat-title"
     @if ($updatesUrl) data-chat-updates-url="{{ $updatesUrl }}" @endif
     @if ($readUrl) data-chat-read-url="{{ $readUrl }}" @endif

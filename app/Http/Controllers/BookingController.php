@@ -315,6 +315,9 @@ class BookingController extends Controller
         $validator = Validator::make($request->all(), [
             'payment_option' => ['required', 'in:full,down'],
             'down_payment_amount' => ['required_if:payment_option,down', 'nullable', 'decimal:0,2', 'min:0.01'],
+            // The screenshot of the payment details form's confirmation page. The booking
+            // summary step already requires it in the browser; the server is the real gate.
+            'payment_proof' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
         if ($validator->fails()) {
             return $this->validationError($validator->errors()->toArray());
@@ -340,7 +343,7 @@ class BookingController extends Controller
 
         $userId = $request->user()?->id;
 
-        [$booking, $fullDates] = DB::transaction(function () use ($draft, $package, $data, $paymentCents, $userId) {
+        [$booking, $fullDates] = DB::transaction(function () use ($draft, $package, $data, $paymentCents, $userId, $request) {
             $fullDates = $this->fullDatesBetween(
                 Carbon::parse($draft['event_start_date']),
                 Carbon::parse($draft['event_end_date']),
@@ -362,6 +365,10 @@ class BookingController extends Controller
                 'submitted_at' => now(),
             ]);
 
+            // Store the uploaded proof once and remember where it landed; the admin
+            // modal shows it through Booking::toAdminArray() -> payment.proof_url.
+            $proofPath = $request->file('payment_proof')->store('payment-receipts', 'public');
+
             $this->createBookingDetails($booking, $draft, [
                 'event_start_date' => $draft['event_start_date'],
                 'event_end_date' => $draft['event_end_date'],
@@ -371,6 +378,7 @@ class BookingController extends Controller
                 'payment_method' => $data['payment_option'],
                 'payment_state' => 'pending',
                 'payment_amount' => number_format($paymentCents / 100, 2, '.', ''),
+                'payment_receipt_path' => $proofPath,
             ]);
 
             return [$booking, []];

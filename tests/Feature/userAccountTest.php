@@ -6,10 +6,12 @@ use App\Models\Booking;
 use App\Models\Package;
 use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 // The user account backend (Profile, My Bookings, Security, Delete Account, Log out). Uses its own
@@ -22,6 +24,7 @@ class UserAccountTest extends TestCase
     {
         parent::setUp();
 
+        Storage::fake('public');
         Config::set('database.default', 'sqlite');
         Config::set('database.connections.sqlite.database', ':memory:');
         DB::purge('sqlite');
@@ -396,7 +399,10 @@ class UserAccountTest extends TestCase
         $this->postJson(route('booking.event-schedule'), [
             'event_start_date' => $date, 'event_end_date' => $date, 'start_time' => '6:00 PM', 'end_time' => '10:00 PM',
         ])->assertOk();
-        $reference = $this->postJson(route('booking.booking-summary'), ['payment_option' => 'full'])
+        $reference = $this->post(route('booking.booking-summary'), [
+            'payment_option' => 'full',
+            'payment_proof' => UploadedFile::fake()->create('proof.jpg', 100, 'image/jpeg'),
+        ], ['Accept' => 'application/json'])
             ->assertOk()->json('reference');
 
         $this->assertDatabaseHas('bookings', ['reference' => $reference, 'user_id' => $user->id]);

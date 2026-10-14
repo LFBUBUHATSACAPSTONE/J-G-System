@@ -703,6 +703,89 @@ class MessagingTest extends TestCase
             ->assertJsonCount(0, 'messages');
     }
 
+    // ------------------------------------------------ live edits and unsends
+
+    public function test_the_user_feed_reports_edited_and_unsent_admin_messages(): void
+    {
+        $user = $this->makeUser();
+        $conversation = $this->makeConversation($user, [
+            ['from' => 'admin', 'body' => 'Original reply'],
+            ['from' => 'admin', 'body' => 'Unsent reply'],
+        ]);
+        $edited = $conversation->messages()->where('body', 'Original reply')->firstOrFail();
+        $unsent = $conversation->messages()->where('body', 'Unsent reply')->firstOrFail();
+
+        $edited->update(['body' => 'Edited reply', 'edited_at' => now()]);
+        $unsent->delete();
+
+        $this->actingAs($user)->getJson(route('user.messages.updates', [
+            'after' => $unsent->id,
+            'changed_since' => now()->subMinute()->toIso8601String(),
+        ]))
+            ->assertOk()
+            ->assertJsonCount(2, 'messages_changed')
+            ->assertJsonPath('messages_changed.0.id', $edited->id)
+            ->assertJsonPath('messages_changed.0.body', 'Edited reply')
+            ->assertJsonPath('messages_changed.0.edited', true)
+            ->assertJsonPath('messages_changed.0.deleted', false)
+            ->assertJsonPath('messages_changed.1.id', $unsent->id)
+            ->assertJsonPath('messages_changed.1.deleted', true)
+            ->assertJsonPath('messages_synced_at', fn ($value) => is_string($value) && $value !== '');
+    }
+
+    public function test_the_user_changed_feed_needs_a_cursor(): void
+    {
+        $user = $this->makeUser();
+        $conversation = $this->makeConversation($user, [
+            ['from' => 'admin', 'body' => 'Something'],
+        ]);
+        $message = $conversation->messages()->firstOrFail();
+
+        // No changed_since: the edit/unsend feed stays empty instead of replaying the thread.
+        $this->actingAs($user)->getJson(route('user.messages.updates', ['after' => $message->id]))
+            ->assertOk()
+            ->assertJsonCount(0, 'messages_changed');
+    }
+
+    public function test_the_admin_feed_reports_edited_and_unsent_client_messages(): void
+    {
+        $user = $this->makeUser();
+        $conversation = $this->makeConversation($user, [
+            ['from' => 'client', 'body' => 'Client original'],
+            ['from' => 'client', 'body' => 'Client gone'],
+        ]);
+        $edited = $conversation->messages()->where('body', 'Client original')->firstOrFail();
+        $unsent = $conversation->messages()->where('body', 'Client gone')->firstOrFail();
+
+        $edited->update(['body' => 'Client edited', 'edited_at' => now()]);
+        $unsent->delete();
+
+        $this->getJson(route('admin.messages.updates', [
+            'after' => $unsent->id,
+            'changed_since' => now()->subMinute()->toIso8601String(),
+        ]))
+            ->assertOk()
+            ->assertJsonCount(2, 'messages_changed')
+            ->assertJsonPath('messages_changed.0.conversation_id', $conversation->id)
+            ->assertJsonPath('messages_changed.0.body', 'Client edited')
+            ->assertJsonPath('messages_changed.1.deleted', true);
+    }
+
+    public function test_the_pages_expose_the_messages_since_cursor(): void
+    {
+        $this->withoutVite();
+        $user = $this->makeUser();
+        $this->makeConversation($user, [['from' => 'client', 'body' => 'Hi']]);
+
+        $this->actingAs($user)->get(route('user.account.messages'))
+            ->assertOk()
+            ->assertSee('data-chat-messages-since', false);
+
+        $this->get(route('admin.messages'))
+            ->assertOk()
+            ->assertSee('data-chat-messages-since', false);
+    }
+
     public function test_the_admin_page_exposes_the_live_updates_feed(): void
     {
         $this->withoutVite();
@@ -898,7 +981,7 @@ class MessagingTest extends TestCase
         $this->assertNull($old['edit_expires_at']);
     }
 
-    public function test_a_client_cannot_edit_or_unsend_outside_the_window(): void
+    public function test_a_client_cannot_edit_outside_the_window_but_can_still_unsend(): void
     {
         Config::set('admin.messages.edit_window_minutes', 15);
 
@@ -908,19 +991,23 @@ class MessagingTest extends TestCase
         ]);
         $message = $this->ageMessage($conversation->messages()->firstOrFail(), 30);
 
+        // Editing is refused outside the window...
         $this->actingAs($user)
             ->patchJson(route('user.messages.update', ['message' => $message->id]), ['body' => 'Too late'])
             ->assertForbidden();
 
+        $this->assertSame('Old note', $message->fresh()->body);
+
+        // ...but unsending is never time-limited, so it still works long after it.
         $this->actingAs($user)
             ->deleteJson(route('user.messages.destroy', ['message' => $message->id]))
-            ->assertForbidden();
+            ->assertOk()
+            ->assertJsonPath('id', $message->id);
 
-        $this->assertSame('Old note', $message->fresh()->body);
-        $this->assertNull($message->fresh()->deleted_at);
+        $this->assertNotNull($message->fresh()->deleted_at);
     }
 
-    public function test_an_admin_cannot_edit_a_reply_outside_the_window(): void
+    public function test_an_admin_cannot_edit_a_reply_outside_the_window_but_can_still_unsend(): void
     {
         Config::set('admin.messages.edit_window_minutes', 15);
 
@@ -936,9 +1023,15 @@ class MessagingTest extends TestCase
 
         $this->patchJson(route('admin.messages.update', ['message' => $reply->id]), ['body' => 'Late'])
             ->assertForbidden();
+
+        // Unsending the same old reply is still allowed.
+        $this->deleteJson(route('admin.messages.destroy', ['message' => $reply->id]))
+            ->assertOk();
+
+        $this->assertNotNull($reply->fresh()->deleted_at);
     }
 
-    public function test_an_old_message_hides_the_edit_and_unsend_buttons(): void
+    public function test_an_old_message_hides_the_edit_button_but_keeps_unsend(): void
     {
         $this->withoutVite();
         Config::set('admin.messages.edit_window_minutes', 15);
@@ -952,8 +1045,8 @@ class MessagingTest extends TestCase
         $this->actingAs($user)->get(route('user.account.messages'))
             ->assertOk()
             ->assertSee('data-chat-action="reply"', false)
-            ->assertDontSee('data-chat-action="edit"', false)
-            ->assertDontSee('data-chat-action="unsend"', false);
+            ->assertSee('data-chat-action="unsend"', false)
+            ->assertDontSee('data-chat-action="edit"', false);
     }
 
     // ------------------------------------------------- live booking cards

@@ -149,10 +149,8 @@ class MessageController extends Controller
             return response()->json(['message' => 'You can only unsend your own messages.'], 403);
         }
 
-        if (! $message->isEditable()) {
-            return response()->json(['message' => 'The editing window for this message has passed.'], 403);
-        }
-
+        // Unsending is not time-limited: the client can take back any of their own
+        // messages, however old, and the row is only soft-deleted.
         $conversation = $message->conversation;
         $message->delete();
 
@@ -197,6 +195,7 @@ class MessageController extends Controller
 
         $after = max(0, (int) $request->query('after', 0));
         $since = $this->messages->since($request->query('since'));
+        $changedSince = $this->messages->since($request->query('changed_since'));
         $syncedAt = now();
         $bookings = $this->messages->updatedBookingCardsForUser($user->id, $since);
         $conversation = $this->findConversation($user);
@@ -207,6 +206,8 @@ class MessageController extends Controller
                 'unread' => $unread,
                 'conversation_id' => null,
                 'messages' => [],
+                'messages_changed' => [],
+                'messages_synced_at' => $this->messages->changedCursor(),
                 'bookings' => $bookings,
                 'bookings_synced_at' => $syncedAt->toIso8601String(),
             ]);
@@ -224,6 +225,9 @@ class MessageController extends Controller
             'unread' => $unread,
             'conversation_id' => $conversation->id,
             'messages' => $messages,
+            // Edits/unsends of messages already on the page, on top of the new ones above.
+            'messages_changed' => $this->messages->changedMessages($conversation->id, $changedSince, $after),
+            'messages_synced_at' => $this->messages->changedCursor(),
             'bookings' => $bookings,
             'bookings_synced_at' => $syncedAt->toIso8601String(),
         ]);
