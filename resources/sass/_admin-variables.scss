@@ -203,14 +203,3 @@ $admin-dropdown-border: oklch(88% 0 0);
     $slope: $diff * 1.818182;
     @return clamp(#{$min}rem, #{$intercept}rem + #{$slope}vw, #{$max}rem);
 }
-
-// ADMIN: LOGIN (sign-in gate, admin-login.scss only)
-// The page is $admin-sidebar-bg; the card sits one step lighter so it reads as a surface.
-$admin-login-card-bg: oklch(23% 0 0);
-$admin-login-field-bg: oklch(15% 0 0);
-$admin-login-text-muted: oklch(
-    78% 0 0
-); // subtitle, labels' helper text (AAA on the card)
-$admin-login-placeholder: oklch(70% 0 0);
-$admin-login-link: $admin-sidebar-focus-ring; // purple link on the dark card (AA+)
-$admin-login-card-width: 26rem;

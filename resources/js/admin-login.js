@@ -5,7 +5,7 @@
 //   422 {message, errors{email|password}} -> rejected; field messages show under the fields
 //   403 {message}                         -> signed in but not an admin ("no access")
 //   429 {message}                         -> too many attempts
-// Same helpers and error pattern as the user auth modal (auth/login.js).
+// Same helpers and error pattern as the user auth modal (auth/login.js); look in sass/admin-login.scss.
 
 import "@phosphor-icons/web/regular";
 

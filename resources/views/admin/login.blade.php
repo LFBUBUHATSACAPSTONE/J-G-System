@@ -1,9 +1,6 @@
 {{--
   Admin sign-in gate (the landing an admin sees first at /admin).
 
-  FRONT END ONLY. Own layout and own Vite entry (admin-login), so it never loads the admin shell or
-  the public landing / auth modal. No sign-up and no Google button: admin accounts are created by the owner.
-
   Names and data the back end wires later
     route('admin.login.submit')  POST JSON {email, password, remember}
     route('admin.dashboard')     where a signed-in admin goes
@@ -51,7 +48,7 @@ $imageUrl = asset(config('admin.logo', 'images/logo/J&G_official_logo.webp'));
         <span class="admin-login__badge">Admin</span>
       </div>
 
-      <h1 class="admin-login__title" id="admin-login-title">Admin Sign In</h1>
+      <h1 class="admin-login__title" id="admin-login-title">Welcome Back, Admin!</h1>
       <p class="admin-login__subtitle">Sign in to manage bookings, packages and messages.</p>
 
       @if ($noAccess)
@@ -65,14 +62,14 @@ $imageUrl = asset(config('admin.logo', 'images/logo/J&G_official_logo.webp'));
         <p class="admin-login__alert d-none" role="alert" data-login-error></p>
 
         <div class="admin-login__field">
-          <label for="admin-login-email">Email</label>
+          <label for="admin-login-email">Email <span class="admin-login__required" aria-hidden="true">*</span></label>
           <input type="text" id="admin-login-email" name="email" class="admin-login__control" inputmode="email"
             autocomplete="username" placeholder="admin@example.com" required>
           <small class="admin-login__field-error d-none" data-field-error="email"></small>
         </div>
 
         <div class="admin-login__field">
-          <label for="admin-login-password">Password</label>
+          <label for="admin-login-password">Password <span class="admin-login__required" aria-hidden="true">*</span></label>
           <div class="admin-login__password">
             <input type="password" id="admin-login-password" name="password" class="admin-login__control"
               autocomplete="current-password" placeholder="••••••••" required>
@@ -87,12 +84,12 @@ $imageUrl = asset(config('admin.logo', 'images/logo/J&G_official_logo.webp'));
         <div class="admin-login__row">
           <label class="admin-login__remember">
             <input type="checkbox" name="remember">
-            Remember me
+            Remember Me
           </label>
-          <a href="{{ $forgotUrl }}" class="admin-login__link">Forgot password?</a>
+          <a href="{{ $forgotUrl }}" class="admin-login__link">Forgot Password?</a>
         </div>
 
-        <button type="submit" class="admin-login__submit">Sign in</button>
+        <button type="submit" class="admin-login__submit btn-color-gradient--primary">Sign in</button>
       </form>
 
     </section>
