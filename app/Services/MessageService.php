@@ -21,6 +21,9 @@ class MessageService
             'body' => $message->body,
             'at' => $message->created_at,
             'edited' => $message->isEdited(),
+            // Set when the sender unsent the message. The live feed tells the reader to
+            // drop it from the thread; the row itself is kept (soft delete).
+            'deleted' => $message->trashed(),
             // Edit/unsend window for the sender: the client hides the buttons once this
             // moment passes and both controllers refuse a late change.
             'editable' => $message->isEditable(),
@@ -185,6 +188,42 @@ class MessageService
         } catch (\Throwable) {
             return null;
         }
+    }
+
+    /**
+     * Messages that changed (edited or unsent) at or after `since`, for the live feeds.
+     * A soft delete bumps `updated_at` too, so one cursor covers both. Only messages the
+     * reader already has (`id <= $after`) are returned: brand new ones travel on the
+     * normal `messages` feed, and `id <= $after` keeps this feed purely edits/unsends.
+     *
+     * Pass a conversation id to scope it to one thread, or null for every conversation
+     * (the admin side). Nothing is returned without a cursor.
+     */
+    public function changedMessages(?int $conversationId, ?Carbon $since, int $after): array
+    {
+        if (! $since || $after < 1) {
+            return [];
+        }
+
+        return Message::withTrashed()
+            ->with('replyTo')
+            ->when($conversationId, fn ($query) => $query->where('conversation_id', $conversationId))
+            ->where('updated_at', '>=', $since)
+            ->where('id', '<=', $after)
+            ->orderBy('id')
+            ->get()
+            ->map(fn (Message $message) => $this->formatMessage($message))
+            ->all();
+    }
+
+    /**
+     * The cursor that pairs with changedMessages(). Whole-second precision matches the
+     * `updated_at` column, so an edit or unsend made in the boundary second is re-sent on
+     * the next poll (idempotent) instead of being skipped.
+     */
+    public function changedCursor(): string
+    {
+        return now()->startOfSecond()->toIso8601String();
     }
 
     /**

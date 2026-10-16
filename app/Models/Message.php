@@ -70,8 +70,9 @@ class Message extends Model
     }
 
     /**
-     * When the edit/unsend window for this message closes, or null when there is no
-     * limit (config value 0, or a message with no timestamp).
+     * When the EDIT window for this message closes, or null when there is no
+     * limit (config value 0, or a message with no timestamp). Unsending is not
+     * time-limited, so this only drives the Edit button and the edit request.
      */
     public function editableUntil(): ?Carbon
     {
@@ -85,8 +86,8 @@ class Message extends Model
     }
 
     /**
-     * The sender may only change a message inside the window; after that the buttons
-     * are hidden and both controllers refuse the request.
+     * Whether the sender can still EDIT this message. The sender can always unsend
+     * their own message; only editing is restricted to the window.
      */
     public function isEditable(): bool
     {

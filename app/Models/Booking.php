@@ -117,6 +117,13 @@ class Booking extends Model
                     default => null,
                 },
                 'state' => $payment?->payment_state,
+                // The screenshot the client uploaded on the booking payment step, shown in the
+                // admin booking modal (payment.proof_url). Built with asset() (the request root),
+                // not Storage::url(), so it also resolves when the app is served from a
+                // sub-directory. Null when nothing was uploaded.
+                'proof_url' => $payment?->payment_receipt_path
+                    ? asset('storage/'.$payment->payment_receipt_path)
+                    : null,
                 'down_payment_amount' => $paymentMethod === 'down' && $paymentAmount !== null
                     ? (float) $paymentAmount
                     : null,
