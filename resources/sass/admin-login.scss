@@ -1,0 +1,262 @@
+// Admin sign-in entry: its own Vite entry, so it ships neither the admin shell (sidebar, tables,
+// calendar) nor the public landing styles. Tokens only: everything comes from the variables files.
+// Load order: shared tokens first, then admin tokens (same order as admin.scss).
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+@import "user-variables";
+@import "admin-variables";
+
+// validation.js toggles these two classes, so the entry defines them (no Bootstrap here).
+.d-none {
+    display: none !important;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: $admin-sidebar-bg;
+    color: $admin-sidebar-text;
+    font-family: $admin-font-family;
+}
+
+.admin-login {
+    display: grid;
+    place-items: center;
+    min-height: 100dvh;
+    padding: $admin-pad-xs;
+
+    @media (min-width: 576px) {
+        padding: $admin-pad-sm;
+    }
+
+    &__card {
+        width: 100%;
+        max-width: $admin-login-card-width;
+        padding: $sp-6;
+        border-radius: $admin-radius-xl;
+        background: $admin-login-card-bg;
+        box-shadow: 0 $sp-4 $sp-12 $admin-shadow-black;
+
+        @media (min-width: 576px) {
+            padding: $sp-8;
+        }
+    }
+
+    // ---- Brand ----
+    &__brand {
+        display: grid;
+        justify-items: center;
+        gap: $sp-3;
+        padding-bottom: $sp-6;
+        border-bottom: 1px solid $admin-sidebar-divider;
+        text-align: center;
+    }
+
+    &__logo {
+        width: 100%;
+        max-width: 8rem;
+        height: auto;
+    }
+
+    &__badge {
+        padding: $sp-1 $sp-3;
+        border-radius: $admin-radius-pill;
+        background: $admin-brand;
+        color: $admin-on-brand;
+        font-size: 0.875rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    // ---- Heading ----
+    &__title {
+        margin: $sp-6 0 $sp-1;
+        font-size: admin-fluid(1.75);
+        font-weight: 600;
+        text-align: center;
+    }
+
+    &__subtitle {
+        margin: 0 0 $sp-6;
+        color: $admin-login-text-muted;
+        font-size: 0.875rem;
+        text-align: center;
+    }
+
+    // ---- Alerts ----
+    &__alert {
+        margin: 0 0 $sp-4;
+        padding: $sp-3 $sp-4;
+        border: 1px solid $admin-danger-border;
+        border-radius: $admin-radius-md;
+        color: $admin-on-brand;
+        background: oklch(28% 0.07 25.116);
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+
+    // ---- Form ----
+    &__form {
+        display: grid;
+        gap: $sp-4;
+    }
+
+    &__field {
+        display: grid;
+        gap: $sp-1;
+        position: relative;
+        min-width: 0;
+
+        label {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+    }
+
+    &__control {
+        width: 100%;
+        min-height: 2.75rem;
+        padding: $sp-2 $sp-3;
+        border: 1px solid $admin-field-border;
+        border-radius: $admin-radius-md;
+        background: $admin-login-field-bg;
+        color: $admin-sidebar-text;
+        font: inherit;
+        font-size: 1rem;
+
+        &::placeholder {
+            color: $admin-login-placeholder;
+        }
+
+        &:focus-visible {
+            outline: $admin-focus-ring-width solid $admin-sidebar-focus-ring;
+            outline-offset: 0;
+            box-shadow: 0 0 0 4px oklch(71.8% 0.16169 293.012 / 0.25);
+        }
+
+        &.is-invalid {
+            border-color: $admin-danger-border;
+        }
+    }
+
+    &__password {
+        position: relative;
+
+        .admin-login__control {
+            padding-right: 3rem;
+        }
+    }
+
+    &__toggle {
+        position: absolute;
+        top: 50%;
+        right: $sp-1;
+        display: grid;
+        place-items: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        padding: 0;
+        border: 0;
+        border-radius: $admin-radius-md;
+        background: transparent;
+        color: $admin-login-text-muted;
+        font-size: 1.25rem;
+        cursor: pointer;
+        transform: translateY(-50%);
+
+        &:hover {
+            color: $admin-sidebar-text;
+        }
+
+        &:focus-visible {
+            outline: $admin-focus-ring-width solid $admin-sidebar-focus-ring;
+            outline-offset: 0;
+        }
+    }
+
+    &__field-error {
+        color: $admin-danger-border;
+        font-size: 0.8125rem;
+    }
+
+    &__row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: $sp-2 $sp-4;
+        font-size: 0.875rem;
+    }
+
+    &__remember {
+        display: inline-flex;
+        align-items: center;
+        gap: $sp-2;
+        cursor: pointer;
+
+        input {
+            width: 1.125rem;
+            height: 1.125rem;
+            accent-color: $admin-brand;
+        }
+    }
+
+    &__link {
+        color: $admin-login-link;
+        text-underline-offset: 0.2em;
+
+        &:hover {
+            color: $admin-sidebar-text;
+        }
+
+        &:focus-visible {
+            outline: $admin-focus-ring-width solid $admin-sidebar-focus-ring;
+            outline-offset: $admin-focus-ring-offset;
+            border-radius: $sp-1;
+        }
+    }
+
+    &__submit {
+        width: 100%;
+        min-height: 2.75rem;
+        padding: $sp-2 $sp-4;
+        border: 0;
+        border-radius: $admin-radius-pill;
+        background: $admin-brand;
+        color: $admin-on-brand;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+
+        &:hover:not(:disabled) {
+            background: $admin-brand-hover;
+        }
+
+        &:focus-visible {
+            outline: $admin-focus-ring-width solid $admin-sidebar-text;
+            outline-offset: $admin-focus-ring-offset;
+        }
+
+        &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .admin-login__submit,
+    .admin-login__control,
+    .admin-login__link {
+        transition:
+            background-color 0.15s ease,
+            border-color 0.15s ease,
+            color 0.15s ease;
+    }
+}
