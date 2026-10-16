@@ -54,7 +54,9 @@
                 <span class="chat-item__preview" data-chat-preview>{{ Str::limit($preview, 34) }}</span>
               </span>
               <span class="chat-item__meta">
-                <time data-chat-when>{{ $last ? $last['at']->diffForHumans(null, true, true) : '' }}</time>
+                {{-- Date + time (same shape as the thread stamps); data-at lets messages.js
+                     re-render it in the admin's timezone, like every other chat timestamp. --}}
+                <time data-chat-when @if ($last) data-at="{{ $last['at']->toIso8601String() }}" @endif>{{ $last ? $last['at']->format('M j, Y g:i A') : '' }}</time>
                 <span class="chat-item__badge" data-chat-badge @if (! $c['unread']) hidden @endif>{{ $c['unread'] }}<span class="visually-hidden"> unread</span></span>
               </span>
             </button>

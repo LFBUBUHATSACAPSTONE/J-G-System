@@ -23,8 +23,17 @@ const fmtSize = (b) =>
     b < 1048576
         ? `${Math.max(1, Math.round(b / 1024))} KB`
         : `${(b / 1048576).toFixed(1)} MB`;
-const formatTime = (date) =>
-    date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+// Every message stamp carries the date as well as the time — both sides of the chat share
+// this formatter (and the Blade partial renders the same "M j, Y g:i A" shape server-side),
+// so an older message never reads as a bare clock time.
+export const formatStamp = (date) =>
+    date.toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+    });
 const dayKeyOf = (date) =>
     `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 const startOfDay = (date) =>
@@ -41,7 +50,7 @@ const dayLabel = (date) => {
         year: "numeric",
     });
 };
-const timeLabel = () => formatTime(new Date());
+const timeLabel = () => formatStamp(new Date());
 const dayKey = () => dayKeyOf(new Date());
 
 // `data-chat-update-url` / `data-chat-delete-url` hold a route with the token below in
@@ -66,7 +75,7 @@ export function localizeTimes(log) {
     log.querySelectorAll("time.chat-msg__time[datetime]").forEach((time) => {
         const at = new Date(time.getAttribute("datetime"));
         if (Number.isNaN(at.getTime())) return;
-        time.textContent = formatTime(at);
+        time.textContent = formatStamp(at);
     });
 }
 
@@ -246,7 +255,7 @@ export function appendIncoming(log, message, root) {
 
     const meta = el("div", "chat-msg__meta");
     const at = message.at ? new Date(message.at) : new Date();
-    const time = el("time", "chat-msg__time", formatTime(at));
+    const time = el("time", "chat-msg__time", formatStamp(at));
     time.setAttribute("datetime", at.toISOString());
     meta.append(time);
     if (message.edited) meta.append(el("span", "chat-msg__edited", "edited"));

@@ -106,7 +106,10 @@ class BookingFlowTest extends TestCase
     public function test_booking_steps_save_a_validated_booking_and_return_its_reference(): void
     {
         $this->get('/user/landing')->assertOk();
-        $this->get('/user/booking?package=budget-party')->assertOk();
+        $this->get('/user/booking?package=budget-party')
+            ->assertOk()
+            // The schedule step spells out the same gap the backend enforces.
+            ->assertSee('2 hours');
 
         $this->postJson(route('booking.client-information'), [
             'first_name' => 'Taylor',
@@ -201,6 +204,119 @@ class BookingFlowTest extends TestCase
             ->assertJsonFragment(['full' => [$date]]);
     }
 
+    public function test_bookings_on_the_same_day_cannot_overlap_or_skip_the_gap(): void
+    {
+        $date = now()->addDays(21)->toDateString();
+
+        // An approved event from 11:00 AM to 6:00 PM holds 9:00 AM - 8:00 PM once the
+        // default 120-minute break is added on both sides.
+        $this->createBooking(array_merge($this->bookingData($date, 'BUSY1'), [
+            'event_start_time' => '11:00 AM',
+            'event_end_time' => '6:00 PM',
+        ]));
+
+        $this->reachScheduleStep();
+
+        // Direct overlap: rejected, and the message names the blocked window.
+        $overlap = $this->postJson(route('booking.event-schedule'), [
+            'event_start_date' => $date,
+            'event_end_date' => $date,
+            'start_time' => '1:00 PM',
+            'end_time' => '3:00 PM',
+        ])->assertUnprocessable()->assertJsonValidationErrors('start_time');
+        $this->assertStringContainsString('unavailable', $overlap->json('errors.start_time.0'));
+
+        // Too soon after the existing event: 7:00 PM is still inside the required break.
+        $this->postJson(route('booking.event-schedule'), [
+            'event_start_date' => $date,
+            'event_end_date' => $date,
+            'start_time' => '7:00 PM',
+            'end_time' => '9:00 PM',
+        ])->assertUnprocessable()->assertJsonValidationErrors('start_time');
+
+        // Exactly one gap after 6:00 PM (8:00 PM) is allowed.
+        $this->postJson(route('booking.event-schedule'), [
+            'event_start_date' => $date,
+            'event_end_date' => $date,
+            'start_time' => '8:00 PM',
+            'end_time' => '10:00 PM',
+        ])->assertOk();
+    }
+
+    public function test_a_day_fully_covered_by_bookings_is_reported_full(): void
+    {
+        $date = now()->addDays(28)->toDateString();
+
+        // 12 AM - 12 PM and 2 PM - 11:59 PM, plus the break each, leave no free window.
+        $this->createBooking(array_merge($this->bookingData($date, 'FILL1'), [
+            'event_start_time' => '12:00 AM',
+            'event_end_time' => '12:00 PM',
+        ]));
+        $this->createBooking(array_merge($this->bookingData($date, 'FILL2'), [
+            'event_start_time' => '2:00 PM',
+            'event_end_time' => '11:59 PM',
+        ]));
+
+        // Under the daily limit (2 of 3) but the whole clock is occupied.
+        $this->getJson(route('booking.availability', ['month' => substr($date, 0, 7)]))
+            ->assertOk()
+            ->assertJsonFragment(['full' => [$date]]);
+
+        $this->reachScheduleStep();
+        $this->postJson(route('booking.event-schedule'), [
+            'event_start_date' => $date,
+            'event_end_date' => $date,
+            'start_time' => '1:00 PM',
+            'end_time' => '2:00 PM',
+        ])->assertUnprocessable()
+            ->assertJsonPath('full_dates.0', $date);
+    }
+
+    public function test_a_fourth_booking_on_the_same_day_is_rejected(): void
+    {
+        $date = now()->addDays(35)->toDateString();
+        foreach (range(1, config('scheduling.max_events_per_day')) as $number) {
+            $this->createBooking($this->bookingData($date, "LIMIT{$number}"));
+        }
+
+        $this->reachScheduleStep();
+        $this->postJson(route('booking.event-schedule'), [
+            'event_start_date' => $date,
+            'event_end_date' => $date,
+            'start_time' => '8:00 AM',
+            'end_time' => '10:00 AM',
+        ])->assertUnprocessable()
+            ->assertJsonPath('full_dates.0', $date);
+    }
+
+    public function test_confirming_a_booking_rechecks_the_time_slot(): void
+    {
+        $date = now()->addDays(42)->toDateString();
+        $this->reachScheduleStep();
+
+        // Passes the schedule step...
+        $this->postJson(route('booking.event-schedule'), [
+            'event_start_date' => $date,
+            'event_end_date' => $date,
+            'start_time' => '6:00 PM',
+            'end_time' => '10:00 PM',
+        ])->assertOk();
+
+        // ...but by confirmation time another approved event (12 PM - 6 PM, holding the
+        // slot until 8 PM with the break) has taken it.
+        $this->createBooking(array_merge($this->bookingData($date, 'LATE1'), [
+            'event_start_time' => '12:00 PM',
+            'event_end_time' => '6:00 PM',
+        ]));
+
+        $this->post(route('booking.booking-summary'), [
+            'payment_option' => 'full',
+            'payment_proof' => UploadedFile::fake()->create('proof.jpg', 100, 'image/jpeg'),
+        ], ['Accept' => 'application/json'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('start_time');
+    }
+
     public function test_authenticated_package_cards_link_to_the_selected_package(): void
     {
         $this->actingAs(new User(['name' => 'Test User', 'email' => 'test@example.com']))
@@ -292,6 +408,29 @@ class BookingFlowTest extends TestCase
         ]);
 
         return $booking;
+    }
+
+    // Puts a complete client + event draft in the session so the Event Schedule step can
+    // post straight away, exactly like walking the wizard in the browser.
+    private function reachScheduleStep(): void
+    {
+        $this->get('/user/booking?package=budget-party')->assertOk();
+
+        $this->postJson(route('booking.client-information'), [
+            'first_name' => 'Taylor',
+            'last_name' => 'Jones',
+            'email' => 'taylor@example.com',
+            'contact_number' => '09171234567',
+            'address' => 'San Ildefonso, Bulacan',
+        ])->assertOk();
+
+        $this->postJson(route('booking.event-information'), [
+            'event_name' => 'Birthday Party',
+            'event_type' => 'Others',
+            'event_type_other' => 'Anniversary',
+            'event_location' => 'San Ildefonso, Bulacan',
+            'venue_type' => 'Indoor',
+        ])->assertOk();
     }
 
     private function bookingData(string $date, string $reference): array

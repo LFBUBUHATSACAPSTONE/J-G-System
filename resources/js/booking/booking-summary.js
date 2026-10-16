@@ -37,6 +37,11 @@
  *   422 {"message": "…", "errors": {"down_payment_amount": ["…"]}} -> amount rejected
  *   422 {"message": "…", "full_dates": ["YYYY-MM-DD", …]}
  *       -> a chosen day reached the event limit meanwhile;
+ *       this step fires `booking:schedule-conflict`, which sends the client back to Event Schedule
+ *   422 {"message": "…", "errors": {"start_time": ["…"]}}
+ *       -> the times overlap an existing booking or break the required gap;
+ *       this step fires `booking:schedule-time-conflict`, which also sends the client back to Event
+ *       Schedule (booking-flow.js navigates, event-schedule.js shows the message on the time fields)
  *
  * Proof of submission: a new payment also needs one image (input[data-proof-input], name
  * "payment_proof": JPG, PNG or WebP, up to 5 MB) showing the payment details form was
@@ -446,6 +451,21 @@ async function submitPayment(form) {
                             fullDates: data.full_dates,
                             message: data.message,
                         },
+                    }),
+                );
+                return;
+            }
+
+            // A time conflict (overlap or too-small gap) can only be fixed on Event Schedule,
+            // where the dates and times are editable. Send the client back there instead of
+            // showing a dead-end error here.
+            const timeError =
+                data.errors?.start_time?.[0] ?? data.errors?.end_time?.[0];
+            if (timeError) {
+                form.dispatchEvent(
+                    new CustomEvent("booking:schedule-time-conflict", {
+                        bubbles: true,
+                        detail: { message: timeError },
                     }),
                 );
                 return;

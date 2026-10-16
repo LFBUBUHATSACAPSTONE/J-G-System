@@ -86,6 +86,13 @@
           <p class="event-schedule__reminder">
             <strong>Reminder:</strong>
             Double-check your selected schedule. Changes may not be allowed once you proceed.
+            {{-- Inline PHP directives only here: a block-style PHP directive, paired with the
+                 inline ones at the top of this file, makes the compiler choose the wrong
+                 opening/closing tokens and corrupts the whole view. --}}
+            @php($minGap = \App\Support\Scheduling::minGapLabel())
+            @if ($minGap)
+            Bookings on the same day need at least <strong>{{ $minGap }}</strong> between them, and a day closes once it is fully booked.
+            @endif
           </p>
         </div>
       </div>
