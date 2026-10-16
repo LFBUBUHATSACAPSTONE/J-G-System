@@ -72,7 +72,8 @@ $editable = $out && ($item['editable'] ?? true);
     @endforeach
   </div>
   <div class="chat-msg__meta">
-    <time class="chat-msg__time" datetime="{{ $at->toIso8601String() }}">{{ $at->format('g:i A') }}</time>
+    {{-- Date AND time on every stamp: a thread read a day later must never show a bare clock time. --}}
+    <time class="chat-msg__time" datetime="{{ $at->toIso8601String() }}">{{ $at->format('M j, Y g:i A') }}</time>
     @if (! empty($item['edited']))
     <span class="chat-msg__edited">edited</span>
     @endif

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\Package;
+use App\Support\Scheduling;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\JsonResponse;
@@ -16,6 +17,9 @@ use Illuminate\View\View;
 
 class BookingController extends Controller
 {
+    // Minutes in a bookable day; used as the upper bound of every time window.
+    private const DAY_MINUTES = 1440;
+
     private const EVENT_TYPES = [
         'Baby Shower',
         'Bridal Shower',
@@ -149,6 +153,7 @@ class BookingController extends Controller
 
         return response()->json([
             'limit' => (int) config('scheduling.max_events_per_day', 3),
+            'gap_minutes' => max(0, (int) config('scheduling.min_gap_minutes', 0)),
             'month' => $month,
             'full' => $full,
         ]);
@@ -212,6 +217,18 @@ class BookingController extends Controller
             ], 422);
         }
 
+        // The day has slots left, but this exact time may still clash: overlapping an
+        // existing event, or leaving less than the required break before/after one.
+        $conflict = $this->scheduleConflict(
+            Carbon::parse($data['event_start_date']),
+            Carbon::parse($data['event_end_date']),
+            $data['start_time'],
+            $data['end_time'],
+        );
+        if ($conflict) {
+            return $this->validationError(['start_time' => [$conflict['message']]], $conflict['message']);
+        }
+
         $schedule = [
             'event_start_date' => $data['event_start_date'],
             'event_end_date' => $data['event_end_date'],
@@ -242,14 +259,21 @@ class BookingController extends Controller
                 return $this->jsonError('Choose and save a new schedule before confirming the reschedule.', 409);
             }
 
-            [$booking, $fullDates] = DB::transaction(function () use ($original, $schedule) {
+            [$booking, $fullDates, $conflict] = DB::transaction(function () use ($original, $schedule) {
                 $fullDates = $this->fullDatesBetween(
                     Carbon::parse($schedule['event_start_date']),
                     Carbon::parse($schedule['event_end_date']),
                     true,
                 );
                 if ($fullDates) {
-                    return [null, $fullDates];
+                    return [null, $fullDates, null];
+                }
+
+                // Re-check the clock under the same lock: between saving the schedule and
+                // confirming here, another booking may have taken the slot or moved next to it.
+                $conflict = $this->scheduleConflictFromSchedule($schedule, true);
+                if ($conflict) {
+                    return [null, [], $conflict];
                 }
 
                 $booking = Booking::create(array_merge(
@@ -287,10 +311,13 @@ class BookingController extends Controller
                     ],
                 );
 
-                return [$booking, []];
+                return [$booking, [], null];
             });
             if ($fullDates) {
                 return $this->capacityConflict($fullDates);
+            }
+            if ($conflict) {
+                return $this->validationError(['start_time' => [$conflict]], $conflict);
             }
 
             $request->session()->forget('booking_reschedule_'.$original->id);
@@ -343,14 +370,21 @@ class BookingController extends Controller
 
         $userId = $request->user()?->id;
 
-        [$booking, $fullDates] = DB::transaction(function () use ($draft, $package, $data, $paymentCents, $userId, $request) {
+        [$booking, $fullDates, $conflict] = DB::transaction(function () use ($draft, $package, $data, $paymentCents, $userId, $request) {
             $fullDates = $this->fullDatesBetween(
                 Carbon::parse($draft['event_start_date']),
                 Carbon::parse($draft['event_end_date']),
                 true,
             );
             if ($fullDates) {
-                return [null, $fullDates];
+                return [null, $fullDates, null];
+            }
+
+            // Re-check the clock under the same lock: the schedule step could have passed
+            // while someone else booked next to (or on top of) this slot.
+            $conflict = $this->scheduleConflictFromSchedule($draft, true);
+            if ($conflict) {
+                return [null, [], $conflict];
             }
 
             $booking = Booking::create([
@@ -381,10 +415,13 @@ class BookingController extends Controller
                 'payment_receipt_path' => $proofPath,
             ]);
 
-            return [$booking, []];
+            return [$booking, [], null];
         });
         if ($fullDates) {
             return $this->capacityConflict($fullDates);
+        }
+        if ($conflict) {
+            return $this->validationError(['start_time' => [$conflict]], $conflict);
         }
 
         $request->session()->forget('booking_draft');
@@ -469,15 +506,24 @@ class BookingController extends Controller
         return [$booking, null];
     }
 
-    private function fullDatesBetween(Carbon $start, Carbon $end, bool $lock = false): array
+    /**
+     * Per-day occupancy of $start..$end by counted bookings (config/scheduling.php):
+     *   'counts'  — bookings covering each day; a multi-day booking counts on EVERY day.
+     *   'blocked' — windows [from, to] (minutes past midnight) a new booking may not touch:
+     *               each booking's own span PLUS the required break before and after it,
+     *               merged per day. A window reaching 00:00 and 24:00 means the whole day
+     *               is occupied and no other event fits, no matter how many slots the
+     *               quota still shows.
+     * Times are stored as "h:mm AM/PM" strings; a booking with unreadable times holds the
+     * entire day, so a legacy row can never be double-booked by accident.
+     */
+    private function dayOccupancy(Carbon $start, Carbon $end, bool $lock = false): array
     {
-        $limit = (int) config('scheduling.max_events_per_day', 3);
         $statuses = config('scheduling.counted_statuses', []);
-        if ($limit < 1 || ! $statuses) {
-            return [];
+        if (! $statuses) {
+            return ['counts' => [], 'blocked' => []];
         }
 
-        $counts = [];
         $query = Booking::query()
             ->whereIn('status', $statuses)
             ->join('booking_schedules', 'bookings.id', '=', 'booking_schedules.booking_id')
@@ -489,21 +535,88 @@ class BookingController extends Controller
         $bookings = $query->get([
             'booking_schedules.event_start_date',
             'booking_schedules.event_end_date',
+            'booking_schedules.event_start_time',
+            'booking_schedules.event_end_time',
         ]);
 
+        $gap = Scheduling::minGapMinutes();
+        $counts = [];
+        $windows = [];
+
         foreach ($bookings as $booking) {
+            $from = $this->timeInMinutes($booking->event_start_time);
+            $to = $this->timeInMinutes($booking->event_end_time);
+
             foreach (CarbonPeriod::create($booking->event_start_date, $booking->event_end_date) as $date) {
                 $iso = $date->toDateString();
-                if ($iso >= $start->toDateString() && $iso <= $end->toDateString()) {
-                    $counts[$iso] = ($counts[$iso] ?? 0) + 1;
+                if ($iso < $start->toDateString() || $iso > $end->toDateString()) {
+                    continue;
                 }
+
+                $counts[$iso] = ($counts[$iso] ?? 0) + 1;
+
+                // No times, or a clock running past midnight (6:00 PM - 2:00 AM): hold the
+                // whole day rather than guess where the event actually sits.
+                if ($from === null || $to === null || $to <= $from) {
+                    $windows[$iso][] = [0, self::DAY_MINUTES];
+
+                    continue;
+                }
+
+                $windows[$iso][] = [
+                    max(0, $from - $gap),
+                    min(self::DAY_MINUTES, $to + $gap),
+                ];
             }
         }
+
+        $blocked = [];
+        foreach ($windows as $iso => $day) {
+            $blocked[$iso] = $this->mergeIntervals($day);
+        }
+
+        return ['counts' => $counts, 'blocked' => $blocked];
+    }
+
+    /**
+     * Collapse overlapping [from, to] windows into the smallest set covering the same time.
+     */
+    private function mergeIntervals(array $windows): array
+    {
+        usort($windows, fn (array $a, array $b) => [$a[0], $a[1]] <=> [$b[0], $b[1]]);
+
+        $merged = [];
+        foreach ($windows as [$from, $to]) {
+            $last = count($merged) - 1;
+            if ($last >= 0 && $from <= $merged[$last][1]) {
+                $merged[$last][1] = max($merged[$last][1], $to);
+            } else {
+                $merged[] = [$from, $to];
+            }
+        }
+
+        return $merged;
+    }
+
+    private function fullDatesBetween(Carbon $start, Carbon $end, bool $lock = false): array
+    {
+        $limit = (int) config('scheduling.max_events_per_day', 3);
+        if ($limit < 1) {
+            return [];
+        }
+
+        ['counts' => $counts, 'blocked' => $blocked] = $this->dayOccupancy($start, $end, $lock);
 
         $full = [];
         foreach (CarbonPeriod::create($start, $end) as $date) {
             $iso = $date->toDateString();
-            if (($counts[$iso] ?? 0) >= $limit) {
+            $windows = $blocked[$iso] ?? [];
+
+            // At the event quota, or the merged busy windows already span 00:00 - 24:00.
+            $covered = $windows !== []
+                && $windows[0][0] <= 0
+                && $windows[0][1] >= self::DAY_MINUTES;
+            if (($counts[$iso] ?? 0) >= $limit || $covered) {
                 $full[] = $iso;
             }
         }
@@ -511,11 +624,103 @@ class BookingController extends Controller
         return $full;
     }
 
-    private function timeInMinutes(string $time): int
-    {
-        $date = Carbon::createFromFormat('g:i A', $time);
+    /**
+     * First day in $start..$end where $startTime - $endTime cannot sit: it overlaps an
+     * existing booking or leaves less than the required break around one. Returns
+     * ['date' => 'Y-m-d', 'message' => '…'] or null when every day in the range is clear.
+     */
+    private function scheduleConflict(
+        Carbon $start,
+        Carbon $end,
+        string $startTime,
+        string $endTime,
+        bool $lock = false,
+    ): ?array {
+        $from = $this->timeInMinutes($startTime);
+        $to = $this->timeInMinutes($endTime);
+        if ($from === null || $to === null) {
+            return null;
+        }
 
-        return ((int) $date->format('G') * 60) + (int) $date->format('i');
+        // A multi-day event may legitimately end earlier in the clock than it starts
+        // (6:00 PM - 2:00 AM over two days). Treat it conservatively on every day:
+        // from the start time to midnight, plus midnight to the end time.
+        $proposed = [[$from, max($to, $from)]];
+        if ($to <= $from) {
+            $proposed[] = [0, $to];
+        }
+
+        ['blocked' => $blocked] = $this->dayOccupancy($start, $end, $lock);
+
+        foreach (CarbonPeriod::create($start, $end) as $date) {
+            $iso = $date->toDateString();
+            foreach ($blocked[$iso] ?? [] as [$busyFrom, $busyTo]) {
+                foreach ($proposed as [$windowFrom, $windowTo]) {
+                    if ($windowFrom < $busyTo && $windowTo > $busyFrom) {
+                        return [
+                            'date' => $iso,
+                            'message' => $this->scheduleConflictMessage($iso, $busyFrom, $busyTo),
+                        ];
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Same check for a stored schedule array (event_start_date / event_end_date /
+     * event_start_time / event_end_time). A schedule without times cannot be checked and
+     * passes, matching how it is stored.
+     */
+    private function scheduleConflictFromSchedule(array $schedule, bool $lock = false): ?string
+    {
+        if (empty($schedule['event_start_date']) || empty($schedule['event_end_date'])
+            || empty($schedule['event_start_time']) || empty($schedule['event_end_time'])) {
+            return null;
+        }
+
+        $conflict = $this->scheduleConflict(
+            Carbon::parse($schedule['event_start_date']),
+            Carbon::parse($schedule['event_end_date']),
+            (string) $schedule['event_start_time'],
+            (string) $schedule['event_end_time'],
+            $lock,
+        );
+
+        return $conflict['message'] ?? null;
+    }
+
+    /**
+     * Message for a schedule 422: names the day, the blocked window (break included) and
+     * the required gap, so the client can pick a workable time without guessing.
+     */
+    private function scheduleConflictMessage(string $iso, int $busyFrom, int $busyTo): string
+    {
+        $gap = Scheduling::minGapMinutes();
+        $break = $gap > 0
+            ? ' Bookings on the same day need at least '.Scheduling::humanizeMinutes($gap).' between them.'
+            : '';
+
+        return Carbon::parse($iso)->format('F j, Y')
+            .' is unavailable from '.Scheduling::minutesToClock($busyFrom)
+            .' to '.Scheduling::minutesToClock($busyTo).'.'.$break
+            .' Please pick a different time or date.';
+    }
+
+    // "9:00 AM" -> 540. Null when the string is missing or not a valid 12-hour time.
+    private function timeInMinutes(?string $time): ?int
+    {
+        if (! preg_match('/^(?:[0-9]|1[0-2]):[0-5][0-9] (?:AM|PM)$/', (string) $time)) {
+            return null;
+        }
+
+        [$clock, $period] = explode(' ', (string) $time);
+        [$hour, $minute] = explode(':', $clock);
+        $hour = ((int) $hour % 12) + ($period === 'PM' ? 12 : 0);
+
+        return ($hour * 60) + (int) $minute;
     }
 
     private function newReference(): string

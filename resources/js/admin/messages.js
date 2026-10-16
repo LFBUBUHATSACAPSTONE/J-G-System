@@ -1,6 +1,6 @@
 // Admin Messages page: chat list (select / search / unread filter), panels, quick replies,
 // mobile list <-> conversation switch. Everything is client-side over the chats on the page.
-import { appendBooking, appendIncoming, applyMessageChange, initChat, scrollLog } from "../chat/chat.js";
+import { appendBooking, appendIncoming, applyMessageChange, formatStamp, initChat, scrollLog } from "../chat/chat.js";
 
 const layout = document.querySelector("[data-messages]");
 
@@ -12,6 +12,23 @@ if (layout) {
     const count = layout.querySelector("[data-chat-count]");
     const panels = [...layout.querySelectorAll(".chat-panel")];
     let filter = "all";
+
+    // The list stamps are server-rendered in UTC (same as the thread); show them in the
+    // admin's own timezone, matching what chat.js does inside each conversation.
+    layout.querySelectorAll("[data-chat-when][data-at]").forEach((when) => {
+        const at = new Date(when.dataset.at);
+        if (!Number.isNaN(at.getTime())) when.textContent = formatStamp(at);
+    });
+
+    // Stamp a list row with a fresh date+time, keeping data-at in sync so a later
+    // re-localization would agree with it.
+    const touchWhen = (btn) => {
+        const when = btn.querySelector("[data-chat-when]");
+        if (!when) return;
+        const now = new Date();
+        when.textContent = formatStamp(now);
+        when.dataset.at = now.toISOString();
+    };
 
     panels.forEach((p) => initChat(p));
     const first = panels.find((p) => !p.hidden);
@@ -109,7 +126,7 @@ if (layout) {
         const { body, files } = e.detail;
         btn.querySelector("[data-chat-preview]").textContent =
             `You: ${body || (files > 1 ? "Sent attachments" : "Sent an attachment")}`;
-        btn.querySelector("[data-chat-when]").textContent = "now";
+        touchWhen(btn);
         list.prepend(btn.closest("[data-chat-item]"));
     });
 
@@ -176,8 +193,7 @@ if (layout) {
                         const preview = btn.querySelector("[data-chat-preview]");
                         if (preview)
                             preview.textContent = `${nameEl ? nameEl.textContent : "Client"}: ${text}`;
-                        const when = btn.querySelector("[data-chat-when]");
-                        if (when) when.textContent = "now";
+                        touchWhen(btn);
                         if (li) list.prepend(li);
 
                         if (panel.hidden) {

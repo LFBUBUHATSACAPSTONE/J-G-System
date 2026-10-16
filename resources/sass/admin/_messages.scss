@@ -149,12 +149,18 @@
         font-size: admin-fluid(0.9375);
     }
     &__meta {
-        flex: none;
+        // The date + time stamp is longer than the old relative time; allow this column to
+        // shrink (and the stamp to wrap) instead of squeezing the name/preview out.
+        flex: 0 1 auto;
+        min-width: 0;
         display: grid;
         justify-items: end;
         gap: $sp-1;
         color: $admin-text-muted;
         font-size: 0.875rem;
+        time {
+            text-align: right;
+        }
     }
     &__badge {
         min-width: 1.375rem;

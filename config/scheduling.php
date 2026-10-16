@@ -14,4 +14,11 @@ return [
   // client is only waiting for the payment check, so the day stays held for them.
   // Cancelled / declined bookings are not listed, so they free their days.
   'counted_statuses' => ['pending_payment', 'approved'],
+
+  // Required break between two bookings that share a calendar day, measured from the end
+  // of one event to the start of the next (and mirrored on the other side, so a new
+  // booking may not start right before an existing one either). An event ending at 3 PM
+  // therefore keeps 3 PM - 5 PM on hold with the default 120 minutes. 0 disables the
+  // break and leaves only the overlap check.
+  'min_gap_minutes' => 120,
 ];

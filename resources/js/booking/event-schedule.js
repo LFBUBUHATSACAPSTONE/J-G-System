@@ -18,16 +18,25 @@
  * dispatches a bubbling `booking:previous` CustomEvent, same as
  * event-information.js.
  *
- * Event limit (config/scheduling.php, max 3 approved events per day):
- *   - GET `booking.availability` ?month=YYYY-MM -> { limit, month, full: ["YYYY-MM-DD", …] }
- *     is called when the step opens and on every month change. Full days
- *     get `.is-full`, aria-disabled and a "fully booked" label, and can't
- *     be picked or included in a range. If the call fails the calendar
- *     stays usable: the server still rejects a full day on submit.
+ * Event limit (config/scheduling.php, max 3 events per day + min 120-minute gap):
+ *   - GET `booking.availability` ?month=YYYY-MM -> { limit, gap_minutes, month, full: ["YYYY-MM-DD", …] }
+ *     is called when the step opens and on every month change. A day is `full` when it is
+ *     at the event limit OR its existing bookings (plus the gap around each) cover the
+ *     whole clock — no time left that could fit another event. Full days get `.is-full`,
+ *     aria-disabled and a "fully booked" label, and can't be picked or included in a range.
+ *     If the call fails the calendar stays usable: the server still rejects a full day on submit.
+ *   - Two bookings on the same day may not overlap and need the configured gap between
+ *     them (an event ending at 3 PM holds the slot until 5 PM). The server answers a
+ *     422 with `errors.start_time` (and NO `full_dates`) naming the blocked window; the
+ *     generic error path below shows it under the time fields.
  *   - A `booking:schedule-conflict` event (detail: { fullDates, message })
  *     marks those days full, clears the selection and shows the message.
  *     This step fires it on a 422 that carries `full_dates`; the Booking
  *     Summary step fires it too, and booking-flow.js sends the client back here.
+ *   - A `booking:schedule-time-conflict` event (detail: { message }) is fired
+ *     by the Booking Summary step when the server rejects the times (overlap or
+ *     too-small gap). booking-flow.js sends the client back here and this step
+ *     shows the message under the time fields without clearing the selection.
  *
  * Reschedule mode: when the calendar has
  * data-reschedule-month="YYYY-MM" it opens on that month, both month arrows are hidden and
@@ -40,8 +49,10 @@
  * Expected back-end contract for `booking.event-schedule`:
  *   200 JSON -> saved, caller advances to the next step
  *   422 {"message": "…", "errors": {"event_start_date": ["…"], …}} -> rejected
+ *   422 {"message": "…", "errors": {"start_time": ["…"]}}
+ *       -> the time overlaps an existing booking or breaks the required gap
  *   422 {"message": "…", "errors": {…}, "full_dates": ["YYYY-MM-DD", …]}
- *       -> a day in the range is at the event limit (race: someone else took it)
+ *       -> a day in the range is at the event limit or fully covered (race: someone else took it)
  */
 
 import { getCsrfToken } from "../auth/csrf.js";
@@ -351,6 +362,24 @@ function initCalendar(form) {
             [root],
         );
         loadAvailability();
+    });
+
+    // The Booking Summary rejected the times (overlap or too-small gap). Show it under the time
+    // fields; the calendar selection and the typed times are still in the DOM, so nothing is
+    // cleared — the client just adjusts the time and tries again.
+    document.addEventListener("booking:schedule-time-conflict", (event) => {
+        const inputs = [
+            form.querySelector('[name="start_time"]'),
+            form.querySelector('[name="end_time"]'),
+        ]
+            .map((input) => input?.closest(".event-schedule__time-field"))
+            .filter(Boolean);
+        showError(
+            form,
+            event.detail?.message ||
+                "That time overlaps an existing booking or breaks the required gap. Please choose another time.",
+            inputs,
+        );
     });
 
     // The other steps live in the same page, so refresh whenever this one becomes visible again.

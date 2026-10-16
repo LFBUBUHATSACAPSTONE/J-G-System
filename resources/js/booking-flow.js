@@ -76,6 +76,13 @@ function initBookingFlow() {
         advanceTo(root, "event-schedule"),
     );
 
+    // A later step was rejected because its times overlap an existing booking or break the
+    // required gap. Send the client back to Event Schedule; event-schedule.js listens for the
+    // same event to show the message under the time fields without losing the current selection.
+    root.addEventListener("booking:schedule-time-conflict", () =>
+        advanceTo(root, "event-schedule"),
+    );
+
     // "Previous" is dispatched by whichever step is currently visible
     // (event-information, event-schedule, booking-summary all use the
     // same event name) — the controller just steps back one in
