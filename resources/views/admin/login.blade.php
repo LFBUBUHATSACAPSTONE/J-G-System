@@ -1,6 +1,9 @@
 {{--
   Admin sign-in gate (the landing an admin sees first at /admin).
 
+  FRONT END ONLY. Own layout and own Vite entry (admin-login), so it never loads the admin shell or
+  the public landing / auth modal. No sign-up and no Google button: admin accounts are created by the owner.
+
   Names and data the back end wires later
     route('admin.login.submit')  POST JSON {email, password, remember}
     route('admin.dashboard')     where a signed-in admin goes
@@ -40,6 +43,7 @@ $imageUrl = asset(config('admin.logo', 'images/logo/J&G_official_logo.webp'));
 </head>
 
 <body>
+  <img src="{{ asset('images/backgrounds/design/landing_bg.webp') }}" alt="" class="admin-login__bg">
   <main class="admin-login">
     <section class="admin-login__card" aria-labelledby="admin-login-title">
 

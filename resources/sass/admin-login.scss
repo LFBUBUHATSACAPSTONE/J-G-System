@@ -39,6 +39,17 @@ body {
         padding: $admin-pad-sm;
     }
 
+    // Same artwork as the landing hero, fixed behind the card and covering the whole screen.
+    &__bg {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -1;
+        pointer-events: none;
+    }
+
     &__card {
         position: relative;
         isolation: isolate; // keeps the glow behind the content
