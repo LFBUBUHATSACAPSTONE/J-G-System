@@ -1,15 +1,21 @@
 // Admin sign-in entry: its own Vite entry, so it ships neither the admin shell (sidebar, tables,
 // calendar) nor the public landing styles. Tokens only.
 //
-// Look: the same as the user auth modal (surface, violet-to-rose glow, field, link, checkbox and
-// gradient-button styles, all from the $auth-* tokens), but ONE centred card with no photo panel and
-// no carousel, so the admin sign-in stays visually separate from the customer one.
+// Look: IDENTICAL to the user auth modal (sass/_auth-modal.scss): same surface, glow, title, subtext,
+// label, input, error text, toggle, links, checkbox, code boxes and gradient button, with the same
+// $auth-* tokens AND the same sizes and spacing (rem values copied from the modal, so this page does NOT
+// use the admin 4px spacing tokens). Only differences: ONE centred card (no photo panel, no carousel),
+// plus the admin logo, "Admin" badge and background art.
 // Load order: shared tokens first, then admin tokens (same order as admin.scss).
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
 
 @import "user-variables";
 @import "admin-variables";
 @import "gradient-button";
+
+// The modal's banner errors use Bootstrap's .text-danger (#dc3545), not $auth-danger (that one is for
+// borders and the per-field messages). Same value here so both pages read the same.
+$admin-login-banner-error: #dc3545;
 
 // validation.js toggles this class, so the entry defines it (no Bootstrap here).
 .d-none {
@@ -22,11 +28,26 @@
     box-sizing: border-box;
 }
 
+// Bootstrap's reboot gives the modal these (this entry has no Bootstrap), so buttons and inputs
+// inherit the page font, size and line-height exactly as they do there.
+button,
+input {
+    margin: 0;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+a {
+    text-decoration: none;
+}
+
 body {
     margin: 0;
     background: $auth-bg;
     color: $auth-text-primary;
     font-family: $admin-font-family;
+    line-height: 1.5; // Bootstrap's reboot value, which the modal inherits
 }
 
 .admin-login {
@@ -50,22 +71,23 @@ body {
         pointer-events: none;
     }
 
+    // Same surface, radius and corner glow as `#authModal .modal-content`, and the same padding as
+    // its right panel.
     &__card {
         position: relative;
         isolation: isolate; // keeps the glow behind the content
         overflow: hidden;
         width: 100%;
         max-width: 28rem;
-        padding: $sp-6;
+        padding: 1.5rem 1.5rem 2rem;
         border-radius: $auth-radius-xl;
         background: $auth-surface;
-        box-shadow: 0 $sp-4 $sp-12 $auth-shadow-black;
+        box-shadow: 0 1rem 3rem $auth-shadow-black;
 
-        @media (min-width: 576px) {
-            padding: $sp-8 $sp-12;
+        @media (min-width: 768px) {
+            padding: 2rem 2.75rem;
         }
 
-        // Same soft violet-to-rose glow as the auth modal, from the top-right corner.
         &::before {
             content: "";
             position: absolute;
@@ -85,12 +107,12 @@ body {
         }
     }
 
-    // ---- Brand ----
+    // ---- Brand (admin only) ----
     &__brand {
         display: grid;
         justify-items: start;
         gap: $sp-3;
-        margin-bottom: $sp-6;
+        margin-bottom: 1.5rem;
     }
 
     &__logo {
@@ -110,47 +132,63 @@ body {
         text-transform: uppercase;
     }
 
-    // ---- Heading ----
+    // ---- Heading: .auth-modal__title / .auth-modal__subtext ----
     &__title {
-        margin: 0 0 $sp-2;
-        font-size: admin-fluid(1.75);
+        margin: 0 0 0.4rem;
+        font-size: 1.5rem;
         font-weight: 700;
         line-height: 1.2;
+
+        @media (min-width: 768px) {
+            font-size: 1.75rem;
+        }
     }
 
     &__subtitle {
-        margin: 0 0 $sp-6;
+        margin: 0 0 1.25rem;
         color: $auth-text-secondary;
-        font-size: 0.875rem;
+        font-size: 0.85rem;
+
+        a {
+            color: $auth-accent;
+            font-weight: 600;
+            text-decoration: none;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
     }
 
-    // ---- Alerts ----
+    // ---- Error text: .auth-modal__error (banner) and .auth-modal__field-error (per field) ----
     &__alert {
-        margin: 0 0 $sp-4;
-        padding: $sp-3 $sp-4;
-        border: 1px solid $auth-danger;
-        border-radius: $auth-radius-md;
-        background: color-mix(in oklch, #{$auth-danger} 12%, transparent);
-        color: $auth-text-primary;
-        font-size: 0.875rem;
-        line-height: 1.5;
+        margin: 0 0 1rem;
+        color: $admin-login-banner-error;
+        font-size: 0.85rem;
     }
 
-    // ---- Form ----
+    &__field-error {
+        display: block;
+        margin-top: 0.35rem;
+        color: $auth-danger;
+        font-size: 0.78rem;
+    }
+
+    // ---- Form: plain block flow with the modal's margins ----
     &__form {
-        display: grid;
-        gap: $sp-4;
+        margin: 0;
     }
 
     &__field {
-        display: grid;
-        gap: $sp-1;
         position: relative;
-        min-width: 0;
+        margin-bottom: 0.85rem;
 
         label {
+            display: block;
+            margin-bottom: 0.35rem;
+            font-size: 0.8rem;
+            font-weight: 400;
             color: $auth-text-secondary;
-            font-size: 0.875rem;
         }
     }
 
@@ -160,14 +198,14 @@ body {
 
     &__control {
         width: 100%;
-        min-height: 2.75rem;
-        padding: $sp-3 $sp-4;
+        padding: 0.7rem 1rem;
         border: 1px solid transparent;
         border-radius: $auth-radius-md;
         background: $auth-field-bg;
         color: $auth-text-primary;
-        font: inherit;
-        font-size: 1rem;
+        font-family: inherit;
+        font-size: 0.9rem;
+        line-height: 1.5;
 
         &::placeholder {
             color: $auth-text-muted;
@@ -184,33 +222,27 @@ body {
         }
     }
 
+    // ---- Password toggle: .auth-modal__toggle-password (right .9rem, 1.25rem icon at 60%) ----
     &__password {
-        position: relative;
-
         .admin-login__control {
-            padding-right: 3rem;
+            padding-right: 3rem; // text never runs under the icon
         }
     }
 
     &__toggle {
         position: absolute;
-        top: 50%;
-        right: $sp-1;
-        display: grid;
-        place-items: center;
-        width: 2.5rem;
-        height: 2.5rem;
+        top: 2.5rem;
+        right: 0.9rem;
         padding: 0;
         border: 0;
-        border-radius: $auth-radius-md;
-        background: transparent;
-        color: $auth-text-primary;
-        font-size: 1.25rem;
+        background: none;
+        line-height: 1;
         cursor: pointer;
-        transform: translateY(-50%);
 
         i {
             display: block;
+            font-size: 1.25rem;
+            color: $auth-text-primary;
             opacity: 0.6;
         }
 
@@ -221,42 +253,54 @@ body {
 
         &:focus-visible {
             outline: none;
+            border-radius: $sp-1;
             box-shadow: 0 0 0 3px $auth-focus-ring;
         }
     }
 
-    &__field-error {
-        color: $auth-danger;
-        font-size: 0.8125rem;
+    // ---- Links: .auth-modal__standalone-link ("Back to Log in") and the row links ----
+    &__standalone-link {
+        display: block;
+        margin-bottom: 1.25rem;
+        color: $auth-accent;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
     }
 
+    // ---- Remember me / Forgot password: .auth-modal__row ----
     &__row {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
         justify-content: space-between;
-        gap: $sp-2 $sp-4;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.8rem;
         color: $auth-text-secondary;
-        font-size: 0.875rem;
     }
 
     &__remember {
-        display: inline-flex;
+        display: flex;
         align-items: center;
-        gap: $sp-2;
+        gap: 0.5rem;
+        margin: 0;
         cursor: pointer;
 
-        // Same custom checkbox as the auth modal.
         input[type="checkbox"] {
             appearance: none;
             -webkit-appearance: none;
             position: relative;
             flex-shrink: 0;
-            width: 1rem;
-            height: 1rem;
+            width: 16px;
+            height: 16px;
             margin: 0;
             border: 1px solid $auth-border;
-            border-radius: $sp-1;
+            border-radius: 4px;
             background: $auth-field-bg;
             cursor: pointer;
 
@@ -300,14 +344,13 @@ body {
         }
     }
 
-    // Shape only: the colour comes from .btn-color-gradient--primary (shared with the auth modal).
+    // ---- Submit: .auth-modal__submit (the colour comes from .btn-color-gradient--primary) ----
     &__submit {
         width: 100%;
-        min-height: 2.75rem;
-        padding: $sp-3 $sp-4;
-        border: 0;
+        padding: 0.75rem;
+        border: none;
         border-radius: $auth-radius-md;
-        font: inherit;
+        font-family: inherit;
         font-size: 0.95rem;
         font-weight: 600;
         cursor: pointer;
@@ -319,6 +362,71 @@ body {
 
         &:disabled {
             opacity: 0.6;
+            cursor: not-allowed;
+        }
+    }
+
+    // ---- Verification: .auth-modal__code-inputs / __code-box / __masked-destination / #resend-code-btn ----
+    &__masked {
+        color: $auth-accent;
+        font-weight: 600;
+        overflow-wrap: anywhere;
+    }
+
+    &__code-inputs {
+        display: flex;
+        gap: 0.6rem;
+        margin-bottom: 1.25rem;
+    }
+
+    &__code-box {
+        width: 100%;
+        min-width: 0;
+        aspect-ratio: 1 / 1;
+        padding: 1px 2px;
+        border: 1px solid $auth-border;
+        border-radius: $auth-radius-md;
+        background: $auth-field-bg;
+        color: $auth-text-primary;
+        font-family: inherit;
+        font-size: 1.1rem;
+        text-align: center;
+
+        &:focus {
+            outline: none;
+            border-color: $auth-accent;
+            box-shadow: 0 0 0 3px $auth-focus-ring-soft;
+        }
+
+        &.is-invalid {
+            border-color: $auth-danger;
+        }
+    }
+
+    &__resend {
+        display: inline-block;
+        margin-bottom: 1.5rem;
+        padding: 0;
+        border: none;
+        background: none;
+        color: $auth-accent;
+        font-family: inherit;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+
+        &:hover:not(:disabled) {
+            text-decoration: underline;
+        }
+
+        &:focus-visible {
+            outline: none;
+            border-radius: $sp-1;
+            box-shadow: 0 0 0 3px $auth-focus-ring;
+        }
+
+        &:disabled {
+            color: $auth-text-muted;
             cursor: not-allowed;
         }
     }

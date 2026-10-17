@@ -6,38 +6,66 @@
 //   403 {message}                         -> signed in but not an admin ("no access")
 //   429 {message}                         -> too many attempts
 // Same helpers and error pattern as the user auth modal (auth/login.js); look in sass/admin-login.scss.
+//
+// The card also holds the forgot-password, verification-code and new-password views (one module each
+// in js/admin-login/, same flow as the user modal; their back-end contracts are in those files):
+//   admin.password.email        POST {email}                                  -> 200 {verification_token, destination?}
+//   admin.verification.confirm  POST {code, context, verification_token}      -> 200 {token, email}
+//   admin.verification.resend   POST {context, verification_token}            -> 200 {destination?, verification_token?}
+//   admin.password.update       POST {token, email, password, password_confirmation} -> 200
+// No sign-up and no Google: admin accounts are created by the owner.
 
 import "@phosphor-icons/web/regular";
 
 import { getCsrfToken } from "./auth/csrf.js";
 import {
-    getEmailError,
-    getRequiredError,
-    wireLiveField,
+    getIdentifierError,
+    getPasswordError,
+    wireLiveFieldImmediate,
     clearInvalidWithoutFieldError,
     setFieldState,
 } from "./auth/validation.js";
 import { togglePasswordVisibility } from "./auth-modal.js";
+import { getRoot, initViews } from "./admin-login/views.js";
+import { initForgotPassword } from "./admin-login/forgot-password.js";
+import { initVerificationCode } from "./admin-login/verification-code.js";
+import { initResendCode } from "./admin-login/resend-code.js";
+import { initNewPassword } from "./admin-login/new-password.js";
 
 const FORM_SELECTOR = "[data-admin-login]";
 
 const MESSAGES = {
     credentials:
-        "We couldn't sign you in. Check that your email and password are correct.",
+        "We couldn't sign you in — check that your email and password are correct.",
     noAccess: "This account doesn't have admin access.",
     throttled: "Too many attempts. Please wait a moment and try again.",
     network:
         "Something went wrong on our end. Please check your connection and try again.",
 };
 
-const getPasswordRequired = (value) => getRequiredError(value, "Password");
-
 function initAdminLogin() {
+    const root = getRoot();
+    if (root) {
+        initViews(root);
+        initForgotPassword(root);
+        initVerificationCode(root);
+        initResendCode(root);
+        initNewPassword(root);
+
+        // One listener for every password toggle (login + new-password views).
+        root.addEventListener("click", (event) => {
+            const btn = event.target.closest(".admin-login__toggle");
+            if (btn) togglePasswordVisibility(btn);
+        });
+    }
+
     const form = document.querySelector(FORM_SELECTOR);
     if (!form) return;
 
-    wireLiveField(form, "email", getEmailError);
-    wireLiveField(form, "password", getPasswordRequired);
+    // Same as the user modal's login: validates on every keystroke (not on blur), email-only
+    // identifier rule and the same password rules as Sign up / New Password.
+    wireLiveFieldImmediate(form, "email", getIdentifierError);
+    wireLiveFieldImmediate(form, "password", getPasswordError);
 
     form.addEventListener("submit", (event) => {
         event.preventDefault();
@@ -45,11 +73,6 @@ function initAdminLogin() {
     });
 
     form.addEventListener("input", () => clearError(form));
-
-    form.addEventListener("click", (event) => {
-        const btn = event.target.closest(".admin-login__toggle");
-        if (btn) togglePasswordVisibility(btn);
-    });
 }
 
 async function submitLogin(form) {
@@ -62,13 +85,13 @@ async function submitLogin(form) {
 
     clearError(form);
 
-    const emailError = getEmailError(email);
+    const emailError = getIdentifierError(email);
     if (emailError) {
         showFieldError(form, emailInput, "email", emailError);
         return;
     }
 
-    const passwordError = getPasswordRequired(password);
+    const passwordError = getPasswordError(password);
     if (passwordError) {
         showFieldError(form, passwordInput, "password", passwordError);
         return;
