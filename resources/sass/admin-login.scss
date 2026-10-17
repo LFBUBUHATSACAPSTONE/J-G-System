@@ -11,6 +11,7 @@
 
 @import "user-variables";
 @import "admin-variables";
+@import "autofill";
 @import "gradient-button";
 
 // The modal's banner errors use Bootstrap's .text-danger (#dc3545), not $auth-danger (that one is for
@@ -220,6 +221,8 @@ body {
         &.is-invalid {
             border-color: $auth-danger;
         }
+
+        @include booking-autofill;
     }
 
     // ---- Password toggle: .auth-modal__toggle-password (right .9rem, 1.25rem icon at 60%) ----
@@ -241,6 +244,8 @@ body {
 
         i {
             display: block;
+            width: 1.25rem; // the glyph's own size, so the button never collapses before the icon font loads
+            height: 1.25rem;
             font-size: 1.25rem;
             color: $auth-text-primary;
             opacity: 0.6;
@@ -401,6 +406,8 @@ body {
         &.is-invalid {
             border-color: $auth-danger;
         }
+
+        @include booking-autofill;
     }
 
     &__resend {

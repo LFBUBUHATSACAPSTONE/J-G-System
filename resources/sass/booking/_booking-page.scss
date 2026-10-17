@@ -108,23 +108,7 @@
     }
 }
 
-// Keeps Chrome's light-blue autofill from painting over the dark inputs.
-@mixin booking-autofill($bg: $auth-field-bg) {
-    &:-webkit-autofill,
-    &:-webkit-autofill:hover,
-    &:-webkit-autofill:focus {
-        -webkit-text-fill-color: $auth-text-primary;
-        caret-color: $auth-text-primary;
-        box-shadow: 0 0 0 1000px $bg inset;
-        transition: background-color 9999s ease-out 0s;
-    }
-
-    &:-webkit-autofill:focus {
-        box-shadow:
-            0 0 0 1000px $bg inset,
-            0 0 0 3px $auth-focus-ring-soft;
-    }
-}
+// booking-autofill mixin lives in sass/_autofill.scss (shared with the auth modal and admin login).
 
 // Stacked card + actions column used by every step.
 @mixin booking-step {
