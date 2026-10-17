@@ -472,29 +472,63 @@ function initTimeField(input) {
 }
 
 /*
- Turns raw keystrokes into a masked H:MM / HH:MM string. Only "10", "11"
- and "12" ever use two hour digits — typing "9" then "3" reads as 9:03,
- not the impossible 09/3 — and the minute is clamped a digit at a time
- (tens digit capped at 5, full pair capped at 59).
+ Turns raw keystrokes into a masked H:MM / HH:MM string. Digits alone are ambiguous at the
+ hour: "1" then "0" could be 1:0x or 10:xx, so the hour is resolved three ways, in order:
+   1. an explicit separator wins ("1:00" -> hour 1; "10:00" -> hour 10), so 1:00-1:29 can be
+      typed. "." counts as a colon, because phone number keypads have a period but often no
+      colon: "1.00" -> 1:00;
+   2. a leading zero means a one-digit hour ("0100" -> 1:00);
+   3. otherwise only "10", "11" and "12" use two hour digits — typing "9" then "3" reads as
+      9:03, not the impossible 09/3.
+ The minute is clamped a digit at a time (tens digit capped at 5, full pair capped at 59).
 */
 function formatTimeDigits(raw) {
+    const clampHour = (hour) => {
+        const hourNum = Number(hour);
+        if (hourNum === 0) return "";
+        return hourNum > 12 ? "12" : String(hourNum);
+    };
+    const clampMinute = (minute) => {
+        if (minute.length === 1 && Number(minute) > 5) return "5";
+        if (minute.length === 2 && Number(minute) > 59) return "59";
+        return minute;
+    };
+
+    // 1. Explicit separator (":" or "."): the digits before it are the hour, the digits after it
+    // the minute.
+    const colonAt = raw.search(/[:.]/);
+    if (colonAt > 0) {
+        const hour = clampHour(
+            raw.slice(0, colonAt).replace(/\D/g, "").slice(0, 2),
+        );
+        if (!hour) return "";
+        const minute = clampMinute(
+            raw
+                .slice(colonAt + 1)
+                .replace(/\D/g, "")
+                .slice(0, 2),
+        );
+        return `${hour}:${minute}`;
+    }
+
     const digits = raw.replace(/\D/g, "").slice(0, 4);
     if (!digits) return "";
 
+    // 2. Leading zero: "01".."09" is a one-digit hour.
+    if (digits[0] === "0" && digits.length > 1 && digits[1] !== "0") {
+        const hour = digits[1];
+        const minute = clampMinute(digits.slice(2, 4));
+        return minute ? `${hour}:${minute}` : hour;
+    }
+
+    // 3. Only "10", "11" and "12" take two hour digits.
     const hourLen =
         digits.length >= 2 && ["10", "11", "12"].includes(digits.slice(0, 2))
             ? 2
             : 1;
 
-    let hour = digits.slice(0, hourLen);
-    let minute = digits.slice(hourLen, hourLen + 2);
-
-    const hourNum = Number(hour);
-    if (hourNum === 0) hour = "";
-    else if (hourNum > 12) hour = "12";
-
-    if (minute.length === 1 && Number(minute) > 5) minute = "5";
-    if (minute.length === 2 && Number(minute) > 59) minute = "59";
+    const hour = clampHour(digits.slice(0, hourLen));
+    const minute = clampMinute(digits.slice(hourLen, hourLen + 2));
 
     return minute ? `${hour}:${minute}` : hour;
 }

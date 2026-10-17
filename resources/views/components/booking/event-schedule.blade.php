@@ -59,7 +59,7 @@
               <span class="field-required__identifier">*</span>
             </label>
             <div class="event-schedule__time-field">
-              <input type="text" id="es-start-time" name="start_time" placeholder="HH:MM" inputmode="numeric" autocomplete="off" maxlength="5" data-time-input>
+              <input type="text" id="es-start-time" name="start_time" placeholder="HH:MM" inputmode="decimal" autocomplete="off" maxlength="5" data-time-input>
               <div class="event-schedule__ampm" role="group" aria-label="Start time period" data-ampm-group>
                 <button type="button" data-ampm="AM" aria-pressed="true">AM</button>
                 <button type="button" data-ampm="PM" aria-pressed="false">PM</button>
@@ -74,7 +74,7 @@
               <span class="field-required__identifier">*</span>
             </label>
             <div class="event-schedule__time-field">
-              <input type="text" id="es-end-time" name="end_time" placeholder="HH:MM" inputmode="numeric" autocomplete="off" maxlength="5" data-time-input>
+              <input type="text" id="es-end-time" name="end_time" placeholder="HH:MM" inputmode="decimal" autocomplete="off" maxlength="5" data-time-input>
               <div class="event-schedule__ampm" role="group" aria-label="End time period" data-ampm-group>
                 <button type="button" data-ampm="AM" aria-pressed="true">AM</button>
                 <button type="button" data-ampm="PM" aria-pressed="false">PM</button>
@@ -82,6 +82,8 @@
             </div>
             <small class="event-schedule__field-error d-none" data-field-error="end_time"></small>
           </div>
+
+          <p class="event-schedule__hint">Type the time as 1:00, or as 1.00 on a phone keypad.</p>
 
           <p class="event-schedule__reminder">
             <strong>Reminder:</strong>

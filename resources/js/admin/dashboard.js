@@ -3,7 +3,9 @@ const dashboard = document.querySelector("[data-admin-dashboard]");
 if (dashboard) {
     const config = JSON.parse(dashboard.dataset.config);
     const statsTarget = dashboard.querySelector("[data-dashboard-stats]");
-    const attentionTarget = dashboard.querySelector("[data-dashboard-attention]");
+    const attentionTarget = dashboard.querySelector(
+        "[data-dashboard-attention]",
+    );
     const attentionCount = dashboard.querySelector(
         "[data-dashboard-attention-count]",
     );
@@ -53,10 +55,9 @@ if (dashboard) {
             unit = nextUnit;
         }
 
-        return new Intl.RelativeTimeFormat(undefined, { numeric: "auto" }).format(
-            Math.round(difference / divisor),
-            unit,
-        );
+        return new Intl.RelativeTimeFormat(undefined, {
+            numeric: "auto",
+        }).format(Math.round(difference / divisor), unit);
     };
 
     function renderStats(stats) {
@@ -92,7 +93,8 @@ if (dashboard) {
             body.append(makeElement("p", "admin-stat__value", value.value));
             if (value.change !== null && value.change !== undefined) {
                 const change = Number(value.change);
-                const direction = change > 0 ? "up" : change < 0 ? "down" : "flat";
+                const direction =
+                    change > 0 ? "up" : change < 0 ? "down" : "flat";
                 const tone =
                     direction !== "flat" && card.higher !== "neutral"
                         ? (direction === "up") === (card.higher === "good")
@@ -209,7 +211,9 @@ if (dashboard) {
                     : makeElement("span", "", "date unavailable");
                 if (item.submitted_at) requested.dateTime = item.submitted_at;
                 meta.append(
-                    document.createTextNode(`${item.package || "Unassigned"} · `),
+                    document.createTextNode(
+                        `${item.package || "Unassigned"} · `,
+                    ),
                     eventDate,
                     document.createTextNode(" · requested "),
                     requested,
@@ -230,10 +234,7 @@ if (dashboard) {
                     document.createTextNode(action),
                     makeElement("i", "ph ph-arrow-right"),
                 );
-                actionLink.lastElementChild.setAttribute(
-                    "aria-hidden",
-                    "true",
-                );
+                actionLink.lastElementChild.setAttribute("aria-hidden", "true");
                 row.append(actionLink);
                 list.append(row);
             });
@@ -267,7 +268,9 @@ if (dashboard) {
         calendarLink.href = calendarUrl.toString();
 
         if (!shown.length) {
-            fragment.append(makeElement("p", "admin-empty", "No upcoming events."));
+            fragment.append(
+                makeElement("p", "admin-empty", "No upcoming events."),
+            );
         } else {
             const list = makeElement("ul", "admin-upcoming");
             shown.forEach((event) => {
@@ -290,11 +293,14 @@ if (dashboard) {
                 item.href = bookingsUrl({ booking: event.id });
                 item.setAttribute(
                     "aria-label",
-                    `${event.event} for ${event.client}, ${dateLabel(event.date, {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                    })}. View booking`,
+                    `${event.event} for ${event.client}, ${dateLabel(
+                        event.date,
+                        {
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric",
+                        },
+                    )}. View booking`,
                 );
                 const dateTile = makeElement("time", "admin-upcoming__date");
                 dateTile.dateTime = event.date;
@@ -321,13 +327,27 @@ if (dashboard) {
                 );
                 const whenBlock = makeElement("span", "admin-upcoming__when");
                 if (when) whenBlock.append(makeElement("strong", "", when));
-                if (event.time) whenBlock.append(makeElement("span", "", event.time));
+                if (event.time)
+                    whenBlock.append(makeElement("span", "", event.time));
                 item.append(dateTile, info, whenBlock);
                 const listItem = makeElement("li");
                 listItem.append(item);
                 list.append(listItem);
             });
             fragment.append(list);
+
+            if (events.length > shown.length) {
+                const more = makeElement(
+                    "a",
+                    "admin-card__more",
+                    `View all ${events.length} in Calendar `,
+                );
+                more.href = calendarUrl.toString();
+                const icon = makeElement("i", "ph ph-arrow-right");
+                icon.setAttribute("aria-hidden", "true");
+                more.append(icon);
+                fragment.append(more);
+            }
         }
 
         upcomingTarget.replaceChildren(fragment);
@@ -383,7 +403,9 @@ if (dashboard) {
             );
             circle.setAttribute(
                 "class",
-                item.other ? "admin-chart--other" : `admin-chart--${(index % 6) + 1}`,
+                item.other
+                    ? "admin-chart--other"
+                    : `admin-chart--${(index % 6) + 1}`,
             );
             circle.setAttribute("cx", "21");
             circle.setAttribute("cy", "21");
@@ -393,7 +415,10 @@ if (dashboard) {
             circle.setAttribute("stroke-width", "5");
             circle.setAttribute("pathLength", "100");
             circle.setAttribute("stroke-dasharray", `${dash} ${100 - dash}`);
-            circle.setAttribute("stroke-dashoffset", offset ? String(-offset) : "0");
+            circle.setAttribute(
+                "stroke-dashoffset",
+                offset ? String(-offset) : "0",
+            );
             circle.setAttribute("transform", "rotate(-90 21 21)");
             chart.append(circle);
             offset += percent;
@@ -415,9 +440,13 @@ if (dashboard) {
                 `admin-package-rate__swatch ${item.other ? "admin-chart--other" : `admin-chart--${(index % 6) + 1}`}`,
             );
             swatch.setAttribute("aria-hidden", "true");
-            const label = item.other || !item.id
-                ? makeElement("span", "admin-package-rate__name")
-                : makeElement("a", "admin-package-rate__name admin-package-rate__name--link");
+            const label =
+                item.other || !item.id
+                    ? makeElement("span", "admin-package-rate__name")
+                    : makeElement(
+                          "a",
+                          "admin-package-rate__name admin-package-rate__name--link",
+                      );
             if (item.other) {
                 label.append(
                     document.createTextNode(item.label),
