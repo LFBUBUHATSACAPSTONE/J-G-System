@@ -307,6 +307,13 @@
         font-size: 0.78rem;
     }
 
+    &__hint {
+        margin: 0;
+        font-size: 0.8rem;
+        color: $auth-text-secondary;
+        line-height: 1.5;
+    }
+
     &__reminder {
         font-size: 0.8rem;
         color: $auth-text-secondary;
