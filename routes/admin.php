@@ -7,9 +7,10 @@
 //
 // Route NAMES (admin.dashboard, admin.bookings, ...) must not change: config/admin.php (page meta
 // and the sidebar's active state) and the views build their URLs from them.
-// See docs/admin-routes.md.
-//
-// Order follows the sidebar. Account has no file yet: add one when it is built.
+
+// Order follows the sidebar. Login (the sign-in gate) comes first and stays OUTSIDE any future
+// auth middleware group, otherwise a guest could never reach it.
+require __DIR__ . '/admin/login.php';
 require __DIR__ . '/admin/dashboard.php';
 require __DIR__ . '/admin/bookings.php';
 require __DIR__ . '/admin/messages.php';

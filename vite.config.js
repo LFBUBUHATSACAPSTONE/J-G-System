@@ -12,6 +12,8 @@ export default defineConfig({
                 "resources/js/admin.js",
                 "resources/sass/account.scss",
                 "resources/js/account.js",
+                "resources/sass/admin-login.scss",
+                "resources/js/admin-login.js",
             ],
             refresh: true,
         }),
