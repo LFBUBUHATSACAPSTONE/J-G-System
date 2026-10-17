@@ -31,7 +31,7 @@ return [
   ],
 
   // "Upcoming events": how many rows to show.
-  'upcoming_limit' => 5,
+  'upcoming_limit' => 3,
 
   // Package Rate donut: the largest N packages get their own slice, the rest are grouped as "Other".
   'chart_top' => 5,
