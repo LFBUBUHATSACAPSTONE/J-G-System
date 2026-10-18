@@ -3,7 +3,10 @@
      :quick="[...]" adds quick-reply chips (admin only). --}}
 @props(['action', 'quick' => []])
 
-@php $att = config('admin.messages.attachments'); @endphp
+@php
+$att = config('admin.messages.attachments');
+$hintId = 'chat-hint-' . uniqid(); // one per composer (the admin page has several)
+@endphp
 
 <form
   class="chat-composer"
@@ -18,10 +21,14 @@
   @csrf
 
   @if (count($quick))
-  <div class="chat-quick" role="group" aria-label="Quick replies">
-    @foreach ($quick as $text)
-    <button type="button" class="chat-quick__chip" data-chat-quick="{{ $text }}">{{ Str::limit($text, 38) }}</button>
-    @endforeach
+  {{-- Quick replies: the "⚡" button in the row below opens this list with the full texts. --}}
+  <div class="chat-quickmenu" data-chat-quick-menu hidden>
+    <p class="chat-quickmenu__hint">Pick a reply to fill the message box. Nothing is sent until you press Send.</p>
+    <div class="chat-quickmenu__list" role="menu" aria-label="Quick replies">
+      @foreach ($quick as $text)
+      <button type="button" role="menuitem" class="chat-quickmenu__item" data-chat-quick="{{ $text }}">{{ $text }}</button>
+      @endforeach
+    </div>
   </div>
   @endif
 
@@ -44,9 +51,16 @@
       <span class="visually-hidden">Attach files (JPG, PNG, WEBP or PDF, up to {{ $att['max_kb'] / 1024 }} MB each)</span>
       <input type="file" class="visually-hidden" multiple accept="{{ $att['accept'] }}" data-chat-picker>
     </label>
-    <textarea class="chat-composer__input" name="body" rows="1" maxlength="{{ config('admin.messages.max_length') }}" placeholder="Send message…" aria-label="Message" data-chat-input></textarea>
+    @if (count($quick))
+    <button type="button" class="chat-composer__quick" data-chat-quick-toggle aria-haspopup="true" aria-expanded="false" aria-label="Quick replies">
+      <x-chat.icon name="zap" />
+    </button>
+    @endif
+    <textarea class="chat-composer__input" name="body" rows="1" maxlength="{{ config('admin.messages.max_length') }}" placeholder="Send message…" aria-label="Message" aria-describedby="{{ $hintId }}" data-chat-input></textarea>
     <button type="submit" class="chat-composer__send" aria-label="Send message">
       <x-chat.icon name="send" />
     </button>
   </div>
+  {{-- Keyboard hint: mouse-and-keyboard screens only, shown while the box has focus (CSS). --}}
+  <p class="chat-composer__hint" id="{{ $hintId }}"><kbd>Enter</kbd> to send · <kbd>Shift</kbd> + <kbd>Enter</kbd> for a new line</p>
 </form>
