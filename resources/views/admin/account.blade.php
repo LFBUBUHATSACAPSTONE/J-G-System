@@ -1,4 +1,3 @@
-
 @php
 $firstName = (string) data_get($admin, 'first_name', 'Arjay');
 $lastName = (string) data_get($admin, 'last_name', 'Dela Cruz');
@@ -203,7 +202,7 @@ $lastLogin = $lastLogin ?? null;
         </form>
 
         <div class="admin-account__actions">
-          <form method="POST" action="{{ $logoutUrl }}" class="admin-account__logout">
+          <form method="POST" action="{{ $logoutUrl }}" class="admin-account__logout" data-logout data-redirect-first data-redirect-url="{{ Route::has('admin.login') ? route('admin.login') : '/' }}">
             @csrf
             <button type="submit" class="admin-btn admin-btn--light" @disabled(! $logoutUrl)>Log out</button>
           </form>

@@ -50,7 +50,8 @@
   </nav>
 
   <div class="admin-sidebar__footer">
-    <form method="POST" action="{{ Route::has('logout') ? route('logout') : '#' }}">
+    {{-- auth/logout.js: "Log out?" modal, then a fetch to the JSON logout route, then the admin sign-in page. --}}
+    <form method="POST" action="{{ Route::has('logout') ? route('logout') : '#' }}" data-logout data-redirect-first data-redirect-url="{{ Route::has('admin.login') ? route('admin.login') : '/' }}">
       @csrf
       <button type="submit" class="admin-sidebar__link admin-sidebar__logout">
         <i class="ph ph-sign-out" aria-hidden="true"></i>
