@@ -280,11 +280,29 @@
             outline-offset: 1px;
         }
     }
+    // 8px gap between the bubble and the "⋯" button. The ::before bridges the gap so the
+    // button stays visible while the pointer travels from the bubble to it.
     &--out &__more {
-        right: 100%;
+        right: calc(100% + 0.5rem);
+        &::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 100%;
+            width: 0.5rem;
+        }
     }
     &--in &__more {
-        left: 100%;
+        left: calc(100% + 0.5rem);
+        &::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 100%;
+            width: 0.5rem;
+        }
     }
     &__bubble:focus-within &__more,
     &.is-menu-open &__more {
