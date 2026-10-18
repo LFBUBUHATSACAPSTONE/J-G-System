@@ -909,6 +909,29 @@ export function initChat(root) {
     };
     replyCancel?.addEventListener("click", clearReply);
 
+    // ---- edit mode: the message box itself edits the message -------------------------------
+    // "Edit" loads the message text into the box, shows the edit bar above it and highlights the
+    // bubble. Send saves (PATCH, same URL and body as before), the X or Esc cancels. Whatever was
+    // typed before is put back afterwards.
+    const editBar = form.querySelector("[data-chat-edit-bar]");
+    const editHint = form.querySelector("[data-chat-edit-hint]");
+    const editCancel = form.querySelector("[data-chat-edit-cancel]");
+    let editing = null; // { msg, id, draft }
+    const endEdit = () => {
+        if (!editing) return;
+        const { msg, draft } = editing;
+        editing = null;
+        msg.classList.remove("is-editing");
+        form.classList.remove("is-editing");
+        if (editBar) editBar.hidden = true;
+        input.value = draft;
+        autosize();
+    };
+    editCancel?.addEventListener("click", () => {
+        endEdit();
+        input.focus();
+    });
+
     function renderFiles() {
         list.replaceChildren(
             ...files.map((f, i) => {
@@ -1031,14 +1054,8 @@ export function initChat(root) {
     });
     narrow.addEventListener("change", () => setCompact(false));
 
-    // Replying and editing never run at the same time.
-    const closeEditors = () =>
-        root
-            .querySelectorAll(".chat-edit")
-            .forEach((ed) => ed.querySelector(".chat-edit__cancel")?.click());
-
     function startReply(msg, id) {
-        closeEditors();
+        endEdit(); // replying and editing never run at the same time
         const textEl = msg.querySelector(".chat-msg__text");
         const text = textEl
             ? textEl.textContent.trim()
@@ -1050,116 +1067,81 @@ export function initChat(root) {
     }
 
     function startEdit(msg, id) {
-        if (msg.querySelector(".chat-edit")) return;
+        if (editing?.msg === msg) {
+            input.focus();
+            return;
+        }
         const bubble = msg.querySelector(".chat-msg__bubble");
         if (!bubble) return;
-        closeEditors();
+        endEdit();
         clearReply();
+        setError("");
 
-        const editor = el("form", "chat-edit");
-        const textarea = el("textarea", "chat-edit__input");
-        textarea.rows = 2;
-        if (input.maxLength > 0) textarea.maxLength = input.maxLength;
-        textarea.value =
-            msg.querySelector(".chat-msg__text")?.textContent || "";
-        // Enter saves the edit (Shift+Enter inserts a newline), same as the composer.
-        textarea.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
-                e.preventDefault();
-                editor.requestSubmit();
-            }
-        });
-        const fit = () => {
-            const cap = parseFloat(getComputedStyle(textarea).maxHeight) || 160;
-            textarea.style.height = "auto";
-            textarea.style.height = `${Math.min(textarea.scrollHeight, cap)}px`;
-        };
-        textarea.addEventListener("input", fit);
-        const row = el("div", "chat-edit__row");
-        const save = el("button", "chat-edit__save", "Save");
-        save.type = "submit";
-        const cancel = el("button", "chat-edit__cancel", "Cancel");
-        cancel.type = "button";
-        row.append(save, cancel);
-        editor.append(textarea);
+        editing = { msg, id, draft: input.value };
+        msg.classList.add("is-editing");
+        form.classList.add("is-editing");
 
         // How long the sender still has to edit, straight from the server window.
+        let hint = "";
         const until = msg.dataset.editableUntil
             ? new Date(msg.dataset.editableUntil)
             : null;
         if (until && !Number.isNaN(until.getTime())) {
             const mins = Math.round((until.getTime() - Date.now()) / 60000);
-            editor.append(
-                el(
-                    "p",
-                    "chat-edit__hint",
-                    mins >= 1
-                        ? `You can edit this message for about ${mins} more minute${mins === 1 ? "" : "s"}.`
-                        : "You can only edit this message for a few more seconds.",
-                ),
-            );
+            hint =
+                mins >= 1
+                    ? `You can edit this message for about ${mins} more minute${mins === 1 ? "" : "s"}.`
+                    : "You can only edit this message for a few more seconds.";
         }
+        if (editHint) editHint.textContent = hint;
+        if (editBar) editBar.hidden = false;
 
-        editor.append(row);
+        input.value = msg.querySelector(".chat-msg__text")?.textContent || "";
+        autosize();
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+    }
 
-        const close = () => {
-            editor.remove();
-            bubble.hidden = false;
-        };
-        cancel.addEventListener("click", close);
-
-        editor.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const body = textarea.value.trim();
-            if (!body) {
-                textarea.focus();
-                return;
+    async function saveEdit() {
+        const { msg, id } = editing;
+        const bubble = msg.querySelector(".chat-msg__bubble");
+        const body = input.value.trim();
+        if (!body) {
+            input.focus();
+            return;
+        }
+        const url = messageUrl(root.dataset.chatUpdateUrl, id);
+        if (!url) return;
+        setError("");
+        try {
+            const res = await fetch(url, {
+                method: "PATCH",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": getCsrfToken(form),
+                },
+                body: JSON.stringify({ body }),
+            });
+            if (!res.ok) {
+                const json = await res.json().catch(() => ({}));
+                throw new Error(json.message || "");
             }
-            const url = messageUrl(root.dataset.chatUpdateUrl, id);
-            if (!url) return;
-            save.disabled = true;
-            try {
-                const res = await fetch(url, {
-                    method: "PATCH",
-                    headers: {
-                        Accept: "application/json",
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": getCsrfToken(form),
-                    },
-                    body: JSON.stringify({ body }),
-                });
-                if (!res.ok) {
-                    const json = await res.json().catch(() => ({}));
-                    throw new Error(json.message || "");
-                }
-                let textEl = bubble.querySelector(".chat-msg__text");
-                if (!textEl) {
-                    textEl = el("p", "chat-msg__text");
-                    bubble.insertBefore(
-                        textEl,
-                        bubble.querySelector(".visually-hidden")?.nextSibling ||
-                            null,
-                    );
-                }
-                textEl.textContent = body;
-                markEdited(msg);
-                close();
-            } catch (err) {
-                save.disabled = false;
-                setError(
-                    err.message || "Message not updated. Please try again.",
+            let textEl = bubble.querySelector(".chat-msg__text");
+            if (!textEl) {
+                textEl = el("p", "chat-msg__text");
+                bubble.insertBefore(
+                    textEl,
+                    bubble.querySelector(".visually-hidden")?.nextSibling ||
+                        null,
                 );
             }
-        });
-
-        bubble.hidden = true;
-        msg.insertBefore(editor, bubble.nextSibling);
-        fit();
-        textarea.focus();
-        textarea.setSelectionRange(
-            textarea.value.length,
-            textarea.value.length,
-        );
+            textEl.textContent = body;
+            markEdited(msg);
+            endEdit();
+        } catch (err) {
+            setError(err.message || "Message not updated. Please try again.");
+        }
     }
 
     async function unsend(msg, id) {
@@ -1178,6 +1160,7 @@ export function initChat(root) {
                 const json = await res.json().catch(() => ({}));
                 throw new Error(json.message || "");
             }
+            if (editing?.msg === msg) endEdit();
             msg.remove();
             tidyDays(log);
         } catch (err) {
@@ -1278,9 +1261,8 @@ export function initChat(root) {
                 e.stopPropagation();
                 return;
             }
-            const editor = e.target.closest?.(".chat-edit");
-            if (editor) {
-                editor.querySelector(".chat-edit__cancel")?.click();
+            if (editing && e.target === input) {
+                endEdit();
                 e.stopPropagation();
                 return;
             }
@@ -1421,6 +1403,10 @@ export function initChat(root) {
 
     form.addEventListener("submit", (e) => {
         e.preventDefault();
+        if (editing) {
+            saveEdit();
+            return;
+        }
         const body = input.value.trim();
         if (!body && !files.length) return;
 
