@@ -26,13 +26,13 @@ $panelId = "pf-{$name}-panel";
       <span class="visually-hidden">Hidden for security</span>
     </span>
     @else
-    <span @class(['profile-row__value', 'is-empty' => $value === '' && $empty]) data-row-value
+    <span @class(['profile-row__value', 'is-empty'=> $value === '' && $empty]) data-row-value
       @if ($empty) data-empty="{{ $empty }}" @endif>{{ $value !== '' ? $value : $empty }}</span>
     @endif
 
     @if ($action)
     <button type="button" class="profile-row__action" data-row-edit aria-expanded="false"
-      aria-controls="{{ $panelId }}" aria-label="{{ $action }} {{ Str::lower($label) }}">{{ $action }}</button>
+      aria-controls="{{ $panelId }}" aria-label="{{ $action }} {{ mb_strtolower($label) }}">{{ $action }}</button>
     @endif
   </div>
 
