@@ -5,7 +5,6 @@
 
 @php
 $att = config('admin.messages.attachments');
-$hintId = 'chat-hint-' . uniqid(); // one per composer (the admin page has several)
 @endphp
 
 <form
@@ -56,11 +55,9 @@ $hintId = 'chat-hint-' . uniqid(); // one per composer (the admin page has sever
       <x-chat.icon name="zap" />
     </button>
     @endif
-    <textarea class="chat-composer__input" name="body" rows="1" maxlength="{{ config('admin.messages.max_length') }}" placeholder="Send message…" aria-label="Message" aria-describedby="{{ $hintId }}" data-chat-input></textarea>
+    <textarea class="chat-composer__input" name="body" rows="1" maxlength="{{ config('admin.messages.max_length') }}" placeholder="Send message…" aria-label="Message" data-chat-input></textarea>
     <button type="submit" class="chat-composer__send" aria-label="Send message">
       <x-chat.icon name="send" />
     </button>
   </div>
-  {{-- Keyboard hint: mouse-and-keyboard screens only, shown while the box has focus (CSS). --}}
-  <p class="chat-composer__hint" id="{{ $hintId }}"><kbd>Enter</kbd> to send · <kbd>Shift</kbd> + <kbd>Enter</kbd> for a new line</p>
 </form>
