@@ -1,6 +1,6 @@
 {{-- Message box shared by both sides. Posts to a named route (`action`) through chat.js and
      expects 200 {ok:true} or 422 {message, errors}. Limits come from config/admin/messages.php.
-     :quick="[...]" adds quick-reply chips (admin only). --}}
+     :quick="[...]" adds quick-reply chips (admin and client). --}}
 @props(['action', 'quick' => []])
 
 @php

@@ -72,7 +72,8 @@ $starters = [
       </div>
       @endif
     </div>
-    <x-chat.composer :action="Route::has('user.messages.send') ? route('user.messages.send') : '#'" />
+    <x-chat.composer :action="Route::has('user.messages.send') ? route('user.messages.send') : '#'"
+      :quick="config('admin.messages.client_quick_replies')" />
     @else
     <div class="chat-widget__gate">
       <p class="chat-empty">Log in to message us and see your bookings here.</p>
