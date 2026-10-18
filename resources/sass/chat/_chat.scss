@@ -986,6 +986,108 @@
     }
 }
 
+// "Unsend this message?" modal (a <dialog> built by chat.js, appended to <body>).
+.chat-modal {
+    width: min(32rem, calc(100vw - 2rem));
+    max-height: calc(100dvh - 2rem);
+    margin: auto;
+    padding: 0;
+    border: 0;
+    border-radius: $auth-radius-lg;
+    background: $auth-white;
+    color: $chat-text;
+    box-shadow: 0 1.5rem 4rem oklch(0% 0 0 / 0.35);
+    overflow: auto;
+    font-family: inherit;
+
+    &::backdrop {
+        background: oklch(0% 0 0 / 0.55);
+    }
+
+    &__head {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem 3.5rem;
+        border-bottom: 1px solid $chat-in-bg;
+    }
+    &__title {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 700;
+        line-height: 1.3;
+        text-align: center;
+    }
+    &__close {
+        position: absolute;
+        top: 50%;
+        right: 1rem;
+        display: grid;
+        place-items: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: $chat-in-bg;
+        color: $chat-text;
+        font-size: 1.25rem;
+        cursor: pointer;
+        transform: translateY(-50%);
+
+        &:hover {
+            background: $chat-tint;
+        }
+    }
+    &__text {
+        margin: 0;
+        padding: 1.25rem 1.5rem;
+        color: $chat-muted;
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+    &__foot {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        padding: 0.5rem 1.5rem 1.25rem;
+    }
+    &__cancel,
+    &__confirm {
+        min-height: 2.5rem;
+        padding: 0.5rem 1.25rem;
+        border: 0;
+        border-radius: $auth-radius-pill;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    &__cancel {
+        background: transparent;
+        color: $chat-focus;
+
+        &:hover {
+            background: $chat-focus-soft;
+        }
+    }
+    &__confirm {
+        background: $chat-out-bg;
+        color: $chat-out-text;
+
+        &:hover {
+            background: $chat-out-hover;
+        }
+    }
+    &__close:focus-visible,
+    &__cancel:focus-visible,
+    &__confirm:focus-visible {
+        outline: 2px solid $chat-focus;
+        outline-offset: 2px;
+    }
+}
+
 // Quick replies popover (admin): opens above the composer; the list scrolls, the hint stays.
 .chat-quickmenu {
     position: absolute;
