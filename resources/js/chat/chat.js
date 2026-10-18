@@ -999,6 +999,38 @@ export function initChat(root) {
         }
     });
 
+    // ---- phones: collapse the side buttons while typing (like Messenger) ----------------
+    // Focusing the box hides "attach" and "⚡" behind a chevron so the box gets the width; the
+    // chevron brings them back. They also return when focus leaves the composer. CSS only
+    // applies .is-compact on screens up to 575.98px, so wider screens are unchanged.
+    const expandBtn = form.querySelector("[data-chat-expand]");
+    const narrow = window.matchMedia("(max-width: 575.98px)");
+    let expandedByUser = false;
+    const setCompact = (on) => {
+        const compact = on && narrow.matches;
+        form.classList.toggle("is-compact", compact);
+        expandBtn?.setAttribute("aria-expanded", String(!compact));
+        if (compact) setQuick(false);
+    };
+    input.addEventListener("focus", () => {
+        if (!expandedByUser) setCompact(true);
+    });
+    expandBtn?.addEventListener("click", () => {
+        expandedByUser = true;
+        setCompact(false);
+        input.focus(); // keep the keyboard open
+    });
+    // Keep the box focused when the chevron is pressed, otherwise the blur would re-expand first.
+    ["pointerdown", "mousedown"].forEach((type) =>
+        expandBtn?.addEventListener(type, (e) => e.preventDefault()),
+    );
+    form.addEventListener("focusout", (e) => {
+        if (form.contains(e.relatedTarget)) return;
+        expandedByUser = false;
+        setCompact(false);
+    });
+    narrow.addEventListener("change", () => setCompact(false));
+
     // Replying and editing never run at the same time.
     const closeEditors = () =>
         root
