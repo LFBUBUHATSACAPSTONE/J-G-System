@@ -133,19 +133,6 @@ if (layout) {
         }),
     );
 
-    // Quick replies (the "⚡" popover, opened in chat.js) fill the box; the admin reviews and
-    // presses Send.
-    layout.addEventListener("click", (e) => {
-        const chip = e.target.closest("[data-chat-quick]");
-        if (!chip) return;
-        const input = chip
-            .closest("[data-chat]")
-            .querySelector("[data-chat-input]");
-        input.value = chip.dataset.chatQuick;
-        input.dispatchEvent(new Event("input"));
-        input.focus();
-    });
-
     // After a send: update that chat's preview and time, and move it to the top.
     layout.addEventListener("chat:sent", (e) => {
         const btn = layout.querySelector(`[data-chat-open="${e.target.id}"]`);

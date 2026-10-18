@@ -429,29 +429,6 @@ function refreshQuotes(log) {
     });
 }
 
-// ---- long messages ("Read more") --------------------------------------------------------
-// The text is clamped to a few lines in CSS; a "Read more" button appears only when the text
-// really overflows (measured, so wide screens do not get a pointless button). Needs a visible
-// thread to measure, so it runs again whenever the thread is resized or shown.
-function fitClamps(log) {
-    if (!log || !log.clientHeight) return;
-    log.querySelectorAll(".chat-msg__text").forEach((text) => {
-        const expanded = text.classList.contains("is-expanded");
-        let toggle = text.nextElementSibling;
-        if (!toggle?.classList.contains("chat-msg__readmore")) toggle = null;
-        const overflows =
-            !expanded && text.scrollHeight - text.clientHeight > 1;
-        if (!toggle && !overflows) return;
-        if (!toggle) {
-            toggle = el("button", "chat-msg__readmore", "Read more");
-            toggle.type = "button";
-            toggle.setAttribute("aria-expanded", "false");
-            text.after(toggle);
-        }
-        toggle.hidden = !(expanded || overflows);
-    });
-}
-
 // ---- booking strip (user widget) -----------------------------------------------------
 // A slim bar under the header with the client's current booking (package, date, status);
 // clicking it scrolls to the full card. Opt-in with data-chat-booking-strip on the chat root.
@@ -674,7 +651,6 @@ export function applyMessageChange(log, message) {
     }
 
     if (message.edited) markEdited(node);
-    fitClamps(log);
     return true;
 }
 
@@ -862,7 +838,6 @@ export function initChat(root) {
     const tidyThread = () => {
         groupMessages(log);
         refreshQuotes(log);
-        fitClamps(log);
         refreshStrip();
     };
     tidyThread();
@@ -886,7 +861,6 @@ export function initChat(root) {
         { passive: true },
     );
     new ResizeObserver(() => {
-        fitClamps(log); // width changes and first display change how many lines a message takes
         if (pinOf.get(log) ?? true) scrollLog(log);
     }).observe(log);
 
@@ -1006,7 +980,13 @@ export function initChat(root) {
         setQuick(quickMenu.hidden, { focusFirst: e.detail === 0 }),
     );
     quickMenu?.addEventListener("click", (e) => {
-        if (e.target.closest("[data-chat-quick]")) setQuick(false);
+        const chip = e.target.closest("[data-chat-quick]");
+        if (!chip) return;
+        // Fill the box; nothing is sent until the sender presses Send.
+        input.value = chip.dataset.chatQuick;
+        input.dispatchEvent(new Event("input"));
+        setQuick(false);
+        input.focus();
     });
     document.addEventListener("click", (e) => {
         if (!quickMenu || quickMenu.hidden) return;
@@ -1132,7 +1112,6 @@ export function initChat(root) {
                 textEl.textContent = body;
                 markEdited(msg);
                 close();
-                fitClamps(log);
             } catch (err) {
                 save.disabled = false;
                 setError(
@@ -1190,16 +1169,6 @@ export function initChat(root) {
                     `[data-message-id="${quote.dataset.replyId}"]`,
                 ),
             );
-            return;
-        }
-
-        // "Read more" / "Show less" on a long message.
-        const more = e.target.closest(".chat-msg__readmore");
-        if (more && root.contains(more)) {
-            const text = more.previousElementSibling;
-            const open = text.classList.toggle("is-expanded");
-            more.textContent = open ? "Show less" : "Read more";
-            more.setAttribute("aria-expanded", String(open));
             return;
         }
 
