@@ -42,6 +42,18 @@ $tools = count($quick) ? 2 : 1; // buttons in the group on the left (attach, opt
     </button>
   </div>
 
+  {{-- Edit mode: "Edit" on a message loads its text into the message box below and shows this bar
+       (label + how long the sender can still edit). Send saves, the X or Esc cancels. --}}
+  <div class="chat-composer__reply chat-composer__reply--edit" data-chat-edit-bar hidden>
+    <div class="chat-composer__reply-body">
+      <span class="chat-composer__reply-label">Editing message</span>
+      <span class="chat-composer__reply-text" data-chat-edit-hint></span>
+    </div>
+    <button type="button" class="chat-composer__reply-cancel" aria-label="Cancel editing" data-chat-edit-cancel>
+      <x-chat.icon name="x" />
+    </button>
+  </div>
+
   <ul class="chat-composer__files" data-chat-files aria-label="Attached files" hidden></ul>
   <p class="chat-composer__error" role="alert" data-chat-error hidden></p>
 
