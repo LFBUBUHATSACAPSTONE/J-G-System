@@ -63,7 +63,7 @@ $lastLogin = $lastLogin ?? null;
           {{-- Contact number --}}
           <x-profile.row name="phone" label="Contact Number" :value="$phoneDisplay" action="Change">
             <x-profile.field id="aa-phone" name="phone" type="tel" label="Contact number" :value="$phone"
-              autocomplete="tel" inputmode="numeric" maxlength="11" />
+              autocomplete="tel" inputmode="numeric" placeholder="09XXX-XXX-XXXX" />
           </x-profile.row>
 
           {{-- Password --}}

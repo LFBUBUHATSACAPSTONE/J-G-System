@@ -10,7 +10,7 @@
  *   401 {"message": "…"}                              -> not logged in
  */
 import { initProfileForm } from "./profile-core.js";
-import { rules, filters, formatPhone, cleanPhone } from "./profile-rules.js";
+import { rules, filters, formatPhone } from "./profile-rules.js";
 
 function initProfile() {
     initProfileForm({
@@ -26,15 +26,14 @@ function initProfile() {
         validators: {
             first_name: rules.first_name,
             last_name: rules.last_name,
-            phone: rules.phoneOptional, // optional, but a valid 09 + 9 digits when given
+            phone: rules.phoneOptional, // may stay empty; when typed, same rule as the booking Contact Number
             address: rules.address,
         },
         filters: {
             first_name: filters.first_name,
             last_name: filters.last_name,
-            phone: filters.phoneOptional,
+            phone: filters.phone,
         },
-        clean: { phone: cleanPhone }, // a number holding only "09" is sent as empty
         display: {
             name: (v) => `${v.first_name} ${v.last_name}`.trim(),
             phone: (v) => formatPhone(v.phone),

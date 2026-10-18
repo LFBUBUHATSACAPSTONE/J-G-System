@@ -61,7 +61,7 @@ $memberSince = data_get($user, 'created_at')?->format('F Y');
         {{-- Contact number (optional) --}}
         <x-profile.row name="phone" label="Contact Number" :value="$phoneDisplay" empty="Not set" action="Change">
           <x-profile.field id="ap-phone" name="phone" type="tel" label="Contact number" :value="$phone"
-            autocomplete="tel" inputmode="numeric" maxlength="11" placeholder="09XXXXXXXXX" />
+            autocomplete="tel" inputmode="numeric" placeholder="09XXX-XXX-XXXX" />
         </x-profile.row>
 
         {{-- Address (optional, one line) --}}
