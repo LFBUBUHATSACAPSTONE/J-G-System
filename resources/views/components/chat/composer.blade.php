@@ -5,6 +5,7 @@
 
 @php
 $att = config('admin.messages.attachments');
+$tools = count($quick) ? 2 : 1; // buttons in the group on the left (attach, optional quick replies)
 @endphp
 
 <form
@@ -45,21 +46,24 @@ $att = config('admin.messages.attachments');
   <p class="chat-composer__error" role="alert" data-chat-error hidden></p>
 
   <div class="chat-composer__row">
+    {{-- Attach + quick replies move together: on phones the whole group slides left while the box is focused. --}}
+    <div class="chat-composer__tools" style="--chat-tools: {{ $tools }}">
+      <label class="chat-composer__attach">
+        <x-chat.icon name="paperclip" />
+        <span class="visually-hidden">Attach files (JPG, PNG, WEBP or PDF, up to {{ $att['max_kb'] / 1024 }} MB each)</span>
+        <input type="file" class="visually-hidden" multiple accept="{{ $att['accept'] }}" data-chat-picker>
+      </label>
+      @if (count($quick))
+      <button type="button" class="chat-composer__quick" data-chat-quick-toggle aria-haspopup="true" aria-expanded="false" aria-label="Quick replies">
+        <x-chat.icon name="zap" />
+      </button>
+      @endif
+    </div>
     {{-- Phones: while the box is focused, the attach and quick-reply buttons collapse into this
          chevron (like Messenger); tapping it brings them back. Hidden by CSS on wider screens. --}}
     <button type="button" class="chat-composer__expand" data-chat-expand aria-expanded="true" aria-label="Show attach and quick reply buttons">
       <x-chat.icon name="chevron-right" />
     </button>
-    <label class="chat-composer__attach">
-      <x-chat.icon name="paperclip" />
-      <span class="visually-hidden">Attach files (JPG, PNG, WEBP or PDF, up to {{ $att['max_kb'] / 1024 }} MB each)</span>
-      <input type="file" class="visually-hidden" multiple accept="{{ $att['accept'] }}" data-chat-picker>
-    </label>
-    @if (count($quick))
-    <button type="button" class="chat-composer__quick" data-chat-quick-toggle aria-haspopup="true" aria-expanded="false" aria-label="Quick replies">
-      <x-chat.icon name="zap" />
-    </button>
-    @endif
     <textarea class="chat-composer__input" name="body" rows="1" maxlength="{{ config('admin.messages.max_length') }}" placeholder="Send message…" aria-label="Message" data-chat-input></textarea>
     <button type="submit" class="chat-composer__send" aria-label="Send message">
       <x-chat.icon name="send" />

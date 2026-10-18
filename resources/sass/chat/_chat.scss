@@ -781,13 +781,70 @@
             outline-offset: 2px;
         }
     }
+    // Attach + quick replies travel as one group.
+    &__tools {
+        display: flex;
+        flex: none;
+        gap: 0.5rem;
+    }
+
+    // Phones: while the box is focused (.is-compact, set by chat.js) the whole tools group
+    // slides to the left and fades out, the chevron slides in from the left, and the message box
+    // follows because the widths animate. A collapsed group cancels the row gap with a negative
+    // margin and turns invisible after the slide (visibility), so it cannot be tabbed to or tapped.
     @media (max-width: 575.98px) {
-        &.is-compact &__attach,
-        &.is-compact &__quick {
-            display: none;
+        --chat-btn: 2.625rem;
+        --chat-slide: 0.28s;
+        --chat-tools-w: calc(
+            var(--chat-btn) * var(--chat-tools, 2) + 0.5rem *
+                (var(--chat-tools, 2) - 1)
+        );
+
+        &__tools,
+        &__expand {
+            transition:
+                width var(--chat-slide) ease,
+                margin var(--chat-slide) ease,
+                opacity var(--chat-slide) ease,
+                transform var(--chat-slide) ease,
+                visibility 0s linear 0s;
+        }
+        &__tools {
+            width: var(--chat-tools-w);
+        }
+        &__expand {
+            display: inline-grid;
+            width: 0;
+            height: var(--chat-btn);
+            margin-right: -0.5rem;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(calc(var(--chat-btn) * -1));
+            transition-delay: 0s, 0s, 0s, 0s, var(--chat-slide);
+        }
+
+        &.is-compact &__tools {
+            width: 0;
+            margin-right: -0.5rem;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(calc(var(--chat-tools-w) * -1));
+            transition-delay: 0s, 0s, 0s, 0s, var(--chat-slide);
         }
         &.is-compact &__expand {
-            display: inline-grid;
+            width: var(--chat-btn);
+            margin-right: 0;
+            opacity: 1;
+            visibility: visible;
+            transform: none;
+            transition-delay: 0s;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            &__tools,
+            &__expand {
+                transition: none;
+            }
         }
     }
 
@@ -1231,9 +1288,9 @@
 // Touch screens: 44px tap targets, and 16px text in inputs so iOS does not zoom on focus.
 @media (pointer: coarse) {
     .chat-composer {
+        --chat-btn: 2.75rem;
         &__attach,
         &__quick,
-        &__expand,
         &__send {
             width: 2.75rem;
             height: 2.75rem;
