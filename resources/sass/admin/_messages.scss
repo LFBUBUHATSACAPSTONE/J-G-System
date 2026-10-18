@@ -129,10 +129,10 @@
         outline: $admin-focus-ring-width solid $admin-focus-ring;
         outline-offset: $admin-focus-ring-offset;
     }
-    // Selected row: a soft fill (Messenger-style) instead of a heavy outline.
+    // Selected row: brand-colour border on the normal surface.
     &.is-active {
-        border-color: transparent;
-        background: $admin-brand-soft;
+        border-color: $admin-brand;
+        background: $admin-surface;
     }
 
     &__body {
