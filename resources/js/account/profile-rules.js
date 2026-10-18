@@ -12,8 +12,6 @@ import {
     getMatchError,
     getRequiredError,
     getContactNumberError,
-    isContactNumberUntouched,
-    normalizeContactNumberInput,
 } from "../auth/validation.js";
 
 // ---------- password checklist ----------
@@ -64,11 +62,10 @@ export const rules = {
             ? "Middle initial must be a single letter."
             : "",
     email: getIdentifierError, // same rule and messages as the auth modal's email field
-    /** Contact number that must be given. */
+    /** Contact number that must be given. Same rule and messages as the booking form's Contact Number. */
     phone: getContactNumberError,
-    /** Contact number that may stay empty; when given it must be valid. */
-    phoneOptional: (v) =>
-        isContactNumberUntouched(v) ? "" : getContactNumberError(v),
+    /** Same rule, but the field may stay empty. Once something is typed it must be a full number. */
+    phoneOptional: (v) => (v.trim() ? getContactNumberError(v) : ""),
     /** Free text, optional. */
     address: () => "",
     current_password: (v) => getRequiredError(v, "Current password"),
@@ -99,10 +96,9 @@ export const filters = {
     first_name: (v) => v.replace(/[^A-Za-z\s]/g, ""),
     last_name: (v) => v.replace(/[^A-Za-z\s]/g, ""),
     middle_initial: (v) => v.toUpperCase().replace(/[^A-Z]/g, ""),
-    phone: normalizeContactNumberInput,
-    /** Optional number: an emptied field stays empty instead of snapping back to "09". */
-    phoneOptional: (v) =>
-        v.replace(/\D/g, "") ? normalizeContactNumberInput(v) : "",
+    // Digits only, like the booking form's Contact Number: nothing is inserted for the user, and the
+    // validator (09 prefix, exactly 11 digits) reports a number that is too short or too long.
+    phone: (v) => v.replace(/\D/g, ""),
 };
 
 // ---------- display ----------
@@ -111,6 +107,3 @@ export const formatPhone = (digits) =>
     /^\d{11}$/.test(digits)
         ? digits.replace(/^(\d{4})(\d{3})(\d{4})$/, "$1 $2 $3")
         : digits;
-
-/** A number holding only the "09" prefix counts as empty. */
-export const cleanPhone = (v) => (isContactNumberUntouched(v) ? "" : v.trim());
