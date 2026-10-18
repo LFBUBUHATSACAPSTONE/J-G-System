@@ -161,8 +161,7 @@ $profile-avatar: 8rem;
         font: inherit;
         font-size: admin-fluid(0.95);
         font-weight: 600;
-        text-decoration: underline;
-        text-underline-offset: 0.2em;
+        text-decoration: none;
         cursor: pointer;
 
         &:hover {
