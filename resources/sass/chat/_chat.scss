@@ -691,31 +691,6 @@
         gap: 0.5rem;
     }
 
-    // "Enter to send" hint: desktop only, and only while the message box has focus. It is always
-    // in the DOM (aria-describedby), so screen readers get it; touch screens never see it.
-    &__hint {
-        display: none;
-        margin: 0.75rem 0 0;
-        color: $chat-muted;
-        font-size: 0.75rem;
-        line-height: 1.4;
-
-        kbd {
-            padding: 0 0.25rem;
-            border: 1px solid $chat-border;
-            border-radius: 0.25rem;
-            background: transparent;
-            color: inherit;
-            font: inherit;
-            font-weight: 600;
-        }
-    }
-    @media (hover: hover) and (pointer: fine) {
-        &:focus-within &__hint {
-            display: block;
-        }
-    }
-
     &__input {
         flex: 1 1 auto;
         min-width: 0;
@@ -736,6 +711,13 @@
         }
         &::placeholder {
             color: oklch(48% 0 0);
+        }
+        // Empty box: keep the placeholder on one line and cut it with "…" on narrow screens
+        // (it would otherwise wrap and make the box taller). Typed text wraps as usual.
+        &:placeholder-shown {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         // Visible focus ring. The transparent outline is what high-contrast mode shows instead of
         // the shadow.
