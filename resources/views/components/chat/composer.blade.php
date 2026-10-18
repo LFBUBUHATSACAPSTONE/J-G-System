@@ -45,6 +45,11 @@ $att = config('admin.messages.attachments');
   <p class="chat-composer__error" role="alert" data-chat-error hidden></p>
 
   <div class="chat-composer__row">
+    {{-- Phones: while the box is focused, the attach and quick-reply buttons collapse into this
+         chevron (like Messenger); tapping it brings them back. Hidden by CSS on wider screens. --}}
+    <button type="button" class="chat-composer__expand" data-chat-expand aria-expanded="true" aria-label="Show attach and quick reply buttons">
+      <x-chat.icon name="chevron-right" />
+    </button>
     <label class="chat-composer__attach">
       <x-chat.icon name="paperclip" />
       <span class="visually-hidden">Attach files (JPG, PNG, WEBP or PDF, up to {{ $att['max_kb'] / 1024 }} MB each)</span>

@@ -761,6 +761,36 @@
         position: relative;
     }
 
+    // Chevron that stands in for "attach" and "⚡" while the box is focused on phones.
+    &__expand {
+        display: none;
+        flex: none;
+        place-items: center;
+        width: 2.625rem;
+        height: 2.625rem;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: $chat-focus;
+        font-size: 1.375rem;
+        cursor: pointer;
+
+        &:focus-visible {
+            outline: 2px solid $chat-focus;
+            outline-offset: 2px;
+        }
+    }
+    @media (max-width: 575.98px) {
+        &.is-compact &__attach,
+        &.is-compact &__quick {
+            display: none;
+        }
+        &.is-compact &__expand {
+            display: inline-grid;
+        }
+    }
+
     &__attach {
         background: $chat-in-bg;
         color: $chat-text;
@@ -1203,6 +1233,7 @@
     .chat-composer {
         &__attach,
         &__quick,
+        &__expand,
         &__send {
             width: 2.75rem;
             height: 2.75rem;
