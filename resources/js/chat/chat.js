@@ -2,6 +2,7 @@
 // reply, edit and unsend. Front end only: POSTs to the form's action (a named route) and expects
 // 200 {ok:true} or 422 {message, errors}. Same fetch header pattern as the auth and booking forms.
 import { getCsrfToken } from "../auth/csrf.js";
+import { confirmDialog } from "./confirm-dialog.js";
 
 const el = (tag, cls, text) => {
     const n = document.createElement(tag);
@@ -21,71 +22,6 @@ const icon = (name) => {
     t.innerHTML = `<svg class="chat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${ICONS[name]}</svg>`;
     return t.content.firstChild;
 };
-// "Unsend this message?" dialog (a real modal <dialog>: focus stays inside, Esc and a click
-// outside cancel, the page behind is dimmed). Resolves true only when "Unsend" is pressed.
-// The server removes a message for everyone, so there is a single option; browsers without
-// <dialog> fall back to window.confirm().
-function confirmUnsend() {
-    if (typeof HTMLDialogElement === "undefined") {
-        return Promise.resolve(window.confirm("Unsend this message?"));
-    }
-    return new Promise((resolve) => {
-        const dialog = el("dialog", "chat-modal");
-        dialog.setAttribute("aria-labelledby", "chatUnsendTitle");
-        dialog.setAttribute("aria-describedby", "chatUnsendText");
-
-        const head = el("div", "chat-modal__head");
-        const title = el("h2", "chat-modal__title", "Unsend this message?");
-        title.id = "chatUnsendTitle";
-        const close = el("button", "chat-modal__close");
-        close.type = "button";
-        close.setAttribute("aria-label", "Close");
-        close.append(icon("x"));
-        head.append(title, close);
-
-        const body = el(
-            "p",
-            "chat-modal__text",
-            "This message will be unsent for everyone in the chat. They may have already seen it.",
-        );
-        body.id = "chatUnsendText";
-
-        const foot = el("div", "chat-modal__foot");
-        const cancel = el("button", "chat-modal__cancel", "Cancel");
-        cancel.type = "button";
-        cancel.autofocus = true;
-        const confirm = el("button", "chat-modal__confirm", "Unsend");
-        confirm.type = "button";
-        foot.append(cancel, confirm);
-
-        dialog.append(head, body, foot);
-
-        let result = false;
-        confirm.addEventListener("click", () => {
-            result = true;
-            dialog.close();
-        });
-        cancel.addEventListener("click", () => dialog.close());
-        close.addEventListener("click", () => dialog.close());
-        // A click on the dimmed area (the <dialog> itself) cancels; clicks never reach the page
-        // behind, so the chat widget does not treat them as "click outside".
-        dialog.addEventListener("click", (e) => {
-            e.stopPropagation();
-            if (e.target === dialog) dialog.close();
-        });
-        // Esc closes the dialog natively; keep it from also closing the chat widget.
-        dialog.addEventListener("keydown", (e) => {
-            if (e.key === "Escape") e.stopPropagation();
-        });
-        dialog.addEventListener("close", () => {
-            dialog.remove();
-            resolve(result);
-        });
-
-        document.body.append(dialog);
-        dialog.showModal();
-    });
-}
 const fmtSize = (b) =>
     b < 1048576
         ? `${Math.max(1, Math.round(b / 1024))} KB`
@@ -1210,7 +1146,13 @@ export function initChat(root) {
     }
 
     async function unsend(msg, id) {
-        if (!(await confirmUnsend())) return;
+        // The server removes a message for everyone, so there is a single option.
+        const ok = await confirmDialog({
+            title: "Unsend this message?",
+            text: "This message will be unsent for everyone in the chat. They may have already seen it.",
+            confirmLabel: "Unsend",
+        });
+        if (!ok) return;
         const url = messageUrl(root.dataset.chatDeleteUrl, id);
         if (!url) return;
         try {
