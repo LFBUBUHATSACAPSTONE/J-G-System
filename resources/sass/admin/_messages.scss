@@ -129,8 +129,10 @@
         outline: $admin-focus-ring-width solid $admin-focus-ring;
         outline-offset: $admin-focus-ring-offset;
     }
+    // Selected row: a soft fill (Messenger-style) instead of a heavy outline.
     &.is-active {
-        border-color: $admin-brand;
+        border-color: transparent;
+        background: $admin-brand-soft;
     }
 
     &__body {
@@ -174,6 +176,17 @@
         &[hidden] {
             display: none;
         }
+    }
+}
+
+// Unread conversations: bold name and preview (the badge is still there too).
+[data-chat-item]:not([data-unread="0"]) {
+    .chat-item__name {
+        font-weight: 700;
+    }
+    .chat-item__preview {
+        color: $admin-text-primary;
+        font-weight: 600;
     }
 }
 
@@ -283,5 +296,13 @@
         .chat-composer__input {
             min-height: 2.625rem;
         }
+    }
+}
+
+// Touch screens: the back button is a 44px target.
+@media (pointer: coarse) {
+    .chat-panel__back {
+        width: 2.75rem;
+        height: 2.75rem;
     }
 }

@@ -1,6 +1,15 @@
 // Admin Messages page: chat list (select / search / unread filter), panels, quick replies,
 // mobile list <-> conversation switch. Everything is client-side over the chats on the page.
-import { appendBooking, appendIncoming, applyMessageChange, formatStamp, initChat, scrollLog } from "../chat/chat.js";
+import {
+    appendBooking,
+    appendIncoming,
+    applyMessageChange,
+    formatListStamp,
+    formatStamp,
+    initChat,
+    scrollLog,
+    showUnreadDivider,
+} from "../chat/chat.js";
 
 const layout = document.querySelector("[data-messages]");
 
@@ -13,26 +22,40 @@ if (layout) {
     const panels = [...layout.querySelectorAll(".chat-panel")];
     let filter = "all";
 
-    // The list stamps are server-rendered in UTC (same as the thread); show them in the
-    // admin's own timezone, matching what chat.js does inside each conversation.
+    // The list stamps are server-rendered in UTC (same as the thread); show them in the admin's
+    // own timezone, short ("7:45 PM", "Yesterday", "Oct 15"), with the full stamp on hover.
     layout.querySelectorAll("[data-chat-when][data-at]").forEach((when) => {
         const at = new Date(when.dataset.at);
-        if (!Number.isNaN(at.getTime())) when.textContent = formatStamp(at);
+        if (Number.isNaN(at.getTime())) return;
+        when.textContent = formatListStamp(at);
+        when.title = formatStamp(at);
     });
 
-    // Stamp a list row with a fresh date+time, keeping data-at in sync so a later
+    // Stamp a list row with the current time, keeping data-at in sync so a later
     // re-localization would agree with it.
     const touchWhen = (btn) => {
         const when = btn.querySelector("[data-chat-when]");
         if (!when) return;
         const now = new Date();
-        when.textContent = formatStamp(now);
+        when.textContent = formatListStamp(now);
+        when.title = formatStamp(now);
         when.dataset.at = now.toISOString();
+    };
+
+    // How many of this chat's messages are still unread, from its list row.
+    const unreadOf = (id) =>
+        +items.find((li) => li.querySelector(`[data-chat-open="${id}"]`))
+            ?.dataset.unread || 0;
+
+    // Land on the first unread message (with a "New messages" divider), else the newest.
+    const settle = (panel, unread) => {
+        const log = panel?.querySelector("[data-chat-log]");
+        if (log && !showUnreadDivider(log, unread)) scrollLog(log);
     };
 
     panels.forEach((p) => initChat(p));
     const first = panels.find((p) => !p.hidden);
-    if (first) scrollLog(first.querySelector("[data-chat-log]"));
+    if (first) settle(first, unreadOf(first.id));
 
     // Opening a chat clears its "unread" flag for real: the GET marks the client
     // messages read in the database, so the badge is gone after a reload too.
@@ -47,6 +70,7 @@ if (layout) {
     }
 
     function open(id) {
+        const unread = unreadOf(id); // before the row's unread flag is cleared below
         panels.forEach((p) => {
             p.hidden = p.id !== id;
         });
@@ -63,9 +87,11 @@ if (layout) {
             }
         });
         const panel = document.getElementById(id);
-        scrollLog(panel.querySelector("[data-chat-log]"));
-        markPanelRead(panel);
+        // Show the conversation first (on phones the panels are hidden while the list is up), then
+        // position the thread: a hidden thread has no size to scroll.
         layout.dataset.view = "chat";
+        settle(panel, unread);
+        markPanelRead(panel);
         applyFilters();
     }
 
@@ -107,7 +133,8 @@ if (layout) {
         }),
     );
 
-    // Quick replies fill the box; the admin reviews and presses Send.
+    // Quick replies (the "⚡" popover, opened in chat.js) fill the box; the admin reviews and
+    // presses Send.
     layout.addEventListener("click", (e) => {
         const chip = e.target.closest("[data-chat-quick]");
         if (!chip) return;
@@ -145,28 +172,48 @@ if (layout) {
         let changedSince = layout.dataset.chatMessagesSince || "";
         const maxId = () =>
             [...layout.querySelectorAll("[data-message-id]")].reduce(
-                (max, node) => Math.max(max, Number(node.dataset.messageId) || 0),
+                (max, node) =>
+                    Math.max(max, Number(node.dataset.messageId) || 0),
                 0,
             );
 
         const setSidebarBadge = (n) => {
-            document.querySelectorAll("[data-chat-unread-badge]").forEach((b) => {
-                b.textContent = n > 9 ? "9+" : String(n);
-                b.hidden = !n;
-            });
+            document
+                .querySelectorAll("[data-chat-unread-badge]")
+                .forEach((b) => {
+                    b.textContent = n > 9 ? "9+" : String(n);
+                    b.hidden = !n;
+                });
         };
 
+        // Pace (same as chat.js initChatStream): 3 s while the window has focus, 15 s in the
+        // background, paused while the tab is hidden, backing off (up to 60 s) after errors.
         let busy = false;
+        let timer = 0;
+        let failures = 0;
+        const schedule = () => {
+            window.clearTimeout(timer);
+            if (document.hidden) return; // resumes on visibilitychange
+            const base = document.hasFocus() ? 3000 : 15000;
+            timer = window.setTimeout(
+                poll,
+                Math.min(base * 2 ** failures, 60000),
+            );
+        };
         const poll = () => {
             if (busy || document.hidden) return;
             busy = true;
+            window.clearTimeout(timer);
             fetch(
                 `${updatesUrl}?after=${maxId()}&since=${encodeURIComponent(since)}&changed_since=${encodeURIComponent(changedSince)}`,
                 { headers: { Accept: "application/json" } },
             )
-                .then((res) => (res.ok ? res.json() : null))
+                .then((res) => {
+                    if (!res.ok) throw new Error(String(res.status));
+                    return res.json();
+                })
                 .then((data) => {
-                    if (!data) return;
+                    failures = 0;
                     let sawNewConversation = false;
                     (data.messages || []).forEach((message) => {
                         const panel = document.getElementById(
@@ -182,15 +229,20 @@ if (layout) {
                             return;
                         }
                         const log = panel.querySelector("[data-chat-log]");
-                        if (!log || !appendIncoming(log, message, panel)) return;
+                        if (!log || !appendIncoming(log, message, panel))
+                            return;
 
                         // Refresh the chat-list row: preview, time, then move it up.
                         const li = btn.closest("[data-chat-item]");
                         const text =
                             message.body ||
-                            (message.attachments?.length ? "Sent an attachment" : "");
+                            (message.attachments?.length
+                                ? "Sent an attachment"
+                                : "");
                         const nameEl = btn.querySelector(".chat-item__name");
-                        const preview = btn.querySelector("[data-chat-preview]");
+                        const preview = btn.querySelector(
+                            "[data-chat-preview]",
+                        );
                         if (preview)
                             preview.textContent = `${nameEl ? nameEl.textContent : "Client"}: ${text}`;
                         touchWhen(btn);
@@ -199,8 +251,11 @@ if (layout) {
                         if (panel.hidden) {
                             // Not the open chat: flag it unread.
                             if (li) {
-                                li.dataset.unread = String((+li.dataset.unread || 0) + 1);
-                                const badge = btn.querySelector("[data-chat-badge]");
+                                li.dataset.unread = String(
+                                    (+li.dataset.unread || 0) + 1,
+                                );
+                                const badge =
+                                    btn.querySelector("[data-chat-badge]");
                                 if (badge) {
                                     badge.textContent = li.dataset.unread;
                                     badge.hidden = false;
@@ -230,7 +285,8 @@ if (layout) {
                         const log = panel?.querySelector("[data-chat-log]");
                         if (log) appendBooking(log, panel, booking);
                     });
-                    if (data.bookings_synced_at) since = data.bookings_synced_at;
+                    if (data.bookings_synced_at)
+                        since = data.bookings_synced_at;
                     if (data.messages_synced_at)
                         changedSince = data.messages_synced_at;
 
@@ -239,9 +295,9 @@ if (layout) {
                     // New conversation: reload once so its row and full thread render
                     // in, but never clobber a draft the admin is typing.
                     if (sawNewConversation) {
-                        const typing = [...layout.querySelectorAll("[data-chat-input]")].some(
-                            (input) => input.value.trim() !== "",
-                        );
+                        const typing = [
+                            ...layout.querySelectorAll("[data-chat-input]"),
+                        ].some((input) => input.value.trim() !== "");
                         if (!typing) {
                             window.location.reload();
                             return;
@@ -250,13 +306,28 @@ if (layout) {
 
                     applyFilters();
                 })
-                .catch(() => {})
+                .catch(() => {
+                    failures = Math.min(failures + 1, 4);
+                })
                 .finally(() => {
                     busy = false;
+                    schedule();
                 });
         };
 
-        setInterval(poll, 5000);
+        const wake = () => {
+            if (document.hidden) {
+                window.clearTimeout(timer);
+                return;
+            }
+            poll();
+            schedule();
+        };
+        document.addEventListener("visibilitychange", wake);
+        window.addEventListener("focus", wake);
+        window.addEventListener("blur", schedule);
+
         poll();
+        schedule();
     }
 }
