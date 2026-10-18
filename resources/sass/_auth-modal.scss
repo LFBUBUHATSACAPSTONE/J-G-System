@@ -314,6 +314,8 @@
             &.is-invalid {
                 border-color: $auth-danger;
             }
+
+            @include booking-autofill;
         }
     }
 
@@ -532,6 +534,8 @@
         &.is-invalid {
             border-color: $auth-danger;
         }
+
+        @include booking-autofill;
     }
 
     .auth-modal__masked-destination {
