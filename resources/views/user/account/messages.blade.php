@@ -45,6 +45,7 @@ $deleteUrl = Route::has('user.messages.destroy') ? route('user.messages.destroy'
       @endif
     </div>
 
-    <x-chat.composer :action="Route::has('user.messages.send') ? route('user.messages.send') : '#'" />
+    <x-chat.composer :action="Route::has('user.messages.send') ? route('user.messages.send') : '#'"
+      :quick="config('admin.messages.client_quick_replies')" />
   </section>
 </x-account.layout>

@@ -26,6 +26,15 @@ return [
     'Thank you! Your payment has been received.',
   ],
 
+  // One-click messages above the client composer (landing chat widget and Account > Messages).
+  // Same behaviour as the admin list: picking one fills the box, the client still presses Send.
+  'client_quick_replies' => [
+    'Hi! I would like to ask about your packages.',
+    'Hi! Is your team available on my event date?',
+    'Hi! I would like to reschedule my booking.',
+    'Hi! Could you confirm the status of my booking?',
+  ],
+
   // Same limits on the page (JS) and in the stub routes; the real backend must enforce them too.
   'attachments' => [
     'max_files' => 5,

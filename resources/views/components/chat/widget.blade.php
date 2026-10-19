@@ -15,12 +15,19 @@ $updatesUrl = Route::has('user.messages.updates') ? route('user.messages.updates
 $readUrl = Route::has('user.messages.read') ? route('user.messages.read') : '';
 $updateUrl = Route::has('user.messages.update') ? route('user.messages.update', ['message' => '__MESSAGE__']) : '';
 $deleteUrl = Route::has('user.messages.destroy') ? route('user.messages.destroy', ['message' => '__MESSAGE__']) : '';
+// Suggested first messages for the empty state: label on the chip => text dropped into the box.
+$starters = [
+'Ask about packages' => 'Hi! I would like to ask about your packages.',
+'Check availability' => 'Hi! Is your team available on my event date?',
+'Reschedule my booking' => 'Hi! I would like to reschedule my booking.',
+];
 @endphp
 
 <div
   class="chat-widget"
   data-chat
   data-chat-widget
+  data-chat-booking-strip
   data-chat-self="client"
   data-chat-other="J&amp;G Audio"
   data-edit-window-minutes="{{ (int) config('admin.messages.edit_window_minutes') }}"
@@ -40,7 +47,11 @@ $deleteUrl = Route::has('user.messages.destroy') ? route('user.messages.destroy'
 
   <section id="chatWidgetPanel" class="chat-widget__panel" aria-label="Chat with J&G Audio" hidden data-chat-panel>
     <header class="chat-widget__head">
-      <h2 class="chat-widget__title">J&amp;G Audio Lights and Sounds</h2>
+      <span class="chat-widget__avatar" aria-hidden="true">J&amp;G</span>
+      <div class="chat-widget__who">
+        <h2 class="chat-widget__title">J&amp;G Audio Lights and Sounds</h2>
+        <p class="chat-widget__status">We reply as soon as we can</p>
+      </div>
       <button type="button" class="chat-widget__close" aria-label="Close chat" data-chat-close>
         <x-chat.icon name="x" />
       </button>
@@ -51,10 +62,18 @@ $deleteUrl = Route::has('user.messages.destroy') ? route('user.messages.destroy'
       @if (count($items))
       <x-chat.thread :items="$items" self="client" other="J&G Audio" />
       @else
-      <p class="chat-empty">Ask us about packages or your booking. Your booking details appear here once you book.</p>
+      <div class="chat-empty">
+        <p>Ask us about packages or your booking. Your booking details appear here once you book.</p>
+        <div class="chat-starters" role="group" aria-label="Suggested messages">
+          @foreach ($starters as $label => $text)
+          <button type="button" class="chat-starters__chip" data-chat-starter="{{ $text }}">{{ $label }}</button>
+          @endforeach
+        </div>
+      </div>
       @endif
     </div>
-    <x-chat.composer :action="Route::has('user.messages.send') ? route('user.messages.send') : '#'" />
+    <x-chat.composer :action="Route::has('user.messages.send') ? route('user.messages.send') : '#'"
+      :quick="config('admin.messages.client_quick_replies')" />
     @else
     <div class="chat-widget__gate">
       <p class="chat-empty">Log in to message us and see your bookings here.</p>
