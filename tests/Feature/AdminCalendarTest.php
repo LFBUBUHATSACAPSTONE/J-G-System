@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Booking;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -21,9 +22,12 @@ class AdminCalendarTest extends TestCase
         DB::purge('sqlite');
 
         Artisan::call('migrate', ['--force' => true]);
+
+        // Every route in this file sits behind ['auth', 'role:admin'].
+        $this->actingAs(User::factory()->admin()->create());
     }
 
-    public function test_calendar_page_and_json_show_only_the_visible_statuses(): void
+    public function test_calendar_page_and_json_show_only_approved_bookings(): void
     {
         $this->booking([
             'reference' => 'JG-CAL-APPROVED',
@@ -50,20 +54,21 @@ class AdminCalendarTest extends TestCase
             'event_end_date' => Carbon::today()->addDays(3)->toDateString(),
         ]);
 
+        // Only approved bookings are on the calendar (config/admin/calendar.php 'statuses'):
+        // anything still waiting for a decision or already cancelled keeps its date free here.
         $this->get(route('admin.calendar'))
             ->assertOk()
             ->assertViewIs('admin.calendar')
             ->assertSee('JG-CAL-APPROVED', false)
-            ->assertSee('JG-CAL-PENDING', false)
+            ->assertDontSee('JG-CAL-PENDING', false)
             ->assertDontSee('JG-CAL-CANCELLED', false);
 
         $this->getJson(route('admin.calendar.data'))
             ->assertOk()
-            ->assertJsonCount(2, 'events')
+            ->assertJsonCount(1, 'events')
             ->assertJsonPath('events.0.reference', '#JG-CAL-APPROVED')
             ->assertJsonPath('events.0.status', 'approved')
-            ->assertJsonPath('events.1.reference', '#JG-CAL-PENDING')
-            ->assertJsonPath('events.1.status', 'pending')
+            ->assertJsonMissing(['reference' => '#JG-CAL-PENDING'])
             ->assertJsonMissing(['reference' => '#JG-CAL-CANCELLED']);
     }
 

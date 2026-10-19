@@ -30,7 +30,12 @@ $end = $event['end_date'] ?? $start;
 if ($history) {
 $phases = config('admin.history.phases');
 
-if (in_array($key, config('admin.history.terminal_statuses'), true)) {
+if (in_array($key, config('admin.history.own_group_statuses', []), true)) {
+// A terminal status that keeps its OWN group and tab (user_cancelled), so the History
+// tabs can show it apart from the bookings the admin cancelled. Its badge and label
+// still come from config/admin/bookings.php.
+$phaseKey = $key;
+} elseif (in_array($key, config('admin.history.terminal_statuses'), true)) {
 $phaseKey = 'cancelled';
 } else {
 $today = today();
@@ -40,7 +45,7 @@ $phaseKey = $today->lt($start->copy()->startOfDay())
 }
 
 // Keys the phase does not define (e.g. label/badge for Cancelled) stay as the status had them.
-$status = array_merge($status, $phases[$phaseKey], ['group' => $phaseKey, 'actions' => []]);
+$status = array_merge($status, $phases[$phaseKey] ?? [], ['group' => $phaseKey, 'actions' => []]);
 }
 
 // Status column: a read-only badge. History rows get the phase's badge/icon from the merge above.

@@ -60,16 +60,6 @@ class BookingFlowTest extends TestCase
             $table->timestamps();
         });
 
-        Schema::connection('sqlite')->create('booking_packages', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('booking_id')->unique()->constrained('bookings')->restrictOnDelete();
-            $table->string('package_id')->nullable();
-            $table->string('package_name');
-            $table->decimal('package_price', 10, 2)->nullable();
-            $table->timestamps();
-            $table->foreign('package_id')->references('id')->on('packages')->restrictOnDelete();
-        });
-
         Schema::connection('sqlite')->create('booking_events', function (Blueprint $table) {
             $table->id();
             $table->foreignId('booking_id')->unique()->constrained('bookings')->restrictOnDelete();
@@ -315,6 +305,114 @@ class BookingFlowTest extends TestCase
         ], ['Accept' => 'application/json'])
             ->assertUnprocessable()
             ->assertJsonValidationErrors('start_time');
+    }
+
+    public function test_a_multi_day_event_does_not_clash_with_a_day_it_only_passes_over(): void
+    {
+        $date = now()->addDays(56)->toDateString();
+        $nextDay = now()->addDays(57)->toDateString();
+
+        // An approved event that finishes before the new one begins, on the first day only.
+        $this->createBooking(array_merge($this->bookingData($date, 'EARLY1'), [
+            'event_start_time' => '1:00 AM',
+            'event_end_time' => '2:00 AM',
+        ]));
+
+        $this->reachScheduleStep();
+
+        // 6:00 PM on the first day through 2:00 AM the next morning. The 1:00 AM slot is
+        // hours before the start, so neither day clashes: accepted.
+        $this->postJson(route('booking.event-schedule'), [
+            'event_start_date' => $date,
+            'event_end_date' => $nextDay,
+            'start_time' => '6:00 PM',
+            'end_time' => '2:00 AM',
+        ])->assertOk();
+    }
+
+    public function test_an_event_running_past_midnight_clashes_with_a_late_event_on_its_first_day(): void
+    {
+        $date = now()->addDays(63)->toDateString();
+        $nextDay = now()->addDays(64)->toDateString();
+
+        // 10:00 PM - 10:30 PM holds 8:00 PM - 12:00 AM once the 120-minute break is added.
+        $this->createBooking(array_merge($this->bookingData($date, 'LATE1'), [
+            'event_start_time' => '10:00 PM',
+            'event_end_time' => '10:30 PM',
+        ]));
+
+        $this->reachScheduleStep();
+
+        // 7:00 PM - 2:00 AM runs straight through 10:00 PM on its first day.
+        $this->postJson(route('booking.event-schedule'), [
+            'event_start_date' => $date,
+            'event_end_date' => $nextDay,
+            'start_time' => '7:00 PM',
+            'end_time' => '2:00 AM',
+        ])->assertUnprocessable()->assertJsonValidationErrors('start_time');
+    }
+
+    public function test_a_multi_day_event_fills_its_middle_days(): void
+    {
+        $first = now()->addDays(63)->toDateString();
+        $middle = now()->addDays(64)->toDateString();
+        $last = now()->addDays(65)->toDateString();
+
+        // A short event in the small hours of the event's middle day: the multi-day event
+        // runs through that whole day, so the slot is taken.
+        $this->createBooking(array_merge($this->bookingData($middle, 'MIDDLE1'), [
+            'event_start_time' => '1:00 AM',
+            'event_end_time' => '2:00 AM',
+        ]));
+
+        $this->reachScheduleStep();
+
+        $this->postJson(route('booking.event-schedule'), [
+            'event_start_date' => $first,
+            'event_end_date' => $last,
+            'start_time' => '9:00 AM',
+            'end_time' => '5:00 PM',
+        ])->assertUnprocessable()->assertJsonValidationErrors('start_time');
+    }
+
+    public function test_availability_marks_the_middle_days_of_a_multi_day_booking_full(): void
+    {
+        $first = now()->addDays(70)->toDateString();
+        $middle = now()->addDays(71)->toDateString();
+        $last = now()->addDays(72)->toDateString();
+
+        $this->createBooking(array_merge($this->bookingData($first, 'SPAN1'), [
+            'event_end_date' => $last,
+            'event_start_time' => '9:00 AM',
+            'event_end_time' => '5:00 PM',
+        ]));
+
+        // Only the middle day is held from end to end; the first and last days still have
+        // free time before the start / after the end.
+        $this->getJson(route('booking.availability', ['month' => substr($middle, 0, 7)]))
+            ->assertOk()
+            ->assertJsonFragment(['full' => [$middle]]);
+    }
+
+    public function test_an_event_shorter_than_one_hour_is_rejected(): void
+    {
+        $date = now()->addDays(77)->toDateString();
+        $this->reachScheduleStep();
+
+        $this->postJson(route('booking.event-schedule'), [
+            'event_start_date' => $date,
+            'event_end_date' => $date,
+            'start_time' => '6:00 PM',
+            'end_time' => '6:30 PM',
+        ])->assertUnprocessable()->assertJsonValidationErrors('end_time');
+
+        // Exactly one hour is the shortest the browser allows, so the server accepts it too.
+        $this->postJson(route('booking.event-schedule'), [
+            'event_start_date' => $date,
+            'event_end_date' => $date,
+            'start_time' => '6:00 PM',
+            'end_time' => '7:00 PM',
+        ])->assertOk();
     }
 
     public function test_authenticated_package_cards_link_to_the_selected_package(): void

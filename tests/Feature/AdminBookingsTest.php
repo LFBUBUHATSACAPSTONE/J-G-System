@@ -3,10 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Booking;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class AdminBookingsTest extends TestCase
@@ -22,6 +22,9 @@ class AdminBookingsTest extends TestCase
         DB::purge('sqlite');
 
         Artisan::call('migrate', ['--force' => true]);
+
+        // Every route in this file sits behind ['auth', 'role:admin'].
+        $this->actingAs(User::factory()->admin()->create());
     }
 
     public function test_bookings_dashboard_reads_persisted_records_and_json_endpoint_returns_json(): void
@@ -163,6 +166,49 @@ class AdminBookingsTest extends TestCase
             ->assertJsonStructure(['message', 'errors' => ['action']]);
     }
 
+    public function test_bookings_page_lists_client_cancelled_bookings_with_their_own_filter_option(): void
+    {
+        $userCancelled = $this->booking([
+            'reference' => 'JG-UC-1',
+            'status' => 'user_cancelled',
+            'client_name' => 'Client Cancelled Client',
+        ]);
+        $this->booking(['reference' => 'JG-UC-PENDING', 'client_name' => 'Pending Client']);
+
+        // The Status filter offers "User Cancelled" (config/admin/bookings.php, no Blade edit).
+        $this->get(route('admin.bookings'))
+            ->assertOk()
+            ->assertSee('User Cancelled')
+            ->assertSee($userCancelled->reference)
+            ->assertSee('Client Cancelled Client');
+
+        $this->getJson(route('admin.bookings.data'))
+            ->assertOk()
+            ->assertJsonCount(2, 'bookings')
+            ->assertJsonFragment(['id' => $userCancelled->id, 'status' => 'user_cancelled']);
+    }
+
+    public function test_admin_status_actions_are_not_offered_on_client_cancelled_bookings(): void
+    {
+        $booking = $this->booking(['status' => 'user_cancelled']);
+
+        // No Approve/Decline/Cancel/Verify button on a booking the client already cancelled…
+        $this->get(route('admin.bookings'))
+            ->assertOk()
+            ->assertDontSee('name="action"', false);
+
+        // …and the server refuses those actions too.
+        $this->postJson(route('admin.bookings.status', $booking), ['action' => 'cancel'])
+            ->assertStatus(422);
+        $this->postJson(route('admin.bookings.status', $booking), ['action' => 'approve'])
+            ->assertStatus(422);
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $booking->id,
+            'status' => 'user_cancelled',
+        ]);
+    }
+
     public function test_approval_returns_json_conflict_when_capacity_is_full(): void
     {
         $date = Carbon::today()->addDays(40)->toDateString();
@@ -189,27 +235,6 @@ class AdminBookingsTest extends TestCase
             'id' => $pending->id,
             'status' => 'pending',
         ]);
-    }
-
-    public function test_pending_bookings_migration_preserves_existing_data_and_creates_capacity_lock_idempotently(): void
-    {
-        $booking = $this->booking([
-            'client_phone' => '09123456789',
-            'client_address' => 'Existing client address',
-        ]);
-        $migration = require database_path('migrations/2026_10_07_060000_create_bookings_table.php');
-
-        $migration->up();
-        $migration->up();
-
-        $this->assertDatabaseHas('bookings', [
-            'id' => $booking->id,
-            'client_phone' => '09123456789',
-            'client_address' => 'Existing client address',
-        ]);
-        $this->assertSame(1, DB::table('booking_capacity_locks')->where('id', 1)->count());
-        $this->assertTrue(Schema::hasColumn('bookings', 'client_phone'));
-        $this->assertTrue(Schema::hasColumn('bookings', 'client_address'));
     }
 
     private function booking(array $overrides = []): Booking

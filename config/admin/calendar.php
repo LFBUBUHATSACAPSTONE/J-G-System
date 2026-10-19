@@ -5,14 +5,13 @@
 return [
 
   // Which booking statuses appear on the calendar, and how. Any status NOT listed here
-  // (cancelled, declined) is left off, so those dates look free again.
+  // (pending, pending_payment, cancelled, declined, user_cancelled) is left off, so those dates
+  // look free again. Only APPROVED bookings are shown: the calendar is the confirmed-event view,
+  // and everything that still needs a decision lives on the Bookings page.
   // tone  => key into 'tones' below (drives the cell colour)
   // label => badge text in the side panel
   'statuses' => [
-    'approved'        => ['tone' => 'confirmed', 'label' => 'Confirmed'],
-    'completed'       => ['tone' => 'confirmed', 'label' => 'Completed'],
-    'pending'         => ['tone' => 'pending',   'label' => 'Pending Approval'],
-    'pending_payment' => ['tone' => 'pending',   'label' => 'Payment to Verify'],
+    'approved' => ['tone' => 'confirmed', 'label' => 'Confirmed'],
   ],
 
   // Cell colours, in PRIORITY order: when one date holds bookings of different tones, the first

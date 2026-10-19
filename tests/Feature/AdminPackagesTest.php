@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -28,6 +29,11 @@ class AdminPackagesTest extends TestCase
             $table->json('features');
             $table->timestamps();
         });
+
+        // Admin routes are gated by ['auth', 'role:admin']. This file builds its own minimal
+        // schema (no users table), so sign in with an in-memory admin — the package endpoints
+        // never read the user row itself.
+        $this->actingAs(User::factory()->admin()->make());
     }
 
     public function test_admin_can_create_update_list_and_change_package_availability(): void

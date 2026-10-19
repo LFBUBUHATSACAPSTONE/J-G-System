@@ -40,8 +40,9 @@ class CalendarController extends Controller
         $gridStart = $month->copy()->startOfWeek(0); // Sunday
         $gridEnd = $month->copy()->endOfMonth()->endOfWeek(6); // Saturday
 
-        // Only the statuses the calendar knows about appear; cancelled / declined dates look free
-        // again. The view repeats this check, so the rule lives in config/admin/calendar.php.
+        // Only the statuses the calendar knows about appear (approved only, per
+        // config/admin/calendar.php): pending, cancelled and declined dates look free again.
+        // The view repeats this check, so the rule lives in that config file.
         $statuses = array_keys(config('admin.calendar.statuses', []));
 
         $events = $statuses === []

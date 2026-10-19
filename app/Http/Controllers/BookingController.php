@@ -20,6 +20,11 @@ class BookingController extends Controller
     // Minutes in a bookable day; used as the upper bound of every time window.
     private const DAY_MINUTES = 1440;
 
+    // Shortest bookable event, mirroring the Event Schedule step's client-side rule
+    // (resources/js/booking/event-schedule.js). The browser check is only a convenience;
+    // this is the gate the server actually enforces.
+    private const MIN_EVENT_MINUTES = 60;
+
     private const EVENT_TYPES = [
         'Baby Shower',
         'Bridal Shower',
@@ -199,6 +204,27 @@ class BookingController extends Controller
         if ($data['event_start_date'] === $data['event_end_date']
             && $this->timeInMinutes($data['end_time']) <= $this->timeInMinutes($data['start_time'])) {
             return $this->validationError(['end_time' => ['End time must be later than start time.']]);
+        }
+
+        // The event is one continuous span from the start clock on the first day to the end
+        // clock on the last day, so a multi-day event may end earlier in the clock than it
+        // starts (6:00 PM - 2:00 AM). The span still has to be positive and long enough.
+        $startMinutes = $this->timeInMinutes($data['start_time']);
+        $endMinutes = $this->timeInMinutes($data['end_time']);
+        $daySpan = CarbonPeriod::create(
+            Carbon::parse($data['event_start_date']),
+            Carbon::parse($data['event_end_date']),
+        )->count() - 1;
+        $duration = ($daySpan * self::DAY_MINUTES) + $endMinutes - $startMinutes;
+
+        if ($duration <= 0) {
+            return $this->validationError(['end_time' => ['End time must be later than start time.']]);
+        }
+
+        if ($duration < self::MIN_EVENT_MINUTES) {
+            return $this->validationError([
+                'end_time' => ['The event must be at least '.Scheduling::humanizeMinutes(self::MIN_EVENT_MINUTES).' long.'],
+            ]);
         }
 
         $fullDates = $this->fullDatesBetween(
@@ -510,10 +536,13 @@ class BookingController extends Controller
      * Per-day occupancy of $start..$end by counted bookings (config/scheduling.php):
      *   'counts'  — bookings covering each day; a multi-day booking counts on EVERY day.
      *   'blocked' — windows [from, to] (minutes past midnight) a new booking may not touch:
-     *               each booking's own span PLUS the required break before and after it,
-     *               merged per day. A window reaching 00:00 and 24:00 means the whole day
-     *               is occupied and no other event fits, no matter how many slots the
-     *               quota still shows.
+     *               each booking's own span on that day PLUS the required break before and
+     *               after it, merged per day. A window reaching 00:00 and 24:00 means the
+     *               whole day is occupied and no other event fits, no matter how many slots
+     *               the quota still shows.
+     * A booking is read as ONE continuous span (occupiedSpan()): a multi-day or
+     * past-midnight event therefore blocks the rest of its first day, its middle days in
+     * full and its last day up to the end clock — not the same window on every date.
      * Times are stored as "h:mm AM/PM" strings; a booking with unreadable times holds the
      * entire day, so a legacy row can never be double-booked by accident.
      */
@@ -546,8 +575,11 @@ class BookingController extends Controller
         foreach ($bookings as $booking) {
             $from = $this->timeInMinutes($booking->event_start_time);
             $to = $this->timeInMinutes($booking->event_end_time);
+            $first = Carbon::parse($booking->event_start_date)->startOfDay();
+            $last = Carbon::parse($booking->event_end_date ?? $booking->event_start_date)->startOfDay();
+            $singleDay = $first->isSameDay($last);
 
-            foreach (CarbonPeriod::create($booking->event_start_date, $booking->event_end_date) as $date) {
+            foreach (CarbonPeriod::create($first, $last) as $date) {
                 $iso = $date->toDateString();
                 if ($iso < $start->toDateString() || $iso > $end->toDateString()) {
                     continue;
@@ -555,17 +587,18 @@ class BookingController extends Controller
 
                 $counts[$iso] = ($counts[$iso] ?? 0) + 1;
 
-                // No times, or a clock running past midnight (6:00 PM - 2:00 AM): hold the
-                // whole day rather than guess where the event actually sits.
-                if ($from === null || $to === null || $to <= $from) {
+                // No times, or a single-day event whose end is not after its start: hold the
+                // whole day rather than guess where the event actually sits (legacy rows).
+                if ($from === null || $to === null || ($singleDay && $to <= $from)) {
                     $windows[$iso][] = [0, self::DAY_MINUTES];
 
                     continue;
                 }
 
+                [$spanFrom, $spanTo] = $this->occupiedSpan($first, $last, $from, $to, $date);
                 $windows[$iso][] = [
-                    max(0, $from - $gap),
-                    min(self::DAY_MINUTES, $to + $gap),
+                    max(0, $spanFrom - $gap),
+                    min(self::DAY_MINUTES, $spanTo + $gap),
                 ];
             }
         }
@@ -598,6 +631,39 @@ class BookingController extends Controller
         return $merged;
     }
 
+    /**
+     * The [from, to] minute span a booking occupies on ONE of the days it covers.
+     *
+     * The two stored clocks are read as a single continuous interval that runs from the
+     * start clock on the first day to the end clock on the last day: the booking fills the
+     * rest of its first day from the start clock, every day in between in full, and its
+     * last day up to the end clock. A single-day booking is just its start-to-end span.
+     *
+     * Reading the same window onto every date instead would let a multi-day or
+     * past-midnight event clash with days it never touches (and miss the days it does),
+     * which is why the first/middle/last day are treated apart.
+     *
+     * @return array{0:int,1:int} [from, to] in minutes past midnight
+     */
+    private function occupiedSpan(Carbon $first, Carbon $last, int $from, int $to, Carbon $day): array
+    {
+        if ($first->isSameDay($last)) {
+            return [$from, $to];
+        }
+
+        $iso = $day->toDateString();
+
+        if ($iso === $first->toDateString()) {
+            return [$from, self::DAY_MINUTES];
+        }
+
+        if ($iso === $last->toDateString()) {
+            return [0, $to];
+        }
+
+        return [0, self::DAY_MINUTES];
+    }
+
     private function fullDatesBetween(Carbon $start, Carbon $end, bool $lock = false): array
     {
         $limit = (int) config('scheduling.max_events_per_day', 3);
@@ -628,6 +694,10 @@ class BookingController extends Controller
      * First day in $start..$end where $startTime - $endTime cannot sit: it overlaps an
      * existing booking or leaves less than the required break around one. Returns
      * ['date' => 'Y-m-d', 'message' => '…'] or null when every day in the range is clear.
+     *
+     * The selected times describe one continuous event: the proposed span is read per day
+     * (occupiedSpan()) so a multi-day or past-midnight booking is checked on the days it
+     * really covers, exactly like the existing bookings it is compared against.
      */
     private function scheduleConflict(
         Carbon $start,
@@ -642,26 +712,23 @@ class BookingController extends Controller
             return null;
         }
 
-        // A multi-day event may legitimately end earlier in the clock than it starts
-        // (6:00 PM - 2:00 AM over two days). Treat it conservatively on every day:
-        // from the start time to midnight, plus midnight to the end time.
-        $proposed = [[$from, max($to, $from)]];
-        if ($to <= $from) {
-            $proposed[] = [0, $to];
-        }
+        $first = $start->copy()->startOfDay();
+        $last = $end->copy()->startOfDay();
 
+        // The required break is already baked into the existing bookings' windows, so the
+        // proposed span is checked as-is.
         ['blocked' => $blocked] = $this->dayOccupancy($start, $end, $lock);
 
-        foreach (CarbonPeriod::create($start, $end) as $date) {
+        foreach (CarbonPeriod::create($first, $last) as $date) {
             $iso = $date->toDateString();
+            [$windowFrom, $windowTo] = $this->occupiedSpan($first, $last, $from, $to, $date);
+
             foreach ($blocked[$iso] ?? [] as [$busyFrom, $busyTo]) {
-                foreach ($proposed as [$windowFrom, $windowTo]) {
-                    if ($windowFrom < $busyTo && $windowTo > $busyFrom) {
-                        return [
-                            'date' => $iso,
-                            'message' => $this->scheduleConflictMessage($iso, $busyFrom, $busyTo),
-                        ];
-                    }
+                if ($windowFrom < $busyTo && $windowTo > $busyFrom) {
+                    return [
+                        'date' => $iso,
+                        'message' => $this->scheduleConflictMessage($iso, $busyFrom, $busyTo),
+                    ];
                 }
             }
         }

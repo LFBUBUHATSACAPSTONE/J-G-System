@@ -50,7 +50,7 @@
   </nav>
 
   <div class="admin-sidebar__footer">
-    <form method="POST" action="{{ Route::has('logout') ? route('logout') : '#' }}">
+    <form method="POST" action="{{ Route::has('admin.logout') ? route('admin.logout') : '#' }}">
       @csrf
       <button type="submit" class="admin-sidebar__link admin-sidebar__logout">
         <i class="ph ph-sign-out" aria-hidden="true"></i>

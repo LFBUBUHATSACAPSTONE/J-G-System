@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Booking;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +22,9 @@ class AdminBookingHistoryTest extends TestCase
         DB::purge('sqlite');
 
         Artisan::call('migrate', ['--force' => true]);
+
+        // Every route in this file sits behind ['auth', 'role:admin'].
+        $this->actingAs(User::factory()->admin()->create());
     }
 
     public function test_history_lists_cancelled_and_verified_bookings_only(): void
@@ -90,6 +94,57 @@ class AdminBookingHistoryTest extends TestCase
             ->assertJsonPath('bookings.0.package.name', 'Budget Lite')
             ->assertJsonPath('packages.0.id', 'budget-lite')
             ->assertJsonPath('packages.0.name', 'Budget Lite');
+    }
+
+    public function test_history_shows_client_cancelled_bookings_under_their_own_tab(): void
+    {
+        $userCancelled = $this->booking([
+            'reference' => 'JG-HIST-UC',
+            'status' => 'user_cancelled',
+            'client_name' => 'Client Cancelled Client',
+        ]);
+        $adminCancelled = $this->booking([
+            'reference' => 'JG-HIST-ADMIN-CANCELLED',
+            'status' => 'cancelled',
+            'client_name' => 'Admin Cancelled Client',
+        ]);
+
+        $page = $this->get(route('admin.booking-history'))
+            ->assertOk()
+            ->assertSee('User Cancelled') // the tab (config/admin/history.php)
+            ->assertSee('Client Cancelled Client')
+            ->assertSee('Admin Cancelled Client');
+
+        // The client-cancelled row keeps its OWN group (its own tab); the admin-cancelled one
+        // stays in the regular Cancelled group.
+        $this->assertSame(1, substr_count($page->getContent(), 'data-status-group="user_cancelled"'));
+
+        $this->getJson(route('admin.booking-history.data'))
+            ->assertOk()
+            ->assertJsonCount(2, 'bookings')
+            ->assertJsonPath('bookings.0.id', $adminCancelled->id)
+            ->assertJsonPath('bookings.0.status', 'cancelled')
+            ->assertJsonPath('bookings.1.id', $userCancelled->id)
+            ->assertJsonPath('bookings.1.status', 'user_cancelled');
+    }
+
+    public function test_history_keeps_declined_bookings_in_the_cancelled_group(): void
+    {
+        $declined = $this->booking([
+            'reference' => 'JG-HIST-DECLINED',
+            'status' => 'declined',
+            'client_name' => 'Declined Client',
+        ]);
+
+        $this->get(route('admin.booking-history'))
+            ->assertOk()
+            ->assertSee('Declined Client');
+
+        $this->getJson(route('admin.booking-history.data'))
+            ->assertOk()
+            ->assertJsonCount(1, 'bookings')
+            ->assertJsonPath('bookings.0.id', $declined->id)
+            ->assertJsonPath('bookings.0.status', 'declined');
     }
 
     private function booking(array $overrides = []): Booking
