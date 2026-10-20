@@ -3,11 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Booking;
-use Illuminate\Database\Schema\Blueprint;
+use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class AdminDashboardTest extends TestCase
@@ -23,41 +22,23 @@ class AdminDashboardTest extends TestCase
         DB::purge('sqlite');
         DB::setDefaultConnection('sqlite');
 
-        Schema::create('packages', function (Blueprint $table) {
-            $table->string('id')->primary();
-            $table->string('name');
-            $table->decimal('price', 10, 2);
-            $table->boolean('available')->default(true);
-            $table->unsignedInteger('sort_order')->default(0);
-            $table->json('features')->nullable();
-            $table->timestamps();
-        });
-        foreach (['budget-party', 'luxe-lite', 'modern-glam', 'budget-lite', 'test-package'] as $packageId) {
-            DB::table('packages')->insert([
-                'id' => $packageId,
-                'name' => $packageId,
-                'price' => 10000,
-                'available' => true,
-                'sort_order' => 0,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
+        Artisan::call('migrate', ['--force' => true]);
 
-        foreach ([
-            '2026_10_06_120000_create_bookings_table.php',
-            '2026_10_10_090000_add_payment_and_reschedule_data_to_bookings_table.php',
-            '2026_10_10_100000_create_booking_detail_tables.php',
-            '2026_10_10_110000_create_booking_packages_table.php',
-            '2026_10_10_120000_remove_normalized_booking_columns.php',
-            '2026_10_10_130000_link_bookings_to_packages.php',
-            '2026_10_13_000001_add_approved_at_to_bookings_table.php',
-        ] as $migration) {
-            Artisan::call('migrate', [
-                '--path' => 'database/migrations/'.$migration,
-                '--force' => true,
-            ]);
-        }
+        // The catalogue itself is seeded by the packages migration; add one custom package the
+        // seeded config does not contain.
+        DB::table('packages')->insertOrIgnore([
+            'id' => 'test-package',
+            'name' => 'test-package',
+            'price' => 10000,
+            'available' => true,
+            'sort_order' => 0,
+            'features' => json_encode([]),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Every route in this file sits behind ['auth', 'role:admin'].
+        $this->actingAs(User::factory()->admin()->create());
 
         Carbon::setTestNow('2026-10-06 12:00:00');
     }

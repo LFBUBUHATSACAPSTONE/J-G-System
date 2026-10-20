@@ -11,7 +11,7 @@ $initials = strtoupper(mb_substr($firstName, 0, 1) . mb_substr($lastName, 0, 1))
 $phoneDisplay = strlen($phone) === 11 ? preg_replace('/^(\d{4})(\d{3})(\d{4})$/', '$1 $2 $3', $phone) : $phone;
 
 $updateUrl = Route::has('admin.account.update') ? route('admin.account.update') : '';
-$logoutUrl = Route::has('logout') ? route('logout') : '';
+$logoutUrl = Route::has('admin.logout') ? route('admin.logout') : '';
 
 $sessions = $sessions ?? [];
 $lastLogin = $lastLogin ?? null;

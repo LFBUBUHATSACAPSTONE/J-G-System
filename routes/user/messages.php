@@ -58,16 +58,19 @@ View::composer(['components.landing.navigation', 'components.account.sidebar'], 
     $view->with('chatUnread', $unread);
 });
 
-// Send message from user (landing widget and account page).
-Route::post('/messages', [MessageController::class, 'store'])->name('user.messages.send');
+// Send message from user (landing widget and account page). The customer chat is for the `user`
+// role only: a guest gets 401 JSON, an admin account is bounced to its own side.
+Route::middleware(['auth', 'role:user'])->group(function () {
+    Route::post('/messages', [MessageController::class, 'store'])->name('user.messages.send');
 
-// Edit or unsend a message the client already sent. Only their own client messages in
-// their own thread are accepted (checked in the controller).
-Route::patch('/messages/{message}', [MessageController::class, 'update'])->name('user.messages.update');
-Route::delete('/messages/{message}', [MessageController::class, 'destroy'])->name('user.messages.destroy');
+    // Edit or unsend a message the client already sent. Only their own client messages in
+    // their own thread are accepted (checked in the controller).
+    Route::patch('/messages/{message}', [MessageController::class, 'update'])->name('user.messages.update');
+    Route::delete('/messages/{message}', [MessageController::class, 'destroy'])->name('user.messages.destroy');
 
-// Opening the chat on the user side marks only the admin replies read.
-Route::post('/messages/read', [MessageController::class, 'markRead'])->name('user.messages.read');
+    // Opening the chat on the user side marks only the admin replies read.
+    Route::post('/messages/read', [MessageController::class, 'markRead'])->name('user.messages.read');
 
-// Light polling feed for an open chat: unread count + admin replies after `after`.
-Route::get('/messages/updates', [MessageController::class, 'updates'])->name('user.messages.updates');
+    // Light polling feed for an open chat: unread count + admin replies after `after`.
+    Route::get('/messages/updates', [MessageController::class, 'updates'])->name('user.messages.updates');
+});

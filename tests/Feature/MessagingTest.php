@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\MessageService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -24,6 +25,8 @@ use Tests\TestCase;
 // touches the real database.
 class MessagingTest extends TestCase
 {
+    private User $admin;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -41,6 +44,7 @@ class MessagingTest extends TestCase
             $table->timestamp('email_verified_at')->nullable();
             $table->string('phone')->nullable()->unique();
             $table->text('address')->nullable();
+            $table->string('role', 20)->default('user');
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
@@ -127,6 +131,19 @@ class MessagingTest extends TestCase
             $table->timestamp('deleted_at')->nullable();
             $table->timestamps();
         });
+
+        // Admin routes are gated by ['auth', 'role:admin']: sign in an admin for the tests that
+        // exercise the admin panel. Tests that act as a client call actingAs($user) themselves.
+        $this->admin = User::create([
+            'first_name' => 'Admin',
+            'last_name' => 'Agent',
+            'email' => 'admin@example.com',
+            'role' => 'admin',
+            'password' => Hash::make('password'),
+        ]);
+        $this->admin->email_verified_at = now();
+        $this->admin->save();
+        $this->actingAs($this->admin);
     }
 
     // ------------------------------------------------------------- helpers
@@ -305,6 +322,8 @@ class MessagingTest extends TestCase
 
     public function test_guests_are_rejected_with_401_from_the_client_endpoints(): void
     {
+        Auth::logout();
+
         $this->postJson(route('user.messages.send'), ['body' => 'Hello'])->assertUnauthorized();
         $this->postJson(route('user.messages.read'))->assertUnauthorized();
         $this->getJson(route('user.messages.updates'))->assertUnauthorized();
@@ -619,6 +638,8 @@ class MessagingTest extends TestCase
 
     public function test_guests_are_rejected_from_edit_and_unsend(): void
     {
+        Auth::logout();
+
         $user = $this->makeUser();
         $conversation = $this->makeConversation($user, [
             ['from' => 'client', 'body' => 'Hello'],
@@ -781,7 +802,7 @@ class MessagingTest extends TestCase
             ->assertOk()
             ->assertSee('data-chat-messages-since', false);
 
-        $this->get(route('admin.messages'))
+        $this->actingAs($this->admin)->get(route('admin.messages'))
             ->assertOk()
             ->assertSee('data-chat-messages-since', false);
     }
@@ -820,7 +841,7 @@ class MessagingTest extends TestCase
             ->assertDontSee('PEN-200')
             ->assertDontSee('DEC-201');
 
-        $this->get(route('admin.messages'))
+        $this->actingAs($this->admin)->get(route('admin.messages'))
             ->assertOk()
             ->assertSee('APR-100')
             ->assertDontSee('PEN-200')
@@ -1149,7 +1170,7 @@ class MessagingTest extends TestCase
             ->assertOk()
             ->assertSee('data-chat-bookings-since', false);
 
-        $this->get(route('admin.messages'))
+        $this->actingAs($this->admin)->get(route('admin.messages'))
             ->assertOk()
             ->assertSee('data-chat-bookings-since', false);
     }

@@ -1,20 +1,27 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminAuthController;
+use App\Http\Controllers\Admin\AdminLogoutController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Admin sign-in gate: the page an admin sees first at /admin. Required from routes/admin.php.
-// FRONT END ONLY today. Route NAMES (admin.login, admin.login.submit) must not change: the view
-// and resources/js/admin-login.js build from them. See the contract in resources/js/admin-login.js.
+// BACKEND CONNECTED: both routes are handled by AdminAuthController, which answers JSON only on
+// POST (see the contract in resources/js/admin-login.js). Route NAMES (admin.login,
+// admin.login.submit) must not change: the view and resources/js/admin-login.js build from them.
 
-Route::view('/admin', 'admin.login')->name('admin.login');
+Route::get('/admin', [AdminAuthController::class, 'show'])->name('admin.login');
 
-// USED FOR FRONT-END TESTING PURPOSES ONLY. Signs nobody in: it always answers 422 so the error
-// state can be seen. Replace the closure with the real controller, keeping the name and the JSON shape:
-//   200 {redirect?}  |  422 {message, errors}  |  403 {message}  |  429 {message}
-Route::post('/admin/login', fn() => response()->json([
-  'message' => "We couldn't sign you in — check that your email and password are correct.",
-], 422))->name('admin.login.submit');
+// 200 {ok, redirect}  |  422 {message, errors}  |  403 {message}  |  429 {message}
+// Who counts as an admin is the users.role column ('admin'); see AdminAuthController::isAdmin().
+Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.login.submit');
+
+// Ends the admin's session for real: the guard is logged out and the session is invalidated and
+// re-keyed, then the browser lands back on the sign-in card. A page request is redirected, a
+// fetch() request gets 200 {ok, message, redirect}. Named `admin.logout` (the sidebar and the
+// Account page both post to it).
+Route::post('/admin/logout', [AdminLogoutController::class, 'logout'])->name('admin.logout');
+
 
 // ---- Forgot password flow (same four steps as the user auth modal) ----------------------------
 // USED FOR FRONT-END TESTING PURPOSES ONLY. These closures fake the answers so every state of the

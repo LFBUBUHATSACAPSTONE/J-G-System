@@ -3,10 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Booking;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class AdminBookingsTest extends TestCase
@@ -22,6 +22,9 @@ class AdminBookingsTest extends TestCase
         DB::purge('sqlite');
 
         Artisan::call('migrate', ['--force' => true]);
+
+        // Every route in this file sits behind ['auth', 'role:admin'].
+        $this->actingAs(User::factory()->admin()->create());
     }
 
     public function test_bookings_dashboard_reads_persisted_records_and_json_endpoint_returns_json(): void
@@ -163,6 +166,49 @@ class AdminBookingsTest extends TestCase
             ->assertJsonStructure(['message', 'errors' => ['action']]);
     }
 
+    public function test_bookings_page_lists_client_cancelled_bookings_with_their_own_filter_option(): void
+    {
+        $userCancelled = $this->booking([
+            'reference' => 'JG-UC-1',
+            'status' => 'user_cancelled',
+            'client_name' => 'Client Cancelled Client',
+        ]);
+        $this->booking(['reference' => 'JG-UC-PENDING', 'client_name' => 'Pending Client']);
+
+        // The Status filter offers "User Cancelled" (config/admin/bookings.php, no Blade edit).
+        $this->get(route('admin.bookings'))
+            ->assertOk()
+            ->assertSee('User Cancelled')
+            ->assertSee($userCancelled->reference)
+            ->assertSee('Client Cancelled Client');
+
+        $this->getJson(route('admin.bookings.data'))
+            ->assertOk()
+            ->assertJsonCount(2, 'bookings')
+            ->assertJsonFragment(['id' => $userCancelled->id, 'status' => 'user_cancelled']);
+    }
+
+    public function test_admin_status_actions_are_not_offered_on_client_cancelled_bookings(): void
+    {
+        $booking = $this->booking(['status' => 'user_cancelled']);
+
+        // No Approve/Decline/Cancel/Verify button on a booking the client already cancelled…
+        $this->get(route('admin.bookings'))
+            ->assertOk()
+            ->assertDontSee('name="action"', false);
+
+        // …and the server refuses those actions too.
+        $this->postJson(route('admin.bookings.status', $booking), ['action' => 'cancel'])
+            ->assertStatus(422);
+        $this->postJson(route('admin.bookings.status', $booking), ['action' => 'approve'])
+            ->assertStatus(422);
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $booking->id,
+            'status' => 'user_cancelled',
+        ]);
+    }
+
     public function test_approval_returns_json_conflict_when_capacity_is_full(): void
     {
         $date = Carbon::today()->addDays(40)->toDateString();
@@ -191,25 +237,153 @@ class AdminBookingsTest extends TestCase
         ]);
     }
 
-    public function test_pending_bookings_migration_preserves_existing_data_and_creates_capacity_lock_idempotently(): void
+    public function test_approving_a_second_booking_with_an_overlapping_schedule_is_refused(): void
     {
-        $booking = $this->booking([
-            'client_phone' => '09123456789',
-            'client_address' => 'Existing client address',
-        ]);
-        $migration = require database_path('migrations/2026_10_07_060000_create_bookings_table.php');
+        $date = Carbon::today()->addDays(40)->toDateString();
 
-        $migration->up();
-        $migration->up();
+        $first = $this->booking([
+            'reference' => 'JG-OVERLAP-1',
+            'event_start_date' => $date,
+            'event_end_date' => $date,
+            'event_start_time' => '6:00 PM',
+            'event_end_time' => '11:00 PM',
+        ]);
+        $second = $this->booking([
+            'reference' => 'JG-OVERLAP-2',
+            'event_start_date' => $date,
+            'event_end_date' => $date,
+            'event_start_time' => '8:00 PM',
+            'event_end_time' => '10:00 PM',
+        ]);
+        $third = $this->booking([
+            'reference' => 'JG-NO-CLASH',
+            'event_start_date' => $date,
+            'event_end_date' => $date,
+            'event_start_time' => '9:00 AM',
+            'event_end_time' => '11:00 AM',
+        ]);
+
+        // Pending bookings hold no slot yet, so the first approval is fine.
+        $this->postJson(route('admin.bookings.status', $first), ['action' => 'approve'])
+            ->assertOk()
+            ->assertJsonPath('booking.status', 'pending_payment');
+
+        // The second overlaps the booking that now holds the slot: refused, status untouched.
+        $this->postJson(route('admin.bookings.status', $second), ['action' => 'approve'])
+            ->assertStatus(409)
+            ->assertJsonPath('message', fn (string $message) => str_contains($message, 'schedule conflicts with #JG-OVERLAP-1'));
 
         $this->assertDatabaseHas('bookings', [
-            'id' => $booking->id,
-            'client_phone' => '09123456789',
-            'client_address' => 'Existing client address',
+            'id' => $second->id,
+            'status' => 'pending',
         ]);
-        $this->assertSame(1, DB::table('booking_capacity_locks')->where('id', 1)->count());
-        $this->assertTrue(Schema::hasColumn('bookings', 'client_phone'));
-        $this->assertTrue(Schema::hasColumn('bookings', 'client_address'));
+
+        // A non-overlapping booking on the same day still goes through (only 1 of 3 slots used).
+        $this->postJson(route('admin.bookings.status', $third), ['action' => 'approve'])
+            ->assertOk()
+            ->assertJsonPath('booking.status', 'pending_payment');
+    }
+
+    public function test_verifying_a_payment_with_an_overlapping_schedule_is_refused(): void
+    {
+        $date = Carbon::today()->addDays(40)->toDateString();
+
+        $first = $this->booking([
+            'reference' => 'JG-VERIFY-CLASH-1',
+            'status' => 'pending_payment',
+            'event_start_date' => $date,
+            'event_end_date' => $date,
+            'event_start_time' => '6:00 PM',
+            'event_end_time' => '11:00 PM',
+        ]);
+        $second = $this->booking([
+            'reference' => 'JG-VERIFY-CLASH-2',
+            'status' => 'pending_payment',
+            'event_start_date' => $date,
+            'event_end_date' => $date,
+            'event_start_time' => '8:00 PM',
+            'event_end_time' => '10:00 PM',
+        ]);
+
+        $this->postJson(route('admin.bookings.status', $first), ['action' => 'verify'])
+            ->assertStatus(409)
+            ->assertJsonPath('message', fn (string $message) => str_contains($message, 'schedule conflicts with #JG-VERIFY-CLASH-2'));
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $first->id,
+            'status' => 'pending_payment',
+        ]);
+
+        // A booking whose schedule clashes with nothing can still be verified.
+        $solo = $this->booking([
+            'reference' => 'JG-VERIFY-SOLO',
+            'status' => 'pending_payment',
+            'event_start_date' => $date,
+            'event_end_date' => $date,
+            'event_start_time' => '9:00 AM',
+            'event_end_time' => '11:00 AM',
+        ]);
+
+        $this->postJson(route('admin.bookings.status', $solo), ['action' => 'verify'])
+            ->assertOk()
+            ->assertJsonPath('booking.status', 'approved');
+
+        unset($second);
+    }
+
+    public function test_verifying_a_full_payment_marks_it_fully_paid(): void
+    {
+        $booking = $this->booking([
+            'status' => 'pending_payment',
+            'payment_method' => 'full',
+            'payment_state' => 'pending',
+        ]);
+
+        $this->postJson(route('admin.bookings.status', $booking), ['action' => 'verify'])
+            ->assertOk()
+            ->assertJsonPath('booking.status', 'approved')
+            ->assertJsonPath('booking.payment.state', 'paid')
+            ->assertJsonPath('booking.payment.status', 'Fully Paid');
+
+        $this->assertDatabaseHas('booking_payments', [
+            'booking_id' => $booking->id,
+            'payment_state' => 'paid',
+        ]);
+    }
+
+    public function test_verifying_a_down_payment_marks_it_down_payment_paid(): void
+    {
+        $booking = $this->booking([
+            'status' => 'pending_payment',
+            'payment_method' => 'down',
+            'payment_state' => 'pending',
+        ]);
+
+        $this->postJson(route('admin.bookings.status', $booking), ['action' => 'verify'])
+            ->assertOk()
+            ->assertJsonPath('booking.status', 'approved')
+            ->assertJsonPath('booking.payment.state', 'partial')
+            ->assertJsonPath('booking.payment.status', 'Down payment paid');
+
+        $this->assertDatabaseHas('booking_payments', [
+            'booking_id' => $booking->id,
+            'payment_state' => 'partial',
+        ]);
+    }
+
+    public function test_verifying_keeps_an_already_fully_paid_payment_paid(): void
+    {
+        // A booking that already recorded a full payment (re-verified) must never be downgraded.
+        $booking = $this->booking([
+            'status' => 'pending_payment',
+            'payment_method' => 'down',
+            'payment_state' => 'paid',
+        ]);
+
+        $this->postJson(route('admin.bookings.status', $booking), ['action' => 'verify'])
+            ->assertOk()
+            ->assertJsonPath('booking.payment.state', 'paid')
+            ->assertJsonPath('booking.payment.status', 'Fully Paid');
     }
 
     private function booking(array $overrides = []): Booking

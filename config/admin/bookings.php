@@ -12,9 +12,13 @@ return [
   //   pending --Approve--> pending_payment --Verify Payment--> approved
   //      \--Decline--> declined       \--Cancel--> cancelled      approved --Cancel--> cancelled
   //
+  // At any point the client may cancel it themselves from My Bookings: the status becomes
+  // `user_cancelled` (Account\AccountBookingController), which is its own filter option below.
+  //
   // A booking reaches Booking History when its payment is verified (approved + payment.state
-  // paid/partial) or when it is cancelled / declined: see config/admin-history.php. So
-  // "Verify Payment" is the action that moves a booking from this page into History.
+  // paid/partial) or when it is cancelled / declined / cancelled by the client: see
+  // config/admin/history.php. So "Verify Payment" is the action that moves a booking from this
+  // page into History.
   //
   // label     => text of the status badge (and the Status-filter text if it has its own group)
   // icon      => Phosphor icon name (ph-<icon>) shown inside the badge; decorative, the label carries the meaning
@@ -92,16 +96,28 @@ return [
       'actions'   => [],
       'badge'     => ['tone' => 'danger', 'solid' => false],
     ],
+    // The CLIENT cancelled it from My Bookings (Account\AccountBookingController), so it is
+    // tracked apart from the Cancelled the admin performs here. It has its own Status-filter
+    // option ('user_cancelled' below) and its own Booking History tab.
+    'user_cancelled' => [
+      'label'     => 'User Cancelled',
+      'icon'      => 'x-circle',
+      'group'     => 'user_cancelled',
+      'highlight' => false,
+      'actions'   => [],
+      'badge'     => ['tone' => 'danger', 'solid' => false],
+    ],
   ],
 
   // "Status:" dropdown. Keys must match the `group` values above.
   'status_filters' => [
-    'all'       => 'All',
-    'approved'  => 'Approved',
-    'pending'   => 'Pending Approval',
-    'payment'   => 'Payment to Verify',
-    'cancelled' => 'Cancelled',
-    'completed' => 'Completed',
+    'all'            => 'All',
+    'approved'       => 'Approved',
+    'pending'        => 'Pending Approval',
+    'payment'        => 'Payment to Verify',
+    'cancelled'      => 'Cancelled',
+    'user_cancelled' => 'User Cancelled',
+    'completed'      => 'Completed',
   ],
 
   // "Sorted by:" dropdown. Keys are handled in resources/js/admin/bookings.js.

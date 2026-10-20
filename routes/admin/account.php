@@ -1,26 +1,20 @@
 <?php
 
-use Illuminate\Support\Carbon;
+use App\Http\Controllers\Admin\AccountController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/admin/account', function () {
-  $now = Carbon::now();
+// Account page (App\Http\Controllers\Admin\AccountController). Required from routes/admin.php.
+// BACKEND CONNECTED: the PATCH stub that echoed its input is gone; the controller saves to the
+// signed-in user's row (nothing is ever deleted) and answers JSON. The GET still renders the
+// page, and answers JSON when the request asks for it. Route NAMES (admin.account,
+// admin.account.update) must not change: the sidebar (config/admin.php) and the view build
+// from them.
+//
+// JSON shapes are documented in the controller and in resources/js/admin/account.js:
+//   PATCH  200 {ok, message, admin{...}}  |  422 {message, errors}  |  429 {message}  |  401 {message}
 
-  return view('admin.account', [
-    'admin' => request()->user(), // null while there is no admin login: the view falls back to sample values
-    'lastLogin' => $now->copy()->subHours(3),
-    'sessions' => [
-      ['device' => 'Chrome on Windows', 'icon' => 'desktop', 'location' => 'Sample City, Bulacan', 'last_active' => $now, 'current' => true],
-      ['device' => 'Safari on iPhone', 'icon' => 'device-mobile', 'location' => 'Sample City, Bulacan', 'last_active' => $now->copy()->subDay(), 'current' => false],
-    ],
-  ]);
-})->name('admin.account');
+Route::get('/admin/account', [AccountController::class, 'show'])
+  ->name('admin.account');
 
-Route::patch('/admin/account', function () {
-  // Stub: echoes what was sent so the page can refresh its values. Nothing is saved.
-  return response()->json([
-    'ok' => true,
-    'message' => 'Preview only: nothing was saved yet.',
-    'admin' => request()->only(['first_name', 'last_name', 'middle_initial', 'email', 'phone']),
-  ]);
-})->name('admin.account.update');
+Route::patch('/admin/account', [AccountController::class, 'update'])
+  ->name('admin.account.update');

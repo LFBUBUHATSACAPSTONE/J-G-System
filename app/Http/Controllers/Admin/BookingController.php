@@ -4,15 +4,23 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\BookingSchedule;
+use App\Support\Scheduling;
+use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class BookingController extends Controller
 {
+    // Minutes in a bookable day; the upper bound of every busy window. Mirrors the user
+    // booking flow (App\Http\Controllers\BookingController), which enforces the same rules.
+    private const DAY_MINUTES = 1440;
+
     public function index(): JsonResponse
     {
         $bookings = Booking::query()
@@ -89,16 +97,7 @@ class BookingController extends Controller
                 $end = $schedule->event_end_date ?? $start;
                 $days = collect(CarbonPeriod::create($start, $end))
                     ->map(fn ($date) => $date->toDateString());
-                $counted = Booking::query()
-                    ->where('id', '!=', $record->id)
-                    ->whereIn('status', config('scheduling.counted_statuses', []))
-                    ->whereHas('schedule', function ($query) use ($start, $end): void {
-                        $query->whereDate('event_start_date', '<=', $end->toDateString())
-                            ->whereDate('event_end_date', '>=', $start->toDateString());
-                    })
-                    ->lockForUpdate()
-                    ->with('schedule')
-                    ->get();
+                $counted = $this->overlappingCountedBookings($record);
 
                 $dayCounts = [];
                 foreach ($counted as $existing) {
@@ -125,6 +124,14 @@ class BookingController extends Controller
                     return ['full_dates' => $fullDates];
                 }
 
+                // The day still has room, but this clock may still clash with a booking that
+                // already holds a slot: overlapping it, or sitting inside the required break
+                // around it (same rules the client's booking flow is held to).
+                $conflict = $this->scheduleConflict($schedule, $counted);
+                if ($conflict) {
+                    return ['schedule_conflict' => $this->scheduleConflictMessage($conflict, 'approved')];
+                }
+
                 $record->status = 'pending_payment';
             } elseif ($action === 'decline') {
                 $record->status = 'declined';
@@ -136,8 +143,22 @@ class BookingController extends Controller
                     return ['missing_payment' => true];
                 }
 
+                // Verify is the second gate for the same rule: while it waits for payment the
+                // booking already holds its slot, so a schedule clashing with another counted
+                // booking must never reach "approved".
+                $record->load('schedule');
+                $conflict = $this->scheduleConflict($record->schedule, $this->overlappingCountedBookings($record));
+                if ($conflict) {
+                    return ['schedule_conflict' => $this->scheduleConflictMessage($conflict, 'verified')];
+                }
+
                 $record->status = 'approved';
+                // Verifying the payment settles it, so the state follows what the client chose:
+                // a full payment is 'paid' (Fully Paid), a down payment is 'partial' (Down
+                // payment paid). A state already recorded as 'paid' is kept, so re-verifying
+                // never downgrades a booking that is already fully paid.
                 $record->payment->payment_state = $record->payment->payment_state === 'paid'
+                    || $record->payment->payment_method === 'full'
                     ? 'paid'
                     : 'partial';
                 $record->payment->save();
@@ -174,6 +195,10 @@ class BookingController extends Controller
                 'message' => 'This booking cannot be approved because one or more event days are already at capacity.',
                 'full_dates' => $result['full_dates'],
             ], 409);
+        }
+
+        if (isset($result['schedule_conflict'])) {
+            return $this->statusResponse($request, $result['schedule_conflict'], 409);
         }
 
         if (! $request->expectsJson()) {
@@ -253,5 +278,206 @@ class BookingController extends Controller
             'message' => 'Booking details updated.',
             'booking' => $record->fresh(['eventDetails', 'schedule', 'payment', 'package'])->toAdminArray(),
         ]);
+    }
+
+    /**
+     * Bookings that already hold a slot (config/scheduling.php `counted_statuses`) and share
+     * at least one day with $record's own schedule — EXCLUDING $record itself, whose slot is
+     * the one being decided (it counts as soon as it is approved, so it would otherwise clash
+     * with itself at Verify). Rows are locked for update, exactly like the capacity check on
+     * Approve, so concurrent admin actions are decided against the same data.
+     *
+     * @return Collection<int, Booking>
+     */
+    private function overlappingCountedBookings(Booking $record): Collection
+    {
+        $schedule = $record->schedule;
+        if (! $schedule || ! $schedule->event_start_date) {
+            return collect();
+        }
+
+        $start = $schedule->event_start_date;
+        $end = $schedule->event_end_date ?? $start;
+
+        return Booking::query()
+            ->where('id', '!=', $record->id)
+            ->whereIn('status', config('scheduling.counted_statuses', []))
+            ->whereHas('schedule', function ($query) use ($start, $end): void {
+                $query->whereDate('event_start_date', '<=', $end->toDateString())
+                    ->whereDate('event_end_date', '>=', $start->toDateString());
+            })
+            ->lockForUpdate()
+            ->with('schedule')
+            ->get();
+    }
+
+    /**
+     * First clash between $schedule and a counted booking in $counted: overlapping it, or
+     * leaving less than the required break (config/scheduling.php `min_gap_minutes`) around
+     * it. Returns ['date' => 'Y-m-d', 'from' => int, 'to' => int, 'reference' => ?string] —
+     * the busy window in minutes past midnight — or null when the schedule is clear.
+     *
+     * The rules mirror App\Http\Controllers\BookingController::scheduleConflict() (the rules
+     * the client's booking flow is held to), so a booking can never be approved or verified
+     * into a slot the flow itself would refuse: the clock is read per day (occupiedSpan())
+     * so a multi-day or past-midnight event is compared on the days it really covers, and a
+     * counted booking without a readable clock holds its whole day instead of being guessed
+     * at. A schedule without times cannot be checked and passes, matching how it is stored.
+     */
+    private function scheduleConflict(?BookingSchedule $schedule, Collection $counted): ?array
+    {
+        if (! $schedule || ! $schedule->event_start_date) {
+            return null;
+        }
+
+        $from = $this->timeInMinutes($schedule->event_start_time);
+        $to = $this->timeInMinutes($schedule->event_end_time);
+        if ($from === null || $to === null) {
+            return null;
+        }
+
+        $first = $schedule->event_start_date->copy()->startOfDay();
+        $last = ($schedule->event_end_date ?? $schedule->event_start_date)->copy()->startOfDay();
+        if ($last->lessThan($first)) {
+            $last = $first->copy();
+        }
+
+        foreach ($this->blockedWindows($counted, $first, $last) as $iso => $windows) {
+            [$windowFrom, $windowTo] = $this->occupiedSpan($first, $last, $from, $to, Carbon::parse($iso));
+
+            foreach ($windows as [$busyFrom, $busyTo, $reference]) {
+                if ($windowFrom < $busyTo && $windowTo > $busyFrom) {
+                    return [
+                        'date' => $iso,
+                        'from' => $busyFrom,
+                        'to' => $busyTo,
+                        'reference' => $reference,
+                    ];
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Per day in $first..$last, the [from, to, reference] windows (minutes past midnight) a
+     * new booking may not touch: each counted booking's span on that day PLUS the required
+     * break before and after it. A booking whose clock is missing (or a single-day one whose
+     * end is not after its start) holds the whole day rather than being guessed at, so a
+     * legacy row can never be double-booked.
+     *
+     * @return array<string, array<int, array{0:int,1:int,2:?string}>>
+     */
+    private function blockedWindows(Collection $counted, Carbon $first, Carbon $last): array
+    {
+        $gap = Scheduling::minGapMinutes();
+        $startIso = $first->toDateString();
+        $endIso = $last->toDateString();
+        $windows = [];
+
+        foreach ($counted as $existing) {
+            $existingSchedule = $existing->schedule;
+            if (! $existingSchedule || ! $existingSchedule->event_start_date) {
+                continue;
+            }
+
+            $existingFrom = $this->timeInMinutes($existingSchedule->event_start_time);
+            $existingTo = $this->timeInMinutes($existingSchedule->event_end_time);
+            $existingFirst = $existingSchedule->event_start_date->copy()->startOfDay();
+            $existingLast = ($existingSchedule->event_end_date ?? $existingSchedule->event_start_date)->copy()->startOfDay();
+            if ($existingLast->lessThan($existingFirst)) {
+                $existingLast = $existingFirst->copy();
+            }
+            $singleDay = $existingFirst->isSameDay($existingLast);
+
+            foreach (CarbonPeriod::create($existingFirst, $existingLast) as $date) {
+                $iso = $date->toDateString();
+                if ($iso < $startIso || $iso > $endIso) {
+                    continue;
+                }
+
+                if ($existingFrom === null || $existingTo === null || ($singleDay && $existingTo <= $existingFrom)) {
+                    $windows[$iso][] = [0, self::DAY_MINUTES, $existing->reference];
+
+                    continue;
+                }
+
+                [$spanFrom, $spanTo] = $this->occupiedSpan(
+                    $existingFirst,
+                    $existingLast,
+                    $existingFrom,
+                    $existingTo,
+                    $date,
+                );
+                $windows[$iso][] = [
+                    max(0, $spanFrom - $gap),
+                    min(self::DAY_MINUTES, $spanTo + $gap),
+                    $existing->reference,
+                ];
+            }
+        }
+
+        return $windows;
+    }
+
+    /**
+     * The [from, to] minute span ONE of the days of a booking occupies. The two stored clocks
+     * are read as a single continuous interval running from the start clock on the first day
+     * to the end clock on the last day: the rest of the first day from the start clock, every
+     * day in between in full, and the last day up to the end clock.
+     *
+     * @return array{0:int,1:int} [from, to] in minutes past midnight
+     */
+    private function occupiedSpan(Carbon $first, Carbon $last, int $from, int $to, Carbon $day): array
+    {
+        if ($first->isSameDay($last)) {
+            return [$from, $to];
+        }
+
+        $iso = $day->toDateString();
+
+        if ($iso === $first->toDateString()) {
+            return [$from, self::DAY_MINUTES];
+        }
+
+        if ($iso === $last->toDateString()) {
+            return [0, $to];
+        }
+
+        return [0, self::DAY_MINUTES];
+    }
+
+    // "9:00 AM" -> 540. Null when the string is missing or not a valid 12-hour time.
+    private function timeInMinutes(?string $time): ?int
+    {
+        if (! preg_match('/^(?:[0-9]|1[0-2]):[0-5][0-9] (?:AM|PM)$/', (string) $time)) {
+            return null;
+        }
+
+        [$clock, $period] = explode(' ', (string) $time);
+        [$hour, $minute] = explode(':', $clock);
+        $hour = ((int) $hour % 12) + ($period === 'PM' ? 12 : 0);
+
+        return ($hour * 60) + (int) $minute;
+    }
+
+    /**
+     * Wording for a rejected Approve / Verify: names the action, the conflicting booking and
+     * the busy window (required break included), so the admin knows which booking to look at.
+     */
+    private function scheduleConflictMessage(array $conflict, string $action): string
+    {
+        $reference = $conflict['reference'] ? '#'.$conflict['reference'] : 'another booking';
+        $gap = Scheduling::minGapMinutes();
+        $break = $gap > 0
+            ? ' Bookings on the same day need at least '.Scheduling::humanizeMinutes($gap).' between them.'
+            : '';
+
+        return 'This booking cannot be '.$action.' because its schedule conflicts with '.$reference.': '
+            .Carbon::parse($conflict['date'])->format('F j, Y')
+            .' is unavailable from '.Scheduling::minutesToClock($conflict['from'])
+            .' to '.Scheduling::minutesToClock($conflict['to']).'.'
+            .$break;
     }
 }

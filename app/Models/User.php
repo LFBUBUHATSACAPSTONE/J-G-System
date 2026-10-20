@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -14,6 +14,12 @@ class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
+
+    /** Customer accounts: the landing page, booking flow, account area and messages. */
+    public const ROLE_USER = 'user';
+
+    /** Staff accounts: the admin panel (/admin/*). Created by the owner, never by sign-up. */
+    public const ROLE_ADMIN = 'admin';
 
     public function conversations(): HasMany
     {
@@ -28,7 +34,9 @@ class User extends Authenticatable
     protected $fillable = [
         'first_name',
         'last_name',
+        'middle_initial',
         'email',
+        'role',
         'google_id',
         'phone',
         'address',
@@ -56,6 +64,45 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * New accounts default to the customer role even before the insert (the column default alone
+     * would leave the in-memory model without a role until it is refreshed). Admin accounts are
+     * created by the owner with an explicit `role` and are never produced by sign-up.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (self $user): void {
+            if (blank($user->role)) {
+                $user->role = self::ROLE_USER;
+            }
+        });
+    }
+
+    /** True when this account may use the admin panel. */
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    /** True when this account may use the customer area. Legacy rows without a role count as users. */
+    public function isUser(): bool
+    {
+        return ! $this->isAdmin();
+    }
+
+    /**
+     * Public URL of the profile photo (Admin > Account, users.avatar_path). Null when the account
+     * has no photo or the column has not been migrated yet, so the views fall back to initials.
+     * Built with asset() (the request root) like Booking::toAdminArray() does for payment proofs,
+     * so it also resolves when the app is served from a sub-directory.
+     */
+    protected function avatarUrl(): Attribute
+    {
+        return Attribute::get(fn (): ?string => filled($this->avatar_path)
+            ? asset('storage/'.$this->avatar_path)
+            : null);
     }
 
     public function bookings(): HasMany
