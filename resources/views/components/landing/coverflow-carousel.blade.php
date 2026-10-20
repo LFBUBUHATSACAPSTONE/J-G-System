@@ -4,11 +4,9 @@
 ['image' => asset('images/carousel/poster2.webp'), 'alt' => ''],
 ['image' => asset('images/carousel/poster3.webp'), 'alt' => ''],
 ['image' => asset('images/carousel/poster4.webp'), 'alt' => ''],
-['image' => asset('images/carousel/poster5.webp'), 'alt' => ''],
-['image' => asset('images/carousel/6.webp'), 'alt' => ''],
-['image' => asset('images/carousel/7.webp'), 'alt' => ''],
+['image' => asset('images/carousel/poster5.webp'), 'alt' => '']
 ],
-'interval' => 3000,
+'interval' => 2000,
 ])
 
 <div
