@@ -10,7 +10,7 @@ $dashboardConfig = [
 ])->values(),
 'statuses' => config('admin.bookings.statuses', []),
 'attentionActions' => config('admin.dashboard.attention_actions', []),
-'attentionLimit' => config('admin.dashboard.attention_limit', 5),
+'attentionLimit' => config('admin.dashboard.attention_limit', 3),
 'upcomingLimit' => config('admin.dashboard.upcoming_limit', 3),
 'chartTop' => config('admin.dashboard.chart_top', 5),
 'bookingsUrl' => route('admin.bookings'),

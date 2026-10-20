@@ -22,7 +22,7 @@ return [
   ],
 
   // "Needs your attention": how many rows to show before "View all".
-  'attention_limit' => 5,
+  'attention_limit' => 3,
 
   // Button text per booking status in the attention list (keys of config/admin/bookings.php 'statuses').
   'attention_actions' => [
@@ -30,7 +30,7 @@ return [
     'pending_payment' => 'Verify payment',
   ],
 
-  // "Upcoming events": how many rows to show.
+  // "Upcoming events": how many rows to show before "View all ... in Calendar".
   'upcoming_limit' => 3,
 
   // Package Rate donut: the largest N packages get their own slice, the rest are grouped as "Other".
