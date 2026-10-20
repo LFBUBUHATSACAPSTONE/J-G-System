@@ -38,8 +38,13 @@ $dashboardConfig = [
     <div class="admin-dashboard__grid">
       <section class="admin-card admin-dashboard__attention" aria-labelledby="attention-title">
         <div class="admin-card__head">
-          <h2 id="attention-title" class="admin-card__title">Needs your attention</h2>
-          <span class="admin-count" data-dashboard-attention-count hidden></span>
+          <div class="admin-card__heading">
+            <h2 id="attention-title" class="admin-card__title">Needs your attention</h2>
+            <span class="admin-count" data-dashboard-attention-count hidden></span>
+          </div>
+          <a href="{{ route('admin.bookings') }}" class="admin-card__more admin-card__more--head">
+            <span class="admin-card__more-prefix">View </span>bookings <i class="ph ph-arrow-right" aria-hidden="true"></i>
+          </a>
         </div>
         <div data-dashboard-attention>
           <p class="admin-empty">Loading dashboard data...</p>
