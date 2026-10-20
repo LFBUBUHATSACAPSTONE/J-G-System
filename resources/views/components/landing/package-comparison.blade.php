@@ -1,48 +1,28 @@
+{{-- Landing "Package Comparison Table".
+     Columns come from $packages (the landing route passes the available packages; this file is @included, so it
+     shares that variable). Rows come from config/package-equipment.php. Each cell is looked up by the package's
+     equipment[row_key], so a new package always lines up under its own header; no value = the empty mark.
+     Values per package: $package['equipment'] (row_key => text). While that key is missing or null the six
+     original packages fall back to config('package-equipment.defaults')[id]; a package with an
+     equipment array, even an empty one, never does. --}}
 @props([
 'title' => 'Package Comparison Table',
-'packages' => [
-['name' => 'Budget Lite', 'price' => 5000],
-['name' => 'Budget Party', 'price' => 10000],
-['name' => 'Budget Wedding', 'price' => 18000],
-['name' => 'Luxe Lite', 'price' => 25000],
-['name' => 'Modern Glam', 'price' => 35000],
-['name' => 'Elite Symphony', 'price' => 45000],
-],
-'sections' => [
-[
-'title' => 'Audio System',
-'rows' => [
-['Audio System', ['Basic', 'Mid Setup', 'Premium', 'Full Band Ready', 'Full Band Ready', 'Full Band + Stage']],
-['Main Speaker (FOH)', ['2 Units', '2 Units + Subwoofer', '2 Units', '4 Units + Subwoofer', '2 Units + Subwoofer', '4 Units + Subwoofer']],
-['Wireless Microphones', ['2', '4', '4', '4', '4', '4']],
-['Wired Microphones', [null, '2', '2', '4', '4', '4']],
-['Mixer', ['Behringer 1204', 'Mackie ProFX16', 'Mackie ProFX16', 'Mackie DL16SE', 'Mackie DL16SE', 'Mackie DL16SE']],
-['DJ Controller + Laptop', [true, true, true, true, true, true]],
-['DI Box / Band Instruments', [null, null, null, 'Acoustic Set Up', 'Full band Set', 'Full band Set']],
-['Cables & Accessories', [true, true, true, true, true, true]],
-],
-],
-[
-'title' => 'Lighting System',
-'rows' => [
-['Basic Ambient Lights', [true, true, true, true, true, true]],
-['Par LED Effect', [null, true, '18 Units', '20 Units', '20 Units', '20 Units']],
-['Moving Head / Beam Lights', [null, 'SU600 Beam', 'SU600 Beam', '4 Beam 450', '6 Beam 450', '8 Beam 450 + MAC aura']],
-['Fog / Smoke Machine', ['1', '2', '2', '2 + Haze', '2 + Haze', '2 + Haze']],
-['Lighting Controller', ['1', '2', '2', 'Mini Pearl', 'Mini Pearl', 'Mini Pearl']],
-['Truss / Stands', ['Basic', true, 'Truss', '6 Truss', '6 Truss', '6 Truss']],
-],
-],
-[
-'title' => 'Video System',
-'rows' => [
-['LED Wall Display', [null, null, '9x12 Lightlink', '9×12 Gloshine', '9×12 GTOP', '9×12 GTOP Waterproof']],
-['Live Feed Camera', [null, null, true, true, 'Panasonic', 'Panasonic']],
-['Video Processor / Switcher', [null, null, true, true, true, true]],
-],
-],
-],
+'packages' => [],
 ])
+
+@php
+$equipmentConfig = config('package-equipment');
+$sections = $equipmentConfig['sections'] ?? [];
+$yesValues = array_map('mb_strtolower', $equipmentConfig['yes_values'] ?? []);
+$emptyMark = $equipmentConfig['empty_mark'] ?? '—';
+$defaults = $equipmentConfig['defaults'] ?? [];
+
+// package id => its row_key => text map
+$equipmentById = [];
+foreach ($packages as $package) {
+$equipmentById[$package['id']] = $package['equipment'] ?? ($defaults[$package['id']] ?? []);
+}
+@endphp
 
 <div id="inclusions" class="pcmp-bg position-relative z-1">
   <img src="{{ asset('images/backgrounds/design/sides_star.webp') }}" alt="" aria-hidden="true" class="pcmp-bg__side-image">
@@ -55,7 +35,8 @@
       <h3 class="pcmp__section-title">{{ $section['title'] }}</h3>
 
       <div class="pcmp__scroll">
-        <table class="pcmp__table">
+        {{-- --pcmp-cols widens the table (min-width) for every package column beyond the original six. --}}
+        <table class="pcmp__table" style="--pcmp-cols: {{ count($packages) }}">
           <thead>
             <tr>
               <th scope="col" class="pcmp__label">Features / Equipment</th>
@@ -68,16 +49,22 @@
             </tr>
           </thead>
           <tbody>
-            @foreach ($section['rows'] as [$label, $values])
+            @foreach ($section['rows'] as $rowKey => $label)
             <tr>
               <th scope="row" class="pcmp__label">{{ $label }}</th>
-              @foreach ($values as $value)
+              @foreach ($packages as $package)
+              @php
+              $value = trim((string) ($equipmentById[$package['id']][$rowKey] ?? ''));
+              @endphp
               <td>
-                @if ($value === true)
+                @if ($value === '')
+                <span aria-hidden="true">{{ $emptyMark }}</span>
+                <span class="visually-hidden">Not included</span>
+                @elseif (in_array(mb_strtolower($value), $yesValues, true))
                 <svg class="pcmp__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Included">
                   <path d="M5 12.5l4.5 4.5L19 7.5" />
                 </svg>
-                @elseif ($value)
+                @else
                 {{ $value }}
                 @endif
               </td>

@@ -31,6 +31,14 @@
         }
     }
 
+    // Title and count pill stay together on the left of the header.
+    &__heading {
+        display: flex;
+        align-items: flex-start;
+        gap: $sp-2;
+        min-width: 0;
+    }
+
     // "View calendar" / "View all N in Bookings".
     &__more {
         display: inline-flex;
@@ -43,7 +51,7 @@
         text-decoration: none;
 
         &:hover {
-            text-decoration: underline;
+            text-decoration: none;
         }
 
         &:focus-visible {
@@ -679,7 +687,8 @@
             min-height: 2.75rem;
         }
 
-        // Upcoming events: title and link on one row, time on one line.
+        // Attention and upcoming: title and link on one row, time on one line.
+        .admin-dashboard__attention .admin-card__head,
         .admin-dashboard__upcoming .admin-card__head {
             flex-wrap: nowrap;
             align-items: center;

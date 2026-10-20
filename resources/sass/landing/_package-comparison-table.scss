@@ -106,7 +106,9 @@
 
     &__table {
         width: 100%;
-        min-width: 820px;
+        // 820px for the original six packages; every extra package column adds 7rem.
+        // --pcmp-cols is set inline on the <table> (package count).
+        min-width: #{"max(820px, calc(9rem + var(--pcmp-cols, 6) * 7rem))"};
         border-collapse: collapse;
         font-size: 0.75rem;
         text-align: center;
