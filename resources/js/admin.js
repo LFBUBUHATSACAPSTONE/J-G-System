@@ -10,3 +10,4 @@ import "./admin/calendar.js";
 import "./admin/history.js";
 import "./admin/account.js";
 import "./admin/messages.js";
+import "./auth/logout.js"; // "Log out?" modal, then the JSON logout

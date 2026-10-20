@@ -1,0 +1,408 @@
+// Shared profile card: used by the admin account page and the customer Profile page, so both look and
+// behave the same. Markup: resources/views/components/profile/*. Behaviour: js/account/profile-core.js.
+// Tokens only; spacing on the 4px grid. Needs admin-variables (imported before this by admin.scss and
+// account.scss).
+
+$profile-card-width: 36rem;
+$profile-avatar: 8rem;
+
+.profile-card {
+    width: 100%;
+    max-width: $profile-card-width;
+    padding: $sp-4;
+    border-radius: $admin-radius-xl;
+    background: $admin-surface;
+    color: $admin-text-primary;
+    font-family: $admin-font-family;
+
+    @media (min-width: 576px) {
+        padding: $sp-8;
+    }
+
+    &__title {
+        margin: 0 0 $sp-6;
+        color: $admin-text-primary;
+        font-size: admin-fluid(1.5);
+        font-weight: 700;
+        text-align: center;
+    }
+
+    &__form {
+        display: grid;
+        gap: $sp-4;
+    }
+}
+
+// ---- Photo / initials ----
+.profile-avatar-block {
+    display: grid;
+    justify-items: center;
+    gap: $sp-2;
+    margin-bottom: $sp-2;
+}
+
+.profile-avatar-wrap {
+    position: relative;
+    width: $profile-avatar;
+    height: $profile-avatar;
+}
+
+.profile-avatar {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border: 4px solid $admin-brand;
+    border-radius: 50%;
+    background: $admin-brand-soft;
+    color: $admin-brand-text;
+    font-size: 2.25rem;
+    font-weight: 600;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    &__edit {
+        position: absolute;
+        right: 0;
+        bottom: 0.25rem;
+        display: grid;
+        place-items: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        padding: 0;
+        border: 3px solid $admin-surface;
+        border-radius: 50%;
+        background: $admin-brand;
+        color: $admin-on-brand;
+        font-size: 1.125rem;
+        cursor: pointer;
+
+        // Larger touch target than the visible badge.
+        &::before {
+            content: "";
+            position: absolute;
+            inset: -0.25rem;
+        }
+
+        &:hover {
+            background: $admin-brand-hover;
+        }
+
+        &:focus-visible {
+            outline: $admin-focus-ring-width solid $admin-focus-ring;
+            outline-offset: $admin-focus-ring-offset;
+        }
+    }
+}
+
+// Badges / small text under the photo (customer page: email verified, member since).
+.profile-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: $sp-2 $sp-3;
+    margin: 0 0 $sp-2;
+    color: $admin-text-muted;
+    font-size: 0.8125rem;
+}
+
+// ---- A row: label, grey value + Edit/Change, inline edit panel ----
+.profile-row {
+    display: grid;
+    gap: $sp-1;
+
+    &__label {
+        color: $admin-text-primary;
+        font-size: admin-fluid(0.95);
+        font-weight: 600;
+    }
+
+    &__view {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: $sp-3;
+        min-height: 3.5rem;
+        padding: $sp-2 $sp-4;
+        border-radius: $admin-radius-lg;
+        background: $admin-field-bg-on-white;
+    }
+
+    &__value {
+        min-width: 0;
+        color: $admin-text-primary;
+        font-size: admin-fluid(1);
+        overflow-wrap: anywhere;
+
+        &.is-empty {
+            color: $admin-text-muted;
+        }
+    }
+
+    &__hint {
+        color: $admin-text-muted;
+        font-size: 0.875rem;
+    }
+
+    // Link-style button: Edit, Change, Cancel.
+    &__action {
+        flex: none;
+        min-height: 2.75rem;
+        padding: 0 $sp-2;
+        border: 0;
+        background: transparent;
+        color: $admin-brand-text;
+        font: inherit;
+        font-size: admin-fluid(0.95);
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+
+        &:hover {
+            color: $admin-brand-hover;
+        }
+
+        &:focus-visible {
+            outline: $admin-focus-ring-width solid $admin-focus-ring;
+            outline-offset: $admin-focus-ring-offset;
+            border-radius: $admin-radius-md;
+        }
+    }
+
+    &__panel {
+        display: grid;
+        gap: $sp-3;
+        padding: $sp-4;
+        border-radius: $admin-radius-lg;
+        background: $admin-field-bg-on-white;
+    }
+
+    &__fields {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: $sp-3;
+
+        &--name {
+            @media (min-width: 576px) {
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 6.5rem;
+            }
+
+            // The customer page has no middle initial: two equal columns.
+            &.has-two {
+                @media (min-width: 576px) {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+            }
+        }
+    }
+
+    &__panel-actions {
+        display: flex;
+        justify-content: flex-end;
+    }
+}
+
+// ---- Fields ----
+.profile-field {
+    display: grid;
+    gap: $sp-1;
+    min-width: 0;
+
+    &__label {
+        color: $admin-brand-text;
+        font-size: admin-fluid(0.95);
+    }
+
+    &__control {
+        width: 100%;
+        min-height: 2.75rem;
+        padding: $sp-2 $sp-3;
+        border: 1px solid $admin-field-border;
+        border-radius: $admin-radius-md;
+        background: $admin-field-bg;
+        color: $admin-text-primary;
+        font: inherit;
+        font-size: admin-fluid(1);
+
+        &::placeholder {
+            color: $admin-text-subtle;
+        }
+
+        &:focus-visible {
+            outline: $admin-focus-ring-width solid $admin-focus-ring;
+            outline-offset: 0;
+            box-shadow: 0 0 0 4px $admin-focus-ring-soft;
+        }
+
+        &.is-invalid {
+            border-color: $admin-danger-border;
+        }
+
+        &[readonly] {
+            color: $admin-text-muted;
+            cursor: not-allowed;
+        }
+    }
+
+    &__password {
+        position: relative;
+
+        .profile-field__control {
+            padding-right: 3rem;
+        }
+    }
+
+    &__toggle {
+        position: absolute;
+        top: 50%;
+        right: 0.25rem;
+        display: grid;
+        place-items: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        padding: 0;
+        border: 0;
+        border-radius: $admin-radius-md;
+        background: transparent;
+        color: $admin-text-muted;
+        font-size: 1.25rem;
+        transform: translateY(-50%);
+        cursor: pointer;
+
+        &:hover {
+            color: $admin-brand-text;
+        }
+
+        &:focus-visible {
+            outline: $admin-focus-ring-width solid $admin-focus-ring;
+        }
+    }
+
+    &__hint {
+        color: $admin-text-muted;
+        font-size: 0.875rem;
+    }
+
+    &__error {
+        color: $admin-danger-text;
+        font-size: 0.875rem;
+    }
+}
+
+// ---- Password checklist ----
+// Phones: one column. From 576px: two columns filled top to bottom (3 + 2), so no item sits alone on a
+// row of its own.
+.profile-rules {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: $sp-2 $sp-6;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: $admin-text-muted;
+    font-size: 0.875rem;
+
+    @media (min-width: 576px) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: repeat(3, auto);
+        grid-auto-flow: column;
+    }
+
+    li {
+        display: flex;
+        align-items: center;
+        gap: $sp-2;
+
+        i {
+            flex: none;
+            font-size: 1.125rem;
+            line-height: 1;
+        }
+
+        &.is-met {
+            color: $admin-success-text;
+        }
+    }
+}
+
+// ---- Current-password confirmation ----
+.profile-confirm {
+    padding: $sp-4;
+    border-radius: $admin-radius-lg;
+    background: $admin-brand-soft;
+}
+
+// ---- Result message ----
+.profile-status {
+    margin: 0;
+    padding: $sp-3 $sp-4;
+    border: 1px solid $admin-success-border;
+    border-radius: $admin-radius-lg;
+    background: $admin-success-soft;
+    color: $admin-success-text;
+    font-size: admin-fluid(0.95);
+    font-weight: 500;
+
+    &.is-error {
+        border-color: $admin-danger-border;
+        background: $admin-danger-soft;
+        color: $admin-danger-text;
+    }
+}
+
+// ---- Footer: secondary action on the left, Save on the right ----
+.profile-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: $sp-3;
+    margin-top: $sp-6;
+
+    form {
+        display: contents;
+    }
+}
+
+.profile-btn {
+    width: 100%;
+    padding: $sp-2 $sp-4; // optical: shorter than wide
+    border: 2px solid transparent;
+    border-radius: $admin-radius-md;
+    font: inherit;
+    font-weight: 600;
+    line-height: 1.5;
+    cursor: pointer;
+
+    &:focus-visible {
+        outline: $admin-focus-ring-width solid $admin-focus-ring;
+        outline-offset: $admin-focus-ring-offset;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    &--primary {
+        background: $admin-brand;
+        color: $admin-on-brand;
+
+        &:hover:not(:disabled) {
+            background: $admin-brand-hover;
+        }
+    }
+
+    &--secondary {
+        background: $admin-brand-soft;
+        color: $admin-brand-text;
+
+        &:hover:not(:disabled) {
+            background: $admin-brand-soft-hover;
+        }
+    }
+}

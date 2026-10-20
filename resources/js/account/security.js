@@ -16,6 +16,7 @@
  */
 
 import { getCsrfToken } from "../auth/csrf.js";
+import { syncPasswordChecklist } from "./profile-rules.js";
 import {
     getPasswordError,
     getMatchError,
@@ -26,15 +27,6 @@ import {
 
 const FORM_ID = "account-password-form";
 const FIELDS = ["current_password", "password", "password_confirmation"];
-
-// One test per line of the checklist; together they equal getPasswordError() === "".
-const RULES = {
-    length: (v) => v.length >= 8,
-    lower: (v) => /[a-z]/.test(v),
-    upper: (v) => /[A-Z]/.test(v),
-    number: (v) => /\d/.test(v),
-    special: (v) => /[^A-Za-z0-9]/.test(v),
-};
 
 function initSecurity() {
     const form = document.getElementById(FORM_ID);
@@ -85,14 +77,7 @@ function initSecurity() {
     wireLiveField(form, "password", newError);
     wireLiveField(form, "password_confirmation", confirmError);
 
-    function syncRules() {
-        form.querySelectorAll("[data-password-rule]").forEach((item) => {
-            const met = RULES[item.dataset.passwordRule](next.value);
-            item.classList.toggle("is-met", met);
-            item.querySelector("i").className =
-                `ph ph-${met ? "check-circle" : "circle"}`;
-        });
-    }
+    const syncRules = () => syncPasswordChecklist(form, next.value);
 
     const isValid = () => checks.every(([input, fn]) => !fn(input.value));
     const syncButton = () => (saveBtn.disabled = !isValid());
