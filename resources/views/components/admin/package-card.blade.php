@@ -18,11 +18,16 @@ $visibleFeatures = array_slice($features, 0, $previewCount);
 $extraFeatures = array_slice($features, $previewCount);
 $moreId = 'pkg-' . $id . '-more';
 
+// Equipment (row_key => text) for the modal's Equipment fields. Packages without saved equipment (key missing or
+// null) fall back to the original table values in config/package-equipment.php; see docs/package-equipment.md.
+$equipmentDefaults = config('package-equipment')['defaults'] ?? [];
+
 $payload = [
 'id' => $id,
 'name' => $package['name'],
 'price' => $package['price'],
 'features' => array_values($package['features'] ?? []),
+'equipment' => $package['equipment'] ?? ($equipmentDefaults[$id] ?? []),
 ];
 
 // Route::has() keeps the page rendering before the routes exist.
