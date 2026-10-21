@@ -33,6 +33,20 @@ class BookingFlowTest extends TestCase
             $table->json('features')->nullable();
             $table->timestamps();
         });
+
+        // The equipment of a package: one row per equipment line (row_key) of
+        // config/package-equipment.php. Same shape as the migration.
+        Schema::connection('sqlite')->create('package_equipment', function (Blueprint $table) {
+            $table->id();
+            $table->string('package_id');
+            $table->string('row_key', 100);
+            $table->string('value', 255);
+            $table->timestamps();
+
+            $table->unique(['package_id', 'row_key']);
+            $table->foreign('package_id')->references('id')->on('packages')->cascadeOnDelete();
+        });
+
         foreach (config('packages') as $id => $package) {
             Package::create([
                 'id' => $id,

@@ -35,6 +35,30 @@ class Package extends Model
         return $this->hasMany(Booking::class);
     }
 
+    /**
+     * The equipment of this package: one row per equipment line of config/package-equipment.php.
+     */
+    public function equipment(): HasMany
+    {
+        return $this->hasMany(PackageEquipment::class, 'package_id', 'id');
+    }
+
+    /**
+     * The equipment as the views and the JSON use it: row_key => text ("main_speaker" => "2 Units").
+     * A line without a value is simply missing from the map; the comparison table prints the
+     * empty mark for it.
+     */
+    public function equipmentMap(): array
+    {
+        if (! $this->relationLoaded('equipment')) {
+            $this->load('equipment');
+        }
+
+        return $this->equipment
+            ->pluck('value', 'row_key')
+            ->all();
+    }
+
     public function toAdminArray(): array
     {
         return [
@@ -43,6 +67,7 @@ class Package extends Model
             'price' => $this->price,
             'available' => $this->available,
             'features' => $this->features ?? [],
+            'equipment' => $this->equipmentMap(),
         ];
     }
 
@@ -53,6 +78,9 @@ class Package extends Model
             'name' => $this->name,
             'price' => $this->price,
             'features' => $this->features ?? [],
+            // What the admin typed in Admin > Packages: the comparison table of the landing
+            // page prints these values, so the clients see the same equipment as the admin.
+            'equipment' => $this->equipmentMap(),
         ];
     }
 }
