@@ -2,9 +2,9 @@
      Columns come from $packages (the landing route passes the available packages; this file is @included, so it
      shares that variable). Rows come from config/package-equipment.php. Each cell is looked up by the package's
      equipment[row_key], so a new package always lines up under its own header; no value = the empty mark.
-     Values per package: $package['equipment'] (row_key => text). While that key is missing or null the six
-     original packages fall back to config('package-equipment.defaults')[id]; a package with an
-     equipment array, even an empty one, never does. --}}
+     Values per package: $package['equipment'] (row_key => text) — the values the admin typed in Admin > Packages,
+     which are stored in the package_equipment table. The config defaults are only the seed of that table (see the
+     migration), so a package that has no saved value prints the empty mark. --}}
 @props([
 'title' => 'Package Comparison Table',
 'packages' => [],

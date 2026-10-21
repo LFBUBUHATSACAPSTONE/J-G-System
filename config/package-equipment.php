@@ -15,8 +15,11 @@
 //   Anything else     => printed as typed ("4 Units + Subwoofer").
 //
 // defaults => the values the six original packages had when the table was hard-coded, keyed by package id.
-// They are used only while a package has no saved `equipment` (the key is missing or null). A package that
-// has `equipment` (even an empty array, as a new package does) never falls back to them.
+// They are the seed of the package_equipment table: the migration
+// (database/migrations/2026_10_21_101500_create_package_equipment_table.php) copies them into the
+// database for the packages that already exist, so a fresh migrate reproduces the old table.
+// After that the database is the source of truth: the admin modal saves what the admin types
+// (App\Http\Controllers\Admin\PackageController) and the pages read the saved values back.
 return [
 
   'sections' => [

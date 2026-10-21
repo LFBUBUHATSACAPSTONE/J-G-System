@@ -15,6 +15,7 @@ Route::get('/admin/bookings', function () {
         ->all();
 
     $packages = Package::query()
+        ->with('equipment')
         ->orderBy('sort_order')
         ->orderBy('id')
         ->get()

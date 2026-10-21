@@ -18,8 +18,9 @@ $visibleFeatures = array_slice($features, 0, $previewCount);
 $extraFeatures = array_slice($features, $previewCount);
 $moreId = 'pkg-' . $id . '-more';
 
-// Equipment (row_key => text) for the modal's Equipment fields. Packages without saved equipment (key missing or
-// null) fall back to the original table values in config/package-equipment.php; see docs/package-equipment.md.
+// Equipment (row_key => text) for the modal's Equipment fields. The values come from the
+// package_equipment table (what the admin typed in Admin > Packages); the config defaults are only
+// the seed of that table, so they are used when a package has no saved equipment at all.
 $equipmentDefaults = config('package-equipment')['defaults'] ?? [];
 
 $payload = [

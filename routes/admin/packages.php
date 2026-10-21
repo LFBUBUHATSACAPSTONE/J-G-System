@@ -5,7 +5,7 @@ use App\Models\Package;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/admin/packages', function () {
-    $packages = Package::query()->orderBy('sort_order')->orderBy('id')->get()
+    $packages = Package::query()->with('equipment')->orderBy('sort_order')->orderBy('id')->get()
         ->map(fn (Package $package) => $package->toAdminArray())
         ->all();
 

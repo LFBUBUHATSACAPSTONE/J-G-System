@@ -9,9 +9,9 @@ Route::get('/', function () {
 });
 
 Route::get('/user/landing', function () {
-    $packages = Package::query()->where('available', true)->orderBy('sort_order')->orderBy('id')->get()
+    $packages = Package::query()->with('equipment')->where('available', true)->orderBy('sort_order')->orderBy('id')->get()
         ->map(fn (Package $package) => $package->toPublicArray())
         ->all();
 
     return view('user.landing', compact('packages'));
-})->name('user.landing'); 
+})->name('user.landing');

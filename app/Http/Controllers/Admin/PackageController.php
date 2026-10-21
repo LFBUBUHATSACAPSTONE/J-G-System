@@ -4,17 +4,21 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Package;
+use App\Services\PackageEquipmentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class PackageController extends Controller
 {
+    public function __construct(private readonly PackageEquipmentService $equipment) {}
+
     public function index(): JsonResponse
     {
-        $packages = Package::query()->orderBy('sort_order')->orderBy('id')->get()
+        $packages = Package::query()->with('equipment')->orderBy('sort_order')->orderBy('id')->get()
             ->map(fn (Package $package) => $package->toAdminArray());
 
         return response()->json(['data' => $packages]);
@@ -26,26 +30,30 @@ class PackageController extends Controller
             'name' => ['required', 'string', 'max:100', Rule::unique('packages', 'name')],
             'price' => ['required', 'integer', 'min:1', 'max:10000000'],
             'features' => ['required', 'string', 'max:2000', $this->hasFeatures()],
+            ...$this->equipment->rules(),
         ]);
         if ($validated instanceof JsonResponse) {
             return $validated;
         }
 
         $validated['features'] = $this->normalizeFeatures($validated['features']);
-        $id = substr(Str::slug($validated['name']) ?: 'package', 0, 120);
-        $baseId = $id;
-        $suffix = 2;
-        while (Package::query()->whereKey($id)->exists()) {
-            $id = "{$baseId}-{$suffix}";
-            $suffix++;
-        }
+        $equipment = $this->equipmentFrom($request);
+        unset($validated['equipment']);
 
-        $package = Package::query()->create([
-            ...$validated,
-            'id' => $id,
-            'available' => true,
-            'sort_order' => (Package::query()->max('sort_order') ?? -1) + 1,
-        ]);
+        $package = DB::transaction(function () use ($validated, $equipment): Package {
+            $package = Package::query()->create([
+                ...$validated,
+                'id' => $this->uniqueId($validated['name']),
+                'available' => true,
+                'sort_order' => (Package::query()->max('sort_order') ?? -1) + 1,
+            ]);
+
+            // The equipment of the modal is saved with the package, so the landing page's
+            // comparison table shows what the admin typed.
+            $this->equipment->sync($package, $equipment);
+
+            return $package;
+        });
 
         return response()->json([
             'message' => 'Package created successfully.',
@@ -69,15 +77,26 @@ class PackageController extends Controller
             ],
             'price' => ['required', 'integer', 'min:1', 'max:10000000'],
             'features' => ['required', 'string', 'max:2000', $this->hasFeatures()],
+            ...$this->equipment->rules(),
         ]);
         if ($validated instanceof JsonResponse) {
             return $validated;
         }
 
         $validated['features'] = $this->normalizeFeatures($validated['features']);
-        $record->update([
-            ...$validated,
-        ]);
+        unset($validated['equipment']);
+
+        DB::transaction(function () use ($record, $validated, $request): void {
+            $record->update([
+                ...$validated,
+            ]);
+
+            // Only when the request carries equipment: a request without it leaves the saved
+            // equipment alone instead of clearing it.
+            if ($request->has('equipment')) {
+                $this->equipment->sync($record, $this->equipmentFrom($request));
+            }
+        });
 
         return response()->json([
             'message' => 'Package updated successfully.',
@@ -124,6 +143,37 @@ class PackageController extends Controller
                 $fail('Add at least one feature (one per line).');
             }
         };
+    }
+
+    /**
+     * The id of a new package: the name as a slug, with a number behind it when that one is
+     * already taken.
+     */
+    private function uniqueId(string $name): string
+    {
+        $id = substr(Str::slug($name) ?: 'package', 0, 120);
+        $baseId = $id;
+        $suffix = 2;
+
+        while (Package::query()->whereKey($id)->exists()) {
+            $id = "{$baseId}-{$suffix}";
+            $suffix++;
+        }
+
+        return $id;
+    }
+
+    /**
+     * The equipment the request carries: row_key => text. An empty map when the request has
+     * none (a new package starts without equipment).
+     *
+     * @return array<string, mixed>
+     */
+    private function equipmentFrom(Request $request): array
+    {
+        $values = $request->input('equipment');
+
+        return is_array($values) ? $values : [];
     }
 
     private function validateJson(Request $request, array $rules): array|JsonResponse
