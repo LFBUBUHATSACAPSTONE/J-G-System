@@ -19,6 +19,13 @@
           <small class="client-info__field-error d-none" data-field-error="first_name"></small>
         </div>
         <div class="client-info__field">
+          <label for="pi-middle-name">
+            <span>Middle Name (optional)</span>
+          </label>
+          <input type="text" id="pi-middle-name" name="middle_name" autocomplete="additional-name" placeholder="Santos">
+          <small class="client-info__field-error d-none" data-field-error="middle_name"></small>
+        </div>
+        <div class="client-info__field">
           <label for="pi-last-name">
             <span>Last Name</span>
             <span class="field-required__identifier">*</span>

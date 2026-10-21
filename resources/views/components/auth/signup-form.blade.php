@@ -18,13 +18,21 @@
       <small class="auth-modal__field-error d-none" data-field-error="first_name"></small>
     </div>
     <div class="auth-modal__field">
-      <label for="signup-last-name">
-        <span>Last Name</span>
-        <span class="field-required__identifier">*</span>
+      <label for="signup-middle-name">
+        <span>Middle Name (optional)</span>
       </label>
-      <input type="text" id="signup-last-name" name="last_name" placeholder="Dela Cruz" required>
-      <small class="auth-modal__field-error d-none" data-field-error="last_name"></small>
+      <input type="text" id="signup-middle-name" name="middle_name" placeholder="Santos">
+      <small class="auth-modal__field-error d-none" data-field-error="middle_name"></small>
     </div>
+  </div>
+
+  <div class="auth-modal__field">
+    <label for="signup-last-name">
+      <span>Last Name</span>
+      <span class="field-required__identifier">*</span>
+    </label>
+    <input type="text" id="signup-last-name" name="last_name" placeholder="Dela Cruz" required>
+    <small class="auth-modal__field-error d-none" data-field-error="last_name"></small>
   </div>
 
   <div class="auth-modal__field">

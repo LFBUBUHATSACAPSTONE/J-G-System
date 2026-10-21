@@ -3,11 +3,12 @@
 // (so the page always renders). `address` is not a users column yet (see docs/backend-impact.md);
 // data_get() returns the default instead of failing when a value is missing.
 $firstName = data_get($user, 'first_name', 'Juan');
+$middleName = (string) data_get($user, 'middle_name', '');
 $lastName = data_get($user, 'last_name', 'Dela Cruz');
 $email = data_get($user, 'email', 'juan@example.com');
 $phone = (string) data_get($user, 'phone', '');
 $address = data_get($user, 'address', '') ?? '';
-$fullName = trim("{$firstName} {$lastName}");
+$fullName = trim(implode(' ', array_filter([$firstName, $middleName, $lastName])));
 $phoneDigits = preg_replace('/\D/', '', $phone);
 $phoneDisplay = strlen($phoneDigits) === 11 ? preg_replace('/^(\d{4})(\d{3})(\d{4})$/', '$1 $2 $3', $phoneDigits) : $phone;
 $initials = strtoupper(mb_substr($firstName, 0, 1) . mb_substr($lastName, 0, 1)) ?: 'U';
@@ -46,9 +47,11 @@ $memberSince = data_get($user, 'created_at')?->format('F Y');
 
         {{-- Name --}}
         <x-profile.row name="name" label="Name" :value="$fullName" empty="Your name" action="Edit">
-          <div class="profile-row__fields profile-row__fields--name has-two">
+          <div class="profile-row__fields profile-row__fields--name">
             <x-profile.field id="ap-first-name" name="first_name" label="First name" :value="$firstName"
               autocomplete="given-name" placeholder="Juan" maxlength="100" />
+            <x-profile.field id="ap-middle-name" name="middle_name" label="Middle name (optional)" :value="$middleName"
+              autocomplete="additional-name" placeholder="Santos" maxlength="100" />
             <x-profile.field id="ap-last-name" name="last_name" label="Last name" :value="$lastName"
               autocomplete="family-name" placeholder="Dela Cruz" maxlength="100" />
           </div>
