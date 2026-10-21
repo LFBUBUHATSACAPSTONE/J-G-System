@@ -22,6 +22,7 @@ import {
     getIdentifierError,
     getPasswordError,
     getNameError,
+    getOptionalNameError,
     wireLiveFieldImmediate,
     clearInvalidWithoutFieldError,
     clearAllFieldStates,
@@ -43,9 +44,13 @@ function initSignup() {
         // each validator sees the already-filtered value (otherwise a typed
         // "1" would flash an error for text that is about to be removed).
         initNameFilter(form, "first_name");
+        initNameFilter(form, "middle_name");
         initNameFilter(form, "last_name");
         wireLiveFieldImmediate(form, "first_name", (v) =>
             getNameError(v, "First name"),
+        );
+        wireLiveFieldImmediate(form, "middle_name", (v) =>
+            getOptionalNameError(v, "Middle name"),
         );
         wireLiveFieldImmediate(form, "last_name", (v) =>
             getNameError(v, "Last name"),
@@ -101,6 +106,7 @@ function initNameFilter(form, fieldName) {
 async function submitSignup(modalEl, form) {
     const field = (name) => form.querySelector(`[name="${name}"]`);
     const firstNameInput = field("first_name");
+    const middleNameInput = field("middle_name");
     const lastNameInput = field("last_name");
     const identifierInput = field("identifier");
     const passwordInput = field("password");
@@ -111,6 +117,10 @@ async function submitSignup(modalEl, form) {
 
     const checks = [
         [firstNameInput, getNameError(firstNameInput.value, "First name")],
+        [
+            middleNameInput,
+            getOptionalNameError(middleNameInput.value, "Middle name"),
+        ],
         [lastNameInput, getNameError(lastNameInput.value, "Last name")],
         [identifierInput, getIdentifierError(identifierInput.value)],
         [passwordInput, getPasswordError(passwordInput.value)],
@@ -140,6 +150,7 @@ async function submitSignup(modalEl, form) {
             },
             body: JSON.stringify({
                 first_name: firstNameInput.value.trim(),
+                middle_name: middleNameInput.value.trim(),
                 last_name: lastNameInput.value.trim(),
                 identifier,
                 // The register endpoint validates `email` and a confirmed

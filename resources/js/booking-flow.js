@@ -107,7 +107,13 @@ function updatePersonalSummary(root) {
     if (!form) return;
     const value = (name) => form.elements.namedItem(name)?.value?.trim() ?? "";
 
-    setSummaryValue(root, "fullName", `${value("first_name")} ${value("last_name")}`.trim());
+    setSummaryValue(
+        root,
+        "fullName",
+        [value("first_name"), value("middle_name"), value("last_name")]
+            .filter(Boolean)
+            .join(" "),
+    );
     setSummaryValue(root, "email", value("email"));
     setSummaryValue(root, "contactNumber", value("contact_number"));
 }
@@ -116,9 +122,10 @@ function updateEventSummary(root) {
     const form = root.querySelector("#event-information-form");
     if (!form) return;
     const value = (name) => form.elements.namedItem(name)?.value?.trim() ?? "";
-    const eventType = value("event_type") === "Others"
-        ? value("event_type_other")
-        : value("event_type");
+    const eventType =
+        value("event_type") === "Others"
+            ? value("event_type_other")
+            : value("event_type");
 
     setSummaryValue(root, "eventName", value("event_name"));
     setSummaryValue(root, "eventType", eventType);
@@ -143,16 +150,21 @@ function updateScheduleSummary(root) {
     const startDate = formatDate(start);
     const endDate = formatDate(end);
 
-    setSummaryValue(root, "eventDate", startDate && endDate && start !== end
-        ? `${startDate} – ${endDate}`
-        : startDate);
+    setSummaryValue(
+        root,
+        "eventDate",
+        startDate && endDate && start !== end
+            ? `${startDate} – ${endDate}`
+            : startDate,
+    );
     setSummaryValue(root, "startTime", scheduleTime(form, "start_time"));
     setSummaryValue(root, "endTime", scheduleTime(form, "end_time"));
 }
 
 function scheduleTime(form, name) {
     const input = form.elements.namedItem(name);
-    const period = input?.closest(".event-schedule__field")
+    const period = input
+        ?.closest(".event-schedule__field")
         ?.querySelector('[aria-pressed="true"]')?.dataset.ampm;
     return input?.value && period ? `${input.value.trim()} ${period}` : "";
 }
