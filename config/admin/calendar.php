@@ -4,21 +4,21 @@
 // so a new status or holiday is one edit, not a Blade edit. Booking DATA comes from the controller.
 return [
 
-  // Which booking statuses appear on the calendar, and how. Any status NOT listed here
-  // (pending, pending_payment, cancelled, declined, user_cancelled) is left off, so those dates
-  // look free again. Only APPROVED bookings are shown: the calendar is the confirmed-event view,
-  // and everything that still needs a decision lives on the Bookings page.
-  // tone  => key into 'tones' below (drives the cell colour)
+  // Which booking statuses are LISTED on the calendar (side panel). Cancelled and declined are left off.
+  // tone  => badge colour of the card in the side panel
   // label => badge text in the side panel
   'statuses' => [
-    'approved' => ['tone' => 'confirmed', 'label' => 'Confirmed'],
+    'approved'        => ['tone' => 'confirmed', 'label' => 'Confirmed'],
+    'completed'       => ['tone' => 'confirmed', 'label' => 'Completed'],
+    'pending'         => ['tone' => 'pending',   'label' => 'Pending Approval'],
+    'pending_payment' => ['tone' => 'pending',   'label' => 'Payment to Verify'],
   ],
 
-  // Cell colours, in PRIORITY order: when one date holds bookings of different tones, the first
-  // tone listed wins. Pending is first because it is the one that needs the admin's action.
-  // The same list builds the legend.
+  // Which tones COLOUR a date (and build the legend), in priority order. Only 'confirmed' is listed:
+  // a date shows (green) only when it holds an approved / completed booking. Tapping it lists every
+  // booking on that date, pending ones included. A date with ONLY pending bookings is not coloured and
+  // not clickable. Add 'pending' => 'Pending' back here to colour those dates yellow again.
   'tones' => [
-    'pending'   => 'Pending',
     'confirmed' => 'Confirmed',
   ],
 
