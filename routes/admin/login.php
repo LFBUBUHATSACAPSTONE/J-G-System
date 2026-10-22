@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminAuthController;
-use App\Http\Controllers\Admin\AdminLogoutController;
+use App\Http\Controllers\Auth\Admin\AdminAuthController;
+use App\Http\Controllers\Auth\Admin\AdminLogoutController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 

@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Validator;
 class BookingController extends Controller
 {
     // Minutes in a bookable day; the upper bound of every busy window. Mirrors the user
-    // booking flow (App\Http\Controllers\BookingController), which enforces the same rules.
+    // booking flow (App\Http\Controllers\User\BookingController), which enforces the same rules.
     private const DAY_MINUTES = 1440;
 
     public function index(): JsonResponse
@@ -317,7 +317,7 @@ class BookingController extends Controller
      * it. Returns ['date' => 'Y-m-d', 'from' => int, 'to' => int, 'reference' => ?string] —
      * the busy window in minutes past midnight — or null when the schedule is clear.
      *
-     * The rules mirror App\Http\Controllers\BookingController::scheduleConflict() (the rules
+     * The rules mirror App\Http\Controllers\User\BookingController::scheduleConflict() (the rules
      * the client's booking flow is held to), so a booking can never be approved or verified
      * into a slot the flow itself would refuse: the clock is read per day (occupiedSpan())
      * so a multi-day or past-midnight event is compared on the days it really covers, and a

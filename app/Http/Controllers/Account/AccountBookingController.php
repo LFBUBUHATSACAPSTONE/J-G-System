@@ -43,7 +43,9 @@ class AccountBookingController extends Controller
             ->all();
 
         if ($request->expectsJson()) {
-            return response()->json(['ok' => true, 'bookings' => $rows]);
+            // JSON_PRESERVE_ZERO_FRACTION: the amounts are floats on purpose (see
+            // Booking::toAccountArray), so 3000 has to leave the app as 3000.0 and not as 3000.
+            return response()->json(['ok' => true, 'bookings' => $rows], 200, [], JSON_PRESERVE_ZERO_FRACTION);
         }
 
         return view('user.account.bookings', ['bookings' => $rows]);

@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Auth\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\Auth\CurrentAccount;
+use App\Services\Auth\SignIn;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -40,22 +42,21 @@ class AdminAuthController extends Controller
 
     private const NO_ACCESS_MESSAGE = "This account doesn't have admin access.";
 
-    public function show(Request $request): View|RedirectResponse
+    public function show(Request $request, CurrentAccount $account): View|RedirectResponse
     {
-        $user = $request->user();
-
-        // Already signed in as an admin: there is nothing to sign in to.
-        if ($user?->isAdmin()) {
+        // The panel has its own session: an admin signed in there has nothing to sign in to.
+        if ($account->admin()) {
             return redirect()->route('admin.dashboard');
         }
 
         return view('admin.login', [
-            // Signed in but not an admin: the view prints the notice above the card.
-            'noAccess' => $user !== null,
+            // Signed in on the customer session but not an admin: the view prints the notice
+            // above the card.
+            'noAccess' => $account->customerSession() !== null,
         ]);
     }
 
-    public function login(Request $request): JsonResponse
+    public function login(Request $request, SignIn $signIn): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'email' => ['required', 'string', 'email', 'max:255'],
@@ -103,14 +104,23 @@ class AdminAuthController extends Controller
 
         RateLimiter::clear($limiterKey);
 
-        // Signed in FIRST: a non-admin keeps the session (the card then shows "no access"),
-        // which is the 403 state the front end documents.
-        Auth::login($user, (bool) $request->boolean('remember'));
-        $request->session()->regenerate();
-
         if (! $user->isAdmin()) {
+            // Signed in on the customer session FIRST: a non-admin keeps that session (the card
+            // then shows "no access"), which is the 403 state the front end documents. The
+            // session is only used when it is free, so a signed-in customer is never thrown out
+            // by someone else's failed attempt.
+            if (! Auth::guard('web')->check()) {
+                Auth::guard('web')->login($user, (bool) $request->boolean('remember'));
+                $request->session()->regenerate();
+            }
+
             return response()->json(['message' => self::NO_ACCESS_MESSAGE], 403);
         }
+
+        // The admin session is the panel's own: signing in here never throws a signed-in
+        // customer out.
+        $signIn->admin($user, (bool) $request->boolean('remember'));
+        $request->session()->regenerate();
 
         return response()->json([
             'ok' => true,
@@ -120,7 +130,7 @@ class AdminAuthController extends Controller
 
     /**
      * Case-insensitive email lookup, the same one the user-side modal uses
-     * (App\Services\ModalAuthService::findUserByIdentifier), restricted to the email field:
+     * (App\Services\Auth\ModalAuthService::findUserByIdentifier), restricted to the email field:
      * the admin card only ever asks for an email.
      */
     private function findUser(string $email): ?User

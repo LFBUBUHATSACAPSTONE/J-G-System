@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\User\MessageController;
 use App\Models\Conversation;
-use App\Services\MessageService;
+use App\Services\Messaging\MessageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Route;
@@ -60,7 +60,7 @@ View::composer(['components.landing.navigation', 'components.account.sidebar'], 
 
 // Send message from user (landing widget and account page). The customer chat is for the `user`
 // role only: a guest gets 401 JSON, an admin account is bounced to its own side.
-Route::middleware(['auth', 'role:user'])->group(function () {
+Route::middleware(['auth:web', 'role:user'])->group(function () {
     Route::post('/messages', [MessageController::class, 'store'])->name('user.messages.send');
 
     // Edit or unsend a message the client already sent. Only their own client messages in

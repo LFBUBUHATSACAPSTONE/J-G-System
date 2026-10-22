@@ -14,9 +14,11 @@ use Illuminate\Support\Facades\Route;
 require __DIR__ . '/admin/login.php';
 
 // Everything else is an admin-only area: a signed-in account whose role is not `admin` is bounced
-// (EnsureRole). `auth` answers guests first: a page request is sent to admin.login, a JSON request
-// gets 401.
-Route::middleware(['auth', 'role:admin'])->group(function () {
+// (EnsureRole). `auth:web,admin` answers guests first: a page request is sent to admin.login, a
+// JSON request gets 401. Both sessions are accepted here, so an admin who is signed in on the
+// panel (its own session) and an admin who is signed in on the customer session (the tests sign
+// admins in that way) can both open the panel.
+Route::middleware(['auth:web,admin', 'role:admin'])->group(function () {
     require __DIR__ . '/admin/dashboard.php';
     require __DIR__ . '/admin/bookings.php';
     require __DIR__ . '/admin/messages.php';

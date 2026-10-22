@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Account;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\Auth\CurrentAccount;
+use App\Services\Auth\SignOut;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -25,7 +26,7 @@ use Illuminate\Support\Facades\DB;
  */
 class AccountDeletionController extends Controller
 {
-    public function destroy(Request $request): JsonResponse
+    public function destroy(Request $request, SignOut $signOut, CurrentAccount $account): JsonResponse
     {
         $userId = $request->user()->id;
 
@@ -52,14 +53,15 @@ class AccountDeletionController extends Controller
             ], 409);
         }
 
-        Auth::guard('web')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        // Read the sign-in page BEFORE the sign-out: afterwards nobody is signed in any more.
+        $redirect = route($account->customerLoginRoute());
+
+        $signOut->customer($request);
 
         return response()->json([
             'ok' => true,
             'message' => 'Your account has been deleted.',
-            'redirect' => route('user.landing'),
+            'redirect' => $redirect,
         ]);
     }
 
