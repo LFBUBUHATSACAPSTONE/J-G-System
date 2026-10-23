@@ -53,10 +53,15 @@ class RegisterController extends Controller
     {
         $validated = $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
+            'middle_name' => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z\s]+$/'],
+            'middle_initial' => ['nullable', 'string', 'max:1', 'regex:/^[A-Za-z]$/'],
             'last_name' => ['required', 'string', 'max:255'],
             'identifier' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string', PasswordRule::min(8)->mixedCase()->numbers()->symbols()],
             'terms' => ['accepted'],
+        ], [
+            'middle_name.regex' => 'Middle name can only contain letters and spaces.',
+            'middle_initial.regex' => 'Middle initial must be a single letter.',
         ]);
 
         $identifier = trim((string) $validated['identifier']);
@@ -98,10 +103,19 @@ class RegisterController extends Controller
             ], 422);
         }
 
+        // The sign-up form posts a middle name; keep accepting a lone middle initial as well.
+        $middleName = trim((string) ($validated['middle_name'] ?? ''));
+        if ($middleName === '') {
+            $middleName = strtoupper(trim((string) ($validated['middle_initial'] ?? '')));
+        }
+        $middleName = $middleName !== '' ? $middleName : null;
+
         // Hold the registration details until the emailed code is confirmed. The account row is
         // only created in ModalVerificationController::verificationConfirm().
         $registration = [
             'first_name' => trim((string) $validated['first_name']),
+            'middle_name' => $middleName,
+            'middle_initial' => $middleName !== null ? mb_strtoupper(mb_substr($middleName, 0, 1)) : null,
             'last_name' => trim((string) $validated['last_name']),
             'email' => $email,
             'phone' => $phone,

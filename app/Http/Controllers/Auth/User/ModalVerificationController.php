@@ -76,6 +76,11 @@ class ModalVerificationController extends Controller
 
                     $user->first_name = $registration['first_name'];
                     $user->last_name = $registration['last_name'];
+
+                    if (array_key_exists('middle_name', $registration) || array_key_exists('middle_initial', $registration)) {
+                        $user->setMiddleName($registration['middle_name'] ?? $registration['middle_initial'] ?? null);
+                    }
+
                     $user->email = $registration['email'];
                     $user->phone = $registration['phone'];
                     $user->password = $registration['password'];
