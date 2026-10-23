@@ -20,23 +20,17 @@ function initAdminAccount() {
         transport: "multipart",
         responseKey: "admin",
         rows: {
-            name: ["first_name", "last_name", "middle_initial"],
+            name: ["first_name", "middle_name", "last_name"],
             email: ["email"],
             phone: ["phone"],
             password: ["password", "password_confirmation"],
         },
-        immediate: [
-            "first_name",
-            "last_name",
-            "middle_initial",
-            "email",
-            "phone",
-        ],
+        immediate: ["first_name", "middle_name", "last_name", "email", "phone"],
         guarded: ["email", "password"], // these need the current password
         validators: {
             first_name: rules.first_name,
             last_name: rules.last_name,
-            middle_initial: rules.middle_initial,
+            middle_name: rules.middle_name,
             email: rules.email,
             phone: rules.phone,
             current_password: rules.current_password,
@@ -45,14 +39,14 @@ function initAdminAccount() {
         filters: {
             first_name: filters.first_name,
             last_name: filters.last_name,
-            middle_initial: filters.middle_initial,
+            middle_name: filters.middle_name,
             phone: filters.phone,
         },
         display: {
-            name: (v) => {
-                const initial = v.middle_initial ? `${v.middle_initial}. ` : "";
-                return `${v.first_name} ${initial}${v.last_name}`.trim();
-            },
+            name: (v) =>
+                [v.first_name, v.middle_name, v.last_name]
+                    .filter(Boolean)
+                    .join(" "),
             email: (v) => v.email,
             phone: (v) => formatPhone(v.phone),
         },

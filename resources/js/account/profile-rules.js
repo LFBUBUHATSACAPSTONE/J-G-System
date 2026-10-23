@@ -8,6 +8,7 @@
 import {
     getIdentifierError,
     getNameError,
+    getOptionalNameError,
     getPasswordError,
     getMatchError,
     getRequiredError,
@@ -57,10 +58,7 @@ export function wirePasswordToggles(scope) {
 export const rules = {
     first_name: (v) => getNameError(v, "First name"),
     last_name: (v) => getNameError(v, "Last name"),
-    middle_initial: (v) =>
-        v && !/^[A-Za-z]$/.test(v.trim())
-            ? "Middle initial must be a single letter."
-            : "",
+    middle_name: (v) => getOptionalNameError(v, "Middle name"),
     email: getIdentifierError, // same rule and messages as the auth modal's email field
     /** Contact number that must be given. Same rule and messages as the booking form's Contact Number. */
     phone: getContactNumberError,
@@ -95,7 +93,7 @@ export function passwordRules(get) {
 export const filters = {
     first_name: (v) => v.replace(/[^A-Za-z\s]/g, ""),
     last_name: (v) => v.replace(/[^A-Za-z\s]/g, ""),
-    middle_initial: (v) => v.toUpperCase().replace(/[^A-Z]/g, ""),
+    middle_name: (v) => v.replace(/[^A-Za-z\s]/g, ""),
     // Digits only, like the booking form's Contact Number: nothing is inserted for the user, and the
     // validator (09 prefix, exactly 11 digits) reports a number that is too short or too long.
     phone: (v) => v.replace(/\D/g, ""),

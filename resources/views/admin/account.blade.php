@@ -1,17 +1,17 @@
 @php
 $firstName = (string) data_get($admin, 'first_name', 'Arjay');
 $lastName = (string) data_get($admin, 'last_name', 'Dela Cruz');
-$middle = strtoupper((string) data_get($admin, 'middle_initial', ''));
+$middleName = (string) data_get($admin, 'middle_name', '');
 $email = (string) data_get($admin, 'email', 'admin@example.com');
 $phone = preg_replace('/\D/', '', (string) data_get($admin, 'phone', '09123456789'));
 $avatarUrl = data_get($admin, 'avatar_url');
 
-$fullName = trim(implode(' ', array_filter([$firstName, $middle ? $middle . '.' : null, $lastName])));
+$fullName = trim(implode(' ', array_filter([$firstName, $middleName, $lastName])));
 $initials = strtoupper(mb_substr($firstName, 0, 1) . mb_substr($lastName, 0, 1)) ?: 'A';
 $phoneDisplay = strlen($phone) === 11 ? preg_replace('/^(\d{4})(\d{3})(\d{4})$/', '$1 $2 $3', $phone) : $phone;
 
 $updateUrl = Route::has('admin.account.update') ? route('admin.account.update') : '';
-$logoutUrl = Route::has('admin.logout') ? route('admin.logout') : '';
+$logoutUrl = Route::has('logout') ? route('logout') : '';
 
 $sessions = $sessions ?? [];
 $lastLogin = $lastLogin ?? null;
@@ -47,10 +47,10 @@ $lastLogin = $lastLogin ?? null;
             <div class="profile-row__fields profile-row__fields--name">
               <x-profile.field id="aa-first-name" name="first_name" label="First name" :value="$firstName"
                 autocomplete="given-name" maxlength="60" />
+              <x-profile.field id="aa-middle-name" name="middle_name" label="Middle name (optional)" :value="$middleName"
+                autocomplete="additional-name" maxlength="60" />
               <x-profile.field id="aa-last-name" name="last_name" label="Last name" :value="$lastName"
                 autocomplete="family-name" maxlength="60" />
-              <x-profile.field id="aa-middle-initial" name="middle_initial" label="M.I. (optional)" :value="$middle"
-                maxlength="1" autocomplete="off" />
             </div>
           </x-profile.row>
 
