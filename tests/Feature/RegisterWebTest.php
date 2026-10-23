@@ -152,7 +152,7 @@ class RegisterWebTest extends TestCase
         $this->get(route('user.landing'))
             ->assertOk()
             ->assertDontSee('data-chat-open', false)
-            ->assertSee('aria-label="Profile"', false);
+            ->assertSee('title="My account"', false);
 
         $forgotResponse = $this->postJson('/password/email', [
             'identifier' => 'test@example.com',
@@ -290,11 +290,11 @@ class RegisterWebTest extends TestCase
             ->get(route('user.landing'))
             ->assertOk()
             ->assertDontSee('data-chat-open', false)
-            ->assertSee('aria-label="Profile"', false)
-            ->assertSee('href="' . route('home') . '"', false)
-            ->assertSee('id="landing-book-now" href="' . route('user.booking') . '"', false)
+            ->assertSee('title="My account"', false)
+            ->assertSee('href="' . route('user.account') . '"', false)
+            ->assertSee('id="landing-book-now" href="#packages"', false)
             ->assertDontSee('id="landing-book-now" data-bs-toggle="modal"', false)
-            ->assertSee('class="package-card__cta" data-package-select href="' . route('user.booking') . '"', false)
+            ->assertSee('class="package-card__cta" data-package-select href="' . route('user.booking').'?package=', false)
             ->assertDontSee('class="package-card__cta" data-package-select data-bs-toggle="modal"', false);
     }
 

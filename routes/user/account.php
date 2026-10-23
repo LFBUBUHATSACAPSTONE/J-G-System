@@ -5,14 +5,16 @@ use App\Http\Controllers\Account\AccountDeletionController;
 use App\Http\Controllers\Account\AccountProfileController;
 use App\Http\Controllers\Account\AccountSecurityController;
 use App\Http\Controllers\User\MessageController;
+use App\Services\Auth\CurrentAccount;
 use Illuminate\Support\Facades\Route;
 
 // User account section (opened from the user icon in the landing navigation). Required from
 // routes/user.php, which web.php requires.
 //
-// Every route here is behind the `auth` middleware and the `role:user` gate: a guest gets 401 JSON
-// on a JSON request and is sent to the landing page on a page request (see AppServiceProvider), and
-// an admin account is bounced to its own dashboard. The customer area is for the `user` role only.
+// Every route here is behind the `auth:web` middleware and the `role:user` gate: a guest gets 401
+// JSON on a JSON request and is sent to the landing page on a page request (see AppServiceProvider),
+// and an admin account is bounced to its own dashboard. The customer area is for the `user` role
+// only.
 //
 // BACKEND CONNECTED: Profile, My Bookings, Security and Delete Account use real controllers in
 // app/Http/Controllers/Account/. They return JSON for every action (and for the page routes when the
@@ -24,11 +26,15 @@ use Illuminate\Support\Facades\Route;
 // user.account.destroy) must not change: the navigation, the sidebar (config/account.php) and the JS
 // build from them.
 
-Route::middleware(['auth', 'role:user'])->group(function () {
+// The navigation links here; it lands on the first tab of the account that is signed in: the
+// customer's profile tab, or the admin's own account page. It sits OUTSIDE the `role:user` gate,
+// so an admin who opens it lands on their own profile instead of being bounced.
+Route::middleware(['auth:web'])->group(function () {
+    Route::get('/user/account', fn (CurrentAccount $account) => redirect()->route($account->profileRoute()))
+        ->name('user.account');
+});
 
-// The navigation links here; it lands on the first tab.
-Route::get('/user/account', fn () => redirect()->route('user.account.profile'))
-    ->name('user.account');
+Route::middleware(['auth:web', 'role:user'])->group(function () {
 
 Route::get('/user/account/profile', [AccountProfileController::class, 'show'])
     ->name('user.account.profile');

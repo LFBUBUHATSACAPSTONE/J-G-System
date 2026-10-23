@@ -182,7 +182,7 @@ class UserAccountTest extends TestCase
             ->assertSee('My Bookings')
             ->assertSee('Delete Account')
             ->assertSee('Log out')
-            ->assertSee('data-account-logout', false);
+            ->assertSee('data-logout', false);
     }
 
     public function test_profile_is_returned_as_json_when_the_request_asks_for_json(): void
@@ -473,7 +473,7 @@ class UserAccountTest extends TestCase
     {
         $user = $this->makeUser();
 
-        foreach (['short1!A', 'alllowercase1!', 'ALLUPPERCASE1!', 'NoNumbers!!', 'NoSpecial123'] as $weak) {
+        foreach (['Sh0rt!', 'alllowercase1!', 'ALLUPPERCASE1!', 'NoNumbers!!', 'NoSpecial123'] as $weak) {
             $this->actingAs($user)->patchJson(route('user.account.password.update'), [
                 'current_password' => self::PASSWORD,
                 'password' => $weak,

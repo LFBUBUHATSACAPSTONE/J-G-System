@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureRole;
+use App\Http\Middleware\ResetDefaultGuard;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,6 +18,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => EnsureRole::class,
         ]);
+
+        // Every request starts on the customer guard again: the `auth:` middleware switches the
+        // default guard for the request it guards, and that switch must not leak into the next
+        // request (see App\Http\Middleware\ResetDefaultGuard).
+        $middleware->append(ResetDefaultGuard::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\BookingController;
+use App\Http\Controllers\User\BookingController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/user/booking', [BookingController::class, 'show'])->name('user.booking');

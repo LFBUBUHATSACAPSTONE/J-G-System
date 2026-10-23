@@ -1,29 +1,27 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Auth\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\Auth\SignOut;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 /**
  * POST /admin/logout (route name `admin.logout`).
  *
- * Terminates the admin's authenticated session for real: logs the `web` guard out, invalidates the
- * session and re-keys the CSRF token, so the browser cannot go back into the panel. A page request
+ * Terminates the admin's session for real: the admin session is logged out and the CSRF token is
+ * re-keyed, so the browser cannot go back into the panel. A customer who is signed in on the
+ * customer session keeps that session: the two sides never sign each other out. A page request
  * is redirected to the sign-in card; a fetch() request gets 200 {ok, message, redirect}. Safe to
  * call twice: an already signed-out session still succeeds.
  */
 class AdminLogoutController extends Controller
 {
-    public function logout(Request $request): JsonResponse|RedirectResponse
+    public function logout(Request $request, SignOut $signOut): JsonResponse|RedirectResponse
     {
-        Auth::guard('web')->logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        $signOut->admin($request);
 
         if ($request->expectsJson()) {
             return response()->json([

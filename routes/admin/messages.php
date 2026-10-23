@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\MessageController;
-use App\Services\MessageService;
+use App\Services\Messaging\MessageService;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Route;
 

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Auth\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\Auth\SignIn;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -47,7 +47,7 @@ class GoogleAuthController extends Controller
         ));
     }
 
-    public function callback(): RedirectResponse
+    public function callback(SignIn $signIn): RedirectResponse
     {
         try {
             $stateCookie = (string) request()->cookie('google_oauth_state', '');
@@ -104,10 +104,15 @@ class GoogleAuthController extends Controller
                 }
             }
 
-            Auth::login($user, true);
+            // Admin accounts belong on the admin side; the customer area is `role:user` only.
+            if ($user->isAdmin()) {
+                $signIn->admin($user, true);
+            } else {
+                $signIn->customer($user, true);
+            }
+
             request()->session()->regenerate();
 
-            // Admin accounts belong on the admin side; the customer area is `role:user` only.
             if ($user->isAdmin()) {
                 return redirect()->route('admin.dashboard')->withCookie(cookie()->forget('google_oauth_state'));
             }

@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Auth\User;
 
 use App\Http\Controllers\Controller;
-use App\Services\ModalAuthService;
+use App\Services\Auth\ModalAuthService;
+use App\Services\Auth\SignIn;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class ModalAuthController extends Controller
 {
-    public function login(Request $request, ModalAuthService $authService): JsonResponse
+    public function login(Request $request, ModalAuthService $authService, SignIn $signIn): JsonResponse
     {
         $validated = $request->validate([
             'identifier' => ['required', 'string', 'max:255'],
@@ -35,7 +35,9 @@ class ModalAuthController extends Controller
             ], 403);
         }
 
-        Auth::login($user, (bool) ($validated['remember'] ?? false));
+        // The customer session only: signing in here never touches the admin session, so a staff
+        // member who is already signed in on the panel keeps that session.
+        $signIn->customer($user, (bool) ($validated['remember'] ?? false));
         $request->session()->regenerate();
 
         return response()->json([
