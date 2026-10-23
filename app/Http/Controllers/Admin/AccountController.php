@@ -22,7 +22,7 @@ use Illuminate\View\View;
  *   PATCH /admin/account  JSON only: name, email, contact number, password and photo
  *
  * Contract (resources/js/admin/account.js):
- *   200 {ok, message, admin{first_name, last_name, middle_initial, email, phone, avatar_url}}
+ *   200 {ok, message, admin{first_name, middle_name, middle_initial, last_name, email, phone, avatar_url}}
  *   422 {message, errors{field: [msg]}}
  *   429 {message}  too many wrong current passwords
  *   401 {message}  signed out (there is no `auth` middleware on the admin side yet, so the
@@ -89,6 +89,7 @@ class AccountController extends Controller
             // `sometimes`: the form only posts the rows that were actually edited.
             'first_name' => ['sometimes', 'required', 'string', 'max:100', 'regex:/^[A-Za-z\s]+$/'],
             'last_name' => ['sometimes', 'required', 'string', 'max:100', 'regex:/^[A-Za-z\s]+$/'],
+            'middle_name' => ['sometimes', 'nullable', 'string', 'max:100', 'regex:/^[A-Za-z\s]+$/'],
             'middle_initial' => ['sometimes', 'nullable', 'string', 'max:1', 'regex:/^[A-Za-z]$/'],
             'email' => ['sometimes', 'required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'phone' => ['sometimes', 'nullable', 'string', 'regex:/^09\d{9}$/', Rule::unique('users', 'phone')->ignore($user->id)],
@@ -100,6 +101,7 @@ class AccountController extends Controller
             'first_name.regex' => 'First name can only contain letters and spaces.',
             'last_name.required' => 'Last name is required.',
             'last_name.regex' => 'Last name can only contain letters and spaces.',
+            'middle_name.regex' => 'Middle name can only contain letters and spaces.',
             'middle_initial.regex' => 'Middle initial must be a single letter.',
             'email.email' => 'Enter a valid email address.',
             'email.unique' => 'That email address is already used by another account.',
@@ -131,10 +133,17 @@ class AccountController extends Controller
         $user->fill(collect($validated)->only([
             'first_name',
             'last_name',
-            'middle_initial',
             'email',
             'phone',
         ])->all());
+
+        if (array_key_exists('middle_name', $validated)) {
+            // Stores the full middle name and keeps middle_initial in sync.
+            $user->setMiddleName($validated['middle_name']);
+        } elseif (array_key_exists('middle_initial', $validated)) {
+            // Older payloads only carry the single-letter initial.
+            $user->setMiddleName($validated['middle_initial']);
+        }
 
         if (array_key_exists('password', $validated) && filled($validated['password'])) {
             // The model's `hashed` cast hashes it. A new remember token ends "remember me" on
@@ -185,8 +194,13 @@ class AccountController extends Controller
             }
         }
 
+        if (array_key_exists('middle_name', $data)) {
+            // '' means "cleared" on the form, same as the phone row: store NULL.
+            $data['middle_name'] = trim((string) $data['middle_name']) ?: null;
+        }
+
         if (array_key_exists('middle_initial', $data)) {
-            $data['middle_initial'] = strtoupper(trim((string) $data['middle_initial']));
+            $data['middle_initial'] = strtoupper(trim((string) $data['middle_initial'])) ?: null;
         }
 
         if (array_key_exists('phone', $data)) {
@@ -209,12 +223,13 @@ class AccountController extends Controller
     /**
      * The shape the form writes back into its rows (js/admin/account.js applySaved).
      *
-     * @return array{first_name: ?string, last_name: ?string, middle_initial: ?string, email: ?string, phone: ?string, avatar_url: ?string}
+     * @return array{first_name: ?string, middle_name: ?string, last_name: ?string, middle_initial: ?string, email: ?string, phone: ?string, avatar_url: ?string}
      */
     private function admin(?User $user): array
     {
         return [
             'first_name' => $user?->first_name,
+            'middle_name' => $user?->middle_name,
             'last_name' => $user?->last_name,
             'middle_initial' => $user?->middle_initial,
             'email' => $user?->email,

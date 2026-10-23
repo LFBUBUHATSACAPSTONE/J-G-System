@@ -25,6 +25,8 @@ class RegisterRequest extends FormRequest
     {
         return [
             'first_name' => ['required', 'string', 'max:255'],
+            'middle_name' => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z\s]+$/'],
+            'middle_initial' => ['nullable', 'string', 'max:1', 'regex:/^[A-Za-z]$/'],
             'last_name'  => ['required', 'string', 'max:255'],
             'email'      => ['required_without:phone', 'nullable', 'email', 'max:255', 'unique:users,email'],
             'phone'      => ['required_without:email', 'nullable', 'string', 'max:20', 'unique:users,phone'],
