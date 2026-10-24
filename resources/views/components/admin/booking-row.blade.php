@@ -128,6 +128,12 @@ $payload = [
 'start_time' => $event['start_time'] ?? null,
 'end_time' => $event['end_time'] ?? null,
 ],
+// Cancelled / Declined / User Cancelled: why, so View Details can show it (null = nothing to show).
+// `status_reason` is what the backend should pass on the booking array (docs/backend-impact.md).
+'status' => $key,
+'reason' => filled($booking['status_reason'] ?? null) && config("cancellation.labels.{$key}")
+? ['label' => config("cancellation.labels.{$key}"), 'by' => config("cancellation.by.{$key}"), 'text' => $booking['status_reason']]
+: null,
 'editable' => ! $history, // History is a record: the modal there is view-only
 // Fields the admin changed after the client booked: { 'event.location' => 'original value', ... }.
 // Keys are the modal's data-booking-field paths. Empty array = nothing edited.
@@ -206,15 +212,24 @@ $booking['client']['name'], $ref, $package['name'], $typeLabel ?? '', $status['l
       <div class="admin-bookings__actions-row">
         @foreach ($status['actions'] ?? [] as $action)
         @php
-        // Danger actions always confirm. Any other action can opt in with a 'confirm' text in the
-        // config (":ref" becomes the booking reference), e.g. Verify Payment.
-        $confirm = $action['confirm'] ?? (($action['tone'] ?? '') === 'danger' ? $action['label'] . ' booking :ref?' : null);
+        // Every action opens the shared action modal (js/shared/action-modal.js). Copy comes from the
+        // action's 'modal' array in config/admin/bookings.php (":ref" becomes the booking reference);
+        // a 'reason_label' there makes the modal ask for the required reason (Decline, Cancel).
+        $m = $action['modal'] ?? [];
+        $modalData = [
+        'title' => $m['title'] ?? $action['label'] . ' this booking?',
+        'message' => str_replace(':ref', $ref, $m['message'] ?? ($action['label'] . ' booking :ref?')),
+        'confirm' => $m['confirm'] ?? $action['label'],
+        'tone' => $action['tone'] ?? 'brand',
+        'reason_label' => $m['reason_label'] ?? null,
+        'reason_hint' => $m['reason_hint'] ?? null,
+        ];
         @endphp
         <form
           method="POST"
           action="{{ $statusUrl }}"
           class="admin-bookings__action-form"
-          @if ($confirm) data-confirm="{{ str_replace(':ref', $ref, $confirm) }}" @endif>
+          data-action-modal-copy="{{ json_encode($modalData) }}">
           @csrf
           @php $blocked = $dayFull && $action['action'] === 'approve'; @endphp
           <button

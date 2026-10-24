@@ -1,4 +1,5 @@
 import { initFilterSheet } from "./filter-sheet.js";
+import { openActionModal, reasonError } from "../shared/action-modal.js";
 import {
     getRequiredError,
     getEmailError,
@@ -256,7 +257,22 @@ function initModal(modal) {
         }
     }
 
+    // Reason for cancelling / declining (booking.reason = {label, by, text} or null).
+    const reasonBox = modal.querySelector("[data-booking-reason]");
+    function renderReason(booking) {
+        const reason = booking.reason;
+        reasonBox.hidden = !reason;
+        if (!reason) return;
+        reasonBox.querySelector("[data-reason-label]").textContent =
+            reason.label;
+        reasonBox.querySelector("[data-reason-by]").textContent = reason.by
+            ? `Given by ${reason.by}`
+            : "";
+        reasonBox.querySelector("[data-reason-text]").textContent = reason.text;
+    }
+
     function fill(booking) {
+        renderReason(booking);
         modal.querySelectorAll("[data-booking-field]").forEach((el) => {
             const value = getPath(booking, el.dataset.bookingField);
 
@@ -562,69 +578,101 @@ function restoreServerErrors(modal) {
     trigger.click();
 }
 
-//  Confirm destructive actions (Decline / Cancel)
+//  Status actions (Approve / Decline / Verify Payment / Cancel) open the shared action modal first.
+//  Decline and Cancel also ask for a required reason, posted as `reason` next to `action`.
 function initConfirm() {
+    const actionModal = document.getElementById("bookingActionModal");
+
+    const feedbackBox = () =>
+        document.querySelector("[data-bookings-feedback]");
+    const showFeedback = (message) => {
+        const feedback = feedbackBox();
+        if (!feedback) return;
+        feedback.textContent = message;
+        feedback.classList.add("admin-alert--danger");
+        feedback.hidden = false;
+        feedback.focus?.();
+    };
+
+    // One POST for every status form and for the booking modal's own form. Throws an Error with the
+    // server's message (field = "reason" when the server refused the reason itself).
+    async function post(form, formData) {
+        // Status buttons are named "action", which can shadow the form.action
+        // property in some browsers. Read the literal attribute to get the URL.
+        const actionUrl = form.getAttribute("action");
+        if (!actionUrl) throw new Error("The booking action URL is missing.");
+
+        const response = await fetch(actionUrl, {
+            method: form.getAttribute("method") || "GET",
+            body: formData,
+            headers: {
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+            },
+        });
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            const reasonMessage = result.errors?.reason?.[0];
+            const message =
+                reasonMessage ||
+                result.message ||
+                Object.values(result.errors || {})
+                    .flat()
+                    .join(" ");
+            const error = reasonError(
+                message || "The booking could not be updated.",
+            );
+            if (!reasonMessage) delete error.field;
+            throw error;
+        }
+
+        window.location.reload();
+    }
+
     document.addEventListener("submit", async (event) => {
         const form = event.target;
         if (!(form instanceof HTMLFormElement)) return;
 
-        if (form.dataset.confirm && !window.confirm(form.dataset.confirm)) {
-            event.preventDefault();
-            return;
-        }
-
-        if (
-            !form.matches(".admin-bookings__action-form") &&
-            !form.closest("#bookingModal")
-        ) {
-            return;
-        }
+        const isStatusForm = form.matches(".admin-bookings__action-form");
+        if (!isStatusForm && !form.closest("#bookingModal")) return;
 
         event.preventDefault();
-        const feedback = document.querySelector("[data-bookings-feedback]");
+        const feedback = feedbackBox();
         if (feedback) {
             feedback.hidden = true;
             feedback.textContent = "";
             feedback.classList.remove("admin-alert--danger");
         }
 
-        try {
-            // Status buttons are named "action", which can shadow the form.action
-            // property in some browsers. Read the literal attribute to get the URL.
-            const actionUrl = form.getAttribute("action");
-            if (!actionUrl) {
-                throw new Error("The booking action URL is missing.");
-            }
+        const formData = new FormData(form, event.submitter);
 
-            const response = await fetch(actionUrl, {
-                method: form.getAttribute("method") || "GET",
-                body: new FormData(form, event.submitter),
-                headers: {
-                    Accept: "application/json",
-                    "X-Requested-With": "XMLHttpRequest",
+        if (isStatusForm && actionModal) {
+            const copy = JSON.parse(form.dataset.actionModalCopy || "{}");
+            await openActionModal(actionModal, {
+                title: copy.title,
+                message: copy.message,
+                confirmLabel: copy.confirm,
+                tone: copy.tone,
+                reason: Boolean(copy.reason_label),
+                reasonLabel: copy.reason_label,
+                reasonHint: copy.reason_hint,
+                onConfirm: (reason) => {
+                    if (reason !== null) formData.set("reason", reason);
+                    return post(form, formData);
                 },
             });
-            const result = await response.json();
+            return;
+        }
 
-            if (!response.ok) {
-                const message =
-                    result.message ||
-                    Object.values(result.errors || {})
-                        .flat()
-                        .join(" ");
-                throw new Error(message || "The booking could not be updated.");
-            }
-
-            window.location.reload();
+        try {
+            await post(form, formData);
         } catch (error) {
-            if (!feedback) return;
-            feedback.textContent =
+            showFeedback(
                 error instanceof Error
                     ? error.message
-                    : "The booking could not be updated.";
-            feedback.classList.add("admin-alert--danger");
-            feedback.hidden = false;
-            feedback.focus?.();
+                    : "The booking could not be updated.",
+            );
         }
     });
 }

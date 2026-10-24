@@ -136,6 +136,10 @@
     <p class="visually-hidden" role="status" data-bookings-count></p>
 
     <x-admin.booking-modal />
+
+    {{-- Approve / Decline / Verify Payment / Cancel confirmation. Decline and Cancel also ask for a reason.
+         Filled by bookings.js from each action form's data-action-modal-copy (config/admin/bookings.php). --}}
+    <x-booking.action-modal id="bookingActionModal" :reason="true" />
   </main>
 </body>
 
