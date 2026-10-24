@@ -20,7 +20,13 @@
 import { Modal } from "bootstrap";
 
 const states = new WeakMap();
-const TONES = ["danger", "success", "brand"];
+// Confirm-button colours per tone (utility strings, so Tailwind finds them here).
+const TONES = {
+    danger: "border-transparent bg-danger text-white enabled:hover:bg-danger-text",
+    success:
+        "border-success-border bg-success text-success-text enabled:hover:bg-success-border",
+    brand: "border-transparent bg-brand text-white enabled:hover:bg-brand-hover",
+};
 
 function setup(el) {
     if (states.has(el)) return states.get(el);
@@ -51,7 +57,7 @@ function setup(el) {
 
     const show = (target, message) => {
         target.textContent = message || "";
-        target.classList.toggle("d-none", !message);
+        target.classList.toggle("hidden", !message);
     };
 
     const reasonError = () => {
@@ -70,7 +76,6 @@ function setup(el) {
         state.count.textContent = `${state.reason.value.length}/${state.max}`;
         const message = state.touched ? reasonError() : "";
         show(state.reasonError, message);
-        state.reason.classList.toggle("is-invalid", Boolean(message));
         state.reason.setAttribute("aria-invalid", message ? "true" : "false");
     };
 
@@ -119,8 +124,8 @@ function setup(el) {
             if (error?.field === "reason" && state.reasonError) {
                 state.touched = true;
                 state.reasonError.textContent = message;
-                state.reasonError.classList.remove("d-none");
-                state.reason.classList.add("is-invalid");
+                state.reasonError.classList.remove("hidden");
+                state.reason.setAttribute("aria-invalid", "true");
                 state.reason.focus();
             } else {
                 show(state.error, message);
@@ -163,17 +168,15 @@ export function openActionModal(el, opts) {
 
     state.title.textContent = opts.title ?? "Are you sure?";
     state.message.textContent = opts.message ?? "";
-    state.message.classList.toggle("d-none", !opts.message);
+    state.message.classList.toggle("hidden", !opts.message);
     state.confirm.textContent = opts.confirmLabel ?? "Confirm";
-    TONES.forEach((tone) =>
-        state.confirm.classList.toggle(
-            `action-modal__btn--${tone}`,
-            tone === (opts.tone ?? "brand"),
-        ),
+    Object.values(TONES).forEach((classes) =>
+        state.confirm.classList.remove(...classes.split(" ")),
     );
+    state.confirm.classList.add(...TONES[opts.tone ?? "brand"].split(" "));
     state.show(state.error, "");
 
-    state.field?.classList.toggle("d-none", !opts.reason);
+    state.field?.classList.toggle("hidden!", !opts.reason);
     if (state.reason) {
         state.reason.value = "";
         if (opts.reasonLabel) state.reasonLabel.textContent = opts.reasonLabel;

@@ -228,10 +228,10 @@ $emptyCopy = [
           <p class="account-modal__status"><span class="account-badge" data-bk-badge></span></p>
 
           {{-- Shown when the booking was cancelled or declined (data-bk-reason); filled by bookings.js. --}}
-          <section class="reason-note" aria-labelledby="bk-reason-label" data-bk-reason hidden>
-            <h3 class="reason-note__label" id="bk-reason-label" data-bk-reason-label></h3>
-            <p class="reason-note__by" data-bk-reason-by></p>
-            <p class="reason-note__text" data-bk-reason-text></p>
+          <section class="m-0 flex flex-col gap-1 rounded-lg border border-danger-border bg-danger-soft px-4 py-3" aria-labelledby="bk-reason-label" data-bk-reason hidden>
+            <h3 class="mb-2 text-sm leading-[1.2] font-semibold text-danger-text" id="bk-reason-label" data-bk-reason-label></h3>
+            <p class="mb-4 text-sm text-ink-muted" data-bk-reason-by></p>
+            <p class="m-0 text-sm wrap:anywhere whitespace-pre-line text-ink" data-bk-reason-text></p>
           </section>
 
           {{-- The client's cancellation request and J&G's answer. Filled by bookings.js from

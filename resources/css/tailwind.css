@@ -1,11 +1,32 @@
-/* Theme at utilities lang, walang Preflight: Bootstrap Reboot pa ang reset hanggang matanggal ang Bootstrap CSS. */
 @import "tailwindcss/theme.css";
 @import "tailwindcss/utilities.css";
 
 @theme {
     --font-sans: "Poppins", sans-serif;
+
+    /* Sass 0.875rem text used line-height 1.5 (Bootstrap body); keep it for text-sm */
+    --text-sm--line-height: 1.5;
+
+    /* Surfaces and text (from _admin-variables.scss / _user-variables.scss) */
+    --color-surface: oklch(100% 0 0);
+    --color-panel: oklch(95.514% 0 0);
+    --color-ink: oklch(0% 0 0);
+    --color-ink-muted: oklch(38% 0 0);
+    --color-ink-subtle: oklch(48% 0 0);
+    --color-field-border: oklch(63.1% 0 0);
+
+    /* Brand */
     --color-brand: oklch(54.134% 0.24669 293.012);
     --color-brand-hover: oklch(49.067% 0.24133 292.584);
+    --color-brand-text: oklch(40.9% 0.22719 293.012);
+    --color-brand-halo: oklch(40.9% 0.22719 293.012 / 0.25);
+
+    /* Status */
     --color-danger: oklch(48.5% 0.19656 25.116);
+    --color-danger-text: oklch(40% 0.16206 25.116);
+    --color-danger-border: oklch(68.8% 0.20106 25.116);
     --color-danger-soft: oklch(94.298% 0.02858 17.67);
+    --color-success: oklch(83.09% 0.21958 143.282);
+    --color-success-text: oklch(36.6% 0.12158 143.282);
+    --color-success-border: oklch(64.4% 0.21358 143.282);
 }

@@ -256,10 +256,10 @@ $serverErrors = isset($errors) ? $errors->toArray() : [];
         </section>
 
         {{-- Why it was cancelled or declined (payload.reason, from booking.status_reason). Hidden otherwise. --}}
-        <section class="reason-note" aria-labelledby="bm-reason-label" data-booking-reason hidden>
-          <h3 class="reason-note__label" id="bm-reason-label" data-reason-label></h3>
-          <p class="reason-note__by" data-reason-by></p>
-          <p class="reason-note__text" data-reason-text></p>
+        <section class="m-0 flex flex-col gap-1 rounded-lg border border-danger-border bg-danger-soft px-4 py-3" aria-labelledby="bm-reason-label" data-booking-reason hidden>
+          <h3 class="mb-2 text-sm leading-[1.2] font-semibold text-danger-text" id="bm-reason-label" data-reason-label></h3>
+          <p class="mb-4 text-sm text-ink-muted" data-reason-by></p>
+          <p class="m-0 text-sm wrap:anywhere whitespace-pre-line text-ink" data-reason-text></p>
         </section>
 
         <p class="admin-booking-modal__error" role="alert" data-booking-error hidden></p>
