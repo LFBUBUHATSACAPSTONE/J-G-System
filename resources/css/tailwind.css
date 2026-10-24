@@ -20,6 +20,9 @@
     --color-brand-hover: oklch(49.067% 0.24133 292.584);
     --color-brand-text: oklch(40.9% 0.22719 293.012);
     --color-brand-halo: oklch(40.9% 0.22719 293.012 / 0.25);
+    --color-brand-end: oklch(
+        51.1% 0.24669 293.012
+    ); /* end of the page-title gradient */
 
     /* Status */
     --color-danger: oklch(48.5% 0.19656 25.116);

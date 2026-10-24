@@ -20,9 +20,9 @@ $title = $title ?? $page['heading'] ?? $navLabel ?? config('admin.name', 'J&G Ad
 $subtitle = $subtitle ?? $page['subheading'] ?? null;
 @endphp
 
-<header {{ $attributes->class(['admin-page-header']) }}>
-  <h1 class="admin-page-header__title">{{ $title }}</h1>
+<header {{ $attributes->class(['admin-page-header', 'mb-6 font-sans min-[992px]:mb-8']) }}>
+  <h1 class="admin-page-header__title inline-block m-0 bg-[linear-gradient(90deg,var(--color-brand-text),var(--color-brand-end))] bg-clip-text text-[clamp(1.75rem,1.2rem+2vw,2.5rem)] font-bold text-transparent [-webkit-text-fill-color:transparent] forced-colors:bg-none forced-colors:text-[CanvasText] forced-colors:[-webkit-text-fill-color:currentColor]">{{ $title }}</h1>
   @if ($subtitle)
-  <p class="admin-page-header__subtitle">{{ $subtitle }}</p>
+  <p class="admin-page-header__subtitle mt-1 mb-0 text-[clamp(0.9347rem,0.9291rem+0.0279vw,0.95rem)] text-ink-muted">{{ $subtitle }}</p>
   @endif
 </header>
