@@ -1,0 +1,11 @@
+/* Theme at utilities lang, walang Preflight: Bootstrap Reboot pa ang reset hanggang matanggal ang Bootstrap CSS. */
+@import "tailwindcss/theme.css";
+@import "tailwindcss/utilities.css";
+
+@theme {
+    --font-sans: "Poppins", sans-serif;
+    --color-brand: oklch(54.134% 0.24669 293.012);
+    --color-brand-hover: oklch(49.067% 0.24133 292.584);
+    --color-danger: oklch(48.5% 0.19656 25.116);
+    --color-danger-soft: oklch(94.298% 0.02858 17.67);
+}
