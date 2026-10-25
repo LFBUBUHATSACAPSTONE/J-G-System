@@ -57,9 +57,8 @@ class AccountBookingController extends Controller
      * The client asks J&G to cancel a booking.
      *
      * This is a REQUEST, not an instant cancellation: the booking moves to
-     * `pending_cancellation` and keeps its slot until an admin approves or declines it. The
-     * client's reason is stored on its own column so the admin's later decision can never
-     * overwrite it.
+     * `pending_cancellation` until an admin approves or declines it. The client's reason is
+     * stored on its own column so the admin's later decision can never overwrite it.
      *
      *   200 {ok, message, booking{id, status, cancellation}}
      *   403 {message}  not the client's booking

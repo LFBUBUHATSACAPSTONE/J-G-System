@@ -12,10 +12,9 @@ return [
   // Statuses that take up a slot. A booking only counts once the admin has approved it, so
   // `pending` never does. `pending_payment` already counts: the admin said yes at Approve, the
   // client is only waiting for the payment check, so the day stays held for them.
-  // `pending_cancellation` also counts: the client asked to cancel, but until an admin decides
-  // the booking is still active and must keep its slot (declining restores it unchanged).
-  // Cancelled / declined bookings are not listed, so they free their days.
-  'counted_statuses' => ['pending_payment', 'approved', 'pending_cancellation'],
+  // Cancelled / declined bookings are not listed, so they free their days. A pending
+  // cancellation request does not hold a slot either: the date is free until the admin decides.
+  'counted_statuses' => ['pending_payment', 'approved'],
 
   // Required break between two bookings that share a calendar day, measured from the end
   // of one event to the start of the next (and mirrored on the other side, so a new

@@ -13,7 +13,7 @@ return [
   //      \--Decline--> declined       \--Cancel--> cancelled      approved --Cancel--> cancelled
   //
   // The client may ask to cancel from My Bookings. That request moves the booking to
-  // `pending_cancellation` and keeps its slot. The admin answers it in View Details:
+  // `pending_cancellation` and waits for the admin's answer in View Details:
   // Approve -> `cancelled`, or Decline -> the status the booking had before the request.
   // A direct admin Cancel (below) also ends in `cancelled`, with the admin's reason stored.
   //
@@ -124,9 +124,9 @@ return [
       ],
       'badge' => ['tone' => 'success', 'solid' => false],
     ],
-    // The client asked to cancel. It keeps its slot (and its Badge is a warning, not a danger)
-    // until an admin answers in View Details. No row buttons: the decision belongs in the modal,
-    // where the client's reason is visible next to the two buttons.
+    // The client asked to cancel. Its Badge is a warning, not a danger, until an admin answers
+    // in View Details. No row buttons: the decision belongs in the modal, where the client's
+    // reason is visible next to the two buttons.
     'pending_cancellation' => [
       'label'     => 'Cancellation Requested',
       'icon'      => 'clock',

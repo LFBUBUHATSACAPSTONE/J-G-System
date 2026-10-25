@@ -38,7 +38,7 @@ class DashboardController extends Controller
         }
 
         $attention = Booking::query()
-            ->whereIn('status', ['pending', 'pending_payment', 'pending_cancellation'])
+            ->whereIn('status', ['pending', 'pending_payment'])
             ->orderByRaw('COALESCE(submitted_at, created_at) ASC')
             ->with(['eventDetails', 'schedule', 'package'])
             ->get()

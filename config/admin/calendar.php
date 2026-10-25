@@ -12,8 +12,6 @@ return [
     'completed'       => ['tone' => 'confirmed', 'label' => 'Completed'],
     'pending'         => ['tone' => 'pending',   'label' => 'Pending Approval'],
     'pending_payment' => ['tone' => 'pending',   'label' => 'Payment to Verify'],
-    // Still holds its slot until an admin decides, so it stays listed in the side panel.
-    'pending_cancellation' => ['tone' => 'pending', 'label' => 'Cancellation Requested'],
   ],
 
   // Which tones COLOUR a date (and build the legend), in priority order. Only 'confirmed' is listed:

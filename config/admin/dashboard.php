@@ -26,9 +26,8 @@ return [
 
   // Button text per booking status in the attention list (keys of config/admin/bookings.php 'statuses').
   'attention_actions' => [
-    'pending'              => 'Review',
-    'pending_payment'      => 'Verify payment',
-    'pending_cancellation' => 'Review cancellation',
+    'pending'         => 'Review',
+    'pending_payment' => 'Verify payment',
   ],
 
   // "Upcoming events": how many rows to show before "View all ... in Calendar".
