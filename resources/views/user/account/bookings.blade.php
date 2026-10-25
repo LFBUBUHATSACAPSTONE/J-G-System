@@ -65,6 +65,11 @@ $payload = [
 'payment' => trim($methodLabel . ($methodLabel && $stateLabel ? ' · ' : '') . $stateLabel) ?: '',
 'amount' => $paid !== null && $method ? $peso($paid) : '',
 'balance' => $balance !== null ? $peso($balance) : '',
+// Why it was cancelled or declined, from `status_reason` on the booking array (null = nothing to show).
+// Who gave it: the client for user_cancelled, otherwise J&G.
+'reason' => in_array($status, ['user_cancelled', 'cancelled', 'declined'], true) ? ($b['status_reason'] ?? null) : null,
+'reason_label' => config("cancellation.labels.{$status}"),
+'reason_by' => $status === 'user_cancelled' ? 'You' : 'J&G',
 'can_cancel' => $canCancel,
 'can_reschedule' => (bool) ($b['can_reschedule'] ?? false),
 'reschedule_note' => $b['reschedule_note'] ?? null,
@@ -169,8 +174,6 @@ $emptyCopy = [
             <button
               type="button"
               class="account-btn account-btn--danger-outline"
-              data-bs-toggle="modal"
-              data-bs-target="#cancelBookingModal"
               data-booking-cancel>
               Cancel booking
             </button>
@@ -213,6 +216,13 @@ $emptyCopy = [
 
         <div class="modal-body account-modal__body">
           <p class="account-modal__status"><span class="account-badge" data-bk-badge></span></p>
+
+          {{-- Shown when the booking was cancelled or declined (data-bk-reason); filled by bookings.js. --}}
+          <section class="reason-note" aria-labelledby="bk-reason-label" data-bk-reason hidden>
+            <h3 class="reason-note__label" id="bk-reason-label" data-bk-reason-label></h3>
+            <p class="reason-note__by" data-bk-reason-by></p>
+            <p class="reason-note__text" data-bk-reason-text></p>
+          </section>
 
           <section class="account-modal__section" aria-labelledby="bk-event-title">
             <h3 class="account-modal__heading" id="bk-event-title">Event</h3>
@@ -282,28 +292,7 @@ $emptyCopy = [
     </div>
   </div>
 
-  {{-- Cancel confirmation. The request goes to user.account.bookings.cancel (stub today). --}}
-  <div class="modal fade account-modal" id="cancelBookingModal" tabindex="-1" aria-labelledby="cancelBookingTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header account-modal__header">
-          <h2 class="account-modal__title" id="cancelBookingTitle">Cancel this booking?</h2>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-
-        <div class="modal-body account-modal__body">
-          <p class="account-modal__text">
-            You are about to cancel <strong data-cancel="event"></strong> (<span data-cancel="reference"></span>).
-            You can reschedule it once, within the same month, after you cancel.
-          </p>
-          <p class="account-form__status is-error d-none" role="alert" data-cancel-error></p>
-        </div>
-
-        <div class="modal-footer account-modal__footer">
-          <button type="button" class="account-btn account-btn--secondary" data-bs-dismiss="modal">Keep booking</button>
-          <button type="button" class="account-btn account-btn--danger" data-cancel-confirm>Cancel booking</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  {{-- Cancel booking: the shared action modal with the required reason. bookings.js fills the title and
+       message and posts {reason} to user.account.bookings.cancel. --}}
+  <x-booking.action-modal id="cancelBookingModal" :reason="true" />
 </x-account.layout>

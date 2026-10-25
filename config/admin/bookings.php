@@ -26,8 +26,12 @@ return [
   // highlight => true draws the yellow outline + chip on the row
   // chip      => text of that chip (defaults to the label)
   // actions   => outline buttons in the Actions column (POST to admin.bookings.status with
-  //              `action`). `tone`: danger | success. Danger actions ask for confirmation first;
-  //              any action can add its own `confirm` text (":ref" becomes the booking reference).
+  //              `action`). `tone`: danger | success. EVERY action opens the shared action modal
+  //              (components/booking/action-modal.blade.php) before anything is sent. Its copy is the
+  //              action's `modal` array (":ref" becomes the booking reference):
+  //                title, message, confirm (button text),
+  //                reason_label + reason_hint  => present = the modal also asks for a required reason
+  //              (Decline and Cancel). The reason is posted as `reason` with the usual `action`.
   // badge     => the read-only status badge in the Status column, never clickable.
   //              `tone`: success | warning | danger | brand | neutral; `solid` = strong fill (used sparingly).
   'statuses' => [
@@ -38,8 +42,28 @@ return [
       'highlight' => true,
       'chip'      => 'Needs Review',
       'actions'   => [
-        ['action' => 'decline', 'label' => 'Decline', 'tone' => 'danger'],
-        ['action' => 'approve', 'label' => 'Approve', 'tone' => 'success'],
+        [
+          'action' => 'decline',
+          'label' => 'Decline',
+          'tone' => 'danger',
+          'modal'  => [
+            'title'        => 'Decline this booking?',
+            'message'      => 'Booking :ref will be declined. The client will see your reason in their booking details.',
+            'confirm'      => 'Decline booking',
+            'reason_label' => 'Reason for declining',
+            'reason_hint'  => 'Shown to the client. Tell them why the request cannot be accepted.',
+          ],
+        ],
+        [
+          'action' => 'approve',
+          'label' => 'Approve',
+          'tone' => 'success',
+          'modal'  => [
+            'title'   => 'Approve this booking?',
+            'message' => 'Booking :ref will be approved and the client will be asked to send their payment for verification.',
+            'confirm' => 'Approve booking',
+          ],
+        ],
       ],
       'badge' => ['tone' => 'warning', 'solid' => false],
     ],
@@ -52,12 +76,27 @@ return [
       'group'     => 'payment',
       'highlight' => false,
       'actions'   => [
-        ['action' => 'cancel', 'label' => 'Cancel', 'tone' => 'danger'],
+        [
+          'action' => 'cancel',
+          'label' => 'Cancel',
+          'tone' => 'danger',
+          'modal'  => [
+            'title'        => 'Cancel this booking?',
+            'message'      => 'Booking :ref will be cancelled. The client will see your reason in their booking details.',
+            'confirm'      => 'Cancel booking',
+            'reason_label' => 'Reason for cancellation',
+            'reason_hint'  => 'Shown to the client. Tell them why the booking is being cancelled.',
+          ],
+        ],
         [
           'action'  => 'verify',
           'label'   => 'Verify Payment',
           'tone'    => 'success',
-          'confirm' => 'Mark the payment for booking :ref as verified? The booking becomes Approved and moves to Booking History.',
+          'modal'   => [
+            'title'   => 'Verify this payment?',
+            'message' => 'Mark the payment for booking :ref as verified? The booking becomes Approved and moves to Booking History.',
+            'confirm' => 'Verify payment',
+          ],
         ],
       ],
       'badge' => ['tone' => 'warning', 'solid' => false],
@@ -68,7 +107,18 @@ return [
       'group'     => 'approved',
       'highlight' => false,
       'actions'   => [
-        ['action' => 'cancel', 'label' => 'Cancel', 'tone' => 'danger'],
+        [
+          'action' => 'cancel',
+          'label' => 'Cancel',
+          'tone' => 'danger',
+          'modal'  => [
+            'title'        => 'Cancel this booking?',
+            'message'      => 'Booking :ref will be cancelled. The client will see your reason in their booking details.',
+            'confirm'      => 'Cancel booking',
+            'reason_label' => 'Reason for cancellation',
+            'reason_hint'  => 'Shown to the client. Tell them why the booking is being cancelled.',
+          ],
+        ],
       ],
       'badge' => ['tone' => 'success', 'solid' => false],
     ],

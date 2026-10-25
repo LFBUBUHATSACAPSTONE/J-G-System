@@ -3,14 +3,19 @@
  * FRONT END ONLY. Every booking comes from the server-rendered cards (their data-booking JSON); this
  * file never decides a status, it shows what the server answers. Same pattern as profile.js.
  *
- * Back-end contract for `user.account.bookings.cancel` (POST, empty JSON body, {booking} = id):
+ * Back-end contract for `user.account.bookings.cancel` (POST, JSON body {"reason": "…"}, {booking} = id):
  *   200 {"ok": true, "message": "…", "booking": {"id": "…", "status": "user_cancelled", "can_reschedule": true|false}}
- *   401 / 403 / 409 / 422 {"message": "…"}  -> shown inside the confirmation modal
+ *   401 / 403 / 409 {"message": "…"}  -> shown inside the cancel modal
+ *   422 {"message": "…", "errors": {"reason": ["…"]}}  -> the reason message is shown under the reason box
+ * The cancel modal is the shared action modal (js/shared/action-modal.js) with a required reason; the
+ * reason is also stored on the card (data-booking.reason) so View details shows it right away.
+ * Cards cancelled or declined earlier carry `reason` from `status_reason` on the booking array.
  * Reschedule links point at the existing `user.booking?reschedule=<id>` page (data-reschedule-url).
  */
 
 import { Modal } from "bootstrap";
 import { getCsrfToken } from "../auth/csrf.js";
+import { openActionModal, reasonError } from "../shared/action-modal.js";
 
 const ICON_CLASS = "ph ph-";
 
@@ -100,31 +105,23 @@ function initBookings() {
                     : value;
         });
         paintBadge(detailsModal.querySelector("[data-bk-badge]"), data);
+
+        // Why it was cancelled or declined, when there is a reason.
+        const reasonBox = detailsModal.querySelector("[data-bk-reason]");
+        reasonBox.hidden = !data.reason;
+        if (data.reason) {
+            reasonBox.querySelector("[data-bk-reason-label]").textContent =
+                data.reason_label || "Reason";
+            reasonBox.querySelector("[data-bk-reason-by]").textContent =
+                data.reason_by ? `Given by ${data.reason_by}` : "";
+            reasonBox.querySelector("[data-bk-reason-text]").textContent =
+                data.reason;
+        }
     });
 
-    // Cancel modal
+    // Cancel modal: the shared action modal, with a required reason.
     const cancelModalEl = document.getElementById("cancelBookingModal");
-    const confirmBtn = cancelModalEl?.querySelector("[data-cancel-confirm]");
-    const errorEl = cancelModalEl?.querySelector("[data-cancel-error]");
     let cancelCard = null;
-
-    const showCancelError = (message) => {
-        errorEl.textContent = message;
-        errorEl.classList.toggle("d-none", !message);
-    };
-
-    cancelModalEl?.addEventListener("show.bs.modal", (event) => {
-        cancelCard =
-            event.relatedTarget?.closest("[data-booking-card]") ?? null;
-        if (!cancelCard) return;
-        const data = readCard(cancelCard);
-        cancelModalEl.querySelector('[data-cancel="event"]').textContent =
-            data.event;
-        cancelModalEl.querySelector('[data-cancel="reference"]').textContent =
-            data.reference;
-        showCancelError("");
-        confirmBtn.disabled = false;
-    });
 
     function showPageStatus(message) {
         statusEl.textContent = message;
@@ -132,7 +129,7 @@ function initBookings() {
     }
 
     // Swap the card to the "cancelled by you" state with what the server answered.
-    function markCancelled(card, result) {
+    function markCancelled(card, result, reason) {
         const data = readCard(card);
         const meta = statuses.user_cancelled ?? {
             label: "Cancelled by you",
@@ -148,6 +145,9 @@ function initBookings() {
             group: "cancelled",
             can_cancel: false,
             can_reschedule: Boolean(result.can_reschedule),
+            reason: result.status_reason ?? reason,
+            reason_label: "Reason for cancellation",
+            reason_by: "You",
         };
         writeCard(card, next);
         card.dataset.group = "cancelled";
@@ -166,50 +166,68 @@ function initBookings() {
         }
     }
 
-    confirmBtn?.addEventListener("click", async () => {
-        if (!cancelCard) return;
-        const card = cancelCard;
-        const { id, reference } = readCard(card);
-        showCancelError("");
-        confirmBtn.disabled = true;
+    // The card's Cancel booking button opens the modal (it no longer uses data-bs-toggle).
+    root.addEventListener("click", async (event) => {
+        const button = event.target.closest("[data-booking-cancel]");
+        if (!button || !cancelModalEl) return;
+        const card = button.closest("[data-booking-card]");
+        if (!card) return;
+        cancelCard = card;
+        const { id, reference, event: eventName } = readCard(card);
 
-        try {
-            const response = await fetch(
-                cancelUrlTemplate.replace("__ID__", encodeURIComponent(id)),
-                {
-                    method: "POST",
-                    headers: {
-                        Accept: "application/json",
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": getCsrfToken(),
-                    },
-                    body: "{}",
-                },
-            );
-            const data = await response.json().catch(() => ({}));
+        await openActionModal(cancelModalEl, {
+            title: "Cancel this booking?",
+            message: `You are about to cancel ${eventName} (${reference}). You can reschedule it once, within the same month, after you cancel.`,
+            confirmLabel: "Cancel booking",
+            tone: "danger",
+            reason: true,
+            reasonLabel: "Reason for cancellation",
+            reasonHint:
+                "Tell J&G why you are cancelling. This is saved in your booking details.",
+            onConfirm: async (reason) => {
+                let response;
+                let data;
+                try {
+                    response = await fetch(
+                        cancelUrlTemplate.replace(
+                            "__ID__",
+                            encodeURIComponent(id),
+                        ),
+                        {
+                            method: "POST",
+                            headers: {
+                                Accept: "application/json",
+                                "Content-Type": "application/json",
+                                "X-CSRF-TOKEN": getCsrfToken(),
+                            },
+                            body: JSON.stringify({ reason }),
+                        },
+                    );
+                    data = await response.json().catch(() => ({}));
+                } catch {
+                    throw new Error(
+                        "Something went wrong on our end. Please check your connection and try again.",
+                    );
+                }
 
-            if (!response.ok) {
-                showCancelError(
-                    data.message ||
-                        "We couldn't cancel this booking. Please try again.",
+                if (!response.ok) {
+                    const reasonMessage = data.errors?.reason?.[0];
+                    if (reasonMessage) throw reasonError(reasonMessage);
+                    throw new Error(
+                        data.message ||
+                            "We couldn't cancel this booking. Please try again.",
+                    );
+                }
+
+                markCancelled(card, data.booking ?? {}, reason);
+                updateCounts();
+                applyFilter();
+                showPageStatus(
+                    data.message || `Booking ${reference} has been cancelled.`,
                 );
-                confirmBtn.disabled = false;
-                return;
-            }
-
-            markCancelled(card, data.booking ?? {});
-            updateCounts();
-            applyFilter();
-            Modal.getInstance(cancelModalEl)?.hide();
-            showPageStatus(
-                data.message || `Booking ${reference} has been cancelled.`,
-            );
-        } catch {
-            showCancelError(
-                "Something went wrong on our end. Please check your connection and try again.",
-            );
-            confirmBtn.disabled = false;
-        }
+            },
+        });
+        cancelCard = null;
     });
 
     applyFilter();
