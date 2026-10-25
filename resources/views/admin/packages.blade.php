@@ -20,9 +20,9 @@
     </div>
 
     @if (session('status'))
-    <p class="admin-alert" role="status">{{ session('status') }}</p>
+    <p class="mb-6 rounded-panel border border-success-border bg-success-soft px-6 py-3 font-medium text-success-text data-[tone=danger]:border-danger-border data-[tone=danger]:bg-danger-soft data-[tone=danger]:text-danger-text" role="status">{{ session('status') }}</p>
     @endif
-    <p class="admin-alert" role="status" data-package-status hidden></p>
+    <p class="mb-6 rounded-panel border border-success-border bg-success-soft px-6 py-3 font-medium text-success-text data-[tone=danger]:border-danger-border data-[tone=danger]:bg-danger-soft data-[tone=danger]:text-danger-text" role="status" data-package-status hidden></p>
 
     <h2 class="visually-hidden">Packages</h2>
 

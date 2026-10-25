@@ -22,6 +22,19 @@ if (dashboard) {
         return element;
     };
 
+    // Whole class strings (never built from pieces) so Tailwind can find them.
+    const BADGE_BASE =
+        "inline-flex items-center gap-2 rounded-full py-1 pr-4 pl-3 text-sm leading-[1.3] font-semibold whitespace-nowrap [&_.ph]:text-fluid-lg";
+    const BADGE_TONES = {
+        warning: "bg-warning-soft text-warning-text",
+        success: "bg-success-soft text-success-text",
+        danger: "bg-danger-soft text-danger-text",
+        brand: "bg-brand-soft text-brand-text",
+        neutral: "bg-panel text-ink",
+    };
+    const ALERT_DANGER =
+        "mb-6 rounded-panel border border-danger-border bg-danger-soft px-6 py-3 font-medium text-danger-text";
+
     const bookingsUrl = (params = {}) => {
         const url = new URL(config.bookingsUrl, window.location.href);
         Object.entries(params).forEach(([key, value]) => {
@@ -177,7 +190,7 @@ if (dashboard) {
 
                 const badge = makeElement(
                     "span",
-                    `admin-badge admin-badge--${tone}`,
+                    `${BADGE_BASE} ${BADGE_TONES[tone] ?? ""}`,
                 );
                 if (status.icon) {
                     const icon = makeElement("i", `ph ph-${status.icon}`);
@@ -511,7 +524,7 @@ if (dashboard) {
         );
         const errorMessage = makeElement(
             "p",
-            "admin-alert admin-alert--danger",
+            ALERT_DANGER,
             "Dashboard data could not be loaded. Refresh the page to try again.",
         );
         errorMessage.setAttribute("role", "alert");

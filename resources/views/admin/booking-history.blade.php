@@ -26,7 +26,7 @@ $months = collect($bookings)
     <x-admin.page-header />
 
     @if (session('status'))
-    <p class="admin-alert" role="status">{{ session('status') }}</p>
+    <p class="mb-6 rounded-panel border border-success-border bg-success-soft px-6 py-3 font-medium text-success-text data-[tone=danger]:border-danger-border data-[tone=danger]:bg-danger-soft data-[tone=danger]:text-danger-text" role="status">{{ session('status') }}</p>
     @endif
 
     {{-- State tabs. Buttons with aria-pressed (there are no tab panels to switch). Counts are filled by history.js. --}}
@@ -95,8 +95,8 @@ $months = collect($bookings)
 
           {{-- Sheet footer (phones only): filtering is live, "Done" just closes the sheet. --}}
           <div class="admin-filter-sheet__actions mt-2 grid grid-cols-2 gap-3 md:hidden">
-            <button type="button" class="admin-btn admin-btn--outline px-4 disabled:cursor-not-allowed disabled:opacity-50" data-filter-clear disabled>Clear all</button>
-            <button type="button" class="admin-btn admin-btn--brand px-4 disabled:cursor-not-allowed disabled:opacity-50" data-bs-dismiss="offcanvas"
+            <button type="button" class="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-panel border border-brand-text bg-transparent px-4 py-2 text-fluid-base font-semibold text-brand-text hover:bg-brand-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text disabled:cursor-not-allowed disabled:opacity-50" data-filter-clear disabled>Clear all</button>
+            <button type="button" class="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-panel border-0 bg-brand px-4 py-2 text-fluid-base font-semibold text-on-brand hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text disabled:cursor-not-allowed disabled:opacity-50" data-bs-dismiss="offcanvas"
               data-bs-target="#historyFilterSheet">Done</button>
           </div>
         </div>

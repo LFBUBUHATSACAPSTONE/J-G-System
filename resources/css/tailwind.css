@@ -12,6 +12,7 @@
 @source "../views/components/admin/edited-note.blade.php";
 @source "../views/components/admin/package-card.blade.php";
 @source "../views/components/admin/package-modal.blade.php";
+@source "../views/components/admin/calendar-event.blade.php";
 @source "../views/components/account/layout.blade.php";
 @source "../views/admin/bookings.blade.php";
 @source "../views/admin/booking-history.blade.php";
@@ -20,6 +21,7 @@
 @source "../js/shared/action-modal.js";
 @source "../js/admin/dropdown.js";
 @source "../js/admin/filter-sheet.js";
+@source "../js/admin/dashboard.js";
 @source not inline("collapse container table shadow rounded");
 
 /* Wide but short viewports (laptops): the booking modal tightens its vertical spacing. */
@@ -74,7 +76,11 @@
     --text-fluid-xl: clamp(1.149rem, 1.1123rem + 0.1836vw, 1.25rem);
     --text-fluid-2xl: clamp(1.2269rem, 1.1731rem + 0.2692vw, 1.375rem);
 
+    --color-on-brand: oklch(100% 0 0); /* text on brand / danger fills */
+    --color-on-danger: oklch(100% 0 0);
     --color-on-brand-muted: oklch(92.4% 0.012 293.012);
+    --color-warning: oklch(85.374% 0.17348 87.367);
+    --color-success-soft: oklch(90.243% 0.1191 144.51);
     --color-warning-soft: oklch(91.713% 0.11932 92.9);
     --color-warning-text: oklch(38.1% 0.07798 87.367);
     --text-fluid-icon: clamp(1.2981rem, 1.2247rem + 0.3671vw, 1.5rem);

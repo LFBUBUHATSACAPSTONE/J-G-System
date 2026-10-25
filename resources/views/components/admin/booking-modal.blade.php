@@ -32,7 +32,7 @@ $serverErrors = isset($errors) ? $errors->toArray() : [];
 @endphp
 
 <div
-  class="modal fade admin-booking-modal group/modal **[[hidden]]:hidden!"
+  class="modal fade admin-booking-modal group/modal [[hidden]]:hidden!"
   id="bookingModal"
   tabindex="-1"
   aria-labelledby="bookingModalTitle"
@@ -75,7 +75,7 @@ $serverErrors = isset($errors) ? $errors->toArray() : [];
         <section aria-labelledby="bm-event-title">
           <div class="mb-4 flex items-center justify-between gap-4 short-wide:mb-2">
             <h3 id="bm-event-title" class="m-0 text-fluid-xl leading-9 font-bold text-ink">Event Information</h3>
-            <button type="button" class="admin-btn admin-btn--outline admin-btn--sm" data-booking-edit>
+            <button type="button" class="inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 rounded-full border border-brand-text bg-transparent px-4 py-1 text-fluid-sm font-semibold whitespace-nowrap text-brand-text hover:bg-brand-soft [&_.ph]:text-fluid-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-booking-edit>
               <i class="ph ph-pencil-simple" aria-hidden="true" data-booking-edit-icon></i>
               <span data-booking-edit-label>Edit</span>
             </button>
@@ -117,7 +117,7 @@ $serverErrors = isset($errors) ? $errors->toArray() : [];
                   <input type="text" id="bm-event-type-other" name="event_type_other" class="{{ $controlClass }} {{ $editableClass }}" readonly
                     placeholder="Type the event type" aria-describedby="bm-err-event-type-other"
                     data-booking-field="event.type_other" data-editable>
-                  <button type="button" class="admin-btn admin-btn--outline admin-btn--sm" data-type-change
+                  <button type="button" class="inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 rounded-full border border-brand-text bg-transparent px-4 py-1 text-fluid-sm font-semibold whitespace-nowrap text-brand-text hover:bg-brand-soft [&_.ph]:text-fluid-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-type-change
                     aria-label="Choose the event type from the list">
                     <i class="ph ph-caret-down" aria-hidden="true"></i>
                   </button>
@@ -274,8 +274,8 @@ $serverErrors = isset($errors) ? $errors->toArray() : [];
       </div>
 
       <div class="modal-footer justify-end gap-3 border-0 px-6 pt-3 pb-6 min-[992px]:px-8 short-wide:px-6 short-wide:pb-4 max-[575.98px]:flex-col max-[575.98px]:items-stretch *:m-0 max-[575.98px]:*:w-full">
-        <button type="submit" class="admin-btn admin-btn--brand" data-booking-save hidden>Save changes</button>
-        <button type="button" class="admin-btn admin-btn--outline" data-bs-dismiss="modal">Back</button>
+        <button type="submit" class="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-panel border-0 bg-brand px-12 py-2 text-fluid-base font-semibold text-on-brand hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-booking-save hidden>Save changes</button>
+        <button type="button" class="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-panel border border-brand-text bg-transparent px-12 py-2 text-fluid-base font-semibold text-brand-text hover:bg-brand-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-bs-dismiss="modal">Back</button>
       </div>
     </form>
   </div>

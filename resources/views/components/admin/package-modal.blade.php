@@ -51,7 +51,7 @@ $hintClass = 'text-[0.85rem] text-ink-muted';
       <div class="modal-body px-6 pt-6 pb-4">
         <div class="mb-4 flex items-baseline justify-between gap-4">
           <h2 id="packageModalTitle" class="m-0 text-fluid-xl font-bold" data-package-title>Package Information</h2>
-          <button type="button" class="admin-btn admin-btn--outline admin-btn--sm" data-package-edit>
+          <button type="button" class="inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 rounded-full border border-brand-text bg-transparent px-4 py-1 text-fluid-sm font-semibold whitespace-nowrap text-brand-text hover:bg-brand-soft [&_.ph]:text-fluid-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-package-edit>
             <i class="ph ph-pencil-simple" aria-hidden="true"></i>
             <span>Edit</span>
           </button>
@@ -118,9 +118,9 @@ $hintClass = 'text-[0.85rem] text-ink-muted';
       </div>
 
       <div class="modal-footer flex-nowrap gap-3 border-0 px-6 pt-3 pb-6 *:m-0">
-        <button type="button" class="admin-btn admin-btn--brand flex-[1_1_0] px-4" data-bs-dismiss="modal" data-package-back>Back</button>
-        <button type="button" class="admin-btn admin-btn--light flex-[1_1_0] px-4" data-package-cancel hidden>Cancel</button>
-        <button type="submit" class="admin-btn admin-btn--brand flex-[1_1_0] px-4" data-package-save hidden>Save</button>
+        <button type="button" class="inline-flex min-h-12 flex-[1_1_0] cursor-pointer items-center justify-center rounded-panel border-0 bg-brand px-4 py-2 text-fluid-base font-semibold text-on-brand hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-bs-dismiss="modal" data-package-back>Back</button>
+        <button type="button" class="inline-flex min-h-12 flex-[1_1_0] cursor-pointer items-center justify-center rounded-panel border-0 bg-panel px-4 py-2 text-fluid-base font-semibold text-ink hover:bg-page focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-package-cancel hidden>Cancel</button>
+        <button type="submit" class="inline-flex min-h-12 flex-[1_1_0] cursor-pointer items-center justify-center rounded-panel border-0 bg-brand px-4 py-2 text-fluid-base font-semibold text-on-brand hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-package-save hidden>Save</button>
       </div>
     </form>
   </div>

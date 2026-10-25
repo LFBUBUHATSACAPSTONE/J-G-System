@@ -13,7 +13,8 @@ function setStatus(message, isError = false) {
     if (!status) return;
 
     status.textContent = message;
-    status.classList.toggle("admin-alert--danger", isError);
+    if (isError) status.dataset.tone = "danger";
+    else delete status.dataset.tone;
     status.hidden = !message;
 }
 
@@ -500,7 +501,6 @@ function initAvailabilityForms() {
                             "available") ===
                         body.data.available;
                     const stateButton = stateForm.querySelector("button");
-                    stateButton.classList.toggle("admin-pill--solid", active);
                     stateButton.setAttribute("aria-pressed", String(active));
                 });
                 setStatus(body.message);

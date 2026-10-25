@@ -45,7 +45,7 @@ $availabilityUrl = Route::has('admin.packages.availability')
     <h3 id="pkg-{{ $id }}-name" class="m-0 text-fluid-title font-semibold text-brand-text">{{ $package['name'] }}</h3>
     <button
       type="button"
-      class="admin-btn admin-btn--outline admin-btn--sm"
+      class="inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 rounded-full border border-brand-text bg-transparent px-4 py-1 text-fluid-sm font-semibold whitespace-nowrap text-brand-text hover:bg-brand-soft [&_.ph]:text-fluid-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text"
       data-bs-toggle="modal"
       data-bs-target="#packageModal"
       data-package="{{ json_encode($payload) }}"
@@ -103,7 +103,12 @@ $availabilityUrl = Route::has('admin.packages.availability')
     @php
     $active = ($key === 'available') === $available;
     // The active state is a button too (the server treats it as a no-op): it keeps its fill on hover.
-    $pressedHover = ['success' => 'aria-pressed:hover:bg-success', 'danger' => 'aria-pressed:hover:bg-danger'][$state['tone']] ?? '';
+    $pillTone = [
+    'success' => 'border-success-border bg-transparent text-success-text not-aria-pressed:hover:bg-success-soft aria-pressed:border-success aria-pressed:bg-success aria-pressed:text-ink',
+    'danger' => 'border-danger-border bg-transparent text-danger-text not-aria-pressed:hover:bg-danger-soft aria-pressed:border-danger aria-pressed:bg-danger aria-pressed:text-on-danger',
+    'warning' => 'border-warning-border bg-transparent text-warning-text aria-pressed:border-warning aria-pressed:bg-warning aria-pressed:text-ink',
+    'neutral' => 'border-field-border bg-transparent text-ink',
+    ][$state['tone']] ?? '';
     $confirm = $state['confirm'] ? str_replace('{name}', $package['name'], $state['confirm']) : null;
     @endphp
     <form class="contents" method="POST" action="{{ $availabilityUrl }}" @if ($confirm && ! $active) data-confirm="{{ $confirm }}" @endif>
@@ -112,7 +117,7 @@ $availabilityUrl = Route::has('admin.packages.availability')
       <input type="hidden" name="availability" value="{{ $key }}">
       <button
         type="submit"
-        class="admin-pill admin-pill--{{ $state['tone'] }}{{ $active ? ' admin-pill--solid' : '' }} aria-pressed:cursor-default {{ $pressedHover }}"
+        class="inline-flex min-h-12 w-full cursor-pointer items-center justify-center rounded-full border px-4 py-2 text-center text-fluid-md font-medium aria-pressed:cursor-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text {{ $pillTone }}"
         aria-pressed="{{ $active ? 'true' : 'false' }}">{{ $state['label'] }}</button>
     </form>
     @endforeach

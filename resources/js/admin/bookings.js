@@ -590,7 +590,7 @@ function initConfirm() {
         const feedback = feedbackBox();
         if (!feedback) return;
         feedback.textContent = message;
-        feedback.classList.add("admin-alert--danger");
+        feedback.dataset.tone = "danger";
         feedback.hidden = false;
         feedback.focus?.();
     };
@@ -643,7 +643,7 @@ function initConfirm() {
         if (feedback) {
             feedback.hidden = true;
             feedback.textContent = "";
-            feedback.classList.remove("admin-alert--danger");
+            delete feedback.dataset.tone;
         }
 
         const formData = new FormData(form, event.submitter);

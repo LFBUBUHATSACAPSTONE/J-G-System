@@ -37,5 +37,5 @@ $bookingsUrl = \Illuminate\Support\Facades\Route::has('admin.bookings') ? route(
     <dd>{{ $event['location'] }}</dd>
   </dl>
 
-  <a class="admin-link admin-cal__event-link" href="{{ $bookingsUrl }}">View in Bookings</a>
+  <a class="admin-cal__event-link border-0 bg-transparent p-0 text-brand-text underline focus-visible:rounded-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" href="{{ $bookingsUrl }}">View in Bookings</a>
 </article>
