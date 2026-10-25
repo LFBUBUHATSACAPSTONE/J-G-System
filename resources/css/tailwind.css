@@ -32,4 +32,34 @@
     --color-success: oklch(83.09% 0.21958 143.282);
     --color-success-text: oklch(36.6% 0.12158 143.282);
     --color-success-border: oklch(64.4% 0.21358 143.282);
+
+    --color-page: oklch(90.365% 0 0);
+    --color-brand-soft: oklch(95% 0.03 293.012);
+    --color-brand-soft-hover: oklch(91% 0.06 293.012);
+    --color-dropdown-border: oklch(88% 0 0);
+
+    /* Radii (from the $auth-radius-* tokens) */
+    --radius-card: 28px;
+    --radius-panel: 20px;
+    --radius-field: 12px;
+
+    /* Fluid type, same curve as admin-fluid(): text-fluid-sm = 0.9rem max ... 2xl = 1.375rem max */
+    --text-fluid-sm: clamp(0.8952rem, 0.8934rem + 0.0088vw, 0.9rem);
+    --text-fluid-base: clamp(0.9731rem, 0.9633rem + 0.049vw, 1rem);
+    --text-fluid-lg: clamp(1.0467rem, 1.0273rem + 0.0969vw, 1.1rem);
+    --text-fluid-xl: clamp(1.149rem, 1.1123rem + 0.1836vw, 1.25rem);
+    --text-fluid-2xl: clamp(1.2269rem, 1.1731rem + 0.2692vw, 1.375rem);
+
+    /* Dropdown menu entrance */
+    --animate-dropdown-in: dropdown-in 0.14s ease-out;
+    @keyframes dropdown-in {
+        from {
+            opacity: 0;
+            transform: translateY(-4px) scale(0.98);
+        }
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
 }
