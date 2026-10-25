@@ -1,6 +1,9 @@
 @import "tailwindcss/theme.css";
 @import "tailwindcss/utilities.css";
 
+/* Wide but short viewports (laptops): the booking modal tightens its vertical spacing. */
+@custom-variant short-wide (@media (min-width: 992px) and (max-height: 860px));
+
 @theme {
     --font-sans: "Poppins", sans-serif;
 
@@ -50,6 +53,9 @@
     --text-fluid-xl: clamp(1.149rem, 1.1123rem + 0.1836vw, 1.25rem);
     --text-fluid-2xl: clamp(1.2269rem, 1.1731rem + 0.2692vw, 1.375rem);
 
+    --color-warning-soft: oklch(91.713% 0.11932 92.9);
+    --color-warning-text: oklch(38.1% 0.07798 87.367);
+    --text-fluid-3xl: clamp(1.5836rem, 1.3413rem + 1.2116vw, 2.25rem);
     --color-warning-border: oklch(66.6% 0.13598 87.367);
     --color-chip-pending: oklch(85.374% 0.17348 87.367);
     --text-fluid-md: clamp(0.9347rem, 0.9291rem + 0.0279vw, 0.95rem);

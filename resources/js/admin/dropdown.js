@@ -7,9 +7,9 @@
 // Tailwind class strings (kept whole so Tailwind can find them). The old admin-dropdown* names stay only
 // where other Sass still targets them (admin-dropdown, admin-dropdown__trigger: the invalid look in the booking modal).
 const TRIGGER_BASE =
-    "admin-dropdown__trigger group/trigger flex w-full cursor-pointer items-center justify-between gap-3 text-left text-fluid-sm text-ink disabled:cursor-default";
-const TRIGGER_FILTER = `${TRIGGER_BASE} border-0 bg-transparent px-0 py-2 focus-visible:outline-0`;
-const TRIGGER_FIELD = `${TRIGGER_BASE} admin-field__control rounded-field border border-field-border bg-surface px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text`;
+    "admin-dropdown__trigger group/trigger flex w-full cursor-pointer items-center justify-between gap-3 text-left text-ink disabled:cursor-default";
+const TRIGGER_FILTER = `${TRIGGER_BASE} border-0 bg-transparent px-0 py-2 text-fluid-sm focus-visible:outline-0`;
+const TRIGGER_FIELD = `${TRIGGER_BASE} min-h-10 rounded-field border border-field-border bg-surface px-3 py-2 text-fluid-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text peer-aria-invalid:border-danger-border`;
 const VALUE = "min-w-0 flex-1 truncate data-placeholder:text-ink-subtle";
 const CHEVRON =
     "ph ph-caret-down flex-none text-fluid-base text-ink transition-transform duration-200 group-aria-expanded/trigger:rotate-180 group-disabled/trigger:hidden motion-reduce:transition-none";
