@@ -148,9 +148,22 @@ $booking['client']['name'], $ref, $package['name'], $typeLabel ?? '', $status['l
 ]));
 @endphp
 
+@php
+// Tailwind classes for the row. The status's own highlight_class (is-pending / is-ongoing) stays on the <tr> as a hook:
+  // the Ongoing look still comes from _history.scss, so only the Pending look is drawn here.
+  $pending = ($status['highlight'] ?? false) && ($status['highlight_class'] ?? 'is-pending') === 'is-pending';
+  $rowClass = 'admin-bookings__row relative mb-6 grid grid-cols-2 gap-x-4 gap-y-3 rounded-card border-2 bg-surface p-6 text-fluid-md text-ink [&[hidden]]:hidden! min-[1200px]:m-0 min-[1200px]:table-row min-[1200px]:border-0 min-[1200px]:bg-transparent min-[1200px]:p-0 '
+  . ($pending
+  ? 'mt-6 border-warning-border min-[1200px]:mt-0 min-[1200px]:[&>td]:border-y-2 min-[1200px]:[&>td]:border-warning-border min-[1200px]:[&>td:first-child]:border-l-2 min-[1200px]:[&>td:last-child]:border-r-2'
+  : 'border-transparent');
+  $cell = 'admin-bookings__cell min-w-0 before:block before:text-xs before:text-ink-muted before:content-[attr(data-label)] min-[1200px]:bg-surface min-[1200px]:p-4 min-[1200px]:align-middle min-[1200px]:before:hidden min-[1200px]:first:relative min-[1200px]:first:rounded-l-card min-[1200px]:first:pl-6 min-[1200px]:last:rounded-r-card min-[1200px]:last:pr-6';
+  $chip = 'admin-bookings__chip absolute -top-[1.15rem] left-5 rounded-full px-3 text-[0.85rem] font-medium '
+  . (isset($status['chip_class']) ? $status['chip_class'] : 'bg-chip-pending text-ink');
+  @endphp
+
 <tr
   role="row"
-  class="admin-bookings__row{{ ($status['highlight'] ?? false) ? ' ' . ($status['highlight_class'] ?? 'is-pending') : '' }}"
+  class="{{ $rowClass }}{{ ($status['highlight'] ?? false) ? ' ' . ($status['highlight_class'] ?? 'is-pending') : '' }}"
   data-booking-row
   data-index="{{ $index }}"
   data-booking-id="{{ $booking['id'] }}"
@@ -162,29 +175,29 @@ $booking['client']['name'], $ref, $package['name'], $typeLabel ?? '', $status['l
   data-status-group="{{ $status['group'] }}"
   data-search="{{ $search }}">
 
-  <td role="cell" class="admin-bookings__cell admin-bookings__cell--client" data-label="Client">
+  <td role="cell" class="{{ $cell }} col-span-full" data-label="Client">
     @if ($status['highlight'] ?? false)
-    <span class="admin-bookings__chip{{ isset($status['chip_class']) ? ' ' . $status['chip_class'] : '' }}">{{ $status['chip'] ?? $status['label'] }}</span>
+    <span class="{{ $chip }}">{{ $status['chip'] ?? $status['label'] }}</span>
     @endif
-    <span class="admin-bookings__name">{{ $booking['client']['name'] }}</span>
-    <span class="admin-bookings__ref">{{ $ref }}</span>
+    <span class="admin-bookings__name font-medium">{{ $booking['client']['name'] }}</span>
+    <span class="admin-bookings__ref ml-2 text-brand-text">{{ $ref }}</span>
     @if ($dayFull)
-    <span class="admin-bookings__note" id="day-full-{{ $booking['id'] }}">
+    <span class="admin-bookings__note mt-1 block text-[0.85rem] font-semibold text-danger-text" id="day-full-{{ $booking['id'] }}">
       <i class="ph ph-calendar-x" aria-hidden="true"></i>
       Day full ({{ config('scheduling.max_events_per_day') }}/{{ config('scheduling.max_events_per_day') }} approved)
     </span>
     @endif
   </td>
 
-  <td role="cell" class="admin-bookings__cell" data-label="Schedule">
+  <td role="cell" class="{{ $cell }}" data-label="Schedule">
     <time datetime="{{ $start->toDateString() }}">{{ $schedule }}</time>
   </td>
 
-  <td role="cell" class="admin-bookings__cell" data-label="Package">{{ $package['name'] }}</td>
+  <td role="cell" class="{{ $cell }}" data-label="Package">{{ $package['name'] }}</td>
 
-  <td role="cell" class="admin-bookings__cell" data-label="Event Type">{{ $typeLabel ?? '--' }}</td>
+  <td role="cell" class="{{ $cell }}" data-label="Event Type">{{ $typeLabel ?? '--' }}</td>
 
-  <td role="cell" class="admin-bookings__cell admin-bookings__cell--status" data-label="Status">
+  <td role="cell" class="{{ $cell }} col-span-full" data-label="Status">
     <span class="admin-badge admin-badge--{{ $badge['tone'] }}{{ ($badge['solid'] ?? false) ? ' admin-badge--solid' : '' }}">
       @if ($icon)
       <i class="ph ph-{{ $icon }}" aria-hidden="true"></i>
@@ -193,11 +206,11 @@ $booking['client']['name'], $ref, $package['name'], $typeLabel ?? '', $status['l
     </span>
   </td>
 
-  <td role="cell" class="admin-bookings__cell admin-bookings__cell--actions" data-label="">
-    <div class="admin-bookings__actions">
+  <td role="cell" class="{{ $cell }} col-span-full" data-label="">
+    <div class="admin-bookings__actions flex flex-col gap-3 min-[1200px]:items-center">
       <button
         type="button"
-        class="admin-btn admin-btn--soft admin-btn--sm"
+        class="admin-btn admin-btn--soft admin-btn--sm min-h-11 w-full min-w-0 min-[1200px]:min-h-10 min-[1200px]:w-auto min-[1200px]:whitespace-nowrap"
         data-bs-toggle="modal"
         data-bs-target="#bookingModal"
         data-booking="{{ json_encode($payload) }}"
@@ -207,7 +220,7 @@ $booking['client']['name'], $ref, $package['name'], $typeLabel ?? '', $status['l
       </button>
 
       @if (! empty($status['actions']))
-      <div class="admin-bookings__actions-row">
+      <div class="admin-bookings__actions-row flex flex-nowrap gap-2 min-[1200px]:justify-center">
         @foreach ($status['actions'] ?? [] as $action)
         @php
         // Every action opens the shared action modal (js/shared/action-modal.js). Copy comes from the
@@ -226,7 +239,7 @@ $booking['client']['name'], $ref, $package['name'], $typeLabel ?? '', $status['l
         <form
           method="POST"
           action="{{ $statusUrl }}"
-          class="admin-bookings__action-form"
+          class="admin-bookings__action-form flex min-w-0 flex-[1_1_0] min-[1200px]:flex-[0_0_auto]"
           data-action-modal-copy="{{ json_encode($modalData) }}">
           @csrf
           @php $blocked = $dayFull && $action['action'] === 'approve'; @endphp
@@ -234,7 +247,7 @@ $booking['client']['name'], $ref, $package['name'], $typeLabel ?? '', $status['l
             type="submit"
             name="action"
             value="{{ $action['action'] }}"
-            class="admin-pill admin-pill--{{ $action['tone'] }}"
+            class="admin-pill admin-pill--{{ $action['tone'] }} min-h-11 w-full px-3 whitespace-nowrap min-[1200px]:min-h-10 min-[1200px]:w-auto min-[1200px]:px-4 min-[1200px]:py-1 min-[1200px]:text-fluid-sm"
             @if ($blocked) disabled aria-describedby="day-full-{{ $booking['id'] }}" title="This day already has the maximum number of approved events." @endif
             aria-label="{{ $action['label'] }}, booking {{ $ref }}">
             {{ $action['label'] }}

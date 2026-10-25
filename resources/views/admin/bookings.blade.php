@@ -17,7 +17,7 @@
 <body>
   <x-admin.sidebar />
 
-  <main class="admin-content admin-bookings">
+  <main class="font-sans admin-content admin-bookings">
     <x-admin.page-header />
 
     @if (session('status'))
@@ -107,10 +107,10 @@
     </div>
 
     {{-- Table --}}
-    <div class="admin-bookings__panel">
-      <table class="admin-bookings__table" role="table">
+    <div class="admin-bookings__panel rounded-card bg-panel px-6 pt-1 pb-2">
+      <table class="admin-bookings__table block w-full border-separate [border-spacing:0_1.1rem] min-[1200px]:table" role="table">
         <caption class="visually-hidden">Bookings</caption>
-        <thead role="rowgroup">
+        <thead role="rowgroup" class="sr-only min-[1200px]:table-header-group min-[1200px]:not-sr-only min-[1200px]:[&_th]:bg-brand min-[1200px]:[&_th]:p-4 min-[1200px]:[&_th]:text-center min-[1200px]:[&_th]:text-fluid-md min-[1200px]:[&_th]:font-semibold min-[1200px]:[&_th]:text-white min-[1200px]:[&_th:first-child]:rounded-l-panel min-[1200px]:[&_th:last-child]:rounded-r-panel">
           <tr role="row">
             <th role="columnheader" scope="col">Client</th>
             <th role="columnheader" scope="col">Schedule</th>
@@ -120,14 +120,14 @@
             <th role="columnheader" scope="col">Actions</th>
           </tr>
         </thead>
-        <tbody role="rowgroup" data-bookings-body>
+        <tbody role="rowgroup" class="block min-[1200px]:table-row-group" data-bookings-body>
           @foreach ($bookings as $booking)
           <x-admin.booking-row :booking="$booking" :index="$loop->index" :full-dates="$fullDates ?? []" />
           @endforeach
         </tbody>
       </table>
 
-      <p class="admin-empty admin-bookings__empty" data-bookings-empty @if (count($bookings)> 0) hidden @endif>
+      <p class="admin-empty admin-bookings__empty px-2 py-6 text-center" data-bookings-empty @if (count($bookings)> 0) hidden @endif>
         @if (count($bookings) > 0) No bookings match your filters. @else No bookings yet. @endif
       </p>
     </div>
