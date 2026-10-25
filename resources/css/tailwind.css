@@ -1,5 +1,26 @@
 @import "tailwindcss/theme.css";
-@import "tailwindcss/utilities.css";
+@import "tailwindcss/utilities.css" source(none) important;
+
+/* Which files Tailwind reads. Only converted files are listed: the rest of the project still uses Bootstrap
+   classes whose names Tailwind shares (p-4, gap-3, border, collapse, container ...). Add a file here when its
+   area is converted. `important` is on because Bootstrap's own utilities are !important; remove it, and the
+   `@source not inline` line, when the Bootstrap CSS is dropped. */
+@source "../views/components/booking/action-modal.blade.php";
+@source "../views/components/admin/page-header.blade.php";
+@source "../views/components/admin/booking-modal.blade.php";
+@source "../views/components/admin/booking-row.blade.php";
+@source "../views/components/admin/edited-note.blade.php";
+@source "../views/components/admin/package-card.blade.php";
+@source "../views/components/admin/package-modal.blade.php";
+@source "../views/components/account/layout.blade.php";
+@source "../views/admin/bookings.blade.php";
+@source "../views/admin/booking-history.blade.php";
+@source "../views/admin/packages.blade.php";
+@source "../views/user/account/bookings.blade.php";
+@source "../js/shared/action-modal.js";
+@source "../js/admin/dropdown.js";
+@source "../js/admin/filter-sheet.js";
+@source not inline("collapse container table shadow rounded");
 
 /* Wide but short viewports (laptops): the booking modal tightens its vertical spacing. */
 @custom-variant short-wide (@media (min-width: 992px) and (max-height: 860px));
@@ -56,6 +77,9 @@
     --color-on-brand-muted: oklch(92.4% 0.012 293.012);
     --color-warning-soft: oklch(91.713% 0.11932 92.9);
     --color-warning-text: oklch(38.1% 0.07798 87.367);
+    --text-fluid-icon: clamp(1.2981rem, 1.2247rem + 0.3671vw, 1.5rem);
+    --text-fluid-title: clamp(1.4202rem, 1.3003rem + 0.5996vw, 1.75rem);
+    --color-shadow: oklch(0% 0 0 / 0.55);
     --text-fluid-3xl: clamp(1.5836rem, 1.3413rem + 1.2116vw, 2.25rem);
     --color-warning-border: oklch(66.6% 0.13598 87.367);
     --color-chip-pending: oklch(85.374% 0.17348 87.367);
@@ -73,4 +97,9 @@
             transform: none;
         }
     }
+}
+
+/* `hidden` always wins, like Bootstrap's reboot: utilities with a display value must not show a [hidden] element. */
+[hidden]:where(:not([hidden="until-found"])) {
+    display: none !important;
 }

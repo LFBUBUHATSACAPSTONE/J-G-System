@@ -247,94 +247,23 @@ button.admin-pill {
     color: $admin-danger-text;
 }
 
-// Field styles below stay for the Package modal (and other pages) until they are converted.
-.admin-field {
-    display: grid;
-    gap: $sp-1;
-    min-width: 0;
+// Light button (Package modal "Cancel").
+.admin-btn--light {
+    background: $admin-panel-bg;
+    color: $admin-text-primary;
 
-    &__label {
-        color: $admin-brand-text;
-        font-size: admin-fluid(0.95);
+    &:hover {
+        background: $admin-page-bg;
     }
+}
 
-    &__row {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: $sp-3;
-    }
+// Solid red pill (the active "Unavailable" button): white text on the AAA red fill.
+.admin-pill--solid.admin-pill--danger {
+    background: $admin-danger;
+    border-color: $admin-danger;
+    color: $admin-on-danger;
+}
 
-    &__control {
-        width: 100%;
-        min-height: 2.5rem;
-        padding: $sp-2 $sp-3;
-        border: 1px solid $admin-field-border;
-        border-radius: $admin-radius-md;
-        background: $admin-field-bg;
-        color: $admin-text-primary;
-        font: inherit;
-        font-size: admin-fluid(0.95);
-        appearance: none;
-
-        &::placeholder {
-            color: $admin-text-subtle;
-            opacity: 1;
-        }
-
-        &:focus-visible {
-            outline: $admin-focus-ring-width solid $admin-focus-ring;
-            outline-offset: $admin-focus-ring-offset;
-        }
-    }
-
-    // Selects are drawn by the custom dropdown (_dropdown.scss), so no native arrow is needed.
-
-    // Small pill next to a label ("Others") or under a field ("Edited"). Text, not colour alone.
-    &__tag {
-        display: inline-block;
-        padding: $sp-1 $sp-2;
-        border-radius: $admin-radius-md;
-        font-size: 0.75rem;
-        font-weight: 600;
-        line-height: 1.2;
-
-        &--edited {
-            background: $admin-warning-soft;
-            color: $admin-warning-text;
-        }
-
-        &--others {
-            margin-inline-start: $sp-2;
-            border: 1px solid $admin-field-border;
-            color: $admin-brand-text;
-        }
-    }
-
-    // "Edited . Originally: ..." under a changed field.
-    &__edited {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: $sp-2;
-        margin: 0;
-        color: $admin-text-muted;
-        font-size: 0.875rem;
-        overflow-wrap: anywhere;
-    }
-
-    // Explanation under a locked field.
-    &__note {
-        display: flex;
-        align-items: center;
-        gap: $sp-2;
-        margin: 0;
-        color: $admin-text-muted;
-        font-size: 0.875rem;
-    }
-
-    // Text field + the small "back to the list" button (Event type = Others).
-    &__row--action {
-        grid-template-columns: minmax(0, 1fr) auto;
-        align-items: center;
-    }
+button.admin-pill--solid.admin-pill--danger:hover {
+    background: $admin-danger;
 }
