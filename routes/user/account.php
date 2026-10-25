@@ -47,9 +47,11 @@ Route::patch('/user/account/profile', [AccountProfileController::class, 'update'
 Route::get('/user/account/bookings', [AccountBookingController::class, 'index'])
     ->name('user.account.bookings');
 
-// Cancel one of the user's own bookings. 200 {ok, message, booking{id, status: 'user_cancelled',
-// can_reschedule}}; 403 / 409 {message} when it is not theirs, not cancellable or already started.
-Route::post('/user/account/bookings/{booking}/cancel', [AccountBookingController::class, 'cancel'])
+// Ask J&G to cancel one of the user's own bookings. This is a REQUEST, not an instant cancel:
+// the booking moves to pending_cancellation and waits for an admin decision.
+// 200 {ok, message, booking{id, status, cancellation}}; 403 / 409 {message} when it is not theirs,
+// not cancellable, already pending or already started; 422 when the required reason is invalid.
+Route::post('/user/account/bookings/{booking}/cancel', [AccountBookingController::class, 'requestCancellation'])
     ->whereNumber('booking')
     ->name('user.account.bookings.cancel');
 

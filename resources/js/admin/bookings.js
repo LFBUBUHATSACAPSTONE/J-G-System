@@ -1,5 +1,6 @@
 import { initFilterSheet } from "./filter-sheet.js";
 import { openActionModal, reasonError } from "../shared/action-modal.js";
+import { initCancellation } from "./cancellation.js";
 import {
     getRequiredError,
     getEmailError,
@@ -682,6 +683,7 @@ function init() {
     // View Details button on load, and the modal fills in its show.bs.modal handler.
     const modal = document.getElementById("bookingModal");
     if (modal) initModal(modal);
+    if (modal) initCancellation(modal);
 
     const body = document.querySelector("[data-bookings-body]");
     if (body) initList(body);

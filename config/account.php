@@ -93,17 +93,20 @@ return [
   //            `past` and `cancelled` are fixed.
   'bookings' => [
     'statuses' => [
-      'pending'         => ['label' => 'Awaiting approval',  'icon' => 'hourglass-medium', 'tone' => 'warning', 'group' => 'active'],
-      'pending_payment' => ['label' => 'Payment under review', 'icon' => 'receipt',        'tone' => 'warning', 'group' => 'active'],
-      'approved'        => ['label' => 'Confirmed',          'icon' => 'check-circle',     'tone' => 'success', 'group' => 'active'],
-      'completed'       => ['label' => 'Completed',          'icon' => 'checks',           'tone' => 'success', 'group' => 'past'],
-      'user_cancelled'  => ['label' => 'Cancelled by you',   'icon' => 'x-circle',         'tone' => 'danger',  'group' => 'cancelled'],
-      'cancelled'       => ['label' => 'Cancelled',          'icon' => 'x-circle',         'tone' => 'danger',  'group' => 'cancelled'],
-      'declined'        => ['label' => 'Declined',           'icon' => 'prohibit',         'tone' => 'danger',  'group' => 'cancelled'],
+      'pending'                => ['label' => 'Awaiting approval',          'icon' => 'hourglass-medium', 'tone' => 'warning', 'group' => 'active'],
+      'pending_payment'        => ['label' => 'Payment under review',       'icon' => 'receipt',          'tone' => 'warning', 'group' => 'active'],
+      'approved'               => ['label' => 'Confirmed',                  'icon' => 'check-circle',     'tone' => 'success', 'group' => 'active'],
+      'completed'              => ['label' => 'Completed',                  'icon' => 'checks',           'tone' => 'success', 'group' => 'past'],
+      'pending_cancellation'   => ['label' => 'Cancellation pending',       'icon' => 'clock',            'tone' => 'warning', 'group' => 'active'],
+      'user_cancelled'         => ['label' => 'Cancelled by you',           'icon' => 'x-circle',         'tone' => 'danger',  'group' => 'cancelled'],
+      'admin_cancelled'        => ['label' => 'Cancelled by admin',         'icon' => 'x-circle',         'tone' => 'danger',  'group' => 'cancelled'],
+      'cancelled'              => ['label' => 'Cancelled',                  'icon' => 'x-circle',         'tone' => 'danger',  'group' => 'cancelled'],
+      'declined'               => ['label' => 'Declined',                   'icon' => 'prohibit',         'tone' => 'danger',  'group' => 'cancelled'],
     ],
 
-    // Statuses the client can still cancel (only before the event starts). The front end only
-    // decides whether to show the button; the backend must enforce the same rule.
+    // Statuses the client can request cancellation for (only before the event starts).
+    // The front end only decides whether to show the button; the backend must enforce the same rule.
+    // Note: 'pending_cancellation' is not in this list as a booking already has a pending request
     'cancellable' => ['pending', 'pending_payment', 'approved'],
 
     // Tabs above the list. Keys match the `group` values above ('all' shows everything).

@@ -1,13 +1,15 @@
-{{-- Account > My Bookings. FRONT END ONLY: it renders whatever `$bookings` it is given (sample data
-     from routes/user/account.php today, the logged-in user's bookings from the real controller later).
-     Booking shape (same keys as Booking::toAdminArray(), minus `client`):
-       id, reference, status, package{name, price}, event{name, type, type_other, location,
-       contact_person, guests, venue_type, start_date, end_date, start_time, end_time},
+{{-- Account > My Bookings. Renders the logged-in user's bookings from
+     Account\AccountBookingController (Booking::toAccountArray()).
+     Booking shape:
+       id, reference, status, status_reason, package{name, price}, event{name, type, type_other,
+       location, contact_person, guests, venue_type, start_date, end_date, start_time, end_time},
        payment{method (full|down), state (paid|partial|pending), amount},
-       can_reschedule (bool), reschedule_note (string|null)
+       cancellation{status, user_reason, user_cancelled_at, admin_reason, admin_action,
+       admin_cancelled_at} (absent when there is no request), can_reschedule (bool),
+       reschedule_note (string|null)
      Status labels, tabs and the cancellable list live in config/account.php -> bookings.
      bookings.js filters the tabs, fills the details modal from each card's data-booking JSON and
-     posts the cancel request. No new variable is needed beyond `$bookings`. --}}
+     posts the cancellation request. No new variable is needed beyond `$bookings`. --}}
 @php
 $cfg = config('account.bookings', []);
 $statuses = $cfg['statuses'] ?? [];
@@ -66,10 +68,12 @@ $payload = [
 'amount' => $paid !== null && $method ? $peso($paid) : '',
 'balance' => $balance !== null ? $peso($balance) : '',
 // Why it was cancelled or declined, from `status_reason` on the booking array (null = nothing to show).
-// Who gave it: the client for user_cancelled, otherwise J&G.
-'reason' => in_array($status, ['user_cancelled', 'cancelled', 'declined'], true) ? ($b['status_reason'] ?? null) : null,
+// Who gave it: the client for user_cancelled, otherwise J&G. Cancellation requests use the richer
+// `cancellation` object below instead (pending / approved / declined / direct admin cancel).
+'reason' => in_array($status, ['user_cancelled', 'cancelled', 'admin_cancelled', 'declined'], true) ? ($b['status_reason'] ?? null) : null,
 'reason_label' => config("cancellation.labels.{$status}"),
 'reason_by' => $status === 'user_cancelled' ? 'You' : 'J&G',
+'cancellation' => $b['cancellation'] ?? null,
 'can_cancel' => $canCancel,
 'can_reschedule' => (bool) ($b['can_reschedule'] ?? false),
 'reschedule_note' => $b['reschedule_note'] ?? null,
@@ -160,6 +164,10 @@ $emptyCopy = [
             @endif
           </dl>
 
+          @if (($payload['cancellation']['status'] ?? null) === 'declined')
+          <p class="account-booking__note">Your cancellation request was declined. Open View details to see J&amp;G's reason.</p>
+          @endif
+
           <footer class="account-booking__actions" data-booking-actions>
             <button
               type="button"
@@ -175,8 +183,10 @@ $emptyCopy = [
               type="button"
               class="account-btn account-btn--danger-outline"
               data-booking-cancel>
-              Cancel booking
+              Request cancellation
             </button>
+            @elseif ($payload['status'] === 'pending_cancellation')
+            <p class="account-booking__note">Cancellation request sent. Waiting for J&amp;G to review it.</p>
             @elseif ($payload['status'] === 'user_cancelled')
             @if ($payload['can_reschedule'])
             <a class="account-btn account-btn--primary" href="{{ route('user.booking', ['reschedule' => $payload['id']]) }}" data-booking-reschedule>Reschedule</a>
@@ -222,6 +232,25 @@ $emptyCopy = [
             <h3 class="reason-note__label" id="bk-reason-label" data-bk-reason-label></h3>
             <p class="reason-note__by" data-bk-reason-by></p>
             <p class="reason-note__text" data-bk-reason-text></p>
+          </section>
+
+          {{-- The client's cancellation request and J&G's answer. Filled by bookings.js from
+               data.cancellation: pending / approved / declined / directly cancelled by J&G. --}}
+          <section class="reason-note" aria-labelledby="bk-cancellation-title" data-bk-cancellation hidden>
+            <h3 class="reason-note__label" id="bk-cancellation-title" data-bk-cancellation-title></h3>
+            <p class="reason-note__by" data-bk-cancellation-meta></p>
+
+            <div data-bk-cancellation-user hidden>
+              <p class="reason-note__by" data-bk-cancellation-user-label>Your reason</p>
+              <p class="reason-note__text" data-bk-cancellation-user-reason></p>
+              <p class="reason-note__by" data-bk-cancellation-user-date></p>
+            </div>
+
+            <div data-bk-cancellation-admin hidden>
+              <p class="reason-note__by" data-bk-cancellation-admin-label>J&amp;G's reason</p>
+              <p class="reason-note__text" data-bk-cancellation-admin-reason></p>
+              <p class="reason-note__by" data-bk-cancellation-admin-date></p>
+            </div>
           </section>
 
           <section class="account-modal__section" aria-labelledby="bk-event-title">
@@ -292,7 +321,7 @@ $emptyCopy = [
     </div>
   </div>
 
-  {{-- Cancel booking: the shared action modal with the required reason. bookings.js fills the title and
+  {{-- Request cancellation: the shared action modal with the required reason. bookings.js fills the title and
        message and posts {reason} to user.account.bookings.cancel. --}}
   <x-booking.action-modal id="cancelBookingModal" :reason="true" />
 </x-account.layout>
