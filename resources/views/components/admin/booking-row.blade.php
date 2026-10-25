@@ -149,17 +149,21 @@ $booking['client']['name'], $ref, $package['name'], $typeLabel ?? '', $status['l
 @endphp
 
 @php
-// Tailwind classes for the row. The status's own highlight_class (is-pending / is-ongoing) stays on the <tr> as a hook:
-  // the Ongoing look still comes from _history.scss, so only the Pending look is drawn here.
-  $pending = ($status['highlight'] ?? false) && ($status['highlight_class'] ?? 'is-pending') === 'is-pending';
-  $rowClass = 'admin-bookings__row relative mb-6 grid grid-cols-2 gap-x-4 gap-y-3 rounded-card border-2 bg-surface p-6 text-fluid-md text-ink [&[hidden]]:hidden! min-[1200px]:m-0 min-[1200px]:table-row min-[1200px]:border-0 min-[1200px]:bg-transparent min-[1200px]:p-0 '
-  . ($pending
-  ? 'mt-6 border-warning-border min-[1200px]:mt-0 min-[1200px]:[&>td]:border-y-2 min-[1200px]:[&>td]:border-warning-border min-[1200px]:[&>td:first-child]:border-l-2 min-[1200px]:[&>td:last-child]:border-r-2'
-  : 'border-transparent');
-  $cell = 'admin-bookings__cell min-w-0 before:block before:text-xs before:text-ink-muted before:content-[attr(data-label)] min-[1200px]:bg-surface min-[1200px]:p-4 min-[1200px]:align-middle min-[1200px]:before:hidden min-[1200px]:first:relative min-[1200px]:first:rounded-l-card min-[1200px]:first:pl-6 min-[1200px]:last:rounded-r-card min-[1200px]:last:pr-6';
-  $chip = 'admin-bookings__chip absolute -top-[1.15rem] left-5 rounded-full px-3 text-[0.85rem] font-medium '
-  . (isset($status['chip_class']) ? $status['chip_class'] : 'bg-chip-pending text-ink');
-  @endphp
+// Tailwind classes for the row. The status's highlight_class (is-pending / is-ongoing) and chip_class stay on the
+// markup as hooks; the look itself is drawn here.
+$highlight = ($status['highlight'] ?? false) ? ($status['highlight_class'] ?? 'is-pending') : null;
+$cellOutline = 'min-[1200px]:mt-0 min-[1200px]:[&>td]:border-y-2 min-[1200px]:[&>td:first-child]:border-l-2 min-[1200px]:[&>td:last-child]:border-r-2';
+$rowClass = 'admin-bookings__row relative mb-6 grid grid-cols-2 gap-x-4 gap-y-3 rounded-card border-2 bg-surface p-6 text-fluid-md text-ink [&[hidden]]:hidden! min-[1200px]:m-0 min-[1200px]:table-row min-[1200px]:border-0 min-[1200px]:bg-transparent min-[1200px]:p-0 '
+. match ($highlight) {
+'is-pending' => "mt-6 border-warning-border {$cellOutline} min-[1200px]:[&>td]:border-warning-border",
+'is-ongoing' => "mt-6 border-brand {$cellOutline} min-[1200px]:[&>td]:border-brand",
+default => 'border-transparent',
+};
+$cell = 'admin-bookings__cell min-w-0 before:block before:text-xs before:text-ink-muted before:content-[attr(data-label)] min-[1200px]:bg-surface min-[1200px]:p-4 min-[1200px]:align-middle min-[1200px]:before:hidden min-[1200px]:first:relative min-[1200px]:first:rounded-l-card min-[1200px]:first:pl-6 min-[1200px]:last:rounded-r-card min-[1200px]:last:pr-6';
+$chip = 'admin-bookings__chip absolute -top-[1.15rem] left-5 rounded-full px-3 text-[0.85rem] font-medium '
+. ($highlight === 'is-ongoing' ? 'bg-brand text-white' : 'bg-chip-pending text-ink')
+. (isset($status['chip_class']) ? ' ' . $status['chip_class'] : '');
+@endphp
 
 <tr
   role="row"
