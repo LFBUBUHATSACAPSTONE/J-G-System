@@ -70,6 +70,48 @@ class AdminAccountTest extends TestCase
         ]);
     }
 
+    public function test_patch_saves_a_full_middle_name_and_keeps_the_initial_in_sync(): void
+    {
+        $user = $this->admin();
+
+        $this->actingAs($user)
+            ->patchJson(route('admin.account.update'), [
+                'middle_name' => '  Dela Cruz  ',
+            ])
+            ->assertOk()
+            ->assertJsonPath('admin.middle_name', 'Dela Cruz')
+            ->assertJsonPath('admin.middle_initial', 'D');
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'middle_name' => 'Dela Cruz',
+            'middle_initial' => 'D',
+        ]);
+    }
+
+    public function test_saving_the_name_row_accepts_a_blank_middle_name(): void
+    {
+        $user = $this->admin(['middle_name' => 'Santos', 'middle_initial' => 'S']);
+
+        $this->actingAs($user)
+            ->patchJson(route('admin.account.update'), [
+                'first_name' => 'Juan',
+                'middle_name' => '',
+                'last_name' => 'Dela Cruz',
+            ])
+            ->assertOk()
+            ->assertJsonPath('admin.middle_name', null)
+            ->assertJsonPath('admin.middle_initial', null);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'first_name' => 'Juan',
+            'last_name' => 'Dela Cruz',
+            'middle_name' => null,
+            'middle_initial' => null,
+        ]);
+    }
+
     public function test_changing_the_email_requires_the_current_password(): void
     {
         $user = $this->admin();

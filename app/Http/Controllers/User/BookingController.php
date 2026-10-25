@@ -54,6 +54,7 @@ class BookingController extends Controller
                     'reference' => '#'.$booking->reference,
                     'month' => $month,
                 ],
+                'clientInformation' => $this->clientInformation($request, []),
             ]);
         }
 
@@ -73,7 +74,34 @@ class BookingController extends Controller
             'packageId' => $packageId,
             'packageName' => $package->name,
             'packageCost' => $package->price,
+            'clientInformation' => $this->clientInformation($request, $draft),
         ]);
+    }
+
+    /**
+     * The Personal Information step starts with whatever is already saved in the booking draft
+     * and falls back to the signed-in account's own details. Guests (and an account without a
+     * value) get an empty field, exactly as before.
+     *
+     * Using array_key_exists (not ??) keeps a value the client deliberately cleared while
+     * walking the flow instead of filling it from the account again.
+     */
+    private function clientInformation(Request $request, array $draft): array
+    {
+        $user = $request->user();
+
+        $fromDraft = fn (string $key, ?string $fallback): string => array_key_exists($key, $draft)
+            ? (string) ($draft[$key] ?? '')
+            : (string) ($fallback ?? '');
+
+        return [
+            'first_name' => $fromDraft('client_first_name', $user?->first_name),
+            'middle_name' => $fromDraft('client_middle_name', $user?->middle_name),
+            'last_name' => $fromDraft('client_last_name', $user?->last_name),
+            'email' => $fromDraft('client_email', $user?->email),
+            'contact_number' => $fromDraft('client_phone', $user?->phone),
+            'address' => $fromDraft('client_address', $user?->address),
+        ];
     }
 
     public function saveClientInformation(Request $request): JsonResponse
@@ -88,10 +116,15 @@ class BookingController extends Controller
 
         $validator = Validator::make($request->all(), [
             'first_name' => ['required', 'string', 'max:100', 'regex:/^[A-Za-z\s]+$/'],
+            'middle_name' => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z\s]+$/'],
+            'middle_initial' => ['nullable', 'string', 'max:1', 'regex:/^[A-Za-z]$/'],
             'last_name' => ['required', 'string', 'max:100', 'regex:/^[A-Za-z\s]+$/'],
             'email' => ['required', 'email', 'max:255'],
             'contact_number' => ['required', 'regex:/^09\d{9}$/'],
             'address' => ['required', 'string', 'max:1000'],
+        ], [
+            'middle_name.regex' => 'Middle name can only contain letters and spaces.',
+            'middle_initial.regex' => 'Middle initial must be a single letter.',
         ]);
 
         if ($validator->fails()) {
@@ -99,8 +132,20 @@ class BookingController extends Controller
         }
 
         $data = $validator->validated();
+        $middleName = trim((string) ($data['middle_name'] ?? ''));
+        if ($middleName === '') {
+            $middleName = strtoupper(trim((string) ($data['middle_initial'] ?? '')));
+        }
+
         $draft = array_merge($draft, [
-            'client_name' => trim($data['first_name'].' '.$data['last_name']),
+            'client_first_name' => $data['first_name'],
+            'client_middle_name' => $middleName !== '' ? $middleName : null,
+            'client_last_name' => $data['last_name'],
+            'client_name' => trim(implode(' ', array_filter([
+                $data['first_name'],
+                $middleName !== '' ? $middleName : null,
+                $data['last_name'],
+            ]))),
             'client_email' => $data['email'],
             'client_phone' => $data['contact_number'],
             'client_address' => $data['address'],

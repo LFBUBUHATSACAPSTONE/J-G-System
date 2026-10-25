@@ -32,6 +32,8 @@ class UserAccountTest extends TestCase
         Schema::connection('sqlite')->create('users', function (Blueprint $table) {
             $table->id();
             $table->string('first_name');
+            $table->string('middle_initial', 1)->nullable();
+            $table->string('middle_name', 100)->nullable();
             $table->string('last_name');
             $table->string('email')->unique();
             $table->string('google_id')->nullable()->unique();
@@ -238,6 +240,73 @@ class UserAccountTest extends TestCase
         $this->assertNull($user->address);
     }
 
+    public function test_profile_update_saves_the_middle_name_and_syncs_the_initial(): void
+    {
+        $user = $this->makeUser();
+
+        $this->actingAs($user)->patchJson(route('user.account.profile.update'), [
+            'first_name' => 'Ana',
+            'middle_name' => '  Santos  ',
+            'last_name' => 'Cruz',
+        ])->assertOk()
+            ->assertJsonPath('profile.first_name', 'Ana')
+            ->assertJsonPath('profile.middle_name', 'Santos')
+            ->assertJsonPath('profile.middle_initial', 'S');
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'middle_name' => 'Santos',
+            'middle_initial' => 'S',
+        ]);
+    }
+
+    public function test_profile_update_accepts_a_legacy_middle_initial_payload(): void
+    {
+        $user = $this->makeUser();
+
+        $this->actingAs($user)->patchJson(route('user.account.profile.update'), [
+            'first_name' => 'Ana',
+            'middle_initial' => 'd',
+            'last_name' => 'Cruz',
+        ])->assertOk()
+            ->assertJsonPath('profile.middle_name', 'D')
+            ->assertJsonPath('profile.middle_initial', 'D');
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'middle_name' => 'D',
+            'middle_initial' => 'D',
+        ]);
+    }
+
+    public function test_profile_update_can_clear_the_middle_name(): void
+    {
+        $user = $this->makeUser(['middle_name' => 'Santos', 'middle_initial' => 'S']);
+
+        $this->actingAs($user)->patchJson(route('user.account.profile.update'), [
+            'first_name' => 'Ana',
+            'middle_name' => '',
+            'last_name' => 'Cruz',
+        ])->assertOk();
+
+        $user->refresh();
+        $this->assertNull($user->middle_name);
+        $this->assertNull($user->middle_initial);
+    }
+
+    public function test_profile_update_rejects_a_middle_name_with_digits(): void
+    {
+        $user = $this->makeUser();
+
+        $this->actingAs($user)->patchJson(route('user.account.profile.update'), [
+            'first_name' => 'Ana',
+            'middle_name' => 'Santos2',
+            'last_name' => 'Cruz',
+        ])->assertUnprocessable()->assertJsonValidationErrors('middle_name');
+
+        $this->assertNull($user->fresh()->middle_name);
+    }
+
     public function test_profile_update_rejects_bad_input_with_422_errors(): void
     {
         $user = $this->makeUser();
@@ -277,6 +346,58 @@ class UserAccountTest extends TestCase
     }
 
     // -------------------------------------------------------------- bookings
+
+    public function test_booking_personal_information_prefills_from_the_signed_in_account(): void
+    {
+        $user = $this->makeUser([
+            'middle_name' => 'Santos',
+            'middle_initial' => 'S',
+            'phone' => '09171234567',
+            'address' => 'San Ildefonso, Bulacan',
+        ]);
+
+        $this->actingAs($user)->get(route('user.booking', ['package' => 'budget-party']))
+            ->assertOk()
+            ->assertSee('value="Test"', false)
+            ->assertSee('value="Santos"', false)
+            ->assertSee('value="User"', false)
+            ->assertSee('value="'.$user->email.'"', false)
+            ->assertSee('value="09171234567"', false)
+            ->assertSee('value="San Ildefonso, Bulacan"', false);
+    }
+
+    public function test_booking_personal_information_keeps_saved_draft_values_over_the_account(): void
+    {
+        $user = $this->makeUser(['middle_name' => 'Santos', 'phone' => '09171234567']);
+
+        $this->actingAs($user)->get(route('user.booking', ['package' => 'budget-party']))->assertOk();
+
+        $this->actingAs($user)->postJson(route('booking.client-information'), [
+            'first_name' => 'Draft',
+            'middle_name' => 'Middle',
+            'last_name' => 'Person',
+            'email' => 'draft@example.com',
+            'contact_number' => '09181234567',
+            'address' => 'Draft Address',
+        ])->assertOk();
+
+        $this->actingAs($user)->get(route('user.booking', ['package' => 'budget-party']))
+            ->assertOk()
+            ->assertSee('value="Draft"', false)
+            ->assertSee('value="Middle"', false)
+            ->assertSee('value="Person"', false)
+            ->assertSee('value="draft@example.com"', false)
+            ->assertSee('value="09181234567"', false)
+            ->assertSee('value="Draft Address"', false);
+    }
+
+    public function test_booking_personal_information_stays_empty_for_guests(): void
+    {
+        $this->get(route('user.booking', ['package' => 'budget-party']))
+            ->assertOk()
+            ->assertSee('id="pi-first-name" name="first_name" autocomplete="given-name" placeholder="Juan" value="" required', false)
+            ->assertSee('id="pi-middle-name" name="middle_name" autocomplete="additional-name" placeholder="Santos" value=""', false);
+    }
 
     public function test_my_bookings_lists_only_the_logged_in_users_bookings(): void
     {

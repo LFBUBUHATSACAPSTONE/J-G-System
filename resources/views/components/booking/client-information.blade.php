@@ -15,14 +15,14 @@
             <span>First Name</span>
             <span class="field-required__identifier">*</span>
           </label>
-          <input type="text" id="pi-first-name" name="first_name" autocomplete="given-name" placeholder="Juan" required>
+          <input type="text" id="pi-first-name" name="first_name" autocomplete="given-name" placeholder="Juan" value="{{ $clientInformation['first_name'] ?? '' }}" required>
           <small class="client-info__field-error d-none" data-field-error="first_name"></small>
         </div>
         <div class="client-info__field">
           <label for="pi-middle-name">
             <span>Middle Name (optional)</span>
           </label>
-          <input type="text" id="pi-middle-name" name="middle_name" autocomplete="additional-name" placeholder="Santos">
+          <input type="text" id="pi-middle-name" name="middle_name" autocomplete="additional-name" placeholder="Santos" value="{{ $clientInformation['middle_name'] ?? '' }}">
           <small class="client-info__field-error d-none" data-field-error="middle_name"></small>
         </div>
         <div class="client-info__field">
@@ -30,7 +30,7 @@
             <span>Last Name</span>
             <span class="field-required__identifier">*</span>
           </label>
-          <input type="text" id="pi-last-name" name="last_name" autocomplete="family-name" placeholder="Dela Cruz" required>
+          <input type="text" id="pi-last-name" name="last_name" autocomplete="family-name" placeholder="Dela Cruz" value="{{ $clientInformation['last_name'] ?? '' }}" required>
           <small class="client-info__field-error d-none" data-field-error="last_name"></small>
         </div>
       </div>
@@ -40,7 +40,7 @@
           <span>Email</span>
           <span class="field-required__identifier">*</span>
         </label>
-        <input type="text" id="pi-email" name="email" autocomplete="email" placeholder="juanDelaCruz@gmail.com" required>
+        <input type="text" id="pi-email" name="email" autocomplete="email" placeholder="juanDelaCruz@gmail.com" value="{{ $clientInformation['email'] ?? '' }}" required>
         <small class="client-info__field-error d-none" data-field-error="email"></small>
       </div>
 
@@ -49,7 +49,7 @@
           <span>Contact Number</span>
           <span class="field-required__identifier">*</span>
         </label>
-        <input type="text" id="pi-contact-number" name="contact_number" autocomplete="tel" placeholder="09XXX-XXX-XXXX" required>
+        <input type="text" id="pi-contact-number" name="contact_number" autocomplete="tel" placeholder="09XXX-XXX-XXXX" value="{{ $clientInformation['contact_number'] ?? '' }}" required>
         <small class="client-info__field-error d-none" data-field-error="contact_number"></small>
       </div>
 
@@ -58,7 +58,7 @@
           <span>Address</span>
           <span class="field-required__identifier">*</span>
         </label>
-        <input type="text" id="pi-address" name="address" autocomplete="street-address" placeholder="Barangay, City, Province" required>
+        <input type="text" id="pi-address" name="address" autocomplete="street-address" placeholder="Barangay, City, Province" value="{{ $clientInformation['address'] ?? '' }}" required>
         <small class="client-info__field-error d-none" data-field-error="address"></small>
       </div>
 

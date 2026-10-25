@@ -61,6 +61,38 @@ class RegisterWebTest extends TestCase
         $this->assertTrue(Hash::check('StrongPass1!', $user->password));
     }
 
+    public function test_signup_saves_the_middle_name_after_code_verification(): void
+    {
+        Mail::fake();
+
+        $response = $this->postJson('/register', [
+            'first_name' => 'Ana',
+            'middle_name' => 'Santos',
+            'last_name' => 'Cruz',
+            'identifier' => 'ana@example.com',
+            'password' => 'StrongPass1!',
+            'terms' => true,
+        ]);
+
+        $response->assertStatus(201);
+
+        $code = Mail::sent(VerificationCodeMail::class)->first()->code;
+
+        $this->postJson('/verification/confirm', [
+            'code' => $code,
+            'context' => 'signup',
+            'verification_token' => $response->json('verification_token'),
+        ])->assertOk()->assertJsonPath('ok', true);
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'ana@example.com',
+            'middle_name' => 'Santos',
+            'middle_initial' => 'S',
+        ]);
+
+        $this->assertSame('Santos', User::where('email', 'ana@example.com')->firstOrFail()->middle_name);
+    }
+
     public function test_invalid_signup_code_does_not_create_user(): void
     {
         Mail::fake();
