@@ -28,6 +28,7 @@
 @source "../views/components/chat/booking-card.blade.php";
 @source "../views/components/chat/icon.blade.php";
 @source "../views/components/chat/widget.blade.php";
+@source "../views/components/chat/composer.blade.php";
 @source "../js/chat/chat.js";
 @source "../js/chat/confirm-dialog.js";
 @source "../js/shared/action-modal.js";

@@ -55,6 +55,10 @@ const CX = {
     stripLabel: "chat-strip__label flex-none font-semibold text-brand-text",
     stripMain: "chat-strip__main flex min-w-0 flex-auto gap-1.5",
     stripPkg: "chat-strip__pkg flex-initial truncate font-semibold",
+    fileChip:
+        "inline-flex items-center gap-1.5 rounded-full bg-panel py-0.5 pr-1 pl-2.5 text-[0.8125rem]",
+    fileRemove:
+        "inline-grid size-6 place-items-center rounded-full border-0 bg-transparent p-0 text-ink cursor-pointer focus-visible:outline-2 focus-visible:outline-brand-text",
     stripWhen:
         "chat-strip__when min-w-0 shrink-[100] grow-0 basis-auto truncate text-ink-muted",
 };
@@ -990,8 +994,12 @@ export function initChat(root) {
     function renderFiles() {
         list.replaceChildren(
             ...files.map((f, i) => {
-                const li = el("li", null, `${f.name} (${fmtSize(f.size)})`);
-                const rm = el("button");
+                const li = el(
+                    "li",
+                    CX.fileChip,
+                    `${f.name} (${fmtSize(f.size)})`,
+                );
+                const rm = el("button", CX.fileRemove);
                 rm.type = "button";
                 rm.setAttribute("aria-label", `Remove ${f.name}`);
                 rm.append(icon("x"));
