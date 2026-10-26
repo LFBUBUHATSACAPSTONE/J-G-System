@@ -1,0 +1,24 @@
+// Card surface, card title and empty-state text. Left over from the Dashboard conversion (Tailwind phase 1B):
+// the Dashboard itself no longer uses them, but they are still used by
+//   .admin-card, .admin-card__title -> admin/account.blade.php   (delete with phase 4)
+//   .admin-empty                    -> admin/messages.blade.php  (delete with phase 3), and as a hook next to utilities on Bookings, History and Packages
+// Tokens only: everything comes from _admin-variables.scss.
+
+.admin-card {
+    background: $admin-surface;
+    border-radius: $admin-radius-xl;
+    padding: $sp-6;
+
+    &__title {
+        margin: 0 0 $sp-4;
+        color: $admin-brand-text;
+        font-size: admin-fluid(1.125);
+        font-weight: 600;
+    }
+}
+
+.admin-empty {
+    margin: 0;
+    color: $admin-text-muted;
+    font-size: admin-fluid(0.9);
+}

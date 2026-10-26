@@ -7,6 +7,9 @@
    `@source not inline` line, when the Bootstrap CSS is dropped. */
 @source "../views/components/booking/action-modal.blade.php";
 @source "../views/components/admin/page-header.blade.php";
+@source "../views/admin/dashboard.blade.php";
+@source "../views/components/admin/stat-card.blade.php";
+@source "../views/components/admin/package-rate.blade.php";
 @source "../views/components/admin/booking-modal.blade.php";
 @source "../views/components/admin/booking-row.blade.php";
 @source "../views/components/admin/edited-note.blade.php";
@@ -90,6 +93,18 @@
     --color-warning-border: oklch(66.6% 0.13598 87.367);
     --color-chip-pending: oklch(85.374% 0.17348 87.367);
     --text-fluid-md: clamp(0.9347rem, 0.9291rem + 0.0279vw, 0.95rem);
+
+    /* Dashboard: fluid sizes beyond sm..2xl (same curve as admin-fluid()), and the six donut slice colours in slice order */
+    --text-fluid-label: clamp(1.0196rem, 1.004rem + 0.078vw, 1.0625rem);
+    --text-fluid-heading: clamp(1.0644rem, 1.0424rem + 0.1101vw, 1.125rem);
+    --text-fluid-display: clamp(1.5154rem, 1.3392rem + 0.8811vw, 2rem);
+    --text-fluid-stat: clamp(1.7875rem, 1.4375rem + 1.75vw, 2.75rem);
+    --color-slice-1: oklch(56.451% 0.24918 283.426);
+    --color-slice-2: oklch(66.9% 0.13745 83.001);
+    --color-slice-3: oklch(65% 0.11865 178.945);
+    --color-slice-4: oklch(70% 0.27486 324.299);
+    --color-slice-5: oklch(65.2% 0.17128 128.475);
+    --color-slice-6: oklch(68.8% 0.20106 25.116);
 
     /* Dropdown menu entrance */
     --animate-dropdown-in: dropdown-in 0.14s ease-out;

@@ -35,6 +35,109 @@ if (dashboard) {
     const ALERT_DANGER =
         "mb-6 rounded-panel border border-danger-border bg-danger-soft px-6 py-3 font-medium text-danger-text";
 
+    const EMPTY = "m-0 text-fluid-sm text-ink-muted";
+    const LIST = "m-0 flex list-none flex-col gap-3 p-0";
+    const MORE_BELOW =
+        "inline-flex items-center gap-1 text-fluid-sm font-semibold text-brand-text no-underline focus-visible:rounded-field focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text mt-4";
+
+    // KPI cards. Plain and featured differ only in colour.
+    const STAT_CARD =
+        "group/stat relative flex min-h-38 flex-col justify-between gap-3 rounded-card p-6 transition-shadow duration-150 ease-[ease] max-[575.98px]:min-h-0 max-[575.98px]:gap-2 max-[575.98px]:p-4 max-[399.98px]:grid max-[399.98px]:grid-cols-[minmax(0,1fr)_auto] max-[399.98px]:items-center max-[399.98px]:gap-x-3 hover:shadow-[0_0.25rem_1rem_oklch(0%_0_0/0.12)]";
+    const STAT_LABEL =
+        "m-0 text-fluid-label font-semibold max-[575.98px]:text-fluid-sm max-[399.98px]:col-start-1 max-[399.98px]:row-start-1";
+    const STAT_LINK =
+        "flex items-center justify-between gap-2 text-inherit no-underline after:absolute after:inset-0 after:rounded-[inherit] after:content-[''] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-2 forced-colors:focus-visible:after:outline-[color:Highlight]";
+    const STAT_GO =
+        "flex-none text-fluid-heading transition-transform duration-150 ease-[ease] group-hover/stat:translate-x-[2px] group-hover/stat:-translate-y-[2px]";
+    const STAT_BODY =
+        "flex flex-wrap items-center gap-x-3 gap-y-2 max-[575.98px]:flex-nowrap max-[575.98px]:gap-2 max-[399.98px]:col-start-2 max-[399.98px]:row-span-2 max-[399.98px]:row-start-1";
+    const STAT_VALUE =
+        "m-0 text-fluid-stat font-bold leading-none max-[575.98px]:text-fluid-3xl";
+    const STAT_DELTA =
+        "inline-flex items-center gap-1 rounded-full px-3 py-1 text-[0.8rem] font-semibold max-[575.98px]:whitespace-nowrap";
+    const STAT_CAPTION =
+        "m-0 text-fluid-sm max-[575.98px]:text-[0.8rem] max-[575.98px]:whitespace-nowrap max-[399.98px]:col-start-1 max-[399.98px]:row-start-2";
+    const STAT_PLAIN = {
+        card: "bg-surface",
+        label: "text-brand-text",
+        value: "text-brand-text",
+        caption: "text-ink-muted",
+        ring: "focus-visible:after:outline-brand-text",
+    };
+    const STAT_FEATURED = {
+        card: "bg-brand text-on-brand",
+        label: "text-on-brand",
+        value: "text-on-brand",
+        caption: "text-on-brand-muted",
+        ring: "focus-visible:after:outline-on-brand",
+    };
+    const DELTA_TONES = {
+        good: "bg-success text-ink",
+        bad: "bg-danger-soft text-danger-text",
+        neutral: "bg-brand-soft text-brand-text",
+    };
+
+    // Needs your attention
+    const ATTN_ITEM =
+        "grid justify-items-start gap-x-4 gap-y-2 rounded-panel border-l-[0.3125rem] bg-brand-soft p-4 min-[576px]:grid-cols-[auto_minmax(0,1fr)_auto] min-[576px]:items-center min-[576px]:px-6";
+    const ATTN_TONES = {
+        warning: "border-l-warning-border",
+        success: "border-l-success-border",
+        danger: "border-l-danger-border",
+    };
+    const ATTN_TONE_DEFAULT = "border-l-brand-text";
+    const ATTN_WHO =
+        "m-0 text-fluid-base text-ink max-[575.98px]:flex max-[575.98px]:flex-col";
+    const ATTN_REF = "ml-2 text-[0.85rem] text-ink-muted max-[575.98px]:ml-0";
+    const ATTN_META = "mt-0.5 mb-0 text-[0.85rem] text-ink-muted";
+    const ATTN_ACTION =
+        "inline-flex items-center gap-1 rounded-full border border-brand-text bg-surface px-4 py-2 text-sm font-semibold whitespace-nowrap text-brand-text no-underline hover:bg-brand-soft-hover max-[575.98px]:min-h-11 max-[575.98px]:justify-center max-[575.98px]:justify-self-stretch focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text forced-colors:focus-visible:outline-[color:Highlight]";
+
+    // Upcoming events
+    const UP_ITEM =
+        "grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-1 rounded-panel bg-brand-soft p-3 text-ink no-underline hover:bg-brand-soft-hover hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text min-[576px]:grid-cols-[auto_minmax(0,1fr)_auto] min-[576px]:px-6 min-[576px]:py-4";
+    const UP_DATE =
+        "flex size-14 flex-col items-center justify-center rounded-field bg-brand leading-[1.1] text-on-brand";
+    const UP_MONTH = "text-[0.7rem] font-semibold tracking-[0.05em] uppercase";
+    const UP_DAY = "text-fluid-2xl font-bold";
+    const UP_INFO = "flex min-w-0 flex-col";
+    const UP_INFO_SUB = "text-[0.85rem] text-ink-muted";
+    const UP_WHEN =
+        "col-start-2 flex flex-col text-[0.85rem] min-[576px]:col-auto min-[576px]:items-end min-[576px]:text-right max-[575.98px]:flex-row max-[575.98px]:flex-wrap max-[575.98px]:gap-x-2";
+    const UP_WHEN_STRONG =
+        "font-semibold text-brand-text max-[575.98px]:whitespace-nowrap";
+    const UP_WHEN_SPAN = "text-ink-muted max-[575.98px]:whitespace-nowrap";
+
+    // Package Rate donut. Slice colours are in slice order (see --color-slice-* in tailwind.css).
+    const SLICES = [
+        "text-slice-1",
+        "text-slice-2",
+        "text-slice-3",
+        "text-slice-4",
+        "text-slice-5",
+        "text-slice-6",
+    ];
+    const sliceClass = (item, index) =>
+        item.other ? "text-ink-subtle" : SLICES[index % 6];
+    const PR_BODY =
+        "flex flex-wrap items-center gap-x-8 gap-y-6 max-[575.98px]:justify-center max-[575.98px]:gap-4";
+    const PR_FIGURE = "relative size-48 flex-none max-[575.98px]:size-40";
+    const PR_CHART = "block size-full";
+    const PR_CENTER =
+        "pointer-events-none absolute inset-0 flex flex-col items-center justify-center";
+    const PR_TOTAL =
+        "text-fluid-display leading-none font-bold text-brand-text";
+    const PR_UNIT = "text-[0.8rem] text-ink-muted";
+    const PR_LEGEND =
+        "m-0 grid flex-[1_1_18rem] list-none grid-cols-[repeat(auto-fit,minmax(13rem,1fr))] gap-x-6 gap-y-4 p-0 max-[575.98px]:basis-full max-[575.98px]:grid-cols-[repeat(2,minmax(0,1fr))] max-[575.98px]:gap-3";
+    const PR_ROW = "grid grid-cols-[auto_1fr] items-center gap-x-2";
+    const PR_SWATCH = "row-span-2 size-5 rounded-full bg-current";
+    const PR_NAME = "text-fluid-sm font-medium text-ink";
+    const PR_NAME_LINK =
+        "text-fluid-sm font-medium text-ink no-underline hover:text-brand-text hover:underline focus-visible:rounded-field focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text";
+    const PR_MORE = "text-[0.8rem] font-normal text-ink-muted";
+    const PR_PCT = "text-[0.8rem] text-ink-muted";
+
     const bookingsUrl = (params = {}) => {
         const url = new URL(config.bookingsUrl, window.location.href);
         Object.entries(params).forEach(([key, value]) => {
@@ -80,12 +183,13 @@ if (dashboard) {
             const value = stats[card.key];
             if (!value) return;
 
+            const palette = card.featured ? STAT_FEATURED : STAT_PLAIN;
             const article = makeElement(
                 "article",
-                `admin-card admin-stat admin-stat--link${card.featured ? " admin-stat--featured" : ""}`,
+                `${STAT_CARD} ${palette.card}`,
             );
-            const heading = makeElement("h2", "admin-stat__label");
-            const link = makeElement("a", "admin-stat__link");
+            const heading = makeElement("h2", `${STAT_LABEL} ${palette.label}`);
+            const link = makeElement("a", `${STAT_LINK} ${palette.ring}`);
             link.href = bookingsUrl(
                 card.status === "all" ? {} : { status: card.status },
             );
@@ -93,17 +197,19 @@ if (dashboard) {
                 document.createTextNode(card.label),
                 makeElement(
                     "span",
-                    "visually-hidden",
+                    "sr-only",
                     `: ${value.value}. View in Bookings`,
                 ),
-                makeElement("i", "ph ph-arrow-up-right admin-stat__go"),
+                makeElement("i", `ph ph-arrow-up-right ${STAT_GO}`),
             );
             link.lastElementChild.setAttribute("aria-hidden", "true");
             heading.append(link);
             article.append(heading);
 
-            const body = makeElement("div", "admin-stat__body");
-            body.append(makeElement("p", "admin-stat__value", value.value));
+            const body = makeElement("div", STAT_BODY);
+            body.append(
+                makeElement("p", `${STAT_VALUE} ${palette.value}`, value.value),
+            );
             if (value.change !== null && value.change !== undefined) {
                 const change = Number(value.change);
                 const direction =
@@ -122,7 +228,7 @@ if (dashboard) {
                           : "arrow-down";
                 const delta = makeElement(
                     "span",
-                    `admin-stat__delta admin-stat__delta--${tone}`,
+                    `${STAT_DELTA} ${DELTA_TONES[tone]}`,
                 );
                 const spoken =
                     direction === "flat"
@@ -137,7 +243,7 @@ if (dashboard) {
                             ? "No change"
                             : `${change > 0 ? "+" : "−"}${Math.abs(change)}`,
                     ),
-                    makeElement("span", "visually-hidden", spoken),
+                    makeElement("span", "sr-only", spoken),
                 );
                 delta.firstElementChild.setAttribute("aria-hidden", "true");
                 delta.children[1].setAttribute("aria-hidden", "true");
@@ -147,7 +253,7 @@ if (dashboard) {
             article.append(
                 makeElement(
                     "p",
-                    "admin-stat__caption",
+                    `${STAT_CAPTION} ${palette.caption}`,
                     value.change === null || value.change === undefined
                         ? card.hint || ""
                         : "vs last month",
@@ -169,12 +275,12 @@ if (dashboard) {
             fragment.append(
                 makeElement(
                     "p",
-                    "admin-empty",
+                    EMPTY,
                     "You're all caught up. Nothing needs review right now.",
                 ),
             );
         } else {
-            const list = makeElement("ul", "admin-attn");
+            const list = makeElement("ul", LIST);
             shown.forEach((item) => {
                 const status = config.statuses[item.status] || {
                     label: item.status.replaceAll("_", " "),
@@ -185,7 +291,7 @@ if (dashboard) {
                 const action = config.attentionActions[item.status] || "Open";
                 const row = makeElement(
                     "li",
-                    `admin-attn__item admin-attn__item--${tone}`,
+                    `${ATTN_ITEM} ${ATTN_TONES[tone] ?? ATTN_TONE_DEFAULT}`,
                 );
 
                 const badge = makeElement(
@@ -200,13 +306,13 @@ if (dashboard) {
                 badge.append(document.createTextNode(status.label));
                 row.append(badge);
 
-                const info = makeElement("div", "admin-attn__info");
-                const who = makeElement("p", "admin-attn__who");
+                const info = makeElement("div", "min-w-0");
+                const who = makeElement("p", ATTN_WHO);
                 who.append(
-                    makeElement("strong", "", item.client),
-                    makeElement("span", "admin-attn__ref", item.reference),
+                    makeElement("strong", "font-semibold", item.client),
+                    makeElement("span", ATTN_REF, item.reference),
                 );
-                const meta = makeElement("p", "admin-attn__meta");
+                const meta = makeElement("p", ATTN_META);
                 const eventDate = item.date
                     ? makeElement(
                           "time",
@@ -234,7 +340,7 @@ if (dashboard) {
                 info.append(who, meta);
                 row.append(info);
 
-                const actionLink = makeElement("a", "admin-attn__action");
+                const actionLink = makeElement("a", ATTN_ACTION);
                 actionLink.href = bookingsUrl({
                     status: status.group,
                     booking: item.id,
@@ -256,7 +362,7 @@ if (dashboard) {
             if (items.length > shown.length) {
                 const more = makeElement(
                     "a",
-                    "admin-card__more",
+                    MORE_BELOW,
                     `View all ${items.length} in Bookings `,
                 );
                 more.href = bookingsUrl();
@@ -281,11 +387,9 @@ if (dashboard) {
         calendarLink.href = calendarUrl.toString();
 
         if (!shown.length) {
-            fragment.append(
-                makeElement("p", "admin-empty", "No upcoming events."),
-            );
+            fragment.append(makeElement("p", EMPTY, "No upcoming events."));
         } else {
-            const list = makeElement("ul", "admin-upcoming");
+            const list = makeElement("ul", LIST);
             shown.forEach((event) => {
                 const date = dateAtLocalMidnight(event.date);
                 const today = new Date(
@@ -302,7 +406,7 @@ if (dashboard) {
                           : days > 1
                             ? `In ${days} days`
                             : "";
-                const item = makeElement("a", "admin-upcoming__item");
+                const item = makeElement("a", UP_ITEM);
                 item.href = bookingsUrl({ booking: event.id });
                 item.setAttribute(
                     "aria-label",
@@ -315,33 +419,34 @@ if (dashboard) {
                         },
                     )}. View booking`,
                 );
-                const dateTile = makeElement("time", "admin-upcoming__date");
+                const dateTile = makeElement("time", UP_DATE);
                 dateTile.dateTime = event.date;
                 dateTile.append(
                     makeElement(
                         "span",
-                        "admin-upcoming__month",
+                        UP_MONTH,
                         dateLabel(event.date, { month: "short" }),
                     ),
-                    makeElement(
-                        "span",
-                        "admin-upcoming__day",
-                        String(date.getDate()),
-                    ),
+                    makeElement("span", UP_DAY, String(date.getDate())),
                 );
-                const info = makeElement("span", "admin-upcoming__info");
+                const info = makeElement("span", UP_INFO);
                 info.append(
-                    makeElement("strong", "", event.event),
+                    makeElement("strong", "font-semibold", event.event),
                     makeElement(
                         "span",
-                        "",
+                        UP_INFO_SUB,
                         `${event.client} · ${event.package}`,
                     ),
                 );
-                const whenBlock = makeElement("span", "admin-upcoming__when");
-                if (when) whenBlock.append(makeElement("strong", "", when));
+                const whenBlock = makeElement("span", UP_WHEN);
+                if (when)
+                    whenBlock.append(
+                        makeElement("strong", UP_WHEN_STRONG, when),
+                    );
                 if (event.time)
-                    whenBlock.append(makeElement("span", "", event.time));
+                    whenBlock.append(
+                        makeElement("span", UP_WHEN_SPAN, event.time),
+                    );
                 item.append(dateTile, info, whenBlock);
                 const listItem = makeElement("li");
                 listItem.append(item);
@@ -352,7 +457,7 @@ if (dashboard) {
             if (events.length > shown.length) {
                 const more = makeElement(
                     "a",
-                    "admin-card__more",
+                    MORE_BELOW,
                     `View all ${events.length} in Calendar `,
                 );
                 more.href = calendarUrl.toString();
@@ -385,7 +490,7 @@ if (dashboard) {
             packageTarget.replaceChildren(
                 makeElement(
                     "p",
-                    "admin-empty",
+                    EMPTY,
                     "No bookings yet, so there is nothing to chart.",
                 ),
             );
@@ -393,13 +498,13 @@ if (dashboard) {
         }
 
         const total = items.reduce((sum, item) => sum + item.count, 0);
-        const body = makeElement("div", "admin-package-rate__body");
-        const figure = makeElement("div", "admin-package-rate__figure");
+        const body = makeElement("div", PR_BODY);
+        const figure = makeElement("div", PR_FIGURE);
         const chart = document.createElementNS(
             "http://www.w3.org/2000/svg",
             "svg",
         );
-        chart.setAttribute("class", "admin-package-rate__chart");
+        chart.setAttribute("class", PR_CHART);
         chart.setAttribute("viewBox", "0 0 42 42");
         chart.setAttribute("role", "img");
         chart.setAttribute(
@@ -414,12 +519,7 @@ if (dashboard) {
                 "http://www.w3.org/2000/svg",
                 "circle",
             );
-            circle.setAttribute(
-                "class",
-                item.other
-                    ? "admin-chart--other"
-                    : `admin-chart--${(index % 6) + 1}`,
-            );
+            circle.setAttribute("class", sliceClass(item, index));
             circle.setAttribute("cx", "21");
             circle.setAttribute("cy", "21");
             circle.setAttribute("r", "15.9155");
@@ -436,36 +536,37 @@ if (dashboard) {
             chart.append(circle);
             offset += percent;
         });
-        const center = makeElement("div", "admin-package-rate__center");
+        const center = makeElement("div", PR_CENTER);
         center.setAttribute("aria-hidden", "true");
         center.append(
-            makeElement("strong", "", total),
-            makeElement("span", "", `${total === 1 ? "booking" : "bookings"}`),
+            makeElement("strong", PR_TOTAL, total),
+            makeElement(
+                "span",
+                PR_UNIT,
+                `${total === 1 ? "booking" : "bookings"}`,
+            ),
         );
         figure.append(chart, center);
 
-        const legend = makeElement("ul", "admin-package-rate__legend");
+        const legend = makeElement("ul", PR_LEGEND);
         items.forEach((item, index) => {
             const percent = ((item.count / total) * 100).toFixed(1);
-            const row = makeElement("li");
+            const row = makeElement("li", PR_ROW);
             const swatch = makeElement(
                 "span",
-                `admin-package-rate__swatch ${item.other ? "admin-chart--other" : `admin-chart--${(index % 6) + 1}`}`,
+                `${PR_SWATCH} ${sliceClass(item, index)}`,
             );
             swatch.setAttribute("aria-hidden", "true");
             const label =
                 item.other || !item.id
-                    ? makeElement("span", "admin-package-rate__name")
-                    : makeElement(
-                          "a",
-                          "admin-package-rate__name admin-package-rate__name--link",
-                      );
+                    ? makeElement("span", PR_NAME)
+                    : makeElement("a", PR_NAME_LINK);
             if (item.other) {
                 label.append(
                     document.createTextNode(item.label),
                     makeElement(
                         "span",
-                        "admin-package-rate__more",
+                        PR_MORE,
                         ` (${item.more} ${item.more === 1 ? "package" : "packages"})`,
                     ),
                 );
@@ -481,7 +582,7 @@ if (dashboard) {
             }
             const details = makeElement(
                 "span",
-                "admin-package-rate__pct",
+                PR_PCT,
                 `${item.count} ${item.count === 1 ? "booking" : "bookings"} · ${percent}%`,
             );
             row.append(swatch, label, details);
@@ -516,7 +617,7 @@ if (dashboard) {
                 target.replaceChildren(
                     makeElement(
                         "p",
-                        "admin-empty",
+                        EMPTY,
                         "Dashboard data could not be loaded. Refresh the page to try again.",
                     ),
                 );
