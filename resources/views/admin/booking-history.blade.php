@@ -141,7 +141,7 @@ $months = collect($bookings)
         </tbody>
       </table>
 
-      <p class="admin-empty admin-bookings__empty px-2 py-6 text-center" data-history-empty @if (count($bookings)> 0) hidden @endif>
+      <p class="admin-bookings__empty m-0 px-2 py-6 text-center text-fluid-sm text-ink-muted" data-history-empty @if (count($bookings)> 0) hidden @endif>
         @if (count($bookings) > 0) No bookings match your filters. @else No booking history yet. @endif
       </p>
     </div>

@@ -34,7 +34,7 @@
       @endforeach
     </div>
     @else
-    <p class="admin-empty mb-16 px-2 py-6 text-center">No packages yet. Use "Add New Package" to create the first one.</p>
+    <p class="mt-0 mb-16 px-2 py-6 text-center text-fluid-sm text-ink-muted">No packages yet. Use "Add New Package" to create the first one.</p>
     @endif
 
     <x-admin.package-modal />

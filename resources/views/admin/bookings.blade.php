@@ -127,7 +127,7 @@
         </tbody>
       </table>
 
-      <p class="admin-empty admin-bookings__empty px-2 py-6 text-center" data-bookings-empty @if (count($bookings)> 0) hidden @endif>
+      <p class="admin-bookings__empty m-0 px-2 py-6 text-center text-fluid-sm text-ink-muted" data-bookings-empty @if (count($bookings)> 0) hidden @endif>
         @if (count($bookings) > 0) No bookings match your filters. @else No bookings yet. @endif
       </p>
     </div>

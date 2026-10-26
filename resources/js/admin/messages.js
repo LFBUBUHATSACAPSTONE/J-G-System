@@ -76,7 +76,6 @@ if (layout) {
         });
         layout.querySelectorAll("[data-chat-open]").forEach((b) => {
             const on = b.dataset.chatOpen === id;
-            b.classList.toggle("is-active", on);
             on
                 ? b.setAttribute("aria-current", "true")
                 : b.removeAttribute("aria-current");
@@ -99,7 +98,7 @@ if (layout) {
         const q = (search.value || "").trim().toLowerCase();
         let shown = 0;
         items.forEach((li) => {
-            const active = li.querySelector(".is-active");
+            const active = li.querySelector("[aria-current]");
             const ok =
                 (!q || li.dataset.name.includes(q)) &&
                 (filter === "all" || +li.dataset.unread > 0 || active);
@@ -126,7 +125,6 @@ if (layout) {
         b.addEventListener("click", () => {
             filter = b.dataset.chatFilter;
             filters.forEach((f) => {
-                f.classList.toggle("is-active", f === b);
                 f.setAttribute("aria-pressed", String(f === b));
             });
             applyFilters();

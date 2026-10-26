@@ -9,6 +9,7 @@
 @source "../views/components/admin/page-header.blade.php";
 @source "../views/admin/dashboard.blade.php";
 @source "../views/admin/calendar.blade.php";
+@source "../views/admin/messages.blade.php";
 @source "../views/components/admin/stat-card.blade.php";
 @source "../views/components/admin/package-rate.blade.php";
 @source "../views/components/admin/booking-modal.blade.php";
@@ -106,6 +107,9 @@
     --color-slice-4: oklch(70% 0.27486 324.299);
     --color-slice-5: oklch(65.2% 0.17128 128.475);
     --color-slice-6: oklch(68.8% 0.20106 25.116);
+
+    /* Admin Messages */
+    --text-fluid-preview: clamp(0.9249rem, 0.9203rem + 0.0229vw, 0.9375rem);
 
     /* Calendar */
     --color-cal-wrap: oklch(88.224% 0 0); /* grey behind the month grid */
