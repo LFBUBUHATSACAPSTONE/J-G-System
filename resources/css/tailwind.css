@@ -31,6 +31,7 @@
 @source "../views/components/chat/composer.blade.php";
 @source "../js/chat/chat.js";
 @source "../js/chat/confirm-dialog.js";
+@source "../js/chat/widget.js";
 @source "../js/shared/action-modal.js";
 @source "../js/admin/dropdown.js";
 @source "../js/admin/filter-sheet.js";
@@ -152,6 +153,19 @@
         from {
             opacity: 0;
             transform: translateY(0.5rem) scale(0.98);
+        }
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+
+    /* Chat widget panel entrance */
+    --animate-chat-pop: chat-pop 0.18s ease-out;
+    @keyframes chat-pop {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
         }
         to {
             opacity: 1;
