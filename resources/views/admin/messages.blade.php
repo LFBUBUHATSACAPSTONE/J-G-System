@@ -48,7 +48,7 @@
           @endphp
           <li data-chat-item data-name="{{ Str::lower($c['client']['name']) }}" data-unread="{{ $c['unread'] }}">
             <button type="button" class="flex w-full cursor-pointer items-center gap-3 rounded-panel border-2 border-transparent bg-surface p-4 text-left text-ink [&:not([aria-current=true])]:hover:border-field-border aria-current:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-chat-open="chat-{{ $c['id'] }}" aria-controls="chat-{{ $c['id'] }}" @if ($loop->first) aria-current="true" @endif>
-              <span class="chat-avatar"><x-chat.icon name="user" /></span>
+              <span class="chat-avatar inline-grid size-11 flex-none place-items-center rounded-full bg-chat-avatar text-[1.5rem] text-surface"><x-chat.icon name="user" /></span>
               <span class="grid min-w-0 flex-1">
                 <span class="chat-item__name font-semibold [[data-chat-item]:not([data-unread='0'])_&]:font-bold">{{ $c['client']['name'] }}</span>
                 <span class="overflow-hidden text-fluid-preview text-ellipsis whitespace-nowrap text-ink-muted [[data-chat-item]:not([data-unread='0'])_&]:font-semibold [[data-chat-item]:not([data-unread='0'])_&]:text-ink" data-chat-preview>{{ Str::limit($preview, 34) }}</span>
@@ -81,7 +81,7 @@
             <button type="button" class="grid size-10 flex-none cursor-pointer place-items-center rounded-full border-0 bg-panel text-ink pointer-coarse:size-11 min-[1280px]:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" aria-label="Back to chat list" data-chat-back>
               <x-chat.icon name="chevron-left" />
             </button>
-            <span class="chat-avatar"><x-chat.icon name="user" /></span>
+            <span class="chat-avatar inline-grid size-11 flex-none place-items-center rounded-full bg-chat-avatar text-[1.5rem] text-surface"><x-chat.icon name="user" /></span>
             <h3 class="m-0 min-w-0 flex-[1_1_auto] overflow-hidden text-fluid-base font-semibold text-ellipsis whitespace-nowrap">{{ $c['client']['name'] }}</h3>
             @if (! empty($c['client']['phone']))
             <a class="inline-flex flex-none items-center gap-2 whitespace-nowrap text-ink no-underline [&_.chat-icon]:text-fluid-xl [&_.chat-icon]:text-brand-text [&:hover_span]:underline max-[575.98px]:[&_span]:sr-only focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" href="tel:{{ preg_replace('/[^+\d]/', '', $c['client']['phone']) }}">
@@ -91,7 +91,7 @@
             @endif
           </header>
 
-          <div class="chat-log" role="log" aria-live="polite" tabindex="0" aria-label="Messages with {{ $c['client']['name'] }}" data-chat-log>
+          <div class="chat-log flex min-h-0 flex-auto flex-col gap-3 overflow-y-auto overscroll-contain px-5 py-4" role="log" aria-live="polite" tabindex="0" aria-label="Messages with {{ $c['client']['name'] }}" data-chat-log>
             <x-chat.thread :items="$c['items']" self="admin" :other="$c['client']['name']" :admin="true" />
           </div>
 

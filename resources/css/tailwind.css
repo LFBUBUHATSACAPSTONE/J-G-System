@@ -23,6 +23,13 @@
 @source "../views/admin/booking-history.blade.php";
 @source "../views/admin/packages.blade.php";
 @source "../views/user/account/bookings.blade.php";
+@source "../views/user/account/messages.blade.php";
+@source "../views/components/chat/thread.blade.php";
+@source "../views/components/chat/booking-card.blade.php";
+@source "../views/components/chat/icon.blade.php";
+@source "../views/components/chat/widget.blade.php";
+@source "../js/chat/chat.js";
+@source "../js/chat/confirm-dialog.js";
 @source "../js/shared/action-modal.js";
 @source "../js/admin/dropdown.js";
 @source "../js/admin/filter-sheet.js";
@@ -118,6 +125,38 @@
     ); /* Sun / Sat column titles */
     --color-cal-weekend: oklch(52% 0.19 350); /* Sun / Sat date numbers */
     --text-fluid-name: clamp(1.0104rem, 0.996rem + 0.072vw, 1.05rem);
+
+    /* Chat thread (Phase 3B): booking card, quote hover and strip tint, finished states, avatar grey */
+    --color-chat-tint: oklch(96% 0.02 293.012);
+    --color-chat-tint-border: oklch(70% 0.12 293.012);
+    --color-chat-past: oklch(92% 0 0);
+    --color-chat-past-border: oklch(75% 0 0);
+    --color-chat-past-pill: oklch(84% 0 0);
+    --color-chat-past-pill-text: oklch(28% 0 0);
+    --color-chat-avatar: oklch(72% 0 0);
+
+    /* Chat: the jump-to-original flash and a booking card arriving */
+    --animate-chat-flash: chat-flash 1.6s ease-out;
+    @keyframes chat-flash {
+        0%,
+        45% {
+            box-shadow: 0 0 0 4px var(--color-brand-halo);
+        }
+        100% {
+            box-shadow: 0 0 0 4px transparent;
+        }
+    }
+    --animate-chat-booking-pop: chat-booking-pop 0.45s ease-out;
+    @keyframes chat-booking-pop {
+        from {
+            opacity: 0;
+            transform: translateY(0.5rem) scale(0.98);
+        }
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
 
     /* Dropdown menu entrance */
     --animate-dropdown-in: dropdown-in 0.14s ease-out;

@@ -11,7 +11,7 @@ $start = $event['start_date'];
 $end = $event['end_date'] ?? $start;
 
 $past = in_array($key, config('admin.messages.past_statuses'), true)
-    || ($end !== null && $end->copy()->endOfDay()->isPast());
+|| ($end !== null && $end->copy()->endOfDay()->isPast());
 $tone = $past ? 'past' : ($status['badge']['tone'] ?? 'warning');
 
 if ($start === null) {
@@ -26,39 +26,57 @@ $schedule = $start->format('F j, Y') . ' – ' . $end->format('F j, Y');
 $schedule = $start->format('F j, Y');
 }
 $time = trim(($event['start_time'] ?? '') . ' – ' . ($event['end_time'] ?? ''), ' –');
+// Utility strings, whole. The status pill tone comes from config, so it is picked from a map.
+$cardClass = $past ? 'chat-booking is-past mx-auto max-w-md self-stretch rounded-panel border border-chat-past-border bg-chat-past px-4 py-3.5 text-ink-muted [&.is-new]:motion-safe:animate-chat-booking-pop' : 'chat-booking mx-auto max-w-md self-stretch rounded-panel border border-chat-tint-border bg-chat-tint px-4 py-3.5 text-ink [&.is-new]:motion-safe:animate-chat-booking-pop';
+$statusTones = [
+'success' => 'bg-success-soft text-success-text',
+'warning' => 'bg-warning-soft text-warning-text',
+'danger' => 'bg-danger-soft text-danger-text',
+'neutral' => 'bg-panel text-ink',
+'past' => 'bg-chat-past-pill text-chat-past-pill-text',
+];
+$statusClass = 'chat-status flex-none rounded-full px-3 py-0.5 text-[0.8125rem] font-semibold ' . ($statusTones[$tone] ?? $statusTones['neutral']);
+$headClass = 'chat-booking__head flex items-start justify-between gap-3';
+$packageClass = 'chat-booking__package m-0 text-[1.0625rem] leading-[1.2] font-semibold';
+$refClass = 'chat-booking__ref m-0 text-sm text-ink-muted';
+$detailsClass = 'chat-booking__details mt-3 mb-0 grid gap-1.5 text-sm';
+$rowClass = 'flex items-start gap-2';
+$dtClass = 'flex-none font-normal text-ink-muted';
+$ddClass = 'm-0 wrap-anywhere';
+$linkClass = 'chat-booking__link mt-3 inline-block text-sm font-semibold text-brand-text underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text';
 @endphp
 
-<article class="chat-booking{{ $past ? ' is-past' : '' }}" data-booking-id="{{ $booking['id'] }}" aria-label="Booking {{ $booking['reference'] }}{{ $past ? ', finished' : '' }}">
-  <header class="chat-booking__head">
+<article class="{{ $cardClass }}" data-booking-id="{{ $booking['id'] }}" aria-label="Booking {{ $booking['reference'] }}{{ $past ? ', finished' : '' }}">
+  <header class="{{ $headClass }}">
     <div>
-      <h3 class="chat-booking__package">{{ $booking['package']['name'] }}</h3>
-      <p class="chat-booking__ref">{{ $booking['reference'] }} · Php {{ number_format($booking['package']['price']) }}</p>
+      <h3 class="{{ $packageClass }}">{{ $booking['package']['name'] }}</h3>
+      <p class="{{ $refClass }}">{{ $booking['reference'] }} · Php {{ number_format($booking['package']['price']) }}</p>
     </div>
-    <span class="chat-status chat-status--{{ $tone }}">{{ $past && $key === 'approved' ? 'Finished' : $status['label'] }}</span>
+    <span class="{{ $statusClass }}">{{ $past && $key === 'approved' ? 'Finished' : $status['label'] }}</span>
   </header>
 
-  <dl class="chat-booking__details">
-    <div>
-      <dt><x-chat.icon name="music" /><span class="visually-hidden">Event</span></dt>
-      <dd>{{ $event['name'] }} ({{ $event['type'] }})</dd>
+  <dl class="{{ $detailsClass }}">
+    <div class="{{ $rowClass }}">
+      <dt class="{{ $dtClass }}"><x-chat.icon name="music" /><span class="visually-hidden">Event</span></dt>
+      <dd class="{{ $ddClass }}">{{ $event['name'] }} ({{ $event['type'] }})</dd>
     </div>
-    <div>
-      <dt><x-chat.icon name="calendar" /><span class="visually-hidden">Date</span></dt>
-      <dd>{{ $schedule }}</dd>
+    <div class="{{ $rowClass }}">
+      <dt class="{{ $dtClass }}"><x-chat.icon name="calendar" /><span class="visually-hidden">Date</span></dt>
+      <dd class="{{ $ddClass }}">{{ $schedule }}</dd>
     </div>
     @if ($time)
-    <div>
-      <dt><x-chat.icon name="clock" /><span class="visually-hidden">Time</span></dt>
-      <dd>{{ $time }}</dd>
+    <div class="{{ $rowClass }}">
+      <dt class="{{ $dtClass }}"><x-chat.icon name="clock" /><span class="visually-hidden">Time</span></dt>
+      <dd class="{{ $ddClass }}">{{ $time }}</dd>
     </div>
     @endif
-    <div>
-      <dt><x-chat.icon name="map-pin" /><span class="visually-hidden">Location</span></dt>
-      <dd>{{ $event['location'] }}</dd>
+    <div class="{{ $rowClass }}">
+      <dt class="{{ $dtClass }}"><x-chat.icon name="map-pin" /><span class="visually-hidden">Location</span></dt>
+      <dd class="{{ $ddClass }}">{{ $event['location'] }}</dd>
     </div>
   </dl>
 
   @if ($admin && ! $past && Route::has('admin.bookings'))
-  <a class="chat-booking__link" href="{{ route('admin.bookings') }}">View in Bookings</a>
+  <a class="{{ $linkClass }}" href="{{ route('admin.bookings') }}">View in Bookings</a>
   @endif
 </article>
