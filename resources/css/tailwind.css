@@ -29,6 +29,13 @@
 @source "../views/components/chat/icon.blade.php";
 @source "../views/components/chat/widget.blade.php";
 @source "../views/components/chat/composer.blade.php";
+@source "../views/components/profile/avatar.blade.php";
+@source "../views/components/profile/field.blade.php";
+@source "../views/components/profile/password-rules.blade.php";
+@source "../views/components/profile/row.blade.php";
+@source "../views/components/profile/status.blade.php";
+@source "../views/admin/account.blade.php";
+@source "../views/user/account/profile.blade.php";
 @source "../js/chat/chat.js";
 @source "../js/chat/confirm-dialog.js";
 @source "../js/chat/widget.js";

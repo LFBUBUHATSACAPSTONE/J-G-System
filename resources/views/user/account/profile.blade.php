@@ -14,18 +14,23 @@ $phoneDisplay = strlen($phoneDigits) === 11 ? preg_replace('/^(\d{4})(\d{3})(\d{
 $initials = strtoupper(mb_substr($firstName, 0, 1) . mb_substr($lastName, 0, 1)) ?: 'U';
 $isVerified = ! is_null(data_get($user, 'email_verified_at'));
 $memberSince = data_get($user, 'created_at')?->format('F Y');
+$cardClass = 'w-full max-w-xl rounded-card bg-surface p-4 font-sans text-ink min-[576px]:p-8';
+$cardTitleClass = 'mb-6 text-center text-fluid-icon font-bold text-ink';
+$actionsClass = 'mt-6 grid grid-cols-2 gap-3 [&_form]:contents';
+$primaryBtnClass = 'w-full cursor-pointer rounded-field border-2 border-transparent bg-brand px-4 py-2 leading-normal font-semibold text-on-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text enabled:hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50';
+$secondaryBtnClass = 'w-full cursor-pointer rounded-field border-2 border-transparent bg-brand-soft px-4 py-2 leading-normal font-semibold text-brand-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text enabled:hover:bg-brand-soft-hover disabled:cursor-not-allowed disabled:opacity-50';
 @endphp
 
 <x-account.layout>
   {{-- The same profile card as the admin account page (components/profile/*, sass/profile,
        js/account/profile-core.js). Rows open inline; Save sends the same PATCH as before. --}}
   <div class="account-profile" data-account-profile data-profile-root>
-    <section class="profile-card" aria-labelledby="account-personal-title">
-      <h2 class="profile-card__title" id="account-personal-title">Personal information</h2>
+    <section class="{{ $cardClass }}" aria-labelledby="account-personal-title">
+      <h2 class="{{ $cardTitleClass }}" id="account-personal-title">Personal information</h2>
 
       <form
         id="account-profile-form"
-        class="profile-card__form"
+        class="grid gap-4"
         method="POST"
         action="{{ route('user.account.profile.update') }}"
         novalidate>
@@ -34,7 +39,7 @@ $memberSince = data_get($user, 'created_at')?->format('F Y');
 
         <x-profile.avatar :initials="$initials" />
 
-        <div class="profile-meta">
+        <div class="mb-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[0.8125rem] text-ink-muted">
           @if ($isVerified)
           <span class="account-badge account-badge--success"><i class="ph ph-seal-check" aria-hidden="true"></i>Email verified</span>
           @else
@@ -47,7 +52,7 @@ $memberSince = data_get($user, 'created_at')?->format('F Y');
 
         {{-- Name --}}
         <x-profile.row name="name" label="Name" :value="$fullName" empty="Your name" action="Edit">
-          <div class="profile-row__fields profile-row__fields--name">
+          <div class="grid grid-cols-[minmax(0,1fr)] gap-3 min-[576px]:grid-cols-3">
             <x-profile.field id="ap-first-name" name="first_name" label="First name" :value="$firstName"
               autocomplete="given-name" placeholder="Juan" maxlength="100" />
             <x-profile.field id="ap-middle-name" name="middle_name" label="Middle name (optional)" :value="$middleName"
@@ -76,9 +81,9 @@ $memberSince = data_get($user, 'created_at')?->format('F Y');
 
         <x-profile.status />
 
-        <div class="profile-actions">
-          <button type="button" class="profile-btn profile-btn--secondary" data-profile-reset disabled>Discard changes</button>
-          <button type="submit" class="profile-btn profile-btn--primary" data-profile-save disabled>Save changes</button>
+        <div class="{{ $actionsClass }}">
+          <button type="button" class="{{ $secondaryBtnClass }}" data-profile-reset disabled>Discard changes</button>
+          <button type="submit" class="{{ $primaryBtnClass }}" data-profile-save disabled>Save changes</button>
         </div>
       </form>
     </section>
