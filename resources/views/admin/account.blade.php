@@ -28,7 +28,7 @@ $secondaryBtnClass = 'w-full cursor-pointer rounded-field border-2 border-transp
   <x-admin-header />
 </head>
 
-<body>
+<body class="bg-sidebar font-sans">
   <x-admin.sidebar />
 
   <main class="admin-content font-sans" data-admin-account data-profile-root>
@@ -118,7 +118,7 @@ $secondaryBtnClass = 'w-full cursor-pointer rounded-field border-2 border-transp
           <li class="flex items-center gap-3 rounded-panel bg-panel p-3">
             <span class="grid size-10 flex-none place-items-center rounded-full bg-brand-soft text-[1.25rem] text-brand-text" aria-hidden="true"><i class="ph ph-{{ $session['icon'] ?? 'desktop' }}"></i></span>
             <span class="grid min-w-0 flex-1">
-              <span class="font-semibold text-ink [overflow-wrap:anywhere]">{{ $session['device'] }}</span>
+              <span class="font-semibold text-ink wrap:anywhere">{{ $session['device'] }}</span>
               <span class="text-sm text-ink-muted">{{ $session['location'] }}</span>
               <span class="text-sm text-ink-muted">
                 {{ ! empty($session['current']) ? 'Active now' : 'Last active ' . $session['last_active']->diffForHumans() }}

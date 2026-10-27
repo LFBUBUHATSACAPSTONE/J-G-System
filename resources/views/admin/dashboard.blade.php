@@ -24,7 +24,7 @@ $dashboardConfig = [
   <x-admin-header />
 </head>
 
-<body>
+<body class="bg-sidebar font-sans">
   <x-admin.sidebar />
 
   <main class="admin-content font-sans" data-admin-dashboard
@@ -33,7 +33,7 @@ $dashboardConfig = [
     aria-busy="true">
     <x-admin.page-header :compact="true" />
 
-    <div class="mb-6 grid grid-cols-2 gap-4 min-[768px]:grid-cols-6 min-[768px]:gap-6 min-[1400px]:grid-cols-5 max-[399.98px]:grid-cols-1 max-[767.98px]:*:first:col-span-full min-[768px]:max-[1399.98px]:*:col-span-2 min-[768px]:max-[1399.98px]:[&>:nth-child(n+4)]:col-span-3" data-dashboard-stats></div>
+    <div class="mb-6 grid grid-cols-2 gap-4 min-[768px]:grid-cols-6 min-[768px]:gap-6 min-[1400px]:grid-cols-5 max-[399.98px]:grid-cols-1 max-[767.98px]:*:col-span-full min-[768px]:max-[1399.98px]:*:col-span-2 min-[768px]:max-[1399.98px]:[&>:nth-child(n+4)]:col-span-3" data-dashboard-stats></div>
 
     <div class="grid grid-cols-[minmax(0,1fr)] gap-4 min-[768px]:gap-6 min-[1200px]:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
       <section class="rounded-card bg-surface p-4 min-[576px]:p-6" aria-labelledby="attention-title">

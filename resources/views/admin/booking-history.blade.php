@@ -19,7 +19,7 @@ $months = collect($bookings)
   <x-admin-header />
 </head>
 
-<body>
+<body class="bg-sidebar font-sans">
   <x-admin.sidebar />
 
   <main class="font-sans admin-content admin-bookings admin-history">
@@ -30,7 +30,7 @@ $months = collect($bookings)
     @endif
 
     {{-- State tabs. Buttons with aria-pressed (there are no tab panels to switch). Counts are filled by history.js. --}}
-    <div class="admin-history__tabs -mx-(--admin-pad) mb-4 flex flex-nowrap gap-3 overflow-x-auto px-(--admin-pad) py-1 [-webkit-overflow-scrolling:touch] scrollbar-none md:mx-0 md:flex-wrap md:overflow-x-visible md:p-0 [&::-webkit-scrollbar]:hidden" role="group" aria-label="Show bookings by state">
+    <div class="admin-history__tabs -mx-(--admin-pad) mb-4 flex flex-nowrap gap-3 overflow-x-auto px-(--admin-pad) py-1 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] md:mx-0 md:flex-wrap md:overflow-x-visible md:p-0 [&::-webkit-scrollbar]:hidden" role="group" aria-label="Show bookings by state">
       @foreach (config('admin.history.tabs') as $value => $label)
       <button type="button" class="admin-tab group/tab inline-flex min-h-11 flex-none cursor-pointer items-center gap-2 rounded-full border border-transparent bg-surface px-6 py-1 text-fluid-sm font-medium whitespace-nowrap text-ink not-aria-pressed:hover:border-brand-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text aria-pressed:border-brand aria-pressed:bg-brand aria-pressed:text-white" data-history-tab="{{ $value }}"
         aria-pressed="{{ $loop->first ? 'true' : 'false' }}">

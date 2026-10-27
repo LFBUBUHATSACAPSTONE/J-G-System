@@ -6,6 +6,8 @@
    area is converted. `important` is on because Bootstrap's own utilities are !important; remove it, and the
    `@source not inline` line, when the Bootstrap CSS is dropped. */
 @source "../views/components/booking/action-modal.blade.php";
+@source "../views/components/admin/sidebar.blade.php";
+@source "../views/components/account/sidebar.blade.php";
 @source "../views/components/admin/page-header.blade.php";
 @source "../views/admin/dashboard.blade.php";
 @source "../views/admin/calendar.blade.php";
@@ -167,6 +169,17 @@
         }
     }
 
+    /* Sidebar shell (admin and account), from _admin-variables.scss */
+    --color-sidebar: oklch(
+        18.674% 0 0
+    ); /* also the page backdrop behind the rounded content panel */
+    --color-sidebar-divider: oklch(40% 0 0);
+    --color-sidebar-ring: oklch(71.8% 0.16169 293.012);
+    --color-sidebar-hover: oklch(100% 0 0 / 0.08);
+    --color-sidebar-muted: oklch(78% 0 0); /* tab not built yet */
+    --color-sidebar-soon: oklch(82% 0 0); /* the "Soon" tag */
+    --color-sidebar-danger: oklch(80% 0.12 25); /* Delete Account */
+
     /* Chat widget panel entrance */
     --animate-chat-pop: chat-pop 0.18s ease-out;
     @keyframes chat-pop {
@@ -191,6 +204,28 @@
             opacity: 1;
             transform: none;
         }
+    }
+}
+
+/* Page content beside the fixed sidebar (every admin and account page). A utility, not a Blade string, because it
+   defines the responsive --admin-pad variable that other utilities read (p-(--admin-pad), -mx-(--admin-pad)).
+   576px, 992px (sidebar visible) and 1400px are the Sass breakpoints. */
+@utility admin-content {
+    --admin-pad: 1rem;
+    padding: var(--admin-pad);
+    background: var(--color-page);
+    min-height: 100vh;
+
+    @media (min-width: 576px) {
+        --admin-pad: 1.5rem;
+    }
+    @media (min-width: 992px) {
+        --admin-pad: 2rem;
+        margin-left: 19.5rem;
+        border-radius: var(--radius-card) 0 0 var(--radius-card);
+    }
+    @media (min-width: 1400px) {
+        --admin-pad: 3rem;
     }
 }
 

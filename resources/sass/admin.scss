@@ -5,9 +5,3 @@
 @import "user-variables";
 @import "bootstrap/scss/bootstrap";
 @import "admin-variables";
-
-@import "./admin/sidebar";
-
-body {
-    background: $admin-sidebar-bg;
-}
