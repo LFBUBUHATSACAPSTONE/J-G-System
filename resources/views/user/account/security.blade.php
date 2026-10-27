@@ -18,6 +18,18 @@ $rules = [
 'number' => 'A number',
 'special' => 'A special character',
 ];
+
+// Utility strings for the form (the old .account-form* Sass went with the profile card in Phase 4).
+$gridClass = 'grid grid-cols-1 gap-4 @min-[34rem]:grid-cols-2';
+$fieldClass = 'grid min-w-0 gap-1';
+$fieldWideClass = 'grid min-w-0 gap-1 @min-[34rem]:col-span-2';
+$labelClass = 'text-fluid-md text-brand-text';
+$requiredClass = 'text-danger-text';
+$wrapClass = 'relative';
+$inputClass = 'min-h-11 w-full rounded-field border border-field-border bg-surface py-2 pr-12 pl-3 text-fluid-base text-ink placeholder:text-ink-subtle focus-visible:ring-4 focus-visible:ring-brand-halo focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-brand-text [&.is-invalid]:border-danger-border';
+$toggleClass = 'absolute top-1/2 right-1 grid size-10 -translate-y-1/2 cursor-pointer place-items-center rounded-field border-0 bg-transparent p-0 text-[1.25rem] text-ink-muted hover:text-brand-text focus-visible:outline-2 focus-visible:outline-brand-text';
+$errorClass = 'text-sm text-danger-text d-none';
+$statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft px-4 py-3 text-fluid-md font-medium text-success-text [&.is-error]:border-danger-border [&.is-error]:bg-danger-soft [&.is-error]:text-danger-text d-none';
 @endphp
 
 <x-account.layout>
@@ -29,7 +41,7 @@ $rules = [
       @if ($hasPassword)
       <form
         id="account-password-form"
-        class="account-form"
+        class="grid gap-4"
         method="POST"
         action="{{ $passwordAction }}"
         autocomplete="on"
@@ -37,38 +49,38 @@ $rules = [
         @csrf
         @method('PATCH')
 
-        <div class="account-form__grid account-security__fields">
-          <div class="account-form__field account-form__field--wide">
-            <label for="sp-current">Current password <span class="account-form__required" aria-hidden="true">*</span></label>
-            <div class="account-password">
-              <input type="password" id="sp-current" name="current_password" autocomplete="current-password" required>
-              <button type="button" class="account-password__toggle" data-password-toggle="sp-current" aria-label="Show password" aria-pressed="false">
+        <div class="{{ $gridClass }}">
+          <div class="{{ $fieldWideClass }}">
+            <label class="{{ $labelClass }}" for="sp-current">Current password <span class="{{ $requiredClass }}" aria-hidden="true">*</span></label>
+            <div class="{{ $wrapClass }}">
+              <input class="{{ $inputClass }}" type="password" id="sp-current" name="current_password" autocomplete="current-password" required>
+              <button type="button" class="{{ $toggleClass }}" data-password-toggle="sp-current" aria-label="Show password" aria-pressed="false">
                 <i class="ph ph-eye" aria-hidden="true"></i>
               </button>
             </div>
-            <small class="account-form__error d-none" data-field-error="current_password"></small>
+            <small class="{{ $errorClass }}" data-field-error="current_password"></small>
           </div>
 
-          <div class="account-form__field">
-            <label for="sp-new">New password <span class="account-form__required" aria-hidden="true">*</span></label>
-            <div class="account-password">
-              <input type="password" id="sp-new" name="password" autocomplete="new-password" aria-describedby="sp-rules" required>
-              <button type="button" class="account-password__toggle" data-password-toggle="sp-new" aria-label="Show password" aria-pressed="false">
+          <div class="{{ $fieldClass }}">
+            <label class="{{ $labelClass }}" for="sp-new">New password <span class="{{ $requiredClass }}" aria-hidden="true">*</span></label>
+            <div class="{{ $wrapClass }}">
+              <input class="{{ $inputClass }}" type="password" id="sp-new" name="password" autocomplete="new-password" aria-describedby="sp-rules" required>
+              <button type="button" class="{{ $toggleClass }}" data-password-toggle="sp-new" aria-label="Show password" aria-pressed="false">
                 <i class="ph ph-eye" aria-hidden="true"></i>
               </button>
             </div>
-            <small class="account-form__error d-none" data-field-error="password"></small>
+            <small class="{{ $errorClass }}" data-field-error="password"></small>
           </div>
 
-          <div class="account-form__field">
-            <label for="sp-confirm">Confirm new password <span class="account-form__required" aria-hidden="true">*</span></label>
-            <div class="account-password">
-              <input type="password" id="sp-confirm" name="password_confirmation" autocomplete="new-password" required>
-              <button type="button" class="account-password__toggle" data-password-toggle="sp-confirm" aria-label="Show password" aria-pressed="false">
+          <div class="{{ $fieldClass }}">
+            <label class="{{ $labelClass }}" for="sp-confirm">Confirm new password <span class="{{ $requiredClass }}" aria-hidden="true">*</span></label>
+            <div class="{{ $wrapClass }}">
+              <input class="{{ $inputClass }}" type="password" id="sp-confirm" name="password_confirmation" autocomplete="new-password" required>
+              <button type="button" class="{{ $toggleClass }}" data-password-toggle="sp-confirm" aria-label="Show password" aria-pressed="false">
                 <i class="ph ph-eye" aria-hidden="true"></i>
               </button>
             </div>
-            <small class="account-form__error d-none" data-field-error="password_confirmation"></small>
+            <small class="{{ $errorClass }}" data-field-error="password_confirmation"></small>
           </div>
         </div>
 
@@ -81,9 +93,9 @@ $rules = [
           @endforeach
         </ul>
 
-        <p class="account-form__status d-none" role="status" aria-live="polite" data-password-status></p>
+        <p class="{{ $statusClass }}" role="status" aria-live="polite" data-password-status></p>
 
-        <div class="account-form__actions">
+        <div class="flex">
           <button type="submit" class="account-btn account-btn--primary" data-password-save disabled>Save new password</button>
         </div>
       </form>

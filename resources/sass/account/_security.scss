@@ -1,5 +1,5 @@
 // Account > Security. Reuses .account-card, .account-form*, .account-badge and .account-btn; this file
-// only adds the password field with its eye button, the requirement checklist and the method rows.
+// only adds the requirement checklist and the method rows.
 // Tokens only, 4px grid. Proximity: card-to-card 24px, row-to-row 16px.
 
 .account-security {
@@ -7,11 +7,6 @@
     flex-direction: column;
     gap: $sp-6;
     max-width: 60rem;
-
-    // Current password sits on its own row; new + confirm share a row once the card is wide enough.
-    &__fields {
-        row-gap: $sp-4;
-    }
 
     &__rules {
         display: grid;
@@ -106,42 +101,5 @@
         color: $admin-text-muted;
         font-size: 0.875rem;
         overflow-wrap: anywhere;
-    }
-}
-
-// Password input with the show/hide button inside its right edge.
-.account-password {
-    position: relative;
-
-    input {
-        padding-right: $sp-12;
-    }
-
-    &__toggle {
-        position: absolute;
-        top: 50%;
-        right: $sp-2;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 2rem;
-        height: 2rem;
-        padding: 0;
-        border: 0;
-        border-radius: $admin-radius-md;
-        background: transparent;
-        color: $admin-text-muted;
-        font-size: 1.25rem;
-        transform: translateY(-50%);
-        cursor: pointer;
-
-        &:hover {
-            color: $admin-text-primary;
-        }
-
-        &:focus-visible {
-            outline: $admin-focus-ring-width solid $admin-focus-ring;
-            outline-offset: $admin-focus-ring-offset;
-        }
     }
 }

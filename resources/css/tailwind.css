@@ -38,6 +38,7 @@
 @source "../views/components/profile/status.blade.php";
 @source "../views/admin/account.blade.php";
 @source "../views/user/account/profile.blade.php";
+@source "../views/user/account/security.blade.php";
 @source "../js/chat/chat.js";
 @source "../js/chat/confirm-dialog.js";
 @source "../js/chat/widget.js";
