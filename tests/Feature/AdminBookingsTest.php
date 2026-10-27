@@ -103,43 +103,187 @@ class AdminBookingsTest extends TestCase
     public function test_admin_can_decline_a_pending_booking(): void
     {
         $booking = $this->booking();
+        $reason = 'The requested date is fully booked.';
 
-        $this->postJson(route('admin.bookings.status', $booking), ['action' => 'decline'])
+        $this->postJson(route('admin.bookings.status', $booking), ['action' => 'decline', 'reason' => $reason])
             ->assertOk()
-            ->assertJsonPath('booking.status', 'declined');
+            ->assertJsonPath('booking.status', 'declined')
+            ->assertJsonPath('booking.status_reason', $reason);
 
         $this->assertDatabaseHas('bookings', [
             'id' => $booking->id,
             'status' => 'declined',
+            'status_reason' => $reason,
         ]);
     }
 
     public function test_admin_can_cancel_a_booking_waiting_for_payment(): void
     {
         $booking = $this->booking(['status' => 'pending_payment']);
+        $reason = 'We could not confirm the schedule for this event.';
 
-        $this->postJson(route('admin.bookings.status', $booking), ['action' => 'cancel'])
+        $this->postJson(route('admin.bookings.status', $booking), ['action' => 'cancel', 'reason' => $reason])
             ->assertOk()
-            ->assertJsonPath('booking.status', 'cancelled');
+            ->assertJsonPath('booking.status', 'cancelled')
+            ->assertJsonPath('booking.cancellation.status', 'cancelled_by_admin')
+            ->assertJsonPath('booking.cancellation.admin_reason', $reason);
 
         $this->assertDatabaseHas('bookings', [
             'id' => $booking->id,
             'status' => 'cancelled',
+            'previous_status' => 'pending_payment',
+            'admin_cancellation_reason' => $reason,
+            'admin_cancellation_action' => null,
         ]);
     }
 
     public function test_admin_can_cancel_an_approved_booking(): void
     {
         $booking = $this->booking(['status' => 'approved']);
+        $reason = 'The event had to be called off by J&G.';
 
-        $this->postJson(route('admin.bookings.status', $booking), ['action' => 'cancel'])
+        $this->postJson(route('admin.bookings.status', $booking), ['action' => 'cancel', 'reason' => $reason])
             ->assertOk()
             ->assertJsonPath('booking.status', 'cancelled');
 
         $this->assertDatabaseHas('bookings', [
             'id' => $booking->id,
             'status' => 'cancelled',
+            'previous_status' => 'approved',
+            'admin_cancellation_reason' => $reason,
         ]);
+    }
+
+    public function test_admin_approves_a_cancellation_request_and_keeps_the_client_reason(): void
+    {
+        $userReason = 'Our venue cancelled on us, so we cannot proceed.';
+        $adminNote = 'Approved. We are sorry to hear about the venue.';
+        $booking = $this->booking([
+            'status' => 'pending_cancellation',
+            'previous_status' => 'approved',
+            'user_cancellation_reason' => $userReason,
+            'user_cancelled_at' => now(),
+        ]);
+
+        $this->postJson(route('admin.bookings.cancellation.review', $booking), [
+            'action' => 'approve',
+            'reason' => $adminNote,
+        ])
+            ->assertOk()
+            ->assertJsonPath('booking.status', 'cancelled')
+            ->assertJsonPath('booking.cancellation.status', 'approved')
+            ->assertJsonPath('booking.cancellation.user_reason', $userReason)
+            ->assertJsonPath('booking.cancellation.admin_reason', $adminNote);
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $booking->id,
+            'status' => 'cancelled',
+            'user_cancellation_reason' => $userReason,
+            'admin_cancellation_action' => 'approved',
+            'admin_cancellation_reason' => $adminNote,
+        ]);
+    }
+
+    public function test_admin_declines_a_cancellation_request_and_restores_the_previous_status(): void
+    {
+        $userReason = 'Our venue cancelled on us, so we cannot proceed.';
+        $adminReason = 'We already ordered the equipment for your date.';
+        $booking = $this->booking([
+            'status' => 'pending_cancellation',
+            'previous_status' => 'pending_payment',
+            'user_cancellation_reason' => $userReason,
+            'user_cancelled_at' => now(),
+        ]);
+
+        $this->postJson(route('admin.bookings.cancellation.review', $booking), [
+            'action' => 'reject',
+            'reason' => $adminReason,
+        ])
+            ->assertOk()
+            ->assertJsonPath('booking.status', 'pending_payment')
+            ->assertJsonPath('booking.cancellation.status', 'declined')
+            ->assertJsonPath('booking.cancellation.user_reason', $userReason)
+            ->assertJsonPath('booking.cancellation.admin_reason', $adminReason);
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $booking->id,
+            'status' => 'pending_payment',
+            'previous_status' => 'pending_payment',
+            'user_cancellation_reason' => $userReason,
+            'admin_cancellation_action' => 'rejected',
+            'admin_cancellation_reason' => $adminReason,
+        ]);
+    }
+
+    public function test_declining_a_cancellation_request_requires_a_reason(): void
+    {
+        $booking = $this->booking([
+            'status' => 'pending_cancellation',
+            'previous_status' => 'approved',
+            'user_cancellation_reason' => 'Our venue cancelled on us, so we cannot proceed.',
+        ]);
+
+        $this->postJson(route('admin.bookings.cancellation.review', $booking), ['action' => 'reject'])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('reason');
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $booking->id,
+            'status' => 'pending_cancellation',
+            'admin_cancellation_action' => null,
+        ]);
+    }
+
+    public function test_admin_cannot_review_a_booking_without_a_pending_cancellation_request(): void
+    {
+        $booking = $this->booking(['status' => 'approved']);
+
+        $this->postJson(route('admin.bookings.cancellation.review', $booking), ['action' => 'approve'])
+            ->assertStatus(409);
+
+        $this->assertDatabaseHas('bookings', ['id' => $booking->id, 'status' => 'approved']);
+    }
+
+    public function test_bookings_json_includes_a_pending_cancellation_request_for_the_admin_modal(): void
+    {
+        $userReason = 'Our venue cancelled on us, so we cannot proceed.';
+        $booking = $this->booking([
+            'status' => 'pending_cancellation',
+            'previous_status' => 'approved',
+            'user_cancellation_reason' => $userReason,
+            'user_cancelled_at' => now(),
+        ]);
+
+        $this->getJson(route('admin.bookings.data'))
+            ->assertOk()
+            ->assertJsonPath('bookings.0.id', $booking->id)
+            ->assertJsonPath('bookings.0.status', 'pending_cancellation')
+            ->assertJsonPath('bookings.0.cancellation.status', 'pending')
+            ->assertJsonPath('bookings.0.cancellation.user_reason', $userReason)
+            ->assertJsonPath('bookings.0.cancellation.admin_reason', null);
+
+        $this->get(route('admin.bookings'))
+            ->assertOk()
+            ->assertSee('data-review-url-template', false)
+            ->assertSee('data-approve-cancellation', false)
+            ->assertSee('data-decline-cancellation', false)
+            ->assertSee($userReason);
+    }
+
+    public function test_only_admins_can_review_cancellation_requests(): void
+    {
+        $booking = $this->booking([
+            'status' => 'pending_cancellation',
+            'previous_status' => 'approved',
+            'user_cancellation_reason' => 'Our venue cancelled on us, so we cannot proceed.',
+        ]);
+
+        $this->actingAs(User::factory()->create());
+
+        $this->postJson(route('admin.bookings.cancellation.review', $booking), ['action' => 'approve'])
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('bookings', ['id' => $booking->id, 'status' => 'pending_cancellation']);
     }
 
     public function test_status_form_redirects_back_instead_of_rendering_json(): void
@@ -198,7 +342,10 @@ class AdminBookingsTest extends TestCase
             ->assertDontSee('name="action"', false);
 
         // …and the server refuses those actions too.
-        $this->postJson(route('admin.bookings.status', $booking), ['action' => 'cancel'])
+        $this->postJson(route('admin.bookings.status', $booking), [
+            'action' => 'cancel',
+            'reason' => 'Trying to cancel an already cancelled booking.',
+        ])
             ->assertStatus(422);
         $this->postJson(route('admin.bookings.status', $booking), ['action' => 'approve'])
             ->assertStatus(422);
@@ -409,6 +556,13 @@ class AdminBookingsTest extends TestCase
             'client_address',
             'package_id',
             'submitted_at',
+            'previous_status',
+            'status_reason',
+            'user_cancellation_reason',
+            'user_cancelled_at',
+            'admin_cancellation_reason',
+            'admin_cancellation_action',
+            'admin_cancelled_at',
         ])->all());
 
         $booking->eventDetails()->create([

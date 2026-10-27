@@ -11,15 +11,17 @@ return [
 
   // Heading above the reason in View Details, by the status the booking ended in.
   'labels' => [
-    'declined'       => 'Reason for declining',
-    'cancelled'      => 'Reason for cancellation',
-    'user_cancelled' => 'Reason for cancellation',
+    'declined'        => 'Reason for declining',
+    'cancelled'       => 'Reason for cancellation',
+    'admin_cancelled' => 'Reason for cancellation',
+    'user_cancelled'  => 'Reason for cancellation',
   ],
 
   // Who gave the reason (admin side shows it; the client side shows "You" / "J&G").
   'by' => [
-    'declined'       => 'J&G',
-    'cancelled'      => 'J&G',
-    'user_cancelled' => 'Client',
+    'declined'        => 'J&G',
+    'cancelled'       => 'J&G',
+    'admin_cancelled' => 'J&G',
+    'user_cancelled'  => 'Client',
   ],
 ];

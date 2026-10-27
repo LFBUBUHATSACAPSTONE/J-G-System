@@ -12,8 +12,10 @@ return [
   //   pending --Approve--> pending_payment --Verify Payment--> approved
   //      \--Decline--> declined       \--Cancel--> cancelled      approved --Cancel--> cancelled
   //
-  // At any point the client may cancel it themselves from My Bookings: the status becomes
-  // `user_cancelled` (Account\AccountBookingController), which is its own filter option below.
+  // The client may ask to cancel from My Bookings. That request moves the booking to
+  // `pending_cancellation` and waits for the admin's answer in View Details:
+  // Approve -> `cancelled`, or Decline -> the status the booking had before the request.
+  // A direct admin Cancel (below) also ends in `cancelled`, with the admin's reason stored.
   //
   // A booking reaches Booking History when its payment is verified (approved + payment.state
   // paid/partial) or when it is cancelled / declined / cancelled by the client: see
@@ -122,6 +124,18 @@ return [
       ],
       'badge' => ['tone' => 'success', 'solid' => false],
     ],
+    // The client asked to cancel. Its Badge is a warning, not a danger, until an admin answers
+    // in View Details. No row buttons: the decision belongs in the modal, where the client's
+    // reason is visible next to the two buttons.
+    'pending_cancellation' => [
+      'label'     => 'Cancellation Requested',
+      'icon'      => 'clock',
+      'group'     => 'cancellation',
+      'highlight' => true,
+      'chip'      => 'Cancellation Request',
+      'actions'   => [],
+      'badge'     => ['tone' => 'warning', 'solid' => false],
+    ],
     'completed' => [
       'label'     => 'Completed',
       'icon'      => 'checks',
@@ -132,6 +146,16 @@ return [
     ],
     'cancelled' => [
       'label'     => 'Cancelled',
+      'icon'      => 'x-circle',
+      'group'     => 'cancelled',
+      'highlight' => false,
+      'actions'   => [],
+      'badge'     => ['tone' => 'danger', 'solid' => false],
+    ],
+    // Kept for rows cancelled by an earlier version of the direct-cancel flow. New direct
+    // cancellations use `cancelled` plus admin_cancellation_reason (null action).
+    'admin_cancelled' => [
+      'label'     => 'Cancelled by Admin',
       'icon'      => 'x-circle',
       'group'     => 'cancelled',
       'highlight' => false,
@@ -164,6 +188,7 @@ return [
     'all'            => 'All',
     'approved'       => 'Approved',
     'pending'        => 'Pending Approval',
+    'cancellation'   => 'Cancellation Requests',
     'payment'        => 'Payment to Verify',
     'cancelled'      => 'Cancelled',
     'user_cancelled' => 'User Cancelled',

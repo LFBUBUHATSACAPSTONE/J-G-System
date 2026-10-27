@@ -201,6 +201,16 @@ button.admin-pill {
         }
     }
 
+    // Danger: a destructive confirmation inside the booking modal (Approve Cancellation).
+    &--danger {
+        background: $admin-danger;
+        color: $admin-on-danger;
+
+        &:hover {
+            background: $admin-danger-text;
+        }
+    }
+
     // Small: compact, one line, optional leading icon.
     &--sm {
         gap: $sp-2;

@@ -12,6 +12,12 @@ class Booking extends Model
 {
     use HasFactory;
 
+    // Cancellation statuses
+    public const STATUS_PENDING_CANCELLATION = 'pending_cancellation';
+    public const STATUS_USER_CANCELLED = 'user_cancelled'; // Legacy self-cancel status
+    public const STATUS_ADMIN_CANCELLED = 'admin_cancelled'; // Legacy direct-cancel status
+    public const STATUS_CANCELLED = 'cancelled';
+
     protected $fillable = [
         'user_id',
         'reference',
@@ -24,6 +30,13 @@ class Booking extends Model
         'rescheduled_from_id',
         'submitted_at',
         'approved_at',
+        'previous_status',
+        'status_reason',
+        'user_cancellation_reason',
+        'user_cancelled_at',
+        'admin_cancellation_reason',
+        'admin_cancellation_action',
+        'admin_cancelled_at',
     ];
 
     protected function casts(): array
@@ -31,6 +44,8 @@ class Booking extends Model
         return [
             'submitted_at' => 'datetime',
             'approved_at' => 'datetime',
+            'user_cancelled_at' => 'datetime',
+            'admin_cancelled_at' => 'datetime',
         ];
     }
 
@@ -73,6 +88,60 @@ class Booking extends Model
         return $this->belongsTo(Package::class);
     }
 
+    /**
+     * The cancellation lifecycle of this booking, or null when there is nothing to show.
+     *
+     * `status` is the answer the client sees:
+     *   pending            the client asked; the admin has not decided yet
+     *   approved           the admin approved the client's request (booking status: cancelled)
+     *   declined           the admin declined the client's request (booking stays active)
+     *   cancelled_by_admin the admin cancelled directly, without a client request
+     *
+     * The two reasons live in separate columns on purpose: approving or declining must never
+     * overwrite what the client wrote, and a direct admin cancellation has no client reason.
+     */
+    public function cancellationDetails(): ?array
+    {
+        $hasUserRequest = filled($this->user_cancellation_reason) || $this->user_cancelled_at !== null;
+        $hasAdminAction = $this->admin_cancellation_action !== null
+            || filled($this->admin_cancellation_reason)
+            || $this->admin_cancelled_at !== null;
+
+        $status = match (true) {
+            $this->status === self::STATUS_PENDING_CANCELLATION => 'pending',
+            $this->admin_cancellation_action === 'approved' => 'approved',
+            $this->admin_cancellation_action === 'rejected' => 'declined',
+            $this->admin_cancellation_action === null
+                && filled($this->admin_cancellation_reason)
+                && in_array($this->status, [self::STATUS_CANCELLED, self::STATUS_ADMIN_CANCELLED], true) => 'cancelled_by_admin',
+            ! $hasUserRequest && ! $hasAdminAction => match ($this->status) {
+                self::STATUS_USER_CANCELLED => 'user_cancelled',
+                self::STATUS_CANCELLED, self::STATUS_ADMIN_CANCELLED => 'cancelled',
+                default => null,
+            },
+            default => null,
+        };
+
+        if ($status === null) {
+            return null;
+        }
+
+        // A legacy terminal status (rows cancelled before the request workflow existed) has no
+        // reasons to show. Leave it to the generic status_reason note instead of an empty section.
+        if (! $hasUserRequest && ! $hasAdminAction && in_array($status, ['cancelled', 'user_cancelled'], true)) {
+            return null;
+        }
+
+        return [
+            'status' => $status,
+            'user_reason' => $this->user_cancellation_reason,
+            'user_cancelled_at' => $this->user_cancelled_at?->toIso8601String(),
+            'admin_reason' => $this->admin_cancellation_reason,
+            'admin_action' => $this->admin_cancellation_action,
+            'admin_cancelled_at' => $this->admin_cancelled_at?->toIso8601String(),
+        ];
+    }
+
     public function toAdminArray(): array
     {
         $this->loadMissing(['eventDetails', 'schedule', 'payment', 'package']);
@@ -84,7 +153,7 @@ class Booking extends Model
         $paymentMethod = $payment?->payment_method;
         $paymentAmount = $payment?->payment_amount;
 
-        return [
+        $base = [
             'id' => $this->id,
             'reference' => str_starts_with($this->reference, '#') ? $this->reference : '#'.$this->reference,
             'status' => $this->status,
@@ -134,7 +203,17 @@ class Booking extends Model
                 'price' => $package?->price === null ? null : (float) $package->price,
             ],
             'submitted_at' => $this->submitted_at,
+            // Why a booking was declined. The cancellation request has its own, richer payload
+            // below; this column is only used by the old "Decline booking" action.
+            'status_reason' => $this->status_reason,
         ];
+
+        // The client's request and the admin's decision (pending / approved / declined / direct).
+        if ($cancellation = $this->cancellationDetails()) {
+            $base['cancellation'] = $cancellation;
+        }
+
+        return $base;
     }
 
     /**
@@ -178,7 +257,7 @@ class Booking extends Model
             ? $this->rescheduleBlockReason($alreadyRescheduled)
             : null;
 
-        return [
+        $accountData = [
             'id' => $data['id'],
             'reference' => $data['reference'],
             'status' => $data['status'],
@@ -198,7 +277,14 @@ class Booking extends Model
             ],
             'can_reschedule' => $this->status === 'user_cancelled' && $reason === null,
             'reschedule_note' => $reason,
+            'status_reason' => $data['status_reason'],
         ];
+
+        if (isset($data['cancellation'])) {
+            $accountData['cancellation'] = $data['cancellation'];
+        }
+
+        return $accountData;
     }
 
     public static function fullCapacityDates(): array

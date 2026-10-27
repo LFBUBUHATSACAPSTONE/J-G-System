@@ -37,11 +37,155 @@ class BookingController extends Controller
         ]);
     }
 
+    /**
+     * Admin reviews a client's cancellation request.
+     *
+     * POST /admin/bookings/{booking}/cancellation/review
+     *
+     * Request body:
+     *   action: 'approve' (or 'reject' / 'decline')  required
+     *   reason: string  required to decline, optional to approve
+     *
+     * Approving cancels the booking and keeps the client's original reason. Declining restores
+     * the status the booking had when the request was made and stores the admin's reason next to
+     * (never instead of) the client's reason.
+     *
+     * Responses:
+     *   200 {ok: true, message, booking}   successfully processed
+     *   404 {message}                      booking not found
+     *   409 {message}                      booking has no pending cancellation request
+     *   422 {message, errors}              validation failed
+     */
+    public function reviewCancellation(Request $request, string $booking): JsonResponse
+    {
+        $min = (int) config('cancellation.min', 10);
+        $max = (int) config('cancellation.max', 500);
+        $reason = trim((string) $request->input('reason', ''));
+        $action = $request->input('action');
+
+        // Accept both "reject" (the internal name) and "decline" (the wording in the UI).
+        $rules = [
+            'action' => ['required', 'in:approve,reject,decline'],
+            'reason' => ['nullable', 'string', "min:{$min}", "max:{$max}"],
+        ];
+
+        if (in_array($action, ['reject', 'decline'], true)) {
+            $rules['reason'] = ['required', 'string', "min:{$min}", "max:{$max}"];
+        }
+
+        $validator = Validator::make(
+            ['action' => $action, 'reason' => $reason !== '' ? $reason : null],
+            $rules,
+            [
+                'action.required' => 'Please specify whether to approve or decline the request.',
+                'action.in' => 'Action must be approve, reject or decline.',
+                'reason.required' => 'Please provide a reason for declining the request.',
+                'reason.min' => "The reason must be at least {$min} characters.",
+                'reason.max' => "The reason must not exceed {$max} characters.",
+            ],
+        );
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $validated = $validator->validated();
+        $approve = $validated['action'] === 'approve';
+
+        $result = DB::transaction(function () use ($booking, $approve, $validated): array {
+            $record = Booking::query()->lockForUpdate()->find($booking);
+
+            if (! $record) {
+                return ['not_found' => true];
+            }
+
+            if ($record->status !== Booking::STATUS_PENDING_CANCELLATION) {
+                return ['invalid_status' => true];
+            }
+
+            if ($approve) {
+                // The client asked first, so their reason stays the primary reason shown.
+                $record->status = Booking::STATUS_CANCELLED;
+                $record->admin_cancellation_action = 'approved';
+                $record->admin_cancelled_at = now();
+
+                // An approval note is optional and sits beside the client's reason.
+                if (! empty($validated['reason'])) {
+                    $record->admin_cancellation_reason = $validated['reason'];
+                }
+            } else {
+                // Restore the status saved when the request was made. Older requests (before
+                // previous_status was written) fall back to the same rules the booking flow used.
+                $restore = $record->previous_status;
+                if (! in_array($restore, ['pending', 'pending_payment', 'approved'], true)) {
+                    $record->load('payment');
+                    $restore = match (true) {
+                        $record->approved_at !== null => 'approved',
+                        in_array($record->payment?->payment_state, ['paid', 'partial'], true) => 'approved',
+                        $record->payment?->payment_receipt_path !== null => 'pending_payment',
+                        default => 'pending',
+                    };
+                }
+
+                $record->status = $restore;
+                $record->admin_cancellation_action = 'rejected';
+                $record->admin_cancellation_reason = $validated['reason'];
+                $record->admin_cancelled_at = now();
+            }
+
+            $record->save();
+
+            return ['booking' => $record->fresh(['eventDetails', 'schedule', 'payment', 'package'])->toAdminArray()];
+        });
+
+        if (isset($result['not_found'])) {
+            return response()->json(['message' => 'Booking not found.'], 404);
+        }
+
+        if (isset($result['invalid_status'])) {
+            return response()->json([
+                'message' => 'This booking does not have a pending cancellation request.',
+            ], 409);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'message' => $approve
+                ? 'Cancellation request approved. The booking has been cancelled.'
+                : 'Cancellation request declined. The booking remains active.',
+            'booking' => $result['booking'],
+        ]);
+    }
+
     public function updateStatus(Request $request, string $booking): JsonResponse|RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
+        $min = (int) config('cancellation.min', 10);
+        $max = (int) config('cancellation.max', 500);
+        $reason = trim((string) $request->input('reason', ''));
+        $action = $request->input('action');
+
+        $rules = [
             'action' => ['required', 'in:approve,decline,cancel,verify'],
-        ]);
+        ];
+
+        // Decline and Cancel show a required reason box in the shared action modal. The reason is
+        // shown to the client, so it is validated here too (same limits as the modal).
+        if (in_array($action, ['decline', 'cancel'], true)) {
+            $rules['reason'] = ['required', 'string', "min:{$min}", "max:{$max}"];
+        }
+
+        $validator = Validator::make(
+            ['action' => $action, 'reason' => $reason !== '' ? $reason : null],
+            $rules,
+            [
+                'reason.required' => 'Please provide a reason.',
+                'reason.min' => "The reason must be at least {$min} characters.",
+                'reason.max' => "The reason must not exceed {$max} characters.",
+            ],
+        );
 
         if ($validator->fails()) {
             if (! $request->expectsJson()) {
@@ -57,7 +201,9 @@ class BookingController extends Controller
         }
 
         $action = $validator->validated()['action'];
-        $result = DB::transaction(function () use ($booking, $action): array {
+        $reason = $validator->validated()['reason'] ?? null;
+
+        $result = DB::transaction(function () use ($booking, $action, $reason): array {
             if ($action === 'approve') {
                 $capacityLock = DB::table('booking_capacity_locks')
                     ->where('id', 1)
@@ -135,8 +281,17 @@ class BookingController extends Controller
                 $record->status = 'pending_payment';
             } elseif ($action === 'decline') {
                 $record->status = 'declined';
+                // Shown in both View Details screens (config/cancellation.php labels).
+                $record->status_reason = $reason;
             } elseif ($action === 'cancel') {
-                $record->status = 'cancelled';
+                // Direct admin cancellation, with no client request. Keep the client's original
+                // reason untouched (it may exist from an earlier, declined request) and store the
+                // admin's reason in its own column.
+                $record->previous_status = $record->status;
+                $record->status = Booking::STATUS_CANCELLED;
+                $record->admin_cancellation_reason = $reason;
+                $record->admin_cancellation_action = null; // null = admin-initiated
+                $record->admin_cancelled_at = now();
             } else {
                 $record->load('payment');
                 if (! $record->payment) {

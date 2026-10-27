@@ -12,7 +12,8 @@ return [
   // Statuses that take up a slot. A booking only counts once the admin has approved it, so
   // `pending` never does. `pending_payment` already counts: the admin said yes at Approve, the
   // client is only waiting for the payment check, so the day stays held for them.
-  // Cancelled / declined bookings are not listed, so they free their days.
+  // Cancelled / declined bookings are not listed, so they free their days. A pending
+  // cancellation request does not hold a slot either: the date is free until the admin decides.
   'counted_statuses' => ['pending_payment', 'approved'],
 
   // Admin Bookings modal: from this many days before the event's start date, the admin can no

@@ -1,23 +1,32 @@
 /**
- * Account > My Bookings: tab filter, details modal and cancel request.
+ * Account > My Bookings: tab filter, details modal and cancellation request.
  * FRONT END ONLY. Every booking comes from the server-rendered cards (their data-booking JSON); this
  * file never decides a status, it shows what the server answers. Same pattern as profile.js.
  *
  * Back-end contract for `user.account.bookings.cancel` (POST, JSON body {"reason": "…"}, {booking} = id):
- *   200 {"ok": true, "message": "…", "booking": {"id": "…", "status": "user_cancelled", "can_reschedule": true|false}}
+ *   200 {"ok": true, "message": "…", "booking": {"id": "…", "status": "pending_cancellation", "cancellation": {…}}}
  *   401 / 403 / 409 {"message": "…"}  -> shown inside the cancel modal
  *   422 {"message": "…", "errors": {"reason": ["…"]}}  -> the reason message is shown under the reason box
- * The cancel modal is the shared action modal (js/shared/action-modal.js) with a required reason; the
- * reason is also stored on the card (data-booking.reason) so View details shows it right away.
- * Cards cancelled or declined earlier carry `reason` from `status_reason` on the booking array.
- * Reschedule links point at the existing `user.booking?reschedule=<id>` page (data-reschedule-url).
+ * The request does NOT cancel the booking: it moves to `pending_cancellation` and waits for an admin.
+ * The cancellation object carries the user's reason and, later, the admin's decision/reason, so View
+ * details can show pending / approved / declined without a reload. Generic booking declines still use
+ * `reason` from `status_reason`; reschedule links point at `user.booking?reschedule=<id>`.
  */
 
-import { Modal } from "bootstrap";
 import { getCsrfToken } from "../auth/csrf.js";
 import { openActionModal, reasonError } from "../shared/action-modal.js";
 
 const ICON_CLASS = "ph ph-";
+
+function formatDateTime(value) {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleString(undefined, {
+        dateStyle: "medium",
+        timeStyle: "short",
+    });
+}
 
 function initBookings() {
     const root = document.querySelector("[data-account-bookings]");
@@ -92,6 +101,104 @@ function initBookings() {
 
     // Details modal
     const detailsModal = document.getElementById("bookingDetailsModal");
+
+    // The client's request and J&G's answer, in one block. The user's reason is always shown;
+    // the admin block is added only when there is an admin decision or a direct cancellation.
+    function renderCancellation(data) {
+        if (!detailsModal) return;
+
+        const box = detailsModal.querySelector("[data-bk-cancellation]");
+        if (!box) return;
+
+        const cancellation = data.cancellation;
+        const hasReason = Boolean(
+            cancellation?.user_reason || cancellation?.admin_reason,
+        );
+        const show =
+            Boolean(cancellation) &&
+            (cancellation.status === "pending" || hasReason);
+
+        box.hidden = !show;
+        if (!show) return;
+
+        const title = box.querySelector("[data-bk-cancellation-title]");
+        const meta = box.querySelector("[data-bk-cancellation-meta]");
+        const userBlock = box.querySelector("[data-bk-cancellation-user]");
+        const userReason = box.querySelector(
+            "[data-bk-cancellation-user-reason]",
+        );
+        const userDate = box.querySelector("[data-bk-cancellation-user-date]");
+        const adminBlock = box.querySelector("[data-bk-cancellation-admin]");
+        const adminLabel = box.querySelector(
+            "[data-bk-cancellation-admin-label]",
+        );
+        const adminReason = box.querySelector(
+            "[data-bk-cancellation-admin-reason]",
+        );
+        const adminDate = box.querySelector("[data-bk-cancellation-admin-date]");
+
+        const when = formatDateTime(cancellation.admin_cancelled_at);
+        const requested = formatDateTime(cancellation.user_cancelled_at);
+
+        switch (cancellation.status) {
+            case "pending":
+                title.textContent = "Cancellation request pending";
+                meta.textContent =
+                    "Waiting for J&G to review your request. The booking stays active for now.";
+                break;
+            case "approved":
+                title.textContent = "Cancellation approved";
+                meta.textContent = when
+                    ? `J&G approved your request on ${when}. The booking is cancelled.`
+                    : "J&G approved your request. The booking is cancelled.";
+                break;
+            case "declined":
+                title.textContent = "Cancellation request declined";
+                meta.textContent = when
+                    ? `J&G declined your request on ${when}. The booking stays active.`
+                    : "J&G declined your request. The booking stays active.";
+                break;
+            case "cancelled_by_admin":
+                title.textContent = "Cancelled by J&G";
+                meta.textContent = when
+                    ? `J&G cancelled this booking on ${when}.`
+                    : "J&G cancelled this booking.";
+                break;
+            case "user_cancelled":
+                title.textContent = "Cancelled by you";
+                meta.textContent = "";
+                break;
+            default:
+                title.textContent = "Cancelled";
+                meta.textContent = "";
+        }
+
+        userBlock.hidden = !cancellation.user_reason;
+        if (cancellation.user_reason) {
+            userReason.textContent = cancellation.user_reason;
+            userDate.textContent = requested ? `Submitted ${requested}` : "";
+            userDate.hidden = !requested;
+        }
+
+        // The admin's reason is shown only when J&G is the one who ended the booking: a decline
+        // (the request was refused) or a direct cancellation. On an approved request the client's
+        // own reason is the reason; an optional approval note is not shown here.
+        const showAdminReason =
+            cancellation.status === "declined" ||
+            cancellation.status === "cancelled_by_admin";
+
+        adminBlock.hidden = !(showAdminReason && cancellation.admin_reason);
+        if (showAdminReason && cancellation.admin_reason) {
+            adminLabel.textContent =
+                cancellation.status === "declined"
+                    ? "J&G's reason for declining"
+                    : "J&G's reason for cancelling";
+            adminReason.textContent = cancellation.admin_reason;
+            adminDate.textContent = when;
+            adminDate.hidden = !when;
+        }
+    }
+
     detailsModal?.addEventListener("show.bs.modal", (event) => {
         const card = event.relatedTarget?.closest("[data-booking-card]");
         if (!card) return;
@@ -106,7 +213,7 @@ function initBookings() {
         });
         paintBadge(detailsModal.querySelector("[data-bk-badge]"), data);
 
-        // Why it was cancelled or declined, when there is a reason.
+        // Why it was cancelled or declined (generic booking decline / legacy cancellation).
         const reasonBox = detailsModal.querySelector("[data-bk-reason]");
         reasonBox.hidden = !data.reason;
         if (data.reason) {
@@ -117,73 +224,80 @@ function initBookings() {
             reasonBox.querySelector("[data-bk-reason-text]").textContent =
                 data.reason;
         }
+
+        // The cancellation request lifecycle (pending / approved / declined / direct admin).
+        renderCancellation(data);
     });
 
-    // Cancel modal: the shared action modal, with a required reason.
+    // Cancel modal: the shared action modal, with a required reason. This sends a REQUEST; it
+    // never changes the card to "cancelled" on its own.
     const cancelModalEl = document.getElementById("cancelBookingModal");
-    let cancelCard = null;
 
     function showPageStatus(message) {
+        if (!statusEl) return;
         statusEl.textContent = message;
         statusEl.classList.remove("d-none");
     }
 
-    // Swap the card to the "cancelled by you" state with what the server answered.
-    function markCancelled(card, result, reason) {
+    // Swap the card to the pending state with what the server answered. The group stays
+    // "upcoming"/"past": the booking is still active until an admin approves the request.
+    function markCancellationRequested(card, result, reason) {
         const data = readCard(card);
-        const meta = statuses.user_cancelled ?? {
-            label: "Cancelled by you",
-            icon: "x-circle",
-            tone: "danger",
+        const meta = statuses.pending_cancellation ?? {
+            label: "Cancellation pending",
+            icon: "clock",
+            tone: "warning",
+        };
+        const cancellation = result.cancellation ?? {
+            status: "pending",
+            user_reason: reason,
+            user_cancelled_at: new Date().toISOString(),
+            admin_reason: null,
+            admin_action: null,
+            admin_cancelled_at: null,
         };
         const next = {
             ...data,
-            status: result.status ?? "user_cancelled",
+            status: result.status ?? "pending_cancellation",
             label: meta.label,
             icon: meta.icon,
             tone: meta.tone,
-            group: "cancelled",
             can_cancel: false,
-            can_reschedule: Boolean(result.can_reschedule),
-            reason: result.status_reason ?? reason,
-            reason_label: "Reason for cancellation",
-            reason_by: "You",
+            cancellation,
         };
         writeCard(card, next);
-        card.dataset.group = "cancelled";
         card.dataset.status = next.status;
         paintBadge(card.querySelector("[data-booking-badge]"), next);
 
         const actions = card.querySelector("[data-booking-actions]");
         actions.querySelector("[data-booking-cancel]")?.remove();
-        if (next.can_reschedule) {
-            const link = document.createElement("a");
-            link.className = "account-btn account-btn--primary";
-            link.href = `${rescheduleUrl}?reschedule=${encodeURIComponent(next.id)}`;
-            link.textContent = "Reschedule";
-            link.setAttribute("data-booking-reschedule", "");
-            actions.append(link);
+        if (!actions.querySelector("[data-booking-cancellation-note]")) {
+            const note = document.createElement("p");
+            note.className = "account-booking__note";
+            note.setAttribute("data-booking-cancellation-note", "");
+            note.textContent =
+                "Cancellation request sent. Waiting for J&G to review it.";
+            actions.append(note);
         }
     }
 
-    // The card's Cancel booking button opens the modal (it no longer uses data-bs-toggle).
+    // The card's Cancel booking button opens the request modal (it no longer uses data-bs-toggle).
     root.addEventListener("click", async (event) => {
         const button = event.target.closest("[data-booking-cancel]");
         if (!button || !cancelModalEl) return;
         const card = button.closest("[data-booking-card]");
         if (!card) return;
-        cancelCard = card;
         const { id, reference, event: eventName } = readCard(card);
 
         await openActionModal(cancelModalEl, {
-            title: "Cancel this booking?",
-            message: `You are about to cancel ${eventName} (${reference}). You can reschedule it once, within the same month, after you cancel.`,
-            confirmLabel: "Cancel booking",
+            title: "Request a cancellation?",
+            message: `You are about to ask J&G to cancel ${eventName} (${reference}). The booking stays active until an admin reviews your request.`,
+            confirmLabel: "Send request",
             tone: "danger",
             reason: true,
             reasonLabel: "Reason for cancellation",
             reasonHint:
-                "Tell J&G why you are cancelling. This is saved in your booking details.",
+                "Tell J&G why you want to cancel. This is saved in your booking details.",
             onConfirm: async (reason) => {
                 let response;
                 let data;
@@ -215,19 +329,19 @@ function initBookings() {
                     if (reasonMessage) throw reasonError(reasonMessage);
                     throw new Error(
                         data.message ||
-                            "We couldn't cancel this booking. Please try again.",
+                            "We couldn't send your cancellation request. Please try again.",
                     );
                 }
 
-                markCancelled(card, data.booking ?? {}, reason);
+                markCancellationRequested(card, data.booking ?? {}, reason);
                 updateCounts();
                 applyFilter();
                 showPageStatus(
-                    data.message || `Booking ${reference} has been cancelled.`,
+                    data.message ||
+                        `Cancellation request for booking ${reference} sent.`,
                 );
             },
         });
-        cancelCard = null;
     });
 
     applyFilter();

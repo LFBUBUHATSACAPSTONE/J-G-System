@@ -71,6 +71,13 @@ class UserAccountTest extends TestCase
             $table->unsignedBigInteger('rescheduled_from_id')->nullable()->unique();
             $table->timestamp('submitted_at')->nullable()->index();
             $table->timestamp('approved_at')->nullable();
+            $table->string('previous_status')->nullable();
+            $table->text('status_reason')->nullable();
+            $table->text('user_cancellation_reason')->nullable();
+            $table->timestamp('user_cancelled_at')->nullable();
+            $table->text('admin_cancellation_reason')->nullable();
+            $table->string('admin_cancellation_action')->nullable();
+            $table->timestamp('admin_cancelled_at')->nullable();
             $table->timestamps();
         });
         Schema::connection('sqlite')->create('booking_events', function (Blueprint $table) {
@@ -444,33 +451,81 @@ class UserAccountTest extends TestCase
         $this->assertNull($rows[$approved->id]['reschedule_note']);
     }
 
-    public function test_cancel_sets_the_status_and_keeps_every_row(): void
+    public function test_cancel_request_sets_pending_status_and_keeps_every_row(): void
     {
         $user = $this->makeUser();
         $booking = $this->makeBooking($user, ['status' => 'approved'], 40);
+        $reason = 'The venue changed and we no longer need the package.';
 
-        $this->actingAs($user)->postJson(route('user.account.bookings.cancel', ['booking' => $booking->id]))
+        $this->actingAs($user)->postJson(route('user.account.bookings.cancel', ['booking' => $booking->id]), ['reason' => $reason])
             ->assertOk()
             ->assertJsonPath('ok', true)
             ->assertJsonPath('booking.id', $booking->id)
-            ->assertJsonPath('booking.status', 'user_cancelled')
-            ->assertJsonPath('booking.can_reschedule', true);
+            ->assertJsonPath('booking.status', 'pending_cancellation')
+            ->assertJsonPath('booking.cancellation.status', 'pending')
+            ->assertJsonPath('booking.cancellation.user_reason', $reason);
 
-        $this->assertDatabaseHas('bookings', ['id' => $booking->id, 'status' => 'user_cancelled']);
+        $this->assertDatabaseHas('bookings', [
+            'id' => $booking->id,
+            'status' => 'pending_cancellation',
+            'previous_status' => 'approved',
+            'user_cancellation_reason' => $reason,
+            'admin_cancellation_reason' => null,
+            'admin_cancellation_action' => null,
+        ]);
+        $this->assertNotNull($booking->fresh()->user_cancelled_at);
         $this->assertDatabaseCount('bookings', 1);
         $this->assertDatabaseCount('booking_events', 1);
         $this->assertDatabaseCount('booking_schedules', 1);
         $this->assertDatabaseCount('booking_payments', 1);
     }
 
+    public function test_cancel_request_requires_a_valid_reason(): void
+    {
+        $user = $this->makeUser();
+        $booking = $this->makeBooking($user, ['status' => 'approved'], 40);
+
+        $this->actingAs($user)->postJson(route('user.account.bookings.cancel', ['booking' => $booking->id]))
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('reason');
+
+        $this->actingAs($user)->postJson(route('user.account.bookings.cancel', ['booking' => $booking->id]), ['reason' => 'too short'])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('reason');
+
+        $this->actingAs($user)->postJson(route('user.account.bookings.cancel', ['booking' => $booking->id]), ['reason' => str_repeat('a', 501)])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('reason');
+
+        $this->assertDatabaseHas('bookings', ['id' => $booking->id, 'status' => 'approved']);
+    }
+
+    public function test_the_bookings_payload_exposes_the_cancellation_request(): void
+    {
+        $user = $this->makeUser();
+        $booking = $this->makeBooking($user, ['status' => 'approved'], 40);
+        $reason = 'The venue changed and we no longer need the package.';
+
+        $this->actingAs($user)->postJson(route('user.account.bookings.cancel', ['booking' => $booking->id]), ['reason' => $reason])
+            ->assertOk();
+
+        $this->getJson(route('user.account.bookings'))
+            ->assertOk()
+            ->assertJsonPath('bookings.0.status', 'pending_cancellation')
+            ->assertJsonPath('bookings.0.cancellation.status', 'pending')
+            ->assertJsonPath('bookings.0.cancellation.user_reason', $reason)
+            ->assertJsonPath('bookings.0.cancellation.admin_reason', null);
+    }
+
     public function test_cancel_refuses_someone_elses_booking(): void
     {
         $user = $this->makeUser();
         $booking = $this->makeBooking($this->makeUser(), ['status' => 'approved']);
+        $reason = 'This booking does not belong to me at all.';
 
-        $this->actingAs($user)->postJson(route('user.account.bookings.cancel', ['booking' => $booking->id]))
+        $this->actingAs($user)->postJson(route('user.account.bookings.cancel', ['booking' => $booking->id]), ['reason' => $reason])
             ->assertForbidden();
-        $this->actingAs($user)->postJson(route('user.account.bookings.cancel', ['booking' => 9999]))
+        $this->actingAs($user)->postJson(route('user.account.bookings.cancel', ['booking' => 9999]), ['reason' => $reason])
             ->assertForbidden();
 
         $this->assertDatabaseHas('bookings', ['id' => $booking->id, 'status' => 'approved']);
@@ -479,11 +534,12 @@ class UserAccountTest extends TestCase
     public function test_cancel_refuses_a_status_that_cannot_be_cancelled(): void
     {
         $user = $this->makeUser();
+        $reason = 'I would like to cancel this booking, please.';
 
-        foreach (['declined', 'completed', 'cancelled', 'user_cancelled'] as $status) {
+        foreach (['declined', 'completed', 'cancelled', 'user_cancelled', 'pending_cancellation'] as $status) {
             $booking = $this->makeBooking($user, ['status' => $status]);
 
-            $this->actingAs($user)->postJson(route('user.account.bookings.cancel', ['booking' => $booking->id]))
+            $this->actingAs($user)->postJson(route('user.account.bookings.cancel', ['booking' => $booking->id]), ['reason' => $reason])
                 ->assertStatus(409)
                 ->assertJsonStructure(['message']);
             $this->assertDatabaseHas('bookings', ['id' => $booking->id, 'status' => $status]);
@@ -495,9 +551,10 @@ class UserAccountTest extends TestCase
         $user = $this->makeUser();
         $today = $this->makeBooking($user, ['status' => 'approved'], 0);
         $past = $this->makeBooking($user, ['status' => 'approved'], -3);
+        $reason = 'The event is over but I still want to cancel.';
 
         foreach ([$today, $past] as $booking) {
-            $this->actingAs($user)->postJson(route('user.account.bookings.cancel', ['booking' => $booking->id]))
+            $this->actingAs($user)->postJson(route('user.account.bookings.cancel', ['booking' => $booking->id]), ['reason' => $reason])
                 ->assertStatus(409);
             $this->assertDatabaseHas('bookings', ['id' => $booking->id, 'status' => 'approved']);
         }

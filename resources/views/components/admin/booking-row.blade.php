@@ -134,6 +134,9 @@ $payload = [
 'reason' => filled($booking['status_reason'] ?? null) && config("cancellation.labels.{$key}")
 ? ['label' => config("cancellation.labels.{$key}"), 'by' => config("cancellation.by.{$key}"), 'text' => $booking['status_reason']]
 : null,
+// Client cancellation request + admin decision (pending / approved / declined / direct).
+// Filled by the backend from the booking's own columns; the modal shows it and the two buttons.
+'cancellation' => $booking['cancellation'] ?? null,
 'editable' => ! $history, // History is a record: the modal there is view-only
 // Fields the admin changed after the client booked: { 'event.location' => 'original value', ... }.
 // Keys are the modal's data-booking-field paths. Empty array = nothing edited.

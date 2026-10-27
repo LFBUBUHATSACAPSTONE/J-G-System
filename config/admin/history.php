@@ -16,7 +16,7 @@ return [
   // should appear here.
   // `user_cancelled` (the client cancelled it themselves) is terminal too, and it is the one
   // status that gets its OWN group below instead of sharing the `cancelled` one.
-  'terminal_statuses' => ['cancelled', 'declined', 'user_cancelled'],
+  'terminal_statuses' => ['cancelled', 'admin_cancelled', 'declined', 'user_cancelled'],
   'history_statuses'  => ['approved', 'completed'],
   'paid_states'       => ['paid', 'partial'],
 

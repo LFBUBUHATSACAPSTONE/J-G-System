@@ -19,8 +19,9 @@ class AdminUserSeeder extends Seeder
             [
                 'first_name' => 'Juan',
                 'last_name' => 'Dela Cruz',
+                'middle_name' => 'Santos',
                 'middle_initial' => 'S',
-                'phone' => '09707386926',
+                'phone' => '09123456789',
                 'address' => 'Pangclara, Candaba, Pampanga',
                 'role' => 'admin',
                 'password' => Hash::make('Pass123?'),

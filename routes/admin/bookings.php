@@ -39,3 +39,9 @@ Route::post('/admin/bookings/{booking}/status', [BookingController::class, 'upda
 Route::patch('/admin/bookings/{booking}', [BookingController::class, 'update'])
     ->whereNumber('booking')
     ->name('admin.bookings.update');
+
+// A client's cancellation request is reviewed from View Details. Approving cancels the booking;
+// declining restores the status it had before the request and stores the admin's reason.
+Route::post('/admin/bookings/{booking}/cancellation/review', [BookingController::class, 'reviewCancellation'])
+    ->whereNumber('booking')
+    ->name('admin.bookings.cancellation.review');

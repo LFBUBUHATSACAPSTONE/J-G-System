@@ -33,7 +33,8 @@ $serverErrors = isset($errors) ? $errors->toArray() : [];
   data-server-errors="{{ json_encode($serverErrors) }}"
   data-server-old="{{ json_encode(session()->getOldInput()) }}"
   data-server-booking="{{ session('edit_booking_id') }}"
-  data-update-url-template="{{ Route::has('admin.bookings.update') ? route('admin.bookings.update', ['booking' => '__ID__']) : '#' }}">
+  data-update-url-template="{{ Route::has('admin.bookings.update') ? route('admin.bookings.update', ['booking' => '__ID__']) : '#' }}"
+  data-review-url-template="{{ Route::has('admin.bookings.cancellation.review') ? route('admin.bookings.cancellation.review', ['booking' => '__ID__']) : '#' }}">
   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
     <form class="modal-content admin-booking-modal__card" method="POST" action="#" novalidate>
       @csrf
@@ -220,6 +221,37 @@ $serverErrors = isset($errors) ? $errors->toArray() : [];
                   data-booking-field="payment.status" data-booking-state="payment.state"></p>
               </div>
             </div>
+          </div>
+        </section>
+
+        {{-- The client's cancellation request and the admin's decision. Filled by
+             js/admin/cancellation.js from booking.cancellation. The two buttons only appear while
+             the request is pending, so the client's reason and the decision stay in one place. --}}
+        <section class="reason-note" aria-labelledby="bm-cancellation-title" data-cancellation-section hidden>
+          <h3 class="reason-note__label" id="bm-cancellation-title" data-cancellation-title></h3>
+          <p class="reason-note__by" data-cancellation-meta></p>
+
+          <div data-cancellation-user hidden>
+            <p class="reason-note__by" data-cancellation-user-label>Client's reason</p>
+            <p class="reason-note__text" data-cancellation-user-reason></p>
+            <p class="reason-note__by" data-cancellation-user-date></p>
+          </div>
+
+          <div data-cancellation-admin hidden>
+            <p class="reason-note__by" data-cancellation-admin-label>J&amp;G's reason</p>
+            <p class="reason-note__text" data-cancellation-admin-reason></p>
+            <p class="reason-note__by" data-cancellation-admin-date></p>
+          </div>
+
+          <div class="d-flex flex-wrap gap-2 mt-3" data-cancellation-actions hidden>
+            <button type="button" class="admin-btn admin-btn--danger" data-approve-cancellation>
+              <i class="ph ph-check" aria-hidden="true"></i>
+              <span>Approve Cancellation</span>
+            </button>
+            <button type="button" class="admin-btn admin-btn--outline" data-decline-cancellation>
+              <i class="ph ph-x" aria-hidden="true"></i>
+              <span>Decline Cancellation</span>
+            </button>
           </div>
         </section>
 
