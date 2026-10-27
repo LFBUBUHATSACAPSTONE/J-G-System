@@ -17,22 +17,29 @@ class GoogleAuthController extends Controller
 {
     public function redirect(): RedirectResponse
     {
-        $callbackUrl = (string) config('services.google.redirect');
-        $callbackHost = parse_url($callbackUrl, PHP_URL_HOST);
-
-        if ($callbackHost && strcasecmp(request()->getHost(), $callbackHost) !== 0) {
-            $redirectUrl = preg_replace('~/callback(?:\?.*)?$~', '/redirect', $callbackUrl);
-
-            return redirect()->away($redirectUrl);
-        }
-
         $state = Str::random(40);
         /** @var GoogleProvider $provider */
         $provider = Socialite::driver('google');
-        $response = $provider
-            ->stateless()
-            ->with(['state' => $state])
-            ->redirect();
+
+        try {
+            $response = $provider
+                ->stateless()
+                ->with(['state' => $state])
+                ->redirect();
+        } catch (Throwable $exception) {
+            Log::warning('Google sign-in redirect failed.', [
+                'exception' => $exception::class,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return $this->failure('Google sign-in could not be completed. Please try again.');
+        }
+
+        $secure = request()->isSecure();
+        $domain = request()->getHost();
+        if (str_contains($domain, ':')) {
+            $domain = explode(':', $domain)[0];
+        }
 
         return $response->withCookie(cookie(
             'google_oauth_state',
@@ -40,7 +47,7 @@ class GoogleAuthController extends Controller
             10,
             '/',
             null,
-            request()->isSecure() ,
+            $secure,
             true,
             false,
             'lax',
@@ -61,8 +68,9 @@ class GoogleAuthController extends Controller
             $provider = Socialite::driver('google');
             $googleUser = $provider->stateless()->user();
             $googleId = (string) $googleUser->getId();
-            $email = strtolower(trim((string) $googleUser->getEmail()));
-            $isEmailVerified = (bool) ($googleUser->user['verified_email'] ?? false);
+            $email = strtolower(trim((string) ($googleUser->getEmail() ?? '')));
+            $userData = $googleUser->user ?? [];
+            $isEmailVerified = (bool) ($userData['email_verified'] ?? $userData['verified_email'] ?? false);
 
             if ($googleId === '' || ! filter_var($email, FILTER_VALIDATE_EMAIL) || ! $isEmailVerified) {
                 return $this->failure('Google did not provide a verified email address for this account.');
