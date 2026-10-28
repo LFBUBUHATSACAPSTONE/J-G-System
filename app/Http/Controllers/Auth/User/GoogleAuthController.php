@@ -35,33 +35,24 @@ class GoogleAuthController extends Controller
             return $this->failure('Google sign-in could not be completed. Please try again.');
         }
 
-        $secure = request()->isSecure();
-        $domain = request()->getHost();
-        if (str_contains($domain, ':')) {
-            $domain = explode(':', $domain)[0];
-        }
+        // Store state in the session — reliable across cross-site redirects
+        request()->session()->put('google_oauth_state', $state);
 
-        return $response->withCookie(cookie(
-            'google_oauth_state',
-            $state,
-            10,
-            '/',
-            null,
-            $secure,
-            true,
-            false,
-            'lax',
-        ));
-    }
+        return $provider
+            ->stateless()
+            ->with(['state' => $state])
+            ->redirect();
+            }
 
     public function callback(SignIn $signIn): RedirectResponse
     {
         try {
-            $stateCookie = (string) request()->cookie('google_oauth_state', '');
+            // Pull removes the value immediately so it cannot be replayed
+            $stateSession = (string) request()->session()->pull('google_oauth_state', '');
             $stateParameter = (string) request()->query('state', '');
 
-            if ($stateCookie === '' || $stateParameter === '' || ! hash_equals($stateCookie, $stateParameter)) {
-                return $this->failure('Your Google sign-in session expired. Return to this site and start sign-in again in the same browser.');
+            if ($stateSession === '' || $stateParameter === '' || ! hash_equals($stateSession, $stateParameter)) {
+                return $this->failure('Your Google sign-in session expired...');
             }
 
             /** @var GoogleProvider $provider */
