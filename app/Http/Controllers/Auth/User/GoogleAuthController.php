@@ -13,19 +13,51 @@ use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\GoogleProvider;
 use Throwable;
 
+/**
+ * Make sure OpenSSL can verify Google's certificates.
+ *
+ * XAMPP ships its own CA bundle (apache/bin/curl-ca-bundle.crt) but leaves
+ * `openssl.cafile` unset, so PHP's OpenSSL falls back to its built-in store,
+ * which on this build has no issuer for www.googleapis.com. Socialite's token
+ * exchange then fails with "unable to get local issuer certificate" and the
+ * callback throws the generic "Google sign-in could not be completed" error.
+ * Pointing OpenSSL at the XAMPP bundle fixes it without touching .env or the
+ * Google Cloud configuration.
+ */
+if (is_file($caBundle = dirname(__DIR__, 7) . '/apache/bin/curl-ca-bundle.crt')) {
+    // Socialite's token exchange runs through cURL (Guzzle), so set BOTH the
+    // OpenSSL and cURL CA locations — either one alone leaves the other empty.
+    ini_set('openssl.cafile', $caBundle);
+    ini_set('curl.cainfo', $caBundle);
+}
+
 class GoogleAuthController extends Controller
 {
+    private function getProvider(): GoogleProvider
+    {
+        $provider = Socialite::driver('google');
+        $caBundle = dirname(__DIR__, 7) . '/apache/bin/curl-ca-bundle.crt';
+        if (is_file($caBundle)) {
+            $provider->setHttpClient(new \GuzzleHttp\Client(['verify' => $caBundle]));
+        }
+        return $provider;
+    }
+
     public function redirect(): RedirectResponse
     {
         $state = Str::random(40);
-        /** @var GoogleProvider $provider */
-        $provider = Socialite::driver('google');
+        $provider = $this->getProvider();
 
         try {
-            $response = $provider
+            request()->session()->put($this->stateSessionKey($state), $state);
+
+            // Keep OAuth state in a first-party cookie as well as the session. This supports
+            // browser redirects where one of the two cookies is not returned to the callback.
+            return $provider
                 ->stateless()
                 ->with(['state' => $state])
-                ->redirect();
+                ->redirect()
+                ->withCookie($this->stateCookie($state));
         } catch (Throwable $exception) {
             Log::warning('Google sign-in redirect failed.', [
                 'exception' => $exception::class,
@@ -34,29 +66,34 @@ class GoogleAuthController extends Controller
 
             return $this->failure('Google sign-in could not be completed. Please try again.');
         }
-
-        // Store state in the session — reliable across cross-site redirects
-        request()->session()->put('google_oauth_state', $state);
-
-        return $provider
-            ->stateless()
-            ->with(['state' => $state])
-            ->redirect();
-            }
+    }
 
     public function callback(SignIn $signIn): RedirectResponse
     {
         try {
-            // Pull removes the value immediately so it cannot be replayed
-            $stateSession = (string) request()->session()->pull('google_oauth_state', '');
             $stateParameter = (string) request()->query('state', '');
+            $stateCookie = $stateParameter !== ''
+                ? (string) request()->cookie($this->stateCookieName($stateParameter), '')
+                : '';
+            $stateSession = $stateParameter !== ''
+                ? (string) request()->session()->pull($this->stateSessionKey($stateParameter), '')
+                : '';
+            $cookieMatches = $stateCookie !== '' && hash_equals($stateCookie, $stateParameter);
+            $sessionMatches = $stateSession !== '' && hash_equals($stateSession, $stateParameter);
 
-            if ($stateSession === '' || $stateParameter === '' || ! hash_equals($stateSession, $stateParameter)) {
+            if ($stateParameter === '' || (! $cookieMatches && ! $sessionMatches)) {
+                Log::warning('Google OAuth state validation failed.', [
+                    'host' => request()->getHost(),
+                    'has_state_parameter' => $stateParameter !== '',
+                    'has_matching_state_cookie' => $cookieMatches,
+                    'has_matching_session_state' => $sessionMatches,
+                ]);
+
                 return $this->failure('Your Google sign-in session expired...');
             }
 
             /** @var GoogleProvider $provider */
-            $provider = Socialite::driver('google');
+            $provider = $this->getProvider();
             $googleUser = $provider->stateless()->user();
             $googleId = (string) $googleUser->getId();
             $email = strtolower(trim((string) ($googleUser->getEmail() ?? '')));
@@ -103,6 +140,9 @@ class GoogleAuthController extends Controller
                 }
             }
 
+            // Do not carry a previous failed attempt's flash message into a successful login.
+            request()->session()->forget('auth_error');
+
             // Admin accounts belong on the admin side; the customer area is `role:user` only.
             if ($user->isAdmin()) {
                 $signIn->admin($user, true);
@@ -110,13 +150,14 @@ class GoogleAuthController extends Controller
                 $signIn->customer($user, true);
             }
 
+            // Regenerate session to ensure security and prevent session fixation
             request()->session()->regenerate();
 
             if ($user->isAdmin()) {
-                return redirect()->route('admin.dashboard')->withCookie(cookie()->forget('google_oauth_state'));
+                return redirect()->route('admin.dashboard')->withCookie($this->forgetStateCookie($stateParameter));
             }
 
-            return redirect()->route('user.landing')->withCookie(cookie()->forget('google_oauth_state'));
+            return redirect()->route('user.landing')->withCookie($this->forgetStateCookie($stateParameter));
         } catch (Throwable $exception) {
             Log::warning('Google sign-in failed.', [
                 'exception' => $exception::class,
@@ -131,6 +172,41 @@ class GoogleAuthController extends Controller
     {
         return redirect()->route('user.landing')
             ->with('auth_error', $message)
-            ->withCookie(cookie()->forget('google_oauth_state'));
+            ->withCookie($this->forgetStateCookie((string) request()->query('state', '')));
     }
+
+    private function stateCookie(string $state)
+    {
+        return cookie(
+            $this->stateCookieName($state),
+            $state,
+            15,
+            config('session.path', '/'),
+            config('session.domain'),
+            config('session.secure'),
+            true,
+            false,
+            config('session.same_site', 'lax'),
+        );
+    }
+
+    private function forgetStateCookie(string $state = '')
+    {
+        return cookie()->forget(
+            $state !== '' ? $this->stateCookieName($state) : 'google_oauth_state',
+            config('session.path', '/'),
+            config('session.domain'),
+        );
+    }
+
+    private function stateCookieName(string $state): string
+    {
+        return 'google_oauth_state_'.substr(hash('sha256', $state), 0, 20);
+    }
+
+    private function stateSessionKey(string $state): string
+    {
+        return 'google_oauth_state_session_'.hash('sha256', $state);
+    }
+
 }
