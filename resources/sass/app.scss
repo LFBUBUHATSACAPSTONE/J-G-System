@@ -23,9 +23,7 @@
 
 // Landing & Landing Caption Gradient and Text Stylings
 // Header Navigation
-@import "./landing/navigation";
 @import "./landing/coverflow-carousel";
-@import "./landing/landing-caption";
 @import "./landing/landing-hero";
 @import "./landing/features";
 @import "./landing/package-comparison-table";
@@ -40,6 +38,8 @@
 @import "./booking/booking-summary";
 @import "./booking/booking-confirmation";
 @import "./booking/progress-tracker";
+
+// CHAT
 
 * {
     font-family: $font-family-text;

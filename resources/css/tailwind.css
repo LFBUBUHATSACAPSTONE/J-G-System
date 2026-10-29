@@ -45,6 +45,8 @@
 @source "../views/components/account/delete-modal.blade.php";
 @source "../views/admin/login.blade.php";
 @source "../views/components/landing/navigation.blade.php";
+@source "../views/user/landing.blade.php";
+@source "../views/components/landing/landing-caption.blade.php";
 @source "../js/chat/chat.js";
 @source "../js/chat/confirm-dialog.js";
 @source "../js/chat/widget.js";
@@ -60,6 +62,11 @@
 
 /* Below Bootstrap's lg breakpoint (phones and tablets): the landing menu overlays the page. Same cut-off as Sass media-breakpoint-down(lg). */
 @custom-variant below-lg (@media (max-width: 991.98px));
+
+/* Short landscape screens (phones on their side, small windows): the landing hero drops its padding. */
+@custom-variant short-landscape (
+    @media (max-height: 500px) and (orientation: landscape)
+);
 
 @theme {
     --font-sans: "Poppins", sans-serif;
@@ -247,6 +254,18 @@
     --color-nav-badge: oklch(
         55% 0.2 25
     ); /* unread count bubble on the account button */
+
+    /* Landing hero (Phase 8C), from _user-variables.scss and the old _landing-hero / _landing-caption */
+    --color-landing-base: #131313; /* $features-bg-base: hero, features and footer base */
+    --color-pale-white: oklch(93.514% 0.00011 271.152); /* $text-pale--white */
+    --section-pad-x: clamp(1rem, 0.39rem + 2.59vw, 2rem);
+    --text-fluid-landing-title: clamp(1.75rem, 4vw + 1rem, 3.5rem);
+    --text-fluid-landing-caption: clamp(0.95rem, 1vw + 0.7rem, 1.1rem);
+    --text-fluid-button: clamp(
+        1rem,
+        1.1vw,
+        1.2rem
+    ); /* $font-button--responsive */
 
     /* Dropdown menu entrance */
     --animate-dropdown-in: dropdown-in 0.14s ease-out;

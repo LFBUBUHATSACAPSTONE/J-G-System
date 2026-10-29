@@ -4,7 +4,7 @@ import { Collapse } from "bootstrap";
  * Navbar in-page links (Home / Feature / Package -> # / #features / #packages).
  *
  * Scrolling itself is left to the browser (smooth scrolling comes from
- * Bootstrap's reboot, `scroll-padding-top` from _navigation.scss), so this
+ * Bootstrap's reboot, `scroll-padding-top` on <html> in landing.blade.php), so this
  * file never calls preventDefault() on the links. What it owns:
  *
  *  1. ACTIVE STATE — exactly one link carries aria-current="location" (the styles key off it).
@@ -49,7 +49,7 @@ function initNavigation() {
     const header = navEl.closest("header");
 
     // Expose the real sticky-header height so the hero background can
-    // extend exactly that far up behind it (see .landing-hero__bg).
+    // extend exactly that far up behind it (see the hero image in landing.blade.php).
     if (header) {
         const syncHeaderHeight = () =>
             document.documentElement.style.setProperty(
