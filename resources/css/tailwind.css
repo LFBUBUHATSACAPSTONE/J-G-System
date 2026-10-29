@@ -58,6 +58,9 @@
 /* Wide but short viewports (laptops): the booking modal tightens its vertical spacing. */
 @custom-variant short-wide (@media (min-width: 992px) and (max-height: 860px));
 
+/* Below Bootstrap's lg breakpoint (phones and tablets): the landing menu overlays the page. Same cut-off as Sass media-breakpoint-down(lg). */
+@custom-variant below-lg (@media (max-width: 991.98px));
+
 @theme {
     --font-sans: "Poppins", sans-serif;
 
@@ -238,6 +241,12 @@
         oklch(0.545 0.236 307.3),
         oklch(0.595 0.234 22.6)
     );
+    --color-nav-menu: oklch(
+        19.306% 0.00802 285.593 / 0.92
+    ); /* the open phone menu panel */
+    --color-nav-badge: oklch(
+        55% 0.2 25
+    ); /* unread count bubble on the account button */
 
     /* Dropdown menu entrance */
     --animate-dropdown-in: dropdown-in 0.14s ease-out;
