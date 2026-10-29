@@ -45,13 +45,6 @@ class GoogleAuthController extends Controller
 
     public function redirect(): RedirectResponse
     {
-        // Start and return the OAuth flow on the same origin that Google calls back to.
-        // A host or scheme change means the browser will not send the state cookie.
-        $callbackOrigin = $this->googleCallbackOrigin();
-        if ($callbackOrigin !== null && strcasecmp(request()->getSchemeAndHttpHost(), $callbackOrigin['origin']) !== 0) {
-            return redirect()->to($callbackOrigin['origin'].request()->getRequestUri());
-        }
-
         $state = Str::random(40);
         $provider = $this->getProvider();
 
@@ -73,22 +66,6 @@ class GoogleAuthController extends Controller
 
             return $this->failure('Google sign-in could not be completed. Please try again.');
         }
-    }
-
-    private function googleCallbackOrigin(): ?array
-    {
-        $parts = parse_url((string) config('services.google.redirect', ''));
-
-        if (! is_array($parts) || empty($parts['scheme']) || empty($parts['host'])) {
-            return null;
-        }
-
-        $origin = $parts['scheme'].'://'.$parts['host'];
-        if (isset($parts['port'])) {
-            $origin .= ':'.$parts['port'];
-        }
-
-        return ['host' => $parts['host'], 'origin' => $origin];
     }
 
     public function callback(SignIn $signIn): RedirectResponse
