@@ -45,13 +45,21 @@ class GoogleAuthController extends Controller
 
     public function redirect(): RedirectResponse
     {
+        // Start and return the OAuth flow on the same origin that Google calls back to.
+        // A host or scheme change means the browser will not send the state cookie.
+        $callbackOrigin = $this->googleCallbackOrigin();
+        if ($callbackOrigin !== null && strcasecmp(request()->getSchemeAndHttpHost(), $callbackOrigin['origin']) !== 0) {
+            return redirect()->to($callbackOrigin['origin'].request()->getRequestUri());
+        }
+
         $state = Str::random(40);
         $provider = $this->getProvider();
 
         try {
-            // Keep the short-lived OAuth state in its own first-party cookie. This lets
-            // the callback validate Google's response even if the session cookie changes
-            // during the cross-site round trip.
+            request()->session()->put($this->stateSessionKey($state), $state);
+
+            // Keep OAuth state in a first-party cookie as well as the session. This supports
+            // browser redirects where one of the two cookies is not returned to the callback.
             return $provider
                 ->stateless()
                 ->with(['state' => $state])
@@ -67,13 +75,43 @@ class GoogleAuthController extends Controller
         }
     }
 
+    private function googleCallbackOrigin(): ?array
+    {
+        $parts = parse_url((string) config('services.google.redirect', ''));
+
+        if (! is_array($parts) || empty($parts['scheme']) || empty($parts['host'])) {
+            return null;
+        }
+
+        $origin = $parts['scheme'].'://'.$parts['host'];
+        if (isset($parts['port'])) {
+            $origin .= ':'.$parts['port'];
+        }
+
+        return ['host' => $parts['host'], 'origin' => $origin];
+    }
+
     public function callback(SignIn $signIn): RedirectResponse
     {
         try {
-            $stateCookie = (string) request()->cookie('google_oauth_state', '');
             $stateParameter = (string) request()->query('state', '');
+            $stateCookie = $stateParameter !== ''
+                ? (string) request()->cookie($this->stateCookieName($stateParameter), '')
+                : '';
+            $stateSession = $stateParameter !== ''
+                ? (string) request()->session()->pull($this->stateSessionKey($stateParameter), '')
+                : '';
+            $cookieMatches = $stateCookie !== '' && hash_equals($stateCookie, $stateParameter);
+            $sessionMatches = $stateSession !== '' && hash_equals($stateSession, $stateParameter);
 
-            if ($stateCookie === '' || $stateParameter === '' || ! hash_equals($stateCookie, $stateParameter)) {
+            if ($stateParameter === '' || (! $cookieMatches && ! $sessionMatches)) {
+                Log::warning('Google OAuth state validation failed.', [
+                    'host' => request()->getHost(),
+                    'has_state_parameter' => $stateParameter !== '',
+                    'has_matching_state_cookie' => $cookieMatches,
+                    'has_matching_session_state' => $sessionMatches,
+                ]);
+
                 return $this->failure('Your Google sign-in session expired...');
             }
 
@@ -125,21 +163,24 @@ class GoogleAuthController extends Controller
                 }
             }
 
+            // Do not carry a previous failed attempt's flash message into a successful login.
+            request()->session()->forget('auth_error');
+
             // Admin accounts belong on the admin side; the customer area is `role:user` only.
             if ($user->isAdmin()) {
-                $signIn->admin($user);
+                $signIn->admin($user, true);
             } else {
-                $signIn->customer($user);
+                $signIn->customer($user, true);
             }
 
             // Regenerate session to ensure security and prevent session fixation
             request()->session()->regenerate();
 
             if ($user->isAdmin()) {
-                return redirect()->route('admin.dashboard')->withCookie($this->forgetStateCookie());
+                return redirect()->route('admin.dashboard')->withCookie($this->forgetStateCookie($stateParameter));
             }
 
-            return redirect()->route('user.landing')->withCookie($this->forgetStateCookie());
+            return redirect()->route('user.landing')->withCookie($this->forgetStateCookie($stateParameter));
         } catch (Throwable $exception) {
             Log::warning('Google sign-in failed.', [
                 'exception' => $exception::class,
@@ -154,15 +195,15 @@ class GoogleAuthController extends Controller
     {
         return redirect()->route('user.landing')
             ->with('auth_error', $message)
-            ->withCookie($this->forgetStateCookie());
+            ->withCookie($this->forgetStateCookie((string) request()->query('state', '')));
     }
 
     private function stateCookie(string $state)
     {
         return cookie(
-            'google_oauth_state',
+            $this->stateCookieName($state),
             $state,
-            5,
+            15,
             config('session.path', '/'),
             config('session.domain'),
             config('session.secure'),
@@ -172,12 +213,23 @@ class GoogleAuthController extends Controller
         );
     }
 
-    private function forgetStateCookie()
+    private function forgetStateCookie(string $state = '')
     {
         return cookie()->forget(
-            'google_oauth_state',
+            $state !== '' ? $this->stateCookieName($state) : 'google_oauth_state',
             config('session.path', '/'),
             config('session.domain'),
         );
     }
+
+    private function stateCookieName(string $state): string
+    {
+        return 'google_oauth_state_'.substr(hash('sha256', $state), 0, 20);
+    }
+
+    private function stateSessionKey(string $state): string
+    {
+        return 'google_oauth_state_session_'.hash('sha256', $state);
+    }
+
 }

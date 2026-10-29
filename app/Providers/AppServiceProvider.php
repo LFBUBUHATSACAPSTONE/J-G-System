@@ -25,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerAdminGuard();
+        Auth::guard('web')->setRememberDuration((int) config('session.lifetime'));
 
         // The guard every request starts on. The `auth:` middleware switches the default guard
         // for the request it guards, and this keeps the value it started with (see
@@ -58,9 +59,7 @@ class AppServiceProvider extends ServiceProvider
             $guard->setDispatcher($app['events']);
             $guard->setRequest($app->refresh('request', $guard, 'setRequest'));
 
-            if (isset($config['remember'])) {
-                $guard->setRememberDuration($config['remember']);
-            }
+            $guard->setRememberDuration((int) $app['config']->get('session.lifetime'));
 
             return $guard;
         });
