@@ -1,24 +1,18 @@
-// Admin sign-in entry: its own Vite entry, so it ships neither the admin shell (sidebar, tables,
-// calendar) nor the public landing styles. Tokens only.
+// Admin sign-in entry: its own Vite entry, so it ships neither the admin shell nor the public landing styles.
 //
-// Look: IDENTICAL to the user auth modal (sass/_auth-modal.scss): same surface, glow, title, subtext,
-// label, input, error text, toggle, links, checkbox, code boxes and gradient button, with the same
-// $auth-* tokens AND the same sizes and spacing (rem values copied from the modal, so this page does NOT
-// use the admin 4px spacing tokens). Only differences: ONE centred card (no photo panel, no carousel),
-// plus the admin logo, "Admin" badge and background art.
-// Load order: shared tokens first, then admin tokens (same order as admin.scss).
+// The page itself is Tailwind (Phase 10, `admin/login.blade.php`, tokens in `resources/css/tailwind.css`). This file
+// stays only because two shared Sass partials are still needed here until Phase 7 converts them:
+//  - `_gradient-button.scss`: the Sign in / Confirm buttons keep `btn-color-gradient--primary`;
+//  - `_autofill.scss`: the autofill mixin on the text inputs and the six code boxes (its inset shadow must not meet a
+//    `box-shadow` utility, so their focus ring is an outline), plus the border-colour fade on the text inputs.
+// When Phase 7 is done, delete this file, its `resources/sass/admin-login.scss` entry in `vite.config.js` and the
+// `@vite` line of `admin/login.blade.php`.
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
 
 @import "user-variables";
-@import "admin-variables";
 @import "autofill";
 @import "gradient-button";
 
-// Phase 10 moved the whole sign-in page to Tailwind (`admin/login.blade.php`, tokens in `tailwind.css`). Kept here on
-// purpose, until Phase 7 converts the shared `_autofill.scss` and `_gradient-button.scss`:
-//  - the autofill mixin on the text inputs and the six code boxes (its inset shadow must not meet a `box-shadow`
-//    utility, so their focus ring is an outline);
-//  - the border-colour fade on the text inputs.
 .admin-login__control,
 .admin-login__code-box {
     @include booking-autofill;
