@@ -201,7 +201,7 @@
         }
     }
 
-    /* Admin sign-in (Phase 10A), from the $auth-* tokens in _user-variables.scss. Same look as the user auth modal */
+    /* Admin sign-in (Phase 10A and 10B), from the $auth-* tokens in _user-variables.scss. Same look as the user auth modal */
     --color-auth-bg: oklch(14.735% 0.01949 294.184); /* page behind the card */
     --color-auth-surface: oklch(16.992% 0.0233 300.626); /* the card */
     --color-auth-glow-violet: oklch(54.134% 0.24669 293.012);
@@ -209,6 +209,28 @@
     --color-auth-accent: oklch(60.563% 0.21902 292.718);
     --color-auth-text: oklch(100% 0.00011 271.152);
     --color-auth-text-muted: oklch(70.649% 0.02539 301.692);
+    --color-auth-placeholder: oklch(
+        54.263% 0.02711 301.499
+    ); /* placeholder and disabled text ($auth-text-muted) */
+    --color-auth-field: oklch(
+        24.604% 0.02682 297.481
+    ); /* input and checkbox fill */
+    --color-auth-border: oklch(31.377% 0.03071 298.068);
+    --color-auth-danger: oklch(
+        64.414% 0.17253 7.592
+    ); /* red border and per-field message */
+    --color-auth-focus: oklch(60.563% 0.21902 292.718 / 0.45); /* focus ring */
+    --color-auth-focus-soft: oklch(
+        60.563% 0.21902 292.718 / 0.25
+    ); /* softer ring on inputs */
+    --color-auth-banner-error: #dc3545; /* the modal's banner error is Bootstrap's .text-danger, not $auth-danger */
+    /* Admin sign-in form (Phase 10B) */
+    --color-auth-text-faint: oklch(
+        54.263% 0.02711 301.499
+    ); /* placeholder, disabled text ($auth-text-muted) */
+    --color-auth-field-bg: oklch(24.604% 0.02682 297.481);
+    --color-auth-ring: oklch(60.563% 0.21902 292.718 / 0.45);
+    --color-auth-ring-soft: oklch(60.563% 0.21902 292.718 / 0.25);
 
     /* Landing (Phase 8): the $button-gradient from _user-variables.scss, used by the nav link underline */
     --gradient-button: linear-gradient(
