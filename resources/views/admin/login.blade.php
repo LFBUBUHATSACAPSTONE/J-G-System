@@ -26,6 +26,12 @@ $updateUrl = Route::has('admin.password.update') ? route('admin.password.update'
 $noAccess = (bool) ($noAccess ?? false);
 $appName = config('admin.name', 'J&G Admin');
 $imageUrl = asset(config('admin.logo', 'images/logo/J&G_official_logo.webp'));
+
+// Class strings (Tailwind, Phase 10A), written whole so Tailwind can find them.
+$cardClass = 'relative isolate w-full max-w-md overflow-hidden rounded-card bg-auth-surface px-6 pt-6 pb-8 shadow-[0_1rem_3rem_var(--color-shadow)] md:px-11 md:py-8 before:pointer-events-none before:absolute before:-top-[20%] before:-right-[20%] before:-z-1 before:h-[60%] before:w-[70%] before:bg-[image:radial-gradient(circle_at_top_right,var(--color-auth-glow-violet)_0%,var(--color-auth-glow-rose)_45%,transparent_75%)] before:opacity-35 before:blur-[60px]';
+$badgeClass = 'rounded-full bg-brand px-3 py-1 text-sm font-semibold tracking-[0.08em] text-on-brand uppercase';
+$titleClass = 'mx-0 mt-0 mb-[0.4rem] text-[1.5rem] leading-[1.2] font-bold md:text-[1.75rem]';
+$subtitleClass = 'mx-0 mt-0 mb-5 text-[0.85rem] text-auth-text-muted';
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -46,19 +52,19 @@ $imageUrl = asset(config('admin.logo', 'images/logo/J&G_official_logo.webp'));
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
 
-  @vite(['resources/sass/admin-login.scss', 'resources/js/admin-login.js'])
+  @vite(['resources/sass/admin-login.scss', 'resources/js/admin-login.js', 'resources/css/tailwind.css'])
 
   <title>Sign in - {{ $appName }}</title>
 </head>
 
-<body>
-  <img src="{{ asset('images/backgrounds/design/landing_bg.webp') }}" alt="" class="admin-login__bg">
-  <main class="admin-login">
-    <section class="admin-login__card" aria-label="Admin sign in" data-admin-auth data-current-view="login">
+<body class="admin-login-page m-0 bg-auth-bg font-sans leading-normal text-auth-text">
+  <img src="{{ asset('images/backgrounds/design/landing_bg.webp') }}" alt="" class="pointer-events-none fixed inset-0 -z-1 size-full object-cover">
+  <main class="grid min-h-dvh place-items-center p-4 min-[576px]:p-6">
+    <section class="{{ $cardClass }}" aria-label="Admin sign in" data-admin-auth data-current-view="login">
 
-      <div class="admin-login__brand">
-        <img src="{{ $imageUrl }}" alt="J&G Audio Lights and Sounds" class="admin-login__logo">
-        <span class="admin-login__badge">Admin</span>
+      <div class="mb-6 grid justify-items-start gap-3">
+        <img src="{{ $imageUrl }}" alt="J&G Audio Lights and Sounds" class="h-auto w-full max-w-32">
+        <span class="{{ $badgeClass }}">Admin</span>
       </div>
 
       @if ($noAccess)
@@ -67,8 +73,8 @@ $imageUrl = asset(config('admin.logo', 'images/logo/J&G_official_logo.webp'));
 
       {{-- View: Login --}}
       <div class="admin-login__view" data-view="login">
-        <h1 class="admin-login__title" id="admin-login-title">Welcome Back, Admin!</h1>
-        <p class="admin-login__subtitle">Sign in to manage bookings, packages and messages.</p>
+        <h1 class="{{ $titleClass }}" id="admin-login-title">Welcome Back, Admin!</h1>
+        <p class="{{ $subtitleClass }}">Sign in to manage bookings, packages and messages.</p>
 
         <form class="admin-login__form" method="POST" action="{{ $submitUrl }}" data-admin-login
           data-redirect="{{ $dashboardUrl }}" novalidate>
@@ -110,8 +116,8 @@ $imageUrl = asset(config('admin.logo', 'images/logo/J&G_official_logo.webp'));
 
       {{-- View: Forgot Password --}}
       <div class="admin-login__view d-none" data-view="forgot-password">
-        <h1 class="admin-login__title">Forgot Password</h1>
-        <p class="admin-login__subtitle">Enter your email address</p>
+        <h1 class="{{ $titleClass }}">Forgot Password</h1>
+        <p class="{{ $subtitleClass }}">Enter your email address</p>
 
         <form class="admin-login__form" method="POST" action="{{ $forgotUrl }}" data-admin-forgot novalidate>
           @csrf
@@ -133,8 +139,8 @@ $imageUrl = asset(config('admin.logo', 'images/logo/J&G_official_logo.webp'));
 
       {{-- View: Verification --}}
       <div class="admin-login__view d-none" data-view="verification">
-        <h1 class="admin-login__title">Verification</h1>
-        <p class="admin-login__subtitle">
+        <h1 class="{{ $titleClass }}">Verification</h1>
+        <p class="{{ $subtitleClass }}">
           Enter the Verification code below.<br>
           We sent to <span class="admin-login__masked" data-verification-destination></span>
         </p>
@@ -160,8 +166,8 @@ $imageUrl = asset(config('admin.logo', 'images/logo/J&G_official_logo.webp'));
 
       {{-- View: New Password --}}
       <div class="admin-login__view d-none" data-view="new-password">
-        <h1 class="admin-login__title">New Password</h1>
-        <p class="admin-login__subtitle">Choose a new password for your admin account.</p>
+        <h1 class="{{ $titleClass }}">New Password</h1>
+        <p class="{{ $subtitleClass }}">Choose a new password for your admin account.</p>
 
         <form class="admin-login__form" method="POST" action="{{ $updateUrl }}" data-admin-new-password novalidate>
           @csrf
