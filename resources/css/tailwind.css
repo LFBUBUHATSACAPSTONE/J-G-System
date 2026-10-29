@@ -44,6 +44,7 @@
 @source "../views/components/account/button.blade.php";
 @source "../views/components/account/delete-modal.blade.php";
 @source "../views/admin/login.blade.php";
+@source "../views/components/landing/navigation.blade.php";
 @source "../js/chat/chat.js";
 @source "../js/chat/confirm-dialog.js";
 @source "../js/chat/widget.js";
@@ -208,6 +209,13 @@
     --color-auth-accent: oklch(60.563% 0.21902 292.718);
     --color-auth-text: oklch(100% 0.00011 271.152);
     --color-auth-text-muted: oklch(70.649% 0.02539 301.692);
+
+    /* Landing (Phase 8): the $button-gradient from _user-variables.scss, used by the nav link underline */
+    --gradient-button: linear-gradient(
+        90deg,
+        oklch(0.545 0.236 307.3),
+        oklch(0.595 0.234 22.6)
+    );
 
     /* Dropdown menu entrance */
     --animate-dropdown-in: dropdown-in 0.14s ease-out;

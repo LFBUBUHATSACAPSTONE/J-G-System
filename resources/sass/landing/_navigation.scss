@@ -10,16 +10,6 @@ html {
     );
 }
 
-.glass-header {
-    background-color: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-} //Safari Support
-
-.navbar-brand img {
-    width: 5rem;
-}
-
 // Unread count bubble on the account/chat icon and the "Account" list link.
 .landing-nav__badge {
     position: absolute;
@@ -87,47 +77,7 @@ html {
     }
 }
 
-.glass-header .navbar-nav .nav-link {
-    position: relative;
-    display: inline-block;
-    white-space: nowrap;
-    color: rgb(255 255 255 / 0.6);
-    font-weight: 400;
-    transition: color 0.2s ease-in-out;
-
-    // Gradient underline, hidden until the link is active.
-    &::after {
-        content: "";
-        position: absolute;
-        left: var(--bs-nav-link-padding-x, 0.5rem);
-        right: var(--bs-nav-link-padding-x, 0.5rem);
-        bottom: 0.15rem;
-        height: 2px;
-        border-radius: 2px;
-        background: $button-gradient;
-        transform: scaleX(0);
-        transform-origin: left center;
-        transition: transform 0.25s ease-in-out;
-    }
-
-    &:hover,
-    &:focus-visible {
-        color: rgb(255 255 255 / 0.9);
-    }
-
-    &.active {
-        color: #fff;
-        font-weight: 600;
-
-        &::after {
-            transform: scaleX(1);
-        }
-    }
-}
-
 @media (prefers-reduced-motion: reduce) {
-    .glass-header .navbar-nav .nav-link,
-    .glass-header .navbar-nav .nav-link::after,
     .landing-nav__icon-button {
         transition: none;
     }
