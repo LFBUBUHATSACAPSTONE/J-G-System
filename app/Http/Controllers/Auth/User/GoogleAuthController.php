@@ -13,13 +13,40 @@ use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\GoogleProvider;
 use Throwable;
 
+/**
+ * Make sure OpenSSL can verify Google's certificates.
+ *
+ * XAMPP ships its own CA bundle (apache/bin/curl-ca-bundle.crt) but leaves
+ * `openssl.cafile` unset, so PHP's OpenSSL falls back to its built-in store,
+ * which on this build has no issuer for www.googleapis.com. Socialite's token
+ * exchange then fails with "unable to get local issuer certificate" and the
+ * callback throws the generic "Google sign-in could not be completed" error.
+ * Pointing OpenSSL at the XAMPP bundle fixes it without touching .env or the
+ * Google Cloud configuration.
+ */
+if (is_file($caBundle = dirname(__DIR__, 7) . '/apache/bin/curl-ca-bundle.crt')) {
+    // Socialite's token exchange runs through cURL (Guzzle), so set BOTH the
+    // OpenSSL and cURL CA locations — either one alone leaves the other empty.
+    ini_set('openssl.cafile', $caBundle);
+    ini_set('curl.cainfo', $caBundle);
+}
+
 class GoogleAuthController extends Controller
 {
+    private function getProvider(): GoogleProvider
+    {
+        $provider = Socialite::driver('google');
+        $caBundle = dirname(__DIR__, 7) . '/apache/bin/curl-ca-bundle.crt';
+        if (is_file($caBundle)) {
+            $provider->setHttpClient(new \GuzzleHttp\Client(['verify' => $caBundle]));
+        }
+        return $provider;
+    }
+
     public function redirect(): RedirectResponse
     {
         $state = Str::random(40);
-        /** @var GoogleProvider $provider */
-        $provider = Socialite::driver('google');
+        $provider = $this->getProvider();
 
         try {
             $response = $provider
@@ -42,7 +69,7 @@ class GoogleAuthController extends Controller
             ->stateless()
             ->with(['state' => $state])
             ->redirect();
-            }
+    }
 
     public function callback(SignIn $signIn): RedirectResponse
     {
@@ -56,7 +83,7 @@ class GoogleAuthController extends Controller
             }
 
             /** @var GoogleProvider $provider */
-            $provider = Socialite::driver('google');
+            $provider = $this->getProvider();
             $googleUser = $provider->stateless()->user();
             $googleId = (string) $googleUser->getId();
             $email = strtolower(trim((string) ($googleUser->getEmail() ?? '')));
