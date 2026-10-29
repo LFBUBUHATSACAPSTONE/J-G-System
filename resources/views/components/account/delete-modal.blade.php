@@ -21,7 +21,7 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content rounded-card border-0 bg-surface text-ink">
       <div class="modal-header items-start border-0 px-6 pt-6 pb-4">
-        <h2 class="m-0 text-fluid-xl font-semibold [overflow-wrap:anywhere]" id="deleteAccountTitle">Delete your account?</h2>
+        <h2 class="m-0 text-fluid-xl font-semibold wrap-anywhere" id="deleteAccountTitle">Delete your account?</h2>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
@@ -32,7 +32,7 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
         </p>
 
         @if (! empty($delete['items']))
-        <ul class="m-0 flex list-none flex-col gap-3 p-0 text-fluid-sm [&_i]:flex-none [&_i]:text-fluid-heading [&_i]:leading-[1.4] [&_i]:text-ink-muted [&_li]:flex [&_li]:items-start [&_li]:gap-3 [&_li]:[overflow-wrap:anywhere]">
+        <ul class="m-0 flex list-none flex-col gap-3 p-0 text-fluid-sm [&_i]:flex-none [&_i]:text-fluid-heading [&_i]:leading-[1.4] [&_i]:text-ink-muted [&_li]:flex [&_li]:items-start [&_li]:gap-3 [&_li]:wrap-anywhere">
           @foreach ($delete['items'] as $item)
           <li>
             <i class="ph ph-{{ $item['icon'] }}" aria-hidden="true"></i>
@@ -58,7 +58,7 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
         <p class="{{ $statusClass }}" role="alert" data-delete-message></p>
       </div>
 
-      <div class="modal-footer flex flex-col-reverse gap-3 border-0 px-6 pt-3 pb-6 min-[576px]:flex-row min-[576px]:justify-end [&>*]:m-0 [&>*]:w-full min-[576px]:[&>*]:w-auto">
+      <div class="modal-footer flex flex-col-reverse gap-3 border-0 px-6 pt-3 pb-6 min-[576px]:flex-row min-[576px]:justify-end *:m-0 *:w-full min-[576px]:*:w-auto">
         <x-account.button variant="secondary" data-bs-dismiss="modal">Keep my account</x-account.button>
         <x-account.button variant="danger" data-delete-confirm disabled>Delete my account</x-account.button>
       </div>

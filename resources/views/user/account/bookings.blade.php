@@ -100,7 +100,7 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
 
 <x-account.layout>
   <div
-    class="flex max-w-[60rem] flex-col gap-4"
+    class="flex max-w-240 flex-col gap-4"
     data-account-bookings
     data-statuses="{{ json_encode($statuses) }}"
     data-cancel-url-template="{{ Route::has('user.account.bookings.cancel') ? route('user.account.bookings.cancel', ['booking' => '__ID__']) : '#' }}"
@@ -136,7 +136,7 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
         <article aria-labelledby="booking-title-{{ $payload['id'] }}">
           <header class="flex flex-col items-start gap-3 @min-[32rem]:flex-row @min-[32rem]:justify-between">
             <div class="min-w-0">
-              <h2 class="m-0 text-fluid-xl font-semibold [overflow-wrap:anywhere]" id="booking-title-{{ $payload['id'] }}">{{ $payload['event'] }}</h2>
+              <h2 class="m-0 text-fluid-xl font-semibold wrap-anywhere" id="booking-title-{{ $payload['id'] }}">{{ $payload['event'] }}</h2>
               <p class="mt-1 mb-0 text-sm text-ink-muted">Booking {{ $payload['reference'] }}</p>
             </div>
             <x-account.badge :tone="$row['meta']['tone']" data-booking-badge>
@@ -175,7 +175,11 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
           <p class="account-booking__note">Your cancellation request was declined. Open View details to see J&amp;G's reason.</p>
           @endif
 
-          <footer class="mt-4 flex flex-col-reverse gap-3 @min-[32rem]:flex-row @min-[32rem]:items-center @min-[32rem]:justify-end [&>*]:w-full @min-[32rem]:[&>*]:w-auto" data-booking-actions>
+          @if (($payload['cancellation']['status'] ?? null) === 'declined')
+          <p class="account-booking__note">Your cancellation request was declined. Open View details to see J&amp;G's reason.</p>
+          @endif
+
+          <footer class="mt-4 flex flex-col-reverse gap-3 @min-[32rem]:flex-row @min-[32rem]:items-center @min-[32rem]:justify-end *:w-full @min-[32rem]:*:w-auto" data-booking-actions>
             <x-account.button
               variant="secondary"
               data-bs-toggle="modal"
@@ -221,7 +225,7 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
       <div class="modal-content rounded-card border-0 bg-surface text-ink">
         <div class="modal-header items-start border-0 px-6 pt-6 pb-4">
           <div>
-            <h2 class="m-0 text-fluid-xl font-semibold [overflow-wrap:anywhere]" id="bookingDetailsTitle" data-bk="event">Booking details</h2>
+            <h2 class="m-0 text-fluid-xl font-semibold wrap-anywhere" id="bookingDetailsTitle" data-bk="event">Booking details</h2>
             <p class="mt-1 mb-0 text-sm text-ink-muted">Booking <span data-bk="reference"></span></p>
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -234,7 +238,26 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
           <section class="m-0 flex flex-col gap-1 rounded-lg border border-danger-border bg-danger-soft px-4 py-3" aria-labelledby="bk-reason-label" data-bk-reason hidden>
             <h3 class="mb-2 text-sm leading-[1.2] font-semibold text-danger-text" id="bk-reason-label" data-bk-reason-label></h3>
             <p class="mb-4 text-sm text-ink-muted" data-bk-reason-by></p>
-            <p class="m-0 text-sm [overflow-wrap:anywhere] whitespace-pre-line text-ink" data-bk-reason-text></p>
+            <p class="m-0 text-sm wrap-anywhere whitespace-pre-line text-ink" data-bk-reason-text></p>
+          </section>
+
+          {{-- The client's cancellation request and J&G's answer. Filled by bookings.js from
+               data.cancellation: pending / approved / declined / directly cancelled by J&G. --}}
+          <section class="reason-note" aria-labelledby="bk-cancellation-title" data-bk-cancellation hidden>
+            <h3 class="reason-note__label" id="bk-cancellation-title" data-bk-cancellation-title></h3>
+            <p class="reason-note__by" data-bk-cancellation-meta></p>
+
+            <div data-bk-cancellation-user hidden>
+              <p class="reason-note__by" data-bk-cancellation-user-label>Your reason</p>
+              <p class="reason-note__text" data-bk-cancellation-user-reason></p>
+              <p class="reason-note__by" data-bk-cancellation-user-date></p>
+            </div>
+
+            <div data-bk-cancellation-admin hidden>
+              <p class="reason-note__by" data-bk-cancellation-admin-label>J&amp;G's reason</p>
+              <p class="reason-note__text" data-bk-cancellation-admin-reason></p>
+              <p class="reason-note__by" data-bk-cancellation-admin-date></p>
+            </div>
           </section>
 
           {{-- The client's cancellation request and J&G's answer. Filled by bookings.js from
@@ -317,7 +340,7 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
           </section>
         </div>
 
-        <div class="modal-footer flex flex-col-reverse gap-3 border-0 px-6 pt-3 pb-6 min-[576px]:flex-row min-[576px]:justify-end [&>*]:m-0 [&>*]:w-full min-[576px]:[&>*]:w-auto">
+        <div class="modal-footer flex flex-col-reverse gap-3 border-0 px-6 pt-3 pb-6 min-[576px]:flex-row min-[576px]:justify-end *:m-0 *:w-full min-[576px]:*:w-auto">
           <x-account.button variant="secondary" data-bs-dismiss="modal">Close</x-account.button>
         </div>
       </div>

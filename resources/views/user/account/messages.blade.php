@@ -16,7 +16,7 @@ $deleteUrl = Route::has('user.messages.destroy') ? route('user.messages.destroy'
 
 <x-account.layout>
   <section
-    class="flex h-[calc(100dvh-11rem)] min-h-96 max-w-[60rem] flex-col overflow-hidden rounded-card bg-surface text-ink"
+    class="flex h-[calc(100dvh-11rem)] min-h-96 max-w-240 flex-col overflow-hidden rounded-card bg-surface text-ink"
     data-account-chat
     data-chat-self="client"
     data-chat-other="J&amp;G Audio"

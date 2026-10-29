@@ -40,7 +40,7 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
 @endphp
 
 <x-account.layout>
-  <div class="flex max-w-[60rem] flex-col gap-6">
+  <div class="flex max-w-240 flex-col gap-6">
 
     <section class="{{ $cardClass }}" aria-labelledby="account-password-title">
       <h2 class="{{ $cardTitleClass }}" id="account-password-title">Change password</h2>
@@ -122,7 +122,7 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
           <i class="ph ph-envelope-simple" aria-hidden="true"></i>
           <div class="min-w-0 flex-1">
             <p class="m-0 text-fluid-sm font-semibold">Email and password</p>
-            <p class="m-0 text-sm text-ink-muted [overflow-wrap:anywhere]">{{ data_get($user, 'email', 'juan@example.com') }}</p>
+            <p class="m-0 text-sm text-ink-muted wrap-anywhere">{{ data_get($user, 'email', 'juan@example.com') }}</p>
           </div>
           @if ($hasPassword)
           <x-account.badge tone="success" class="flex-none">Connected</x-account.badge>
@@ -135,7 +135,7 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
           <i class="ph ph-google-logo" aria-hidden="true"></i>
           <div class="min-w-0 flex-1">
             <p class="m-0 text-fluid-sm font-semibold">Google</p>
-            <p class="m-0 text-sm text-ink-muted [overflow-wrap:anywhere]">Sign in with your Google account</p>
+            <p class="m-0 text-sm text-ink-muted wrap-anywhere">Sign in with your Google account</p>
           </div>
           @if ($hasGoogle)
           <x-account.badge tone="success" class="flex-none">Connected</x-account.badge>
