@@ -43,6 +43,10 @@ $rememberClass = 'm-0 flex cursor-pointer items-center gap-2';
 $checkboxClass = 'relative m-0 size-4 shrink-0 cursor-pointer appearance-none rounded-sm border border-auth-border bg-auth-field checked:border-brand checked:bg-brand checked:after:absolute checked:after:top-px checked:after:left-1 checked:after:h-2 checked:after:w-1 checked:after:rotate-45 checked:after:border-r-2 checked:after:border-b-2 checked:after:border-on-brand focus-visible:shadow-[0_0_0_3px_var(--color-auth-focus-soft)] focus-visible:outline-none';
 $linkClass = 'font-semibold text-auth-accent hover:underline focus-visible:rounded-sm focus-visible:shadow-[0_0_0_3px_var(--color-auth-focus)] focus-visible:outline-none motion-safe:transition-shadow motion-safe:duration-150 motion-safe:ease-[ease]';
 $submitClass = 'w-full cursor-pointer rounded-field border-0 p-3 text-[0.95rem] font-semibold focus-visible:shadow-[0_0_0_3px_var(--color-auth-focus)] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60';
+$codeInputsClass = 'mb-5 flex gap-[0.6rem]';
+$codeBoxClass = 'aspect-square w-full min-w-0 rounded-field border border-auth-border bg-auth-field px-[2px] py-px text-center text-[1.1rem] text-auth-text focus:border-auth-accent focus:outline-3 focus:outline-offset-0 focus:outline-auth-focus-soft [&.is-invalid]:border-auth-danger [&.is-invalid]:focus:border-auth-danger';
+$maskedClass = 'font-semibold [overflow-wrap:anywhere] text-auth-accent';
+$resendClass = 'mb-6 inline-block cursor-pointer border-0 bg-transparent p-0 text-[0.85rem] font-semibold text-auth-accent focus-visible:rounded-sm focus-visible:shadow-[0_0_0_3px_var(--color-auth-focus)] focus-visible:outline-none enabled:hover:underline disabled:cursor-not-allowed disabled:text-auth-placeholder';
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -153,22 +157,22 @@ $submitClass = 'w-full cursor-pointer rounded-field border-0 p-3 text-[0.95rem] 
         <h1 class="{{ $titleClass }}">Verification</h1>
         <p class="{{ $subtitleClass }}">
           Enter the Verification code below.<br>
-          We sent to <span class="admin-login__masked" data-verification-destination></span>
+          We sent to <span class="{{ $maskedClass }}" data-verification-destination></span>
         </p>
 
         <form class="m-0" method="POST" action="{{ $confirmUrl }}" data-admin-verification novalidate>
           @csrf
 
-          <div class="admin-login__code-inputs" role="group" aria-label="6-digit verification code">
+          <div class="{{ $codeInputsClass }}" role="group" aria-label="6-digit verification code">
             @for ($i = 1; $i <= 6; $i++)
               <input type="text" maxlength="1" inputmode="numeric" autocomplete="one-time-code" name="code[]"
-              class="admin-login__code-box" aria-label="Digit {{ $i }}" required>
+              class="admin-login__code-box {{ $codeBoxClass }}" aria-label="Digit {{ $i }}" required>
               @endfor
           </div>
 
           <p class="{{ $alertClass }} d-none" role="alert" data-verification-error></p>
 
-          <button type="button" class="admin-login__resend" id="admin-resend-code-btn"
+          <button type="button" class="{{ $resendClass }}" id="admin-resend-code-btn"
             data-resend-url="{{ $resendUrl }}">Resend Code</button>
 
           <button type="submit" class="{{ $submitClass }} btn-color-gradient--primary">Confirm</button>
