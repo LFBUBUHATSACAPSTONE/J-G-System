@@ -19,51 +19,54 @@ $navLinkClass = 'nav-link relative inline-block whitespace-nowrap font-normal te
       </button>
 
       <div class="collapse navbar-collapse" id="nav">
-        <ul class="navbar-nav mx-auto gap-6 min-[992px]:gap-4 min-[1200px]:gap-12 min-[992px]:mt-0">
-          <li class="nav-item"><a href="{{ route('user.landing') }}#" class="{{ $navLinkClass }}" data-nav-target="home" aria-current="location">Home</a></li>
-          <li class="nav-item"><a href="{{ route('user.landing') }}#features" class="{{ $navLinkClass }}" data-nav-target="features">Features</a></li>
-          <li class="nav-item"><a href="{{ route('user.landing') }}#packages" class="{{ $navLinkClass }}" data-nav-target="packages">Packages</a></li>
-          <li class="nav-item"><a href="{{ route('user.landing') }}#inclusions" class="{{ $navLinkClass }}" data-nav-target="inclusions">Inclusions</a></li>
-          <li class="nav-item"><a href="{{ route('user.landing') }}#about" class="{{ $navLinkClass }}" data-nav-target="about">About</a></li>
-          @auth
-          <li class="nav-item d-lg-none">
-            <a href="{{ route('user.account') }}" class="{{ $navLinkClass }}">
-              Account
+        {{-- Menu padding and bottom line live here, not on #nav: Bootstrap animates only #nav's height, so padding on it stayed visible as a strip while closing. From lg up this wrapper disappears (contents). --}}
+        <div class="px-6 pt-2 pb-5 border-b border-on-brand/25 min-[992px]:contents">
+          <ul class="navbar-nav mx-auto gap-6 min-[992px]:gap-4 min-[1200px]:gap-12 min-[992px]:mt-0">
+            <li class="nav-item"><a href="{{ route('user.landing') }}#" class="{{ $navLinkClass }}" data-nav-target="home" aria-current="location">Home</a></li>
+            <li class="nav-item"><a href="{{ route('user.landing') }}#features" class="{{ $navLinkClass }}" data-nav-target="features">Features</a></li>
+            <li class="nav-item"><a href="{{ route('user.landing') }}#packages" class="{{ $navLinkClass }}" data-nav-target="packages">Packages</a></li>
+            <li class="nav-item"><a href="{{ route('user.landing') }}#inclusions" class="{{ $navLinkClass }}" data-nav-target="inclusions">Inclusions</a></li>
+            <li class="nav-item"><a href="{{ route('user.landing') }}#about" class="{{ $navLinkClass }}" data-nav-target="about">About</a></li>
+            @auth
+            <li class="nav-item d-lg-none">
+              <a href="{{ route('user.account') }}" class="{{ $navLinkClass }}">
+                Account
+                @if (($chatUnread ?? 0) > 0)
+                <span class="landing-nav__badge" data-chat-unread-badge>{{ $chatUnread > 9 ? '9+' : $chatUnread }}</span>
+                @endif
+              </a>
+            </li>
+            @endauth
+          </ul>
+
+          <div class="d-flex gap-4 align-items-center justify-content-center min-[992px]:mt-0">
+            @auth
+            <a href="{{ route('user.account') }}"
+              aria-label="My account ({{ ($chatUnread ?? 0) > 0 ? ($chatUnread > 9 ? '9+' : $chatUnread).' unread messages' : 'no unread messages' }})"
+              title="My account"
+              class="landing-nav__icon-button d-none d-lg-grid">
+              <x-chat.icon name="user" />
               @if (($chatUnread ?? 0) > 0)
               <span class="landing-nav__badge" data-chat-unread-badge>{{ $chatUnread > 9 ? '9+' : $chatUnread }}</span>
               @endif
             </a>
-          </li>
-          @endauth
-        </ul>
+            @else
+            <x-button type="button"
+              data-bs-toggle="modal" data-bs-target="#authModal"
+              data-auth-view="signup"
+              class="rounded-3 btn-color-gradient--primary px-4 py-2">
+              Sign up
+            </x-button>
 
-        <div class="d-flex gap-4 align-items-center justify-content-center min-[992px]:mt-0">
-          @auth
-          <a href="{{ route('user.account') }}"
-            aria-label="My account ({{ ($chatUnread ?? 0) > 0 ? ($chatUnread > 9 ? '9+' : $chatUnread).' unread messages' : 'no unread messages' }})"
-            title="My account"
-            class="landing-nav__icon-button d-none d-lg-grid">
-            <x-chat.icon name="user" />
-            @if (($chatUnread ?? 0) > 0)
-            <span class="landing-nav__badge" data-chat-unread-badge>{{ $chatUnread > 9 ? '9+' : $chatUnread }}</span>
-            @endif
-          </a>
-          @else
-          <x-button type="button"
-            data-bs-toggle="modal" data-bs-target="#authModal"
-            data-auth-view="signup"
-            class="rounded-3 btn-color-gradient--primary px-4 py-2">
-            Sign up
-          </x-button>
-
-          <x-button type="button"
-            data-bs-toggle="modal"
-            data-bs-target="#authModal"
-            data-auth-view="login"
-            class="rounded-3 btn-color-gradient--secondary px-4 py-2">
-            Login
-          </x-button>
-          @endauth
+            <x-button type="button"
+              data-bs-toggle="modal"
+              data-bs-target="#authModal"
+              data-auth-view="login"
+              class="rounded-3 btn-color-gradient--secondary px-4 py-2">
+              Login
+            </x-button>
+            @endauth
+          </div>
         </div>
       </div>
     </div>
