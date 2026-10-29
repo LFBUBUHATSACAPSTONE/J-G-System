@@ -1,9 +1,0 @@
-// Account > Profile. The card, rows, fields and buttons are the shared profile card
-// (sass/profile/_profile.scss), the same one the admin account page uses. This file only holds the
-// page layout.
-
-.account-profile {
-    display: flex;
-    flex-direction: column;
-    gap: $sp-6;
-}

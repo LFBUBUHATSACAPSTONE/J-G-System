@@ -40,6 +40,9 @@
 @source "../views/admin/account.blade.php";
 @source "../views/user/account/profile.blade.php";
 @source "../views/user/account/security.blade.php";
+@source "../views/components/account/badge.blade.php";
+@source "../views/components/account/button.blade.php";
+@source "../views/components/account/delete-modal.blade.php";
 @source "../views/admin/login.blade.php";
 @source "../js/chat/chat.js";
 @source "../js/chat/confirm-dialog.js";
@@ -48,6 +51,7 @@
 @source "../js/admin/dropdown.js";
 @source "../js/admin/filter-sheet.js";
 @source "../js/admin/dashboard.js";
+@source "../js/account/bookings.js";
 @source not inline("collapse container table shadow rounded");
 
 /* Wide but short viewports (laptops): the booking modal tightens its vertical spacing. */

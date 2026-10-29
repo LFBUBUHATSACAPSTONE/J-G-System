@@ -24,7 +24,7 @@ $secondaryBtnClass = 'w-full cursor-pointer rounded-field border-2 border-transp
 <x-account.layout>
   {{-- The same profile card as the admin account page (components/profile/*, sass/profile,
        js/account/profile-core.js). Rows open inline; Save sends the same PATCH as before. --}}
-  <div class="account-profile" data-account-profile data-profile-root>
+  <div class="flex flex-col gap-6" data-account-profile data-profile-root>
     <section class="{{ $cardClass }}" aria-labelledby="account-personal-title">
       <h2 class="{{ $cardTitleClass }}" id="account-personal-title">Personal information</h2>
 
@@ -41,9 +41,9 @@ $secondaryBtnClass = 'w-full cursor-pointer rounded-field border-2 border-transp
 
         <div class="mb-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[0.8125rem] text-ink-muted">
           @if ($isVerified)
-          <span class="account-badge account-badge--success"><i class="ph ph-seal-check" aria-hidden="true"></i>Email verified</span>
+          <x-account.badge tone="success"><i class="ph ph-seal-check" aria-hidden="true"></i>Email verified</x-account.badge>
           @else
-          <span class="account-badge account-badge--warning"><i class="ph ph-warning-circle" aria-hidden="true"></i>Email not verified</span>
+          <x-account.badge tone="warning"><i class="ph ph-warning-circle" aria-hidden="true"></i>Email not verified</x-account.badge>
           @endif
           @if ($memberSince)
           <span>Member since {{ $memberSince }}</span>

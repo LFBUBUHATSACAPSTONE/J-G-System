@@ -29,14 +29,21 @@ $wrapClass = 'relative';
 $inputClass = 'min-h-11 w-full rounded-field border border-field-border bg-surface py-2 pr-12 pl-3 text-fluid-base text-ink placeholder:text-ink-subtle focus-visible:ring-4 focus-visible:ring-brand-halo focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-brand-text [&.is-invalid]:border-danger-border';
 $toggleClass = 'absolute top-1/2 right-1 grid size-10 -translate-y-1/2 cursor-pointer place-items-center rounded-field border-0 bg-transparent p-0 text-[1.25rem] text-ink-muted hover:text-brand-text focus-visible:outline-2 focus-visible:outline-brand-text';
 $errorClass = 'text-sm text-danger-text d-none';
+$cardClass = '@container rounded-card bg-surface p-4 text-ink min-[576px]:p-6';
+$cardTitleClass = 'mb-4 text-fluid-xl font-semibold';
+$rulesClass = 'm-0 grid list-none grid-cols-[minmax(0,1fr)] gap-x-6 gap-y-2 p-0 text-sm text-ink-muted @min-[34rem]:grid-cols-2';
+$ruleClass = 'flex items-center gap-2 [&.is-met]:text-success-text [&_i]:flex-none [&_i]:text-[1.125rem] [&_i]:leading-none';
+$noteClass = 'm-0 flex items-start gap-3 rounded-panel bg-panel p-4 text-fluid-sm text-ink-muted [&_i]:flex-none [&_i]:text-fluid-xl [&_i]:leading-none';
+$methodsClass = 'm-0 flex list-none flex-col gap-4 p-0';
+$methodClass = 'flex items-center gap-4 rounded-panel bg-panel p-4 [&>i]:flex-none [&>i]:text-fluid-icon [&>i]:leading-none';
 $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft px-4 py-3 text-fluid-md font-medium text-success-text [&.is-error]:border-danger-border [&.is-error]:bg-danger-soft [&.is-error]:text-danger-text d-none';
 @endphp
 
 <x-account.layout>
-  <div class="account-security">
+  <div class="flex max-w-[60rem] flex-col gap-6">
 
-    <section class="account-card" aria-labelledby="account-password-title">
-      <h2 class="account-card__title" id="account-password-title">Change password</h2>
+    <section class="{{ $cardClass }}" aria-labelledby="account-password-title">
+      <h2 class="{{ $cardTitleClass }}" id="account-password-title">Change password</h2>
 
       @if ($hasPassword)
       <form
@@ -84,9 +91,9 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
           </div>
         </div>
 
-        <ul class="account-security__rules" id="sp-rules" aria-label="Password requirements">
+        <ul class="{{ $rulesClass }}" id="sp-rules" aria-label="Password requirements">
           @foreach ($rules as $key => $text)
-          <li data-password-rule="{{ $key }}">
+          <li class="{{ $ruleClass }}" data-password-rule="{{ $key }}">
             <i class="ph ph-circle" aria-hidden="true"></i>
             <span>{{ $text }}</span>
           </li>
@@ -96,44 +103,44 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
         <p class="{{ $statusClass }}" role="status" aria-live="polite" data-password-status></p>
 
         <div class="flex">
-          <button type="submit" class="account-btn account-btn--primary" data-password-save disabled>Save new password</button>
+          <x-account.button type="submit" data-password-save disabled>Save new password</x-account.button>
         </div>
       </form>
       @else
-      <p class="account-security__note">
+      <p class="{{ $noteClass }}">
         <i class="ph ph-info" aria-hidden="true"></i>
         <span>You sign in with Google, so this account has no password to change.</span>
       </p>
       @endif
     </section>
 
-    <section class="account-card" aria-labelledby="account-signin-title">
-      <h2 class="account-card__title" id="account-signin-title">Sign-in methods</h2>
+    <section class="{{ $cardClass }}" aria-labelledby="account-signin-title">
+      <h2 class="{{ $cardTitleClass }}" id="account-signin-title">Sign-in methods</h2>
 
-      <ul class="account-security__methods">
-        <li class="account-security__method">
+      <ul class="{{ $methodsClass }}">
+        <li class="{{ $methodClass }}">
           <i class="ph ph-envelope-simple" aria-hidden="true"></i>
-          <div class="account-security__method-text">
-            <p class="account-security__method-name">Email and password</p>
-            <p class="account-security__method-hint">{{ data_get($user, 'email', 'juan@example.com') }}</p>
+          <div class="min-w-0 flex-1">
+            <p class="m-0 text-fluid-sm font-semibold">Email and password</p>
+            <p class="m-0 text-sm text-ink-muted [overflow-wrap:anywhere]">{{ data_get($user, 'email', 'juan@example.com') }}</p>
           </div>
           @if ($hasPassword)
-          <span class="account-badge account-badge--success">Connected</span>
+          <x-account.badge tone="success" class="flex-none">Connected</x-account.badge>
           @else
-          <span class="account-badge account-badge--neutral">Not set</span>
+          <x-account.badge tone="neutral" class="flex-none">Not set</x-account.badge>
           @endif
         </li>
 
-        <li class="account-security__method">
+        <li class="{{ $methodClass }}">
           <i class="ph ph-google-logo" aria-hidden="true"></i>
-          <div class="account-security__method-text">
-            <p class="account-security__method-name">Google</p>
-            <p class="account-security__method-hint">Sign in with your Google account</p>
+          <div class="min-w-0 flex-1">
+            <p class="m-0 text-fluid-sm font-semibold">Google</p>
+            <p class="m-0 text-sm text-ink-muted [overflow-wrap:anywhere]">Sign in with your Google account</p>
           </div>
           @if ($hasGoogle)
-          <span class="account-badge account-badge--success">Connected</span>
+          <x-account.badge tone="success" class="flex-none">Connected</x-account.badge>
           @else
-          <span class="account-badge account-badge--neutral">Not connected</span>
+          <x-account.badge tone="neutral" class="flex-none">Not connected</x-account.badge>
           @endif
         </li>
       </ul>
