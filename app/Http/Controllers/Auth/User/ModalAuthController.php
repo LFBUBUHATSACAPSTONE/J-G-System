@@ -37,7 +37,7 @@ class ModalAuthController extends Controller
 
         // The customer session only: signing in here never touches the admin session, so a staff
         // member who is already signed in on the panel keeps that session.
-        $signIn->customer($user, true);
+        $signIn->customer($user, (bool) $request->boolean('remember'));
         $request->session()->regenerate();
 
         return response()->json([
