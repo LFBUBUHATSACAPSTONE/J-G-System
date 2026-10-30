@@ -34,7 +34,12 @@ class AdminGuard extends SessionGuard
         $user = parent::user();
 
         if ($user) {
-            return $this->isAdmin($user) ? $user : null;
+            if (!$this->isAdmin($user)) {
+                // Log unauthorized access attempt
+
+                return null;
+            }
+            return $user;
         }
 
         // No admin session of our own: an admin signed in on the customer guard still counts.
@@ -54,6 +59,6 @@ class AdminGuard extends SessionGuard
 
     private function isAdmin(Authenticatable $user): bool
     {
-        return $user instanceof User && $user->isAdmin();
+        return $user instanceof User && $user->role === User::ROLE_ADMIN;
     }
 }

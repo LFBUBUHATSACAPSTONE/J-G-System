@@ -45,6 +45,24 @@ class User extends Authenticatable
         'password',
     ];
 
+    protected static function booted(): void
+    {
+        static::creating(function (self $user): void {
+            if (blank($user->role)) {
+                $user->role = self::ROLE_USER;
+            }
+            if (!in_array($user->role, [self::ROLE_USER, self::ROLE_ADMIN], true)) {
+                $user->role = self::ROLE_USER;
+            }
+        });
+
+        static::updating(function (self $user): void {
+            if (!in_array($user->role, [self::ROLE_USER, self::ROLE_ADMIN], true)) {
+                $user->role = self::ROLE_USER;
+            }
+        });
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -66,20 +84,6 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
-    }
-
-    /**
-     * New accounts default to the customer role even before the insert (the column default alone
-     * would leave the in-memory model without a role until it is refreshed). Admin accounts are
-     * created by the owner with an explicit `role` and are never produced by sign-up.
-     */
-    protected static function booted(): void
-    {
-        static::creating(function (self $user): void {
-            if (blank($user->role)) {
-                $user->role = self::ROLE_USER;
-            }
-        });
     }
 
     /** True when this account may use the admin panel. */
