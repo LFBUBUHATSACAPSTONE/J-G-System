@@ -1,0 +1,1 @@
+- [Test Authorization System](test_authorization_system.md) — Test plan for ensuring proper role-based access control between admin and user areas.

@@ -53,6 +53,15 @@ class EnsureRole
             return $this->forbidden($request, $user);
         }
 
+        // Additional check to ensure admins can't access user routes and vice versa
+        if ($area === 'admin' && $role === User::ROLE_USER) {
+            return $this->forbidden($request, $user);
+        }
+
+        if ($area === 'user' && $role === User::ROLE_ADMIN) {
+            return $this->forbidden($request, $user);
+        }
+
         return $next($request);
     }
 
