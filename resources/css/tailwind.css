@@ -48,6 +48,7 @@
 @source "../views/user/landing.blade.php";
 @source "../views/components/landing/landing-caption.blade.php";
 @source "../views/components/landing/features.blade.php";
+@source "../views/components/landing/package-comparison.blade.php";
 @source "../js/chat/chat.js";
 @source "../js/chat/confirm-dialog.js";
 @source "../js/chat/widget.js";
@@ -268,25 +269,32 @@
         1.2rem
     ); /* $font-button--responsive */
 
-    /* Landing Features (Phase 8D), from _user-variables.scss and _features.scss */
-    --color-glass: oklch(100% 0 0 / 0.07); /* $glass-bg: feature card surface */
-    --color-glass-hover: oklch(100% 0 0 / 0.1);
-    --color-glass-border: oklch(100% 0 0 / 0.18);
-    --color-glass-highlight: oklch(100% 0 0 / 0.22); /* inset top edge */
-    --color-glass-shadow: oklch(0% 0 0 / 0.35);
-    --color-glass-body: oklch(100% 0 0 / 0.88); /* card description */
-    --color-features-title: oklch(
-        62% 0.018 310
-    ); /* muted lavender-grey heading */
-    --color-features-title-shadow: oklch(0% 0 0 / 0.45);
-    --font-landing-heading: "Montserrat", sans-serif;
+    /* Landing features section (Phase 8D), from _user-variables.scss */
+    --font-heading: "Montserrat", sans-serif; /* $font-landing-heading-text */
+    --color-features-title: oklch(62% 0.018 310);
     --section-pad-top: clamp(2.5rem, 1.89rem + 2.59vw, 3.5rem);
     --section-pad-bottom: clamp(3rem, 2.39rem + 2.59vw, 4rem);
-    --text-fluid-features-title: clamp(1.75rem, 3vw + 1rem, 2.75rem);
-    --text-fluid-feature-name: clamp(1.05rem, 0.98rem + 0.3vw, 1.2rem);
-    --text-fluid-feature-desc: calc(
-        clamp(1.05rem, 0.98rem + 0.3vw, 1.2rem) * 0.8
-    ); /* always 0.8 x the name */
+    --features-bleed: 10rem; /* how far the red gradient and the clip reach above the section */
+    --text-fluid-section-title: clamp(1.75rem, 3vw + 1rem, 2.75rem);
+
+    /* Glass surface (Phase 8E), from the $glass-* tokens in _user-variables.scss. Feature cards now; the comparison table, package cards and footer share them */
+    --color-glass: oklch(100% 0 0 / 0.07);
+    --color-glass-hover: oklch(100% 0 0 / 0.1);
+    --color-glass-border: oklch(100% 0 0 / 0.18);
+    --color-glass-highlight: oklch(100% 0 0 / 0.22);
+    --color-glass-shadow: oklch(0% 0 0 / 0.35);
+    --color-glass-body: oklch(100% 0 0 / 0.88);
+    --color-glass-divider: oklch(
+        100% 0 0 / 0.12
+    ); /* $auth-overlay-white-soft: row dividers in the comparison table */
+
+    /* Package comparison table (Phase 8F): the purple to red price text */
+    --gradient-price: linear-gradient(
+        90deg,
+        oklch(0.545 0.236 307.3),
+        oklch(0.58 0.235 350),
+        oklch(0.595 0.234 22.6)
+    );
 
     /* Dropdown menu entrance */
     --animate-dropdown-in: dropdown-in 0.14s ease-out;
