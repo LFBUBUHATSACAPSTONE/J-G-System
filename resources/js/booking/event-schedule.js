@@ -38,13 +38,11 @@
  *     too-small gap). booking-flow.js sends the client back here and this step
  *     shows the message under the time fields without clearing the selection.
  *
- * Reschedule mode: when the calendar has
- * data-reschedule-month="YYYY-MM" it opens on that month, both month arrows are hidden and
- * disabled, and no other month can be reached. If no day is left (all past or full) the calendar
- * and Continue are replaced by an empty state. The submit also sends `reschedule_id` (from
- * #bookingFlow[data-reschedule-id]). The server takes the month from the STORED booking and
- * answers 422 `errors.event_start_date` for dates outside it, and 403 {message} when the booking
- * can't be rescheduled (not user-cancelled, already rescheduled, month passed).
+ * Reschedule mode: data-initial-month="YYYY-MM" opens the calendar on the original booking's
+ * month. Users can navigate through any current or future month. If the viewed month has no open
+ * days, the calendar stays visible so they can move to another month. The submit also sends
+ * `reschedule_id` (from #bookingFlow[data-reschedule-id]); the server checks availability and
+ * whether the original booking is still eligible for rescheduling.
  *
  * Expected back-end contract for `booking.event-schedule`:
  *   200 JSON -> saved, caller advances to the next step
@@ -124,23 +122,21 @@ function initCalendar(form) {
     const rangeLabel = form.querySelector("[data-selected-range]");
 
     const today = startOfDay(new Date());
-    // Reschedule mode: locked to one month ("YYYY-MM"), see the header comment.
-    const lockedMonth = /^\d{4}-(0[1-9]|1[0-2])$/.test(
-        root.dataset.rescheduleMonth ?? "",
+    // Rescheduling opens on the original booking's month, but remains navigable from this month
+    // onward. The server separately enforces the original booking's reschedule eligibility.
+    const initialMonth = /^\d{4}-(0[1-9]|1[0-2])$/.test(
+        root.dataset.initialMonth ?? "",
     )
-        ? root.dataset.rescheduleMonth
+        ? root.dataset.initialMonth
         : null;
-    const minView = lockedMonth
+    const minView = { year: today.getFullYear(), month: today.getMonth() };
+    const view = initialMonth
         ? {
-              year: Number(lockedMonth.slice(0, 4)),
-              month: Number(lockedMonth.slice(5, 7)) - 1,
+              year: Number(initialMonth.slice(0, 4)),
+              month: Number(initialMonth.slice(5, 7)) - 1,
           }
-        : { year: today.getFullYear(), month: today.getMonth() };
-    const view = { ...minView };
+        : { ...minView };
     const emptyEl = form.querySelector("[data-reschedule-empty]");
-    const continueBtn = document.querySelector(
-        `[form="${form.id}"][type="submit"]`,
-    );
     const selection = { start: null, end: null };
     const availabilityUrl = root.dataset.availabilityUrl;
     const fullDates = new Set(); // days at the event limit, as local YYYY-MM-DD strings
@@ -151,14 +147,6 @@ function initCalendar(form) {
             "is-invisible",
             view.year === minView.year && view.month === minView.month,
         );
-        if (lockedMonth) {
-            [prevBtn, nextBtn].forEach((btn) => {
-                btn.classList.add("is-invisible");
-                btn.disabled = true;
-                btn.tabIndex = -1;
-            });
-        }
-
         daysEl.innerHTML = "";
         const firstDay = new Date(view.year, view.month, 1);
         const daysInMonth = new Date(view.year, view.month + 1, 0).getDate();
@@ -204,9 +192,9 @@ function initCalendar(form) {
         updateEmptyState();
     };
 
-    // Reschedule mode only: no selectable day left in the locked month -> empty state, no Continue.
+    // Keep the calendar and Continue visible when a month is full so users can navigate onward.
     const updateEmptyState = () => {
-        if (!lockedMonth || !emptyEl) return;
+        if (!initialMonth || !emptyEl) return;
         const daysInMonth = new Date(view.year, view.month + 1, 0).getDate();
         let open = false;
         for (let day = 1; day <= daysInMonth && !open; day++) {
@@ -214,11 +202,12 @@ function initCalendar(form) {
             open = date >= today && !fullDates.has(toIso(date));
         }
         emptyEl.classList.toggle("d-none", open);
-        form.querySelector(".event-schedule__body")?.classList.toggle(
-            "d-none",
-            !open,
-        );
-        continueBtn?.classList.toggle("d-none", !open);
+        if (!open) {
+            const message = emptyEl.querySelector("[data-reschedule-empty-message]");
+            if (message) {
+                message.textContent = `Every remaining day in ${MONTH_LABELS[view.month]} ${view.year} is past or fully booked. Try another month.`;
+            }
+        }
     };
 
     const updateRangeLabel = () => {
@@ -344,7 +333,7 @@ function initCalendar(form) {
 
         // Show the month of the first full day so the client sees what changed.
         const first = [...dates].sort()[0];
-        if (first && !lockedMonth) {
+        if (first) {
             const [y, m] = first.split("-").map(Number);
             if (
                 y > minView.year ||

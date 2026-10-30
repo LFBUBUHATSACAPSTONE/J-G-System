@@ -23,7 +23,7 @@ const TITLES = {
     declined: "Cancellation request declined",
     cancelled_by_admin: "Cancelled by J&G",
     cancelled: "Cancelled",
-    user_cancelled: "Cancelled by the client",
+    user_cancelled: "Cancelled",
 };
 
 function formatDateTime(value) {

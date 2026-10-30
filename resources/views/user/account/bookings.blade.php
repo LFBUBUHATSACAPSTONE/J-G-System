@@ -187,7 +187,7 @@ $emptyCopy = [
             </button>
             @elseif ($payload['status'] === 'pending_cancellation')
             <p class="account-booking__note">Cancellation request sent. Waiting for J&amp;G to review it.</p>
-            @elseif ($payload['status'] === 'user_cancelled')
+            @elseif ($payload['status'] === 'user_cancelled' || ($payload['status'] === 'cancelled' && ($payload['cancellation']['status'] ?? null) === 'approved'))
             @if ($payload['can_reschedule'])
             <a class="account-btn account-btn--primary" href="{{ route('user.booking', ['reschedule' => $payload['id']]) }}" data-booking-reschedule>Reschedule</a>
             @elseif ($payload['reschedule_note'])
