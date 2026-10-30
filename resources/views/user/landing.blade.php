@@ -11,7 +11,7 @@
   @include('components.landing.navigation')
 
   @php
-  $bookNowClass = 'btn-color-gradient--primary relative z-1 rounded-4xl border-0 px-12 py-3 text-fluid-button font-semibold text-pale-white';
+  $bookNowClass = 'btn-color-gradient--primary relative z-1 rounded-4xl border-0 px-12 py-[1rem] text-fluid-button font-semibold text-pale-white';
   @endphp
 
   {{-- landing-hero stays as a hook: _landing-hero.scss still sizes the carousel inside it (until 8H). --}}
