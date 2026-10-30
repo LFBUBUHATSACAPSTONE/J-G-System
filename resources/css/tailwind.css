@@ -45,6 +45,7 @@
 @source "../views/components/account/delete-modal.blade.php";
 @source "../views/admin/login.blade.php";
 @source "../views/components/landing/navigation.blade.php";
+@source "../views/components/auth-modal.blade.php";
 @source "../views/user/landing.blade.php";
 @source "../views/components/landing/landing-caption.blade.php";
 @source "../views/components/landing/features.blade.php";
@@ -320,6 +321,14 @@
     --color-gradient-text-from: oklch(53.617% 0.20836 334.959);
     --color-gradient-text-via: oklch(58.895% 0.22055 11.639);
     --color-gradient-text-to: oklch(65.526% 0.23087 26.386);
+
+    /* Phase 7B: auth modal shell, from $auth-overlay-white-*, $auth-scrim-black* and the tagline clamp in _auth-modal.scss.
+       The shadow of the tagline text is --color-shadow, the focus ring --color-auth-focus, the radii --radius-card and --radius-panel. */
+    --color-auth-overlay-soft: oklch(100% 0 0 / 0.12);
+    --color-auth-overlay-faint: oklch(100% 0 0 / 0.35);
+    --color-auth-scrim: oklch(0% 0 0 / 0.65);
+    --color-auth-scrim-clear: oklch(0% 0 0 / 0);
+    --text-fluid-tagline: clamp(1rem, 0.85rem + 1vw, 1.2rem);
 
     /* Dropdown menu entrance */
     --animate-dropdown-in: dropdown-in 0.14s ease-out;
