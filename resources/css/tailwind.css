@@ -49,6 +49,8 @@
 @source "../views/components/landing/landing-caption.blade.php";
 @source "../views/components/landing/features.blade.php";
 @source "../views/components/landing/package-comparison.blade.php";
+@source "../views/components/landing/footer.blade.php";
+@source "../views/components/landing/coverflow-carousel.blade.php";
 @source "../views/components/booking/package.blade.php";
 @source "../views/components/booking/package-card.blade.php";
 @source "../js/chat/chat.js";
@@ -289,6 +291,11 @@
     --color-glass-divider: oklch(
         100% 0 0 / 0.12
     ); /* $auth-overlay-white-soft: row dividers in the comparison table */
+
+    /* Landing footer (Phase 8H), from $footer-text, $footer-text-link and $footer-text-muted in _user-variables.scss */
+    --color-footer-text: oklch(92.494% 0 0);
+    --color-footer-link: oklch(85.451% 0 0);
+    --color-footer-muted: oklch(68.622% 0 0);
 
     /* Package section (Phase 8G): the "Book Now" button's resting colours, from $button-color-white / -black */
     --color-button-white: oklch(95.514% 0.00011 271.152);
