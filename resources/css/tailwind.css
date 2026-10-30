@@ -63,6 +63,10 @@
 @source "../js/account/bookings.js";
 @source not inline("collapse container table shadow rounded");
 
+/* Phase 7A: the gradient buttons are used by the auth forms and the booking blades, which are not in the list above yet.
+   Emit them always, so `_gradient-button.scss` can go. Remove this line when those areas are listed (Phase 7 and 9). */
+@source inline("btn-color-gradient--primary btn-color-gradient--secondary");
+
 /* Wide but short viewports (laptops): the booking modal tightens its vertical spacing. */
 @custom-variant short-wide (@media (min-width: 992px) and (max-height: 860px));
 
@@ -309,6 +313,14 @@
         oklch(0.595 0.234 22.6)
     );
 
+    /* Phase 7A: shared gradient button and gradient text, from $button-gradient and $gradient-text-* in _user-variables.scss.
+       --gradient-button (above) is the same two colours at 90deg; the primary button needs the colours apart to animate the angle. */
+    --color-button-from: oklch(0.545 0.236 307.3);
+    --color-button-to: oklch(0.595 0.234 22.6);
+    --color-gradient-text-from: oklch(53.617% 0.20836 334.959);
+    --color-gradient-text-via: oklch(58.895% 0.22055 11.639);
+    --color-gradient-text-to: oklch(65.526% 0.23087 26.386);
+
     /* Dropdown menu entrance */
     --animate-dropdown-in: dropdown-in 0.14s ease-out;
     @keyframes dropdown-in {
@@ -320,6 +332,110 @@
             opacity: 1;
             transform: none;
         }
+    }
+}
+
+/* Phase 7A: shared pieces moved from Sass. Utilities, so `important` (above) makes them win over Bootstrap's `.btn` rules,
+   as the Sass `!important` on :active did. */
+
+/* The angle is animated, so it must be a registered property (was in `_gradient-button.scss`). */
+@property --gradient-angle {
+    syntax: "<angle>";
+    initial-value: 90deg;
+    inherits: false;
+}
+
+/* Primary button: purple to red; the gradient turns around on hover. Same name as the Sass class, so no Blade changes. */
+@utility btn-color-gradient--primary {
+    --gradient-angle: 90deg;
+    background: linear-gradient(
+        var(--gradient-angle),
+        var(--color-button-from),
+        var(--color-button-to)
+    );
+    border: none;
+    color: var(--color-pale-white);
+    transition:
+        --gradient-angle 0.3s ease-in-out,
+        opacity 0.15s ease-in-out,
+        color 0.15s ease-in-out;
+
+    &:hover {
+        --gradient-angle: 270deg;
+        border: none;
+        opacity: 0.9;
+        color: var(--color-pale-white);
+    }
+
+    &:active {
+        color: var(--color-pale-white);
+        opacity: 0.8;
+    }
+
+    /* :where() keeps this at zero specificity, so a `focus-visible:shadow-*` ring on the button still wins (the admin sign-in has one). */
+    &:where(:focus) {
+        box-shadow: none;
+        color: var(--color-pale-white);
+    }
+}
+
+/* Secondary button: transparent, fills with the gradient on hover. */
+@utility btn-color-gradient--secondary {
+    color: var(--color-pale-white);
+    background: transparent;
+    border: none;
+    opacity: 1;
+    transition:
+        background 0.3s ease-in-out,
+        color 0.3s ease-in-out,
+        opacity 0.3s ease-in-out;
+
+    &:hover {
+        color: var(--color-pale-white);
+        background: var(--gradient-button);
+        opacity: 0.9;
+    }
+
+    &:active {
+        color: var(--color-pale-white);
+        background: var(--gradient-button);
+        opacity: 0.8;
+        transition: opacity 0.15s ease-in-out;
+    }
+}
+
+/* Gradient text (landing caption). `.packages-title-accent` was in the Sass file and used nowhere, so it is not carried over. */
+@utility text-caption-gradient {
+    background: linear-gradient(
+        90deg,
+        var(--color-gradient-text-from),
+        var(--color-gradient-text-via),
+        var(--color-gradient-text-to)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
+
+/* Keeps Chrome's light-blue / white autofill from painting over the dark inputs (was the `booking-autofill` Sass mixin).
+   The fill colour is `--autofill-bg` (default: the auth field colour; the booking summary will set it to the card colour).
+   Its inset `box-shadow` must not meet a `box-shadow` utility on the same input, so those inputs use an outline for focus. */
+@utility autofill-dark {
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus {
+        -webkit-text-fill-color: var(--color-auth-text);
+        caret-color: var(--color-auth-text);
+        box-shadow: 0 0 0 1000px var(--autofill-bg, var(--color-auth-field-bg))
+            inset;
+        transition: background-color 9999s ease-out 0s;
+    }
+
+    &:-webkit-autofill:focus {
+        box-shadow:
+            0 0 0 1000px var(--autofill-bg, var(--color-auth-field-bg)) inset,
+            0 0 0 3px var(--color-auth-ring-soft);
     }
 }
 

@@ -33,7 +33,7 @@ $badgeClass = 'rounded-full bg-brand px-3 py-1 text-sm font-semibold tracking-[0
 $titleClass = 'mx-0 mt-0 mb-[0.4rem] text-[1.5rem] leading-[1.2] font-bold md:text-[1.75rem]';
 $subtitleClass = 'mx-0 mt-0 mb-5 text-[0.85rem] text-auth-text-muted';
 $labelClass = 'mb-[0.35rem] block text-[0.8rem] font-normal text-auth-text-muted';
-$controlClass = 'w-full rounded-field border border-transparent bg-auth-field py-[0.7rem] text-[0.9rem] leading-normal text-auth-text placeholder:text-auth-placeholder focus:border-auth-accent focus:outline-3 focus:outline-offset-0 focus:outline-auth-focus-soft [&.is-invalid]:border-auth-danger [&.is-invalid]:focus:border-auth-danger';
+$controlClass = 'autofill-dark motion-safe:transition-[border-color,box-shadow] motion-safe:duration-150 motion-safe:ease-[ease] w-full rounded-field border border-transparent bg-auth-field py-[0.7rem] text-[0.9rem] leading-normal text-auth-text placeholder:text-auth-placeholder focus:border-auth-accent focus:outline-3 focus:outline-offset-0 focus:outline-auth-focus-soft [&.is-invalid]:border-auth-danger [&.is-invalid]:focus:border-auth-danger';
 $toggleClass = 'absolute top-10 right-[0.9rem] cursor-pointer border-0 bg-transparent p-0 leading-none focus-visible:rounded-sm focus-visible:shadow-[0_0_0_3px_var(--color-auth-focus)] focus-visible:outline-none [&_i]:block [&_i]:size-5 [&_i]:text-[1.25rem] [&_i]:text-auth-text [&_i]:opacity-60 [&:hover_i]:opacity-100 [&:focus-visible_i]:opacity-100';
 $fieldErrorClass = 'mt-[0.35rem] text-[0.78rem] text-auth-danger not-[.d-none]:block';
 $alertClass = 'mx-0 mt-0 mb-4 text-[0.85rem] text-auth-banner-error';
@@ -44,7 +44,7 @@ $checkboxClass = 'relative m-0 size-4 shrink-0 cursor-pointer appearance-none ro
 $linkClass = 'font-semibold text-auth-accent hover:underline focus-visible:rounded-sm focus-visible:shadow-[0_0_0_3px_var(--color-auth-focus)] focus-visible:outline-none motion-safe:transition-shadow motion-safe:duration-150 motion-safe:ease-[ease]';
 $submitClass = 'w-full cursor-pointer rounded-field border-0 p-3 text-[0.95rem] font-semibold focus-visible:shadow-[0_0_0_3px_var(--color-auth-focus)] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60';
 $codeInputsClass = 'mb-5 flex gap-[0.6rem]';
-$codeBoxClass = 'aspect-square w-full min-w-0 rounded-field border border-auth-border bg-auth-field px-[2px] py-px text-center text-[1.1rem] text-auth-text focus:border-auth-accent focus:outline-3 focus:outline-offset-0 focus:outline-auth-focus-soft [&.is-invalid]:border-auth-danger [&.is-invalid]:focus:border-auth-danger';
+$codeBoxClass = 'autofill-dark aspect-square w-full min-w-0 rounded-field border border-auth-border bg-auth-field px-[2px] py-px text-center text-[1.1rem] text-auth-text focus:border-auth-accent focus:outline-3 focus:outline-offset-0 focus:outline-auth-focus-soft [&.is-invalid]:border-auth-danger [&.is-invalid]:focus:border-auth-danger';
 $maskedClass = 'font-semibold [overflow-wrap:anywhere] text-auth-accent';
 $resendClass = 'mb-6 inline-block cursor-pointer border-0 bg-transparent p-0 text-[0.85rem] font-semibold text-auth-accent focus-visible:rounded-sm focus-visible:shadow-[0_0_0_3px_var(--color-auth-focus)] focus-visible:outline-none enabled:hover:underline disabled:cursor-not-allowed disabled:text-auth-placeholder';
 @endphp
@@ -67,7 +67,7 @@ $resendClass = 'mb-6 inline-block cursor-pointer border-0 bg-transparent p-0 tex
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
 
-  @vite(['resources/sass/admin-login.scss', 'resources/js/admin-login.js', 'resources/css/tailwind.css'])
+  @vite(['resources/js/admin-login.js', 'resources/css/tailwind.css'])
 
   <title>Sign in - {{ $appName }}</title>
 </head>
