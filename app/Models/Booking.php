@@ -225,7 +225,7 @@ class Booking extends Model
      */
     public function rescheduleBlockReason(?bool $alreadyRescheduled = null): ?string
     {
-        if ($this->status !== 'user_cancelled') {
+        if (! $this->isReschedulableCancellation()) {
             return 'Only a booking you cancelled can be rescheduled.';
         }
 
@@ -245,6 +245,17 @@ class Booking extends Model
     }
 
     /**
+     * A booking can be rescheduled after the user cancelled it themselves or an admin approved
+     * the user's cancellation request. Direct admin cancellations remain ineligible.
+     */
+    public function isReschedulableCancellation(): bool
+    {
+        return $this->status === self::STATUS_USER_CANCELLED
+            || ($this->status === self::STATUS_CANCELLED
+                && $this->admin_cancellation_action === 'approved');
+    }
+
+    /**
      * The shape the My Bookings page renders (resources/views/user/account/bookings.blade.php):
      * the admin array without `client`, plain Y-m-d dates, `payment.amount` and the reschedule fields.
      */
@@ -253,7 +264,8 @@ class Booking extends Model
         $data = $this->toAdminArray();
         $payment = $this->payment;
 
-        $reason = $this->status === 'user_cancelled'
+        $isReschedulableCancellation = $this->isReschedulableCancellation();
+        $reason = $isReschedulableCancellation
             ? $this->rescheduleBlockReason($alreadyRescheduled)
             : null;
 
@@ -275,7 +287,7 @@ class Booking extends Model
                 'state' => $data['payment']['state'],
                 'amount' => $payment?->payment_amount === null ? null : (float) $payment->payment_amount,
             ],
-            'can_reschedule' => $this->status === 'user_cancelled' && $reason === null,
+            'can_reschedule' => $isReschedulableCancellation && $reason === null,
             'reschedule_note' => $reason,
             'status_reason' => $data['status_reason'],
         ];

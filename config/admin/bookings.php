@@ -170,13 +170,12 @@ return [
       'actions'   => [],
       'badge'     => ['tone' => 'danger', 'solid' => false],
     ],
-    // The CLIENT cancelled it from My Bookings (Account\AccountBookingController), so it is
-    // tracked apart from the Cancelled the admin performs here. It has its own Status-filter
-    // option ('user_cancelled' below) and its own Booking History tab.
+    // Legacy status used for bookings cancelled by the client before cancellation requests
+    // required admin approval. Show it under the shared Cancelled status in the admin UI.
     'user_cancelled' => [
-      'label'     => 'User Cancelled',
+      'label'     => 'Cancelled',
       'icon'      => 'x-circle',
-      'group'     => 'user_cancelled',
+      'group'     => 'cancelled',
       'highlight' => false,
       'actions'   => [],
       'badge'     => ['tone' => 'danger', 'solid' => false],
@@ -191,7 +190,6 @@ return [
     'cancellation'   => 'Cancellation Requests',
     'payment'        => 'Payment to Verify',
     'cancelled'      => 'Cancelled',
-    'user_cancelled' => 'User Cancelled',
     'completed'      => 'Completed',
   ],
 

@@ -32,16 +32,12 @@ function initBookings() {
     const root = document.querySelector("[data-account-bookings]");
     if (!root) return;
 
-    const statuses = JSON.parse(root.dataset.statuses || "{}");
     const cancelUrlTemplate = root.dataset.cancelUrlTemplate || "#";
     const rescheduleUrl = root.dataset.rescheduleUrl || "#";
 
     const cards = () => [...root.querySelectorAll("[data-booking-card]")];
     const tabs = [...root.querySelectorAll("[data-bookings-tab]")];
-    const statusEl = root.querySelector("[data-bookings-status]");
     const readCard = (card) => JSON.parse(card.dataset.booking);
-    const writeCard = (card, data) =>
-        (card.dataset.booking = JSON.stringify(data));
 
     let activeTab =
         tabs.find((tab) => tab.classList.contains("is-active"))?.dataset
@@ -68,17 +64,6 @@ function initBookings() {
             const on = tab.dataset.bookingsTab === activeTab;
             tab.classList.toggle("is-active", on);
             tab.setAttribute("aria-pressed", String(on));
-        });
-    }
-
-    function updateCounts() {
-        const all = cards();
-        root.querySelectorAll("[data-bookings-count]").forEach((el) => {
-            const key = el.dataset.bookingsCount;
-            el.textContent =
-                key === "all"
-                    ? all.length
-                    : all.filter((card) => card.dataset.group === key).length;
         });
     }
 
@@ -233,54 +218,6 @@ function initBookings() {
     // never changes the card to "cancelled" on its own.
     const cancelModalEl = document.getElementById("cancelBookingModal");
 
-    function showPageStatus(message) {
-        if (!statusEl) return;
-        statusEl.textContent = message;
-        statusEl.classList.remove("d-none");
-    }
-
-    // Swap the card to the pending state with what the server answered. The group stays
-    // "upcoming"/"past": the booking is still active until an admin approves the request.
-    function markCancellationRequested(card, result, reason) {
-        const data = readCard(card);
-        const meta = statuses.pending_cancellation ?? {
-            label: "Cancellation pending",
-            icon: "clock",
-            tone: "warning",
-        };
-        const cancellation = result.cancellation ?? {
-            status: "pending",
-            user_reason: reason,
-            user_cancelled_at: new Date().toISOString(),
-            admin_reason: null,
-            admin_action: null,
-            admin_cancelled_at: null,
-        };
-        const next = {
-            ...data,
-            status: result.status ?? "pending_cancellation",
-            label: meta.label,
-            icon: meta.icon,
-            tone: meta.tone,
-            can_cancel: false,
-            cancellation,
-        };
-        writeCard(card, next);
-        card.dataset.status = next.status;
-        paintBadge(card.querySelector("[data-booking-badge]"), next);
-
-        const actions = card.querySelector("[data-booking-actions]");
-        actions.querySelector("[data-booking-cancel]")?.remove();
-        if (!actions.querySelector("[data-booking-cancellation-note]")) {
-            const note = document.createElement("p");
-            note.className = "account-booking__note";
-            note.setAttribute("data-booking-cancellation-note", "");
-            note.textContent =
-                "Cancellation request sent. Waiting for J&G to review it.";
-            actions.append(note);
-        }
-    }
-
     // The card's Cancel booking button opens the request modal (it no longer uses data-bs-toggle).
     root.addEventListener("click", async (event) => {
         const button = event.target.closest("[data-booking-cancel]");
@@ -333,13 +270,9 @@ function initBookings() {
                     );
                 }
 
-                markCancellationRequested(card, data.booking ?? {}, reason);
-                updateCounts();
-                applyFilter();
-                showPageStatus(
-                    data.message ||
-                        `Cancellation request for booking ${reference} sent.`,
-                );
+                // The server has saved the request. Reload My Bookings so its rendered status
+                // reflects the pending request and the cancellation reason form is closed.
+                window.location.reload();
             },
         });
     });

@@ -30,12 +30,7 @@ $end = $event['end_date'] ?? $start;
 if ($history) {
 $phases = config('admin.history.phases');
 
-if (in_array($key, config('admin.history.own_group_statuses', []), true)) {
-// A terminal status that keeps its OWN group and tab (user_cancelled), so the History
-// tabs can show it apart from the bookings the admin cancelled. Its badge and label
-// still come from config/admin/bookings.php.
-$phaseKey = $key;
-} elseif (in_array($key, config('admin.history.terminal_statuses'), true)) {
+if (in_array($key, config('admin.history.terminal_statuses'), true)) {
 $phaseKey = 'cancelled';
 } else {
 $today = today();
@@ -128,7 +123,7 @@ $payload = [
 'start_time' => $event['start_time'] ?? null,
 'end_time' => $event['end_time'] ?? null,
 ],
-// Cancelled / Declined / User Cancelled: why, so View Details can show it (null = nothing to show).
+// Cancelled / Declined: why, so View Details can show it (null = nothing to show).
 // `status_reason` is what the backend should pass on the booking array (docs/backend-impact.md).
 'status' => $key,
 'reason' => filled($booking['status_reason'] ?? null) && config("cancellation.labels.{$key}")

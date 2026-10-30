@@ -53,7 +53,6 @@
     data-current-view="{{ $reschedule ? 'event-schedule' : 'client-information' }}"
     @if ($reschedule)
     data-reschedule-id="{{ $reschedule['booking_id'] }}"
-    data-reschedule-month="{{ $reschedule['month'] }}"
     @endif
     data-package-url="{{ route('user.landing') }}#packages"
     data-cancel-url="{{ route('user.landing') }}"

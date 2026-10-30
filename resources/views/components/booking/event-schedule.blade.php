@@ -6,7 +6,7 @@
 
     @if ($reschedule)
     <p class="event-schedule__notice" data-reschedule-notice>
-      Rescheduling is limited to <strong>{{ $rescheduleMonthLabel }}</strong>.
+      Choose a new date in any available month. You can reschedule until {{ $rescheduleMonthLabel }} has passed.
     </p>
     @endif
 
@@ -19,7 +19,7 @@
 
       <div class="event-schedule__body">
         <div class="event-schedule__calendar" data-calendar data-availability-url="{{ route('booking.availability') }}"
-          @if ($reschedule) data-reschedule-month="{{ $reschedule['month'] }}" @endif>
+          @if ($reschedule) data-initial-month="{{ $reschedule['month'] }}" @endif>
           <div class="event-schedule__calendar-header">
             <button type="button" class="event-schedule__nav-btn is-invisible" data-calendar-prev aria-label="Previous month">
               <svg width="10" height="16" viewBox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -101,8 +101,8 @@
 
       @if ($reschedule)
       <div class="event-schedule__empty d-none" role="status" data-reschedule-empty>
-        <strong>No available dates left in this month</strong>
-        <p>Every remaining day in {{ $rescheduleMonthLabel }} is past or fully booked. Please message us through the chat widget and we will help you with another option.</p>
+        <strong>No available dates in this month</strong>
+        <p data-reschedule-empty-message>Try another month.</p>
       </div>
       @endif
 

@@ -238,15 +238,6 @@ class BookingController extends Controller
         }
 
         $data = $validator->validated();
-        if ($reschedule) {
-            $month = $reschedule->schedule->event_start_date->format('Y-m');
-            if (! str_starts_with($data['event_start_date'], $month) || ! str_starts_with($data['event_end_date'], $month)) {
-                $message = 'Rescheduling is limited to '.$reschedule->schedule->event_start_date->format('F Y').'.';
-
-                return $this->validationError(['event_start_date' => [$message]], $message);
-            }
-        }
-
         if ($data['event_start_date'] === $data['event_end_date']
             && $this->timeInMinutes($data['end_time']) <= $this->timeInMinutes($data['start_time'])) {
             return $this->validationError(['end_time' => ['End time must be later than start time.']]);
