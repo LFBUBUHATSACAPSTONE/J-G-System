@@ -33,13 +33,13 @@ $labelClass = 'w-[18%] px-2 py-[0.85rem] text-left align-middle leading-[1.4] fo
   <img src="{{ asset('images/backgrounds/design/sides_star.webp') }}" alt="" aria-hidden="true" class="pointer-events-none absolute top-[-8%] left-0 w-full -translate-y-[40%] opacity-60">
   <img src="{{ asset('images/backgrounds/design/star_tall.webp') }}" class="pointer-events-none absolute bottom-0 left-1/2 w-full -translate-x-1/2 translate-y-[13%] opacity-60" alt="" aria-hidden="true">
   <section class="relative z-1 mx-auto max-w-[1100px] px-(--section-pad-x) pt-(--section-pad-top) pb-(--section-pad-bottom) text-on-brand" aria-labelledby="pcmp-title">
-    <h2 class="mt-0 mb-7 text-center font-heading text-[length:clamp(1.4rem,1rem_+_2vw,2.25rem)] leading-[1.2] font-extrabold tracking-[0.12em] text-features-title uppercase [text-shadow:0_2px_12px_oklch(0%_0_0/0.45)] md:mb-9" id="pcmp-title">{{ $title }}</h2>
+    <h2 class="mt-0 mb-7 text-center font-heading text-[length:clamp(1.4rem,1rem_+_2vw,2.25rem)] leading-[1.2] font-extrabold tracking-[0.12em] text-features-title uppercase [text-shadow:0_2px_12px_oklch(0%_0_0/0.45)] min-[768px]:mb-9" id="pcmp-title">{{ $title }}</h2>
 
     @foreach ($sections as $section)
-    <div class="not-last:mb-8 md:not-last:mb-11">
-      <h3 class="mt-0 mb-[0.85rem] font-heading text-[0.85rem] leading-[1.2] font-bold tracking-[0.15em] text-features-title uppercase md:text-[0.95rem]">{{ $section['title'] }}</h3>
+    <div class="not-last:mb-8 min-[768px]:not-last:mb-11">
+      <h3 class="mt-0 mb-[0.85rem] font-heading text-[0.85rem] leading-[1.2] font-bold tracking-[0.15em] text-features-title uppercase min-[768px]:text-[0.95rem]">{{ $section['title'] }}</h3>
 
-      <div class="overflow-x-auto rounded-panel border-[1px] border-glass-border bg-glass px-[0.75rem] pt-1 pb-2 shadow-[inset_0_1px_0_var(--color-glass-highlight),0_8px_32px_var(--color-glass-shadow)] backdrop-blur-[10px] backdrop-saturate-140 min-[992px]:rounded-card min-[992px]:px-6 min-[992px]:pt-2 min-[992px]:pb-3">
+      <div class="overflow-x-auto rounded-panel border-[1px] border-glass-border bg-glass px-[0.75rem] pt-[0.25rem] pb-[0.5rem] shadow-[inset_0_1px_0_var(--color-glass-highlight),0_8px_32px_var(--color-glass-shadow)] backdrop-blur-[10px] backdrop-saturate-140 min-[992px]:rounded-card min-[992px]:px-6 min-[992px]:pt-2 min-[992px]:pb-3">
         {{-- --pcmp-cols widens the table (min-width) for every package column beyond the original six. --}}
         <table class="w-full min-w-[max(820px,calc(9rem_+_var(--pcmp-cols,6)*7rem))] border-collapse text-center text-[0.75rem] min-[992px]:text-[0.8rem]" style="--pcmp-cols: {{ count($packages) }}">
           <thead>
