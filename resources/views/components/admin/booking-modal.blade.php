@@ -235,28 +235,28 @@ $serverErrors = isset($errors) ? $errors->toArray() : [];
         {{-- The client's cancellation request and the admin's decision. Filled by
              js/admin/cancellation.js from booking.cancellation. The two buttons only appear while
              the request is pending, so the client's reason and the decision stay in one place. --}}
-        <section class="reason-note" aria-labelledby="bm-cancellation-title" data-cancellation-section hidden>
-          <h3 class="reason-note__label" id="bm-cancellation-title" data-cancellation-title></h3>
-          <p class="reason-note__by" data-cancellation-meta></p>
+        <section class="m-0 flex flex-col gap-1 rounded-lg border border-field-border bg-panel px-4 py-3 [&[hidden]]:hidden" aria-labelledby="bm-cancellation-title" data-cancellation-section hidden>
+          <h3 class="m-0 text-sm leading-[1.2] font-semibold text-ink" id="bm-cancellation-title" data-cancellation-title></h3>
+          <p class="m-0 text-sm text-ink-muted" data-cancellation-meta></p>
 
-          <div data-cancellation-user hidden>
-            <p class="reason-note__by" data-cancellation-user-label>Client's reason</p>
-            <p class="reason-note__text" data-cancellation-user-reason></p>
-            <p class="reason-note__by" data-cancellation-user-date></p>
+          <div class="flex flex-col gap-1 pt-2" data-cancellation-user hidden>
+            <p class="m-0 text-sm text-ink-muted" data-cancellation-user-label>Client's reason</p>
+            <p class="m-0 text-sm wrap-anywhere whitespace-pre-line text-ink" data-cancellation-user-reason></p>
+            <p class="m-0 text-sm text-ink-muted" data-cancellation-user-date></p>
           </div>
 
-          <div data-cancellation-admin hidden>
-            <p class="reason-note__by" data-cancellation-admin-label>J&amp;G's reason</p>
-            <p class="reason-note__text" data-cancellation-admin-reason></p>
-            <p class="reason-note__by" data-cancellation-admin-date></p>
+          <div class="flex flex-col gap-1 pt-2" data-cancellation-admin hidden>
+            <p class="m-0 text-sm text-ink-muted" data-cancellation-admin-label>J&amp;G's reason</p>
+            <p class="m-0 text-sm wrap-anywhere whitespace-pre-line text-ink" data-cancellation-admin-reason></p>
+            <p class="m-0 text-sm text-ink-muted" data-cancellation-admin-date></p>
           </div>
 
-          <div class="d-flex flex-wrap gap-2 mt-3" data-cancellation-actions hidden>
-            <button type="button" class="admin-btn admin-btn--danger" data-approve-cancellation>
+          <div class="flex flex-wrap gap-2 pt-3 [&[hidden]]:hidden" data-cancellation-actions hidden>
+            <button type="button" class="inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-1 text-fluid-sm font-semibold whitespace-nowrap [&_.ph]:text-fluid-lg focus-visible:outline-2 focus-visible:outline-offset-2 border border-danger bg-danger text-on-brand hover:opacity-90 focus-visible:outline-danger" data-approve-cancellation>
               <i class="ph ph-check" aria-hidden="true"></i>
               <span>Approve Cancellation</span>
             </button>
-            <button type="button" class="admin-btn admin-btn--outline" data-decline-cancellation>
+            <button type="button" class="inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-1 text-fluid-sm font-semibold whitespace-nowrap [&_.ph]:text-fluid-lg focus-visible:outline-2 focus-visible:outline-offset-2 border border-brand-text bg-transparent text-brand-text hover:bg-brand-soft focus-visible:outline-brand-text" data-decline-cancellation>
               <i class="ph ph-x" aria-hidden="true"></i>
               <span>Decline Cancellation</span>
             </button>
@@ -267,7 +267,7 @@ $serverErrors = isset($errors) ? $errors->toArray() : [];
         <section class="m-0 flex flex-col gap-1 rounded-lg border border-danger-border bg-danger-soft px-4 py-3" aria-labelledby="bm-reason-label" data-booking-reason hidden>
           <h3 class="mb-2 text-sm leading-[1.2] font-semibold text-danger-text" id="bm-reason-label" data-reason-label></h3>
           <p class="mb-4 text-sm text-ink-muted" data-reason-by></p>
-          <p class="m-0 text-sm wrap:anywhere whitespace-pre-line text-ink" data-reason-text></p>
+          <p class="m-0 text-sm wrap-anywhere whitespace-pre-line text-ink" data-reason-text></p>
         </section>
 
         <p class="m-0 rounded-field border border-danger-border bg-danger-soft px-3 py-2 text-sm text-danger-text" role="alert" data-booking-error hidden></p>

@@ -93,8 +93,8 @@ $tabClass = 'group inline-flex flex-none cursor-pointer items-center gap-2 round
 $tabCountClass = 'min-w-6 rounded-full bg-panel px-2 text-center text-xs leading-6 text-ink-muted group-[.is-active]:bg-surface group-[.is-active]:text-brand-text';
 $cardClass = '@container rounded-card bg-surface p-4 text-ink min-[576px]:p-6 [&[hidden]]:hidden';
 $emptyClass = '@container flex flex-col items-center gap-3 rounded-card bg-surface px-4 py-8 text-center text-ink min-[576px]:px-6 [&.d-none]:hidden [&>i]:text-[2.5rem] [&>i]:leading-none [&>i]:text-ink-subtle';
-$metaClass = 'mt-4 mb-0 grid grid-cols-[minmax(0,1fr)] gap-x-6 gap-y-2 border-t border-dropdown-border pt-4 @min-[32rem]:grid-cols-2 [&>div]:flex [&>div]:min-w-0 [&>div]:items-start [&>div]:gap-2 [&_dt]:flex [&_dt]:flex-none [&_dt]:text-[1.125rem] [&_dt]:leading-normal [&_dt]:text-brand-text [&_dd]:m-0 [&_dd]:text-fluid-sm [&_dd]:[overflow-wrap:anywhere]';
-$modalGridClass = 'm-0 grid grid-cols-[minmax(0,1fr)] gap-x-6 gap-y-3 rounded-panel bg-panel p-4 min-[576px]:grid-cols-2 [&_dt]:text-sm [&_dt]:font-medium [&_dt]:text-ink-muted [&_dd]:m-0 [&_dd]:text-fluid-sm [&_dd]:[overflow-wrap:anywhere]';
+$metaClass = 'mt-4 mb-0 grid grid-cols-[minmax(0,1fr)] gap-x-6 gap-y-2 border-t border-dropdown-border pt-4 @min-[32rem]:grid-cols-2 [&>div]:flex [&>div]:min-w-0 [&>div]:items-start [&>div]:gap-2 [&_dt]:flex [&_dt]:flex-none [&_dt]:text-[1.125rem] [&_dt]:leading-normal [&_dt]:text-brand-text [&_dd]:m-0 [&_dd]:text-fluid-sm [&_dd]:[overflow-wrap-anywhere]';
+$modalGridClass = 'm-0 grid grid-cols-[minmax(0,1fr)] gap-x-6 gap-y-3 rounded-panel bg-panel p-4 min-[576px]:grid-cols-2 [&_dt]:text-sm [&_dt]:font-medium [&_dt]:text-ink-muted [&_dd]:m-0 [&_dd]:text-fluid-sm [&_dd]:[overflow-wrap-anywhere]';
 $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft px-4 py-3 text-fluid-md font-medium text-success-text [&.is-error]:border-danger-border [&.is-error]:bg-danger-soft [&.is-error]:text-danger-text d-none';
 @endphp
 
@@ -243,39 +243,20 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
 
           {{-- The client's cancellation request and J&G's answer. Filled by bookings.js from
                data.cancellation: pending / approved / declined / directly cancelled by J&G. --}}
-          <section class="reason-note" aria-labelledby="bk-cancellation-title" data-bk-cancellation hidden>
-            <h3 class="reason-note__label" id="bk-cancellation-title" data-bk-cancellation-title></h3>
-            <p class="reason-note__by" data-bk-cancellation-meta></p>
+          <section class="m-0 flex flex-col gap-1 rounded-lg border border-field-border bg-panel px-4 py-3 [&[hidden]]:hidden" aria-labelledby="bk-cancellation-title" data-bk-cancellation hidden>
+            <h3 class="m-0 text-sm leading-[1.2] font-semibold text-ink" id="bk-cancellation-title" data-bk-cancellation-title></h3>
+            <p class="m-0 text-sm text-ink-muted" data-bk-cancellation-meta></p>
 
-            <div data-bk-cancellation-user hidden>
-              <p class="reason-note__by" data-bk-cancellation-user-label>Your reason</p>
-              <p class="reason-note__text" data-bk-cancellation-user-reason></p>
-              <p class="reason-note__by" data-bk-cancellation-user-date></p>
+            <div class="flex flex-col gap-1 pt-2" data-bk-cancellation-user hidden>
+              <p class="m-0 text-sm text-ink-muted" data-bk-cancellation-user-label>Your reason</p>
+              <p class="m-0 text-sm wrap-anywhere whitespace-pre-line text-ink" data-bk-cancellation-user-reason></p>
+              <p class="m-0 text-sm text-ink-muted" data-bk-cancellation-user-date></p>
             </div>
 
-            <div data-bk-cancellation-admin hidden>
-              <p class="reason-note__by" data-bk-cancellation-admin-label>J&amp;G's reason</p>
-              <p class="reason-note__text" data-bk-cancellation-admin-reason></p>
-              <p class="reason-note__by" data-bk-cancellation-admin-date></p>
-            </div>
-          </section>
-
-          {{-- The client's cancellation request and J&G's answer. Filled by bookings.js from
-               data.cancellation: pending / approved / declined / directly cancelled by J&G. --}}
-          <section class="reason-note" aria-labelledby="bk-cancellation-title" data-bk-cancellation hidden>
-            <h3 class="reason-note__label" id="bk-cancellation-title" data-bk-cancellation-title></h3>
-            <p class="reason-note__by" data-bk-cancellation-meta></p>
-
-            <div data-bk-cancellation-user hidden>
-              <p class="reason-note__by" data-bk-cancellation-user-label>Your reason</p>
-              <p class="reason-note__text" data-bk-cancellation-user-reason></p>
-              <p class="reason-note__by" data-bk-cancellation-user-date></p>
-            </div>
-
-            <div data-bk-cancellation-admin hidden>
-              <p class="reason-note__by" data-bk-cancellation-admin-label>J&amp;G's reason</p>
-              <p class="reason-note__text" data-bk-cancellation-admin-reason></p>
-              <p class="reason-note__by" data-bk-cancellation-admin-date></p>
+            <div class="flex flex-col gap-1 pt-2" data-bk-cancellation-admin hidden>
+              <p class="m-0 text-sm text-ink-muted" data-bk-cancellation-admin-label>J&amp;G's reason</p>
+              <p class="m-0 text-sm wrap-anywhere whitespace-pre-line text-ink" data-bk-cancellation-admin-reason></p>
+              <p class="m-0 text-sm text-ink-muted" data-bk-cancellation-admin-date></p>
             </div>
           </section>
 
