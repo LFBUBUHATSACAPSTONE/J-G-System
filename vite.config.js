@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import laravel from "laravel-vite-plugin";
+import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 export default defineConfig({
     plugins: [
@@ -12,11 +13,12 @@ export default defineConfig({
                 "resources/js/admin.js",
                 "resources/sass/account.scss",
                 "resources/js/account.js",
-                "resources/sass/admin-login.scss",
                 "resources/js/admin-login.js",
+                "resources/css/tailwind.css",
             ],
             refresh: true,
         }),
+        tailwindcss(),
     ],
     resolve: {
         alias: {

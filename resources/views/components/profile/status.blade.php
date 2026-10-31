@@ -1,2 +1,2 @@
 {{-- Result message under the form (saved / error). Written by js/account/profile-core.js. --}}
-<p class="profile-status d-none" data-profile-status role="status" aria-live="polite"></p>
+<p class="m-0 rounded-panel border border-success-border bg-success-soft px-4 py-3 text-fluid-md font-medium text-success-text [&.is-error]:border-danger-border [&.is-error]:bg-danger-soft [&.is-error]:text-danger-text d-none" data-profile-status role="status" aria-live="polite"></p>

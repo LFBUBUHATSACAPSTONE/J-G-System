@@ -70,7 +70,9 @@ export function initCancellation(modal) {
     const userDate = section.querySelector("[data-cancellation-user-date]");
     const adminBlock = section.querySelector("[data-cancellation-admin]");
     const adminLabel = section.querySelector("[data-cancellation-admin-label]");
-    const adminReason = section.querySelector("[data-cancellation-admin-reason]");
+    const adminReason = section.querySelector(
+        "[data-cancellation-admin-reason]",
+    );
     const adminDate = section.querySelector("[data-cancellation-admin-date]");
     const actions = section.querySelector("[data-cancellation-actions]");
     const approveButton = section.querySelector("[data-approve-cancellation]");
@@ -136,7 +138,7 @@ export function initCancellation(modal) {
         const feedback = document.querySelector("[data-bookings-feedback]");
         if (!feedback) return;
         feedback.textContent = message;
-        feedback.classList.remove("admin-alert--danger");
+        delete feedback.dataset.tone;
         feedback.hidden = false;
         feedback.focus?.();
     }

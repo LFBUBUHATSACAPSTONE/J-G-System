@@ -50,19 +50,19 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
 
-    @vite(['resources/sass/account.scss', 'resources/js/account.js'])
+    @vite(['resources/sass/account.scss', 'resources/js/account.js', 'resources/css/tailwind.css'])
 
     <title>{{ $tabTitle }}</title>
   </head>
 
-  <body>
+  <body class="bg-sidebar font-sans">
     <x-account.sidebar />
 
-    <main class="admin-content account-content">
-      <header class="admin-page-header">
-        <h1 class="admin-page-header__title">{{ $heading }}</h1>
+    <main class="admin-content font-sans">
+      <header class="admin-page-header mb-6 font-sans min-[992px]:mb-8">
+        <h1 class="admin-page-header__title inline-block m-0 bg-[linear-gradient(90deg,var(--color-brand-text),var(--color-brand-end))] bg-clip-text text-[clamp(1.75rem,1.2rem+2vw,2.5rem)] font-bold text-transparent [-webkit-text-fill-color:transparent] forced-colors:bg-none forced-colors:text-[CanvasText] forced-colors:[-webkit-text-fill-color:currentColor]">{{ $heading }}</h1>
         @if ($subheading)
-        <p class="admin-page-header__subtitle">{{ $subheading }}</p>
+        <p class="admin-page-header__subtitle mt-1 mb-0 text-[clamp(0.9347rem,0.9291rem+0.0279vw,0.95rem)] text-ink-muted">{{ $subheading }}</p>
         @endif
       </header>
 

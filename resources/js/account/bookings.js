@@ -28,6 +28,19 @@ function formatDateTime(value) {
     });
 }
 
+// Same strings as components/account/badge.blade.php and button.blade.php: keep them in sync.
+const BADGE =
+    "inline-flex items-center gap-1 rounded-full px-3 py-1 text-[0.8125rem] leading-[1.4] font-medium [&[hidden]]:hidden [&_i]:text-base [&_i]:leading-none";
+const BADGE_TONES = {
+    success: "bg-success-soft text-success-text",
+    warning: "bg-warning-soft text-warning-text",
+    danger: "bg-danger-soft text-danger-text",
+    brand: "bg-brand-soft text-brand-text",
+    neutral: "bg-panel text-ink-muted",
+};
+const BTN_PRIMARY =
+    "inline-block cursor-pointer rounded-field border-2 px-6 py-2 text-center text-base leading-normal font-semibold no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text disabled:cursor-not-allowed disabled:opacity-50 border-transparent bg-brand text-on-brand not-disabled:hover:bg-brand-hover";
+
 function initBookings() {
     const root = document.querySelector("[data-account-bookings]");
     if (!root) return;
@@ -76,7 +89,7 @@ function initBookings() {
 
     // Badge (card and modal share the same markup)
     function paintBadge(el, { label, icon, tone }) {
-        el.className = `account-badge account-badge--${tone}`;
+        el.className = `${BADGE} ${BADGE_TONES[tone] ?? BADGE_TONES.neutral}`;
         el.textContent = "";
         const i = document.createElement("i");
         i.className = `${ICON_CLASS}${icon}`;
@@ -218,7 +231,45 @@ function initBookings() {
     // never changes the card to "cancelled" on its own.
     const cancelModalEl = document.getElementById("cancelBookingModal");
 
-    // The card's Cancel booking button opens the request modal (it no longer uses data-bs-toggle).
+    // Swap the card to the "cancelled by you" state with what the server answered.
+    function markCancelled(card, result, reason) {
+        const data = readCard(card);
+        const meta = statuses.user_cancelled ?? {
+            label: "Cancelled by you",
+            icon: "x-circle",
+            tone: "danger",
+        };
+        const next = {
+            ...data,
+            status: result.status ?? "user_cancelled",
+            label: meta.label,
+            icon: meta.icon,
+            tone: meta.tone,
+            group: "cancelled",
+            can_cancel: false,
+            can_reschedule: Boolean(result.can_reschedule),
+            reason: result.status_reason ?? reason,
+            reason_label: "Reason for cancellation",
+            reason_by: "You",
+        };
+        writeCard(card, next);
+        card.dataset.group = "cancelled";
+        card.dataset.status = next.status;
+        paintBadge(card.querySelector("[data-booking-badge]"), next);
+
+        const actions = card.querySelector("[data-booking-actions]");
+        actions.querySelector("[data-booking-cancel]")?.remove();
+        if (next.can_reschedule) {
+            const link = document.createElement("a");
+            link.className = BTN_PRIMARY;
+            link.href = `${rescheduleUrl}?reschedule=${encodeURIComponent(next.id)}`;
+            link.textContent = "Reschedule";
+            link.setAttribute("data-booking-reschedule", "");
+            actions.append(link);
+        }
+    }
+
+    // The card's Cancel booking button opens the modal (it no longer uses data-bs-toggle).
     root.addEventListener("click", async (event) => {
         const button = event.target.closest("[data-booking-cancel]");
         if (!button || !cancelModalEl) return;

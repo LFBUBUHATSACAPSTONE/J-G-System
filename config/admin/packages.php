@@ -4,7 +4,7 @@
 //
 // key => value sent by the Available / Unavailable buttons (`availability` field)
 // label => button text
-// tone => admin-pill tone (success | danger); the look is in resources/sass/admin/_packages.scss
+// tone => pill tone (success | danger); the look is the utility classes in components/admin/package-card.blade.php
 // confirm => optional confirm() prompt before the form posts ({name} is the package name)
 return [
 

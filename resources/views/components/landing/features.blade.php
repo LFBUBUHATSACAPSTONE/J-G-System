@@ -47,36 +47,36 @@ $featuresSectionIcons = [
 ];
 @endphp
 
-<div class="features-bg">
-  <img src="{{ asset('images/backgrounds/design/features_red_gradient.webp') }}" alt="" aria-hidden="true" class="features-bg__image">
-  <img src="{{ asset('images/backgrounds/design/star_full.webp') }}" alt="" aria-hidden="true" class="features-bg__star">
-  <section id="features" class="features-section">
-    <h2 class="features-section__title">
+<div class="relative w-full bg-landing-base [clip-path:inset(calc(-1*var(--features-bleed))_0_0_0)]">
+  <img src="{{ asset('images/backgrounds/design/features_red_gradient.webp') }}" alt="" aria-hidden="true" class="pointer-events-none absolute top-[calc(-1*var(--features-bleed))] left-0 h-[calc(100%_+_var(--features-bleed))] w-full object-cover">
+  <img src="{{ asset('images/backgrounds/design/star_full.webp') }}" alt="" aria-hidden="true" class="pointer-events-none absolute top-[80%] left-1/2 w-full -translate-x-1/2 -translate-y-1/2">
+  <section id="features" class="relative z-1 flex min-h-[calc(100svh_-_var(--landing-header-h,6.5rem)_+_1.5rem)] flex-col justify-center px-(--section-pad-x) pt-(--section-pad-top) pb-(--section-pad-bottom)">
+    <h2 class="mt-0 mb-10 text-center font-heading text-fluid-section-title leading-[1.2] font-extrabold tracking-[0.15em] text-features-title uppercase [text-shadow:0_2px_12px_oklch(0%_0_0/0.45)]">
       {{ $title }}
     </h2>
 
-    <div class="features-section__grid" id="features-grid">
+    <div class="mx-auto grid w-full max-w-[1280px] grid-cols-1 gap-[0.75rem] min-[768px]:grid-cols-2 min-[768px]:gap-6 min-[1200px]:grid-cols-4" id="features-grid">
       @foreach ($features as $feature)
       @php $icon = $featuresSectionIcons[$feature['icon']] ?? $feature['icon']; @endphp
-      <div class="feature-card">
-        <h3 class="feature-card__name">
-          {{-- Below 768px this is an accordion toggle; from 768px up it is inert (see _features.scss). --}}
+      <div class="[container-type:inline-size] flex flex-col rounded-card border-[1px] border-glass-border bg-glass p-[0] text-on-brand shadow-[inset_0_1px_0_var(--color-glass-highlight),0_8px_32px_var(--color-glass-shadow)] backdrop-blur-[10px] backdrop-saturate-140 transition-[background-color,translate] duration-250 ease-[ease] hover:-translate-y-0.5 hover:bg-glass-hover min-[768px]:p-6 min-[1200px]:p-5 [--feature-name:clamp(1.05rem,0.98rem_+_0.3vw,1.2rem)] min-[1200px]:[--feature-name:min(1.05rem,6cqw)]">
+        <h3 class="m-[0] text-(length:--feature-name) leading-[1.25] font-bold text-on-brand min-[768px]:mb-3 min-[1200px]:whitespace-nowrap">
+          {{-- Below 768px this is an accordion toggle; from 768px up it is inert (min-[768px]:pointer-events-none). `collapsed` is toggled by Bootstrap's collapse plugin and read by the chevron through `group`. --}}
           <button
-            class="feature-card__toggle collapsed"
+            class="group collapsed flex w-full cursor-pointer items-center gap-[0.75rem] rounded-[inherit] border-0 bg-transparent px-[1.25rem] py-[1.1rem] text-left text-inherit [font:inherit] focus-visible:-outline-offset-2 focus-visible:outline-2 focus-visible:outline-on-brand min-[768px]:pointer-events-none min-[768px]:cursor-default min-[768px]:p-0"
             type="button"
             data-bs-toggle="collapse"
             data-bs-target="#feature-{{ $loop->index }}"
             aria-expanded="false"
             aria-controls="feature-{{ $loop->index }}">
-            <span class="feature-card__icon feature-card__icon--inline" aria-hidden="true">{!! $icon !!}</span>
-            <span class="feature-card__label">{{ $feature['name'] }}</span>
-            <span class="feature-card__chevron" aria-hidden="true"></span>
+            <span class="flex shrink-0 text-on-brand min-[768px]:hidden [&_svg]:size-[22px]" aria-hidden="true">{!! $icon !!}</span>
+            <span class="min-w-0 flex-1">{{ $feature['name'] }}</span>
+            <span class="size-[0.6rem] shrink-0 rotate-45 border-r-2 border-b-2 border-current transition-transform duration-250 ease-[ease] group-[:not(.collapsed)]:-rotate-135 min-[768px]:hidden" aria-hidden="true"></span>
           </button>
         </h3>
-        <div id="feature-{{ $loop->index }}" class="feature-card__body collapse" data-bs-parent="#features-grid">
-          <p class="feature-card__description">{{ $feature['description'] }}</p>
+        <div id="feature-{{ $loop->index }}" class="collapse min-[768px]:visible min-[768px]:block min-[768px]:h-auto min-[768px]:flex-1" data-bs-parent="#features-grid">
+          <p class="m-[0] px-[1.25rem] pb-[1.25rem] text-[length:calc(var(--feature-name)*0.8)] leading-[1.55] font-light text-glass-body min-[768px]:p-0">{{ $feature['description'] }}</p>
         </div>
-        <span class="feature-card__icon feature-card__icon--bottom" aria-hidden="true">{!! $icon !!}</span>
+        <span class="hidden text-on-brand min-[768px]:mt-auto min-[768px]:flex min-[768px]:self-center min-[768px]:pt-8 [&_svg]:size-[26px]" aria-hidden="true">{!! $icon !!}</span>
       </div>
       @endforeach
     </div>

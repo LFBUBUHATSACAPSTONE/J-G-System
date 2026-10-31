@@ -1,0 +1,508 @@
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css";
+@import "tailwindcss/utilities.css" source(none) important;
+
+/* Which files Tailwind reads. Only converted files are listed: the rest of the project still uses Bootstrap
+   classes whose names Tailwind shares (p-4, gap-3, border, collapse, container ...). Add a file here when its
+   area is converted. `important` is on because Bootstrap's own utilities are !important; remove it, and the
+   `@source not inline` line, when the Bootstrap CSS is dropped. */
+@source "../views/components/booking/action-modal.blade.php";
+@source "../views/components/admin/sidebar.blade.php";
+@source "../views/components/account/sidebar.blade.php";
+@source "../views/components/admin/page-header.blade.php";
+@source "../views/admin/dashboard.blade.php";
+@source "../views/admin/calendar.blade.php";
+@source "../views/admin/messages.blade.php";
+@source "../views/components/admin/stat-card.blade.php";
+@source "../views/components/admin/package-rate.blade.php";
+@source "../views/components/admin/booking-modal.blade.php";
+@source "../views/components/admin/booking-row.blade.php";
+@source "../views/components/admin/edited-note.blade.php";
+@source "../views/components/admin/package-card.blade.php";
+@source "../views/components/admin/package-modal.blade.php";
+@source "../views/components/admin/calendar-event.blade.php";
+@source "../views/components/account/layout.blade.php";
+@source "../views/admin/bookings.blade.php";
+@source "../views/admin/booking-history.blade.php";
+@source "../views/admin/packages.blade.php";
+@source "../views/user/account/bookings.blade.php";
+@source "../views/user/account/messages.blade.php";
+@source "../views/components/chat/thread.blade.php";
+@source "../views/components/chat/booking-card.blade.php";
+@source "../views/components/chat/icon.blade.php";
+@source "../views/components/chat/widget.blade.php";
+@source "../views/components/chat/composer.blade.php";
+@source "../views/components/profile/avatar.blade.php";
+@source "../views/components/profile/field.blade.php";
+@source "../views/components/profile/password-rules.blade.php";
+@source "../views/components/profile/row.blade.php";
+@source "../views/components/profile/status.blade.php";
+@source "../views/admin/account.blade.php";
+@source "../views/user/account/profile.blade.php";
+@source "../views/user/account/security.blade.php";
+@source "../views/components/account/badge.blade.php";
+@source "../views/components/account/button.blade.php";
+@source "../views/components/account/delete-modal.blade.php";
+@source "../views/admin/login.blade.php";
+@source "../views/components/landing/navigation.blade.php";
+@source "../views/components/auth-modal.blade.php";
+@source "../views/components/auth/login-form.blade.php";
+@source "../views/components/auth/signup-form.blade.php";
+@source "../views/components/auth/forgot-password-form.blade.php";
+@source "../views/components/auth/new-password-form.blade.php";
+@source "../views/components/auth/verification-form.blade.php";
+@source "../views/components/auth/link-button.blade.php";
+@source "../views/user/landing.blade.php";
+@source "../views/components/landing/landing-caption.blade.php";
+@source "../views/components/landing/features.blade.php";
+@source "../views/components/landing/package-comparison.blade.php";
+@source "../views/components/landing/footer.blade.php";
+@source "../views/components/landing/coverflow-carousel.blade.php";
+@source "../views/components/booking/package.blade.php";
+@source "../views/components/booking/package-card.blade.php";
+@source "../js/chat/chat.js";
+@source "../js/chat/confirm-dialog.js";
+@source "../js/chat/widget.js";
+@source "../js/shared/action-modal.js";
+@source "../js/admin/dropdown.js";
+@source "../js/admin/filter-sheet.js";
+@source "../js/admin/dashboard.js";
+@source "../js/account/bookings.js";
+@source not inline("collapse container table shadow rounded");
+
+/* Phase 7A: the gradient buttons are used by the auth forms and the booking blades, which are not in the list above yet.
+   Emit them always, so `_gradient-button.scss` can go. Remove this line when those areas are listed (Phase 7 and 9). */
+@source inline("btn-color-gradient--primary btn-color-gradient--secondary");
+
+/* Wide but short viewports (laptops): the booking modal tightens its vertical spacing. */
+@custom-variant short-wide (@media (min-width: 992px) and (max-height: 860px));
+
+/* Below Bootstrap's lg breakpoint (phones and tablets): the landing menu overlays the page. Same cut-off as Sass media-breakpoint-down(lg). */
+@custom-variant below-lg (@media (max-width: 991.98px));
+
+/* Short landscape screens (phones on their side, small windows): the landing hero drops its padding. */
+@custom-variant short-landscape (
+    @media (max-height: 500px) and (orientation: landscape)
+);
+
+@theme {
+    --font-sans: "Poppins", sans-serif;
+
+    /* Sass 0.875rem text used line-height 1.5 (Bootstrap body); keep it for text-sm */
+    --text-sm--line-height: 1.5;
+
+    /* Surfaces and text (from _admin-variables.scss / _user-variables.scss) */
+    --color-surface: oklch(100% 0 0);
+    --color-panel: oklch(95.514% 0 0);
+    --color-ink: oklch(0% 0 0);
+    --color-ink-muted: oklch(38% 0 0);
+    --color-ink-subtle: oklch(48% 0 0);
+    --color-field-border: oklch(63.1% 0 0);
+
+    /* Brand */
+    --color-brand: oklch(54.134% 0.24669 293.012);
+    --color-brand-hover: oklch(49.067% 0.24133 292.584);
+    --color-brand-text: oklch(40.9% 0.22719 293.012);
+    --color-brand-halo: oklch(40.9% 0.22719 293.012 / 0.25);
+    --color-brand-end: oklch(
+        51.1% 0.24669 293.012
+    ); /* end of the page-title gradient */
+
+    /* Status */
+    --color-danger: oklch(48.5% 0.19656 25.116);
+    --color-danger-text: oklch(40% 0.16206 25.116);
+    --color-danger-border: oklch(68.8% 0.20106 25.116);
+    --color-danger-soft: oklch(94.298% 0.02858 17.67);
+    --color-success: oklch(83.09% 0.21958 143.282);
+    --color-success-text: oklch(36.6% 0.12158 143.282);
+    --color-success-border: oklch(64.4% 0.21358 143.282);
+
+    --color-page: oklch(90.365% 0 0);
+    --color-brand-soft: oklch(95% 0.03 293.012);
+    --color-brand-soft-hover: oklch(91% 0.06 293.012);
+    --color-dropdown-border: oklch(88% 0 0);
+
+    /* Radii (from the $auth-radius-* tokens) */
+    --radius-card: 28px;
+    --radius-panel: 20px;
+    --radius-field: 12px;
+
+    /* Fluid type, same curve as admin-fluid(): text-fluid-sm = 0.9rem max ... 2xl = 1.375rem max */
+    --text-fluid-sm: clamp(0.8952rem, 0.8934rem + 0.0088vw, 0.9rem);
+    --text-fluid-base: clamp(0.9731rem, 0.9633rem + 0.049vw, 1rem);
+    --text-fluid-lg: clamp(1.0467rem, 1.0273rem + 0.0969vw, 1.1rem);
+    --text-fluid-xl: clamp(1.149rem, 1.1123rem + 0.1836vw, 1.25rem);
+    --text-fluid-2xl: clamp(1.2269rem, 1.1731rem + 0.2692vw, 1.375rem);
+
+    --color-on-brand: oklch(100% 0 0); /* text on brand / danger fills */
+    --color-on-danger: oklch(100% 0 0);
+    --color-on-brand-muted: oklch(92.4% 0.012 293.012);
+    --color-warning: oklch(85.374% 0.17348 87.367);
+    --color-success-soft: oklch(90.243% 0.1191 144.51);
+    --color-warning-soft: oklch(91.713% 0.11932 92.9);
+    --color-warning-text: oklch(38.1% 0.07798 87.367);
+    --text-fluid-icon: clamp(1.2981rem, 1.2247rem + 0.3671vw, 1.5rem);
+    --text-fluid-title: clamp(1.4202rem, 1.3003rem + 0.5996vw, 1.75rem);
+    --color-shadow: oklch(0% 0 0 / 0.55);
+    --text-fluid-3xl: clamp(1.5836rem, 1.3413rem + 1.2116vw, 2.25rem);
+    --color-warning-border: oklch(66.6% 0.13598 87.367);
+    --color-chip-pending: oklch(85.374% 0.17348 87.367);
+    --text-fluid-md: clamp(0.9347rem, 0.9291rem + 0.0279vw, 0.95rem);
+
+    /* Dashboard: fluid sizes beyond sm..2xl (same curve as admin-fluid()), and the six donut slice colours in slice order */
+    --text-fluid-label: clamp(1.0196rem, 1.004rem + 0.078vw, 1.0625rem);
+    --text-fluid-heading: clamp(1.0644rem, 1.0424rem + 0.1101vw, 1.125rem);
+    --text-fluid-display: clamp(1.5154rem, 1.3392rem + 0.8811vw, 2rem);
+    --text-fluid-stat: clamp(1.7875rem, 1.4375rem + 1.75vw, 2.75rem);
+    --color-slice-1: oklch(56.451% 0.24918 283.426);
+    --color-slice-2: oklch(66.9% 0.13745 83.001);
+    --color-slice-3: oklch(65% 0.11865 178.945);
+    --color-slice-4: oklch(70% 0.27486 324.299);
+    --color-slice-5: oklch(65.2% 0.17128 128.475);
+    --color-slice-6: oklch(68.8% 0.20106 25.116);
+
+    /* Admin Messages */
+    --text-fluid-preview: clamp(0.9249rem, 0.9203rem + 0.0229vw, 0.9375rem);
+
+    /* Calendar */
+    --color-cal-wrap: oklch(88.224% 0 0); /* grey behind the month grid */
+    --color-cal-weekend-head: oklch(
+        92.6% 0.02 21.9
+    ); /* Sun / Sat column titles */
+    --color-cal-weekend: oklch(52% 0.19 350); /* Sun / Sat date numbers */
+    --text-fluid-name: clamp(1.0104rem, 0.996rem + 0.072vw, 1.05rem);
+
+    /* Chat thread (Phase 3B): booking card, quote hover and strip tint, finished states, avatar grey */
+    --color-chat-tint: oklch(96% 0.02 293.012);
+    --color-chat-tint-border: oklch(70% 0.12 293.012);
+    --color-chat-past: oklch(92% 0 0);
+    --color-chat-past-border: oklch(75% 0 0);
+    --color-chat-past-pill: oklch(84% 0 0);
+    --color-chat-past-pill-text: oklch(28% 0 0);
+    --color-chat-avatar: oklch(72% 0 0);
+
+    /* Chat: the jump-to-original flash and a booking card arriving */
+    --animate-chat-flash: chat-flash 1.6s ease-out;
+    @keyframes chat-flash {
+        0%,
+        45% {
+            box-shadow: 0 0 0 4px var(--color-brand-halo);
+        }
+        100% {
+            box-shadow: 0 0 0 4px transparent;
+        }
+    }
+    --animate-chat-booking-pop: chat-booking-pop 0.45s ease-out;
+    @keyframes chat-booking-pop {
+        from {
+            opacity: 0;
+            transform: translateY(0.5rem) scale(0.98);
+        }
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+
+    /* Sidebar shell (admin and account), from _admin-variables.scss */
+    --color-sidebar: oklch(
+        18.674% 0 0
+    ); /* also the page backdrop behind the rounded content panel */
+    --color-sidebar-divider: oklch(40% 0 0);
+    --color-sidebar-ring: oklch(71.8% 0.16169 293.012);
+    --color-sidebar-hover: oklch(100% 0 0 / 0.08);
+    --color-sidebar-muted: oklch(78% 0 0); /* tab not built yet */
+    --color-sidebar-soon: oklch(82% 0 0); /* the "Soon" tag */
+    --color-sidebar-danger: oklch(80% 0.12 25); /* Delete Account */
+
+    /* Chat widget panel entrance */
+    --animate-chat-pop: chat-pop 0.18s ease-out;
+    @keyframes chat-pop {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+
+    /* Admin sign-in (Phase 10A and 10B), from the $auth-* tokens in _user-variables.scss. Same look as the user auth modal */
+    --color-auth-bg: oklch(14.735% 0.01949 294.184); /* page behind the card */
+    --color-auth-surface: oklch(16.992% 0.0233 300.626); /* the card */
+    --color-auth-glow-violet: oklch(54.134% 0.24669 293.012);
+    --color-auth-glow-rose: oklch(57.393% 0.18161 350.703);
+    --color-auth-accent: oklch(60.563% 0.21902 292.718);
+    --color-auth-text: oklch(100% 0.00011 271.152);
+    --color-auth-text-muted: oklch(70.649% 0.02539 301.692);
+    --color-auth-placeholder: oklch(
+        54.263% 0.02711 301.499
+    ); /* placeholder and disabled text ($auth-text-muted) */
+    --color-auth-field: oklch(
+        24.604% 0.02682 297.481
+    ); /* input and checkbox fill */
+    --color-auth-border: oklch(31.377% 0.03071 298.068);
+    --color-auth-danger: oklch(
+        64.414% 0.17253 7.592
+    ); /* red border and per-field message */
+    --color-auth-focus: oklch(60.563% 0.21902 292.718 / 0.45); /* focus ring */
+    --color-auth-focus-soft: oklch(
+        60.563% 0.21902 292.718 / 0.25
+    ); /* softer ring on inputs */
+    --color-auth-banner-error: #dc3545; /* the modal's banner error is Bootstrap's .text-danger, not $auth-danger */
+    /* Admin sign-in form (Phase 10B) */
+    --color-auth-text-faint: oklch(
+        54.263% 0.02711 301.499
+    ); /* placeholder, disabled text ($auth-text-muted) */
+    --color-auth-field-bg: oklch(24.604% 0.02682 297.481);
+    --color-auth-ring: oklch(60.563% 0.21902 292.718 / 0.45);
+    --color-auth-ring-soft: oklch(60.563% 0.21902 292.718 / 0.25);
+
+    /* Landing (Phase 8): the $button-gradient from _user-variables.scss, used by the nav link underline */
+    --gradient-button: linear-gradient(
+        90deg,
+        oklch(0.545 0.236 307.3),
+        oklch(0.595 0.234 22.6)
+    );
+    --color-nav-menu: oklch(
+        19.306% 0.00802 285.593 / 0.92
+    ); /* the open phone menu panel */
+    --color-nav-badge: oklch(
+        55% 0.2 25
+    ); /* unread count bubble on the account button */
+
+    /* Landing hero (Phase 8C), from _user-variables.scss and the old _landing-hero / _landing-caption */
+    --color-landing-base: #131313; /* $features-bg-base: hero, features and footer base */
+    --color-pale-white: oklch(93.514% 0.00011 271.152); /* $text-pale--white */
+    --section-pad-x: clamp(1rem, 0.39rem + 2.59vw, 2rem);
+    --text-fluid-landing-title: clamp(1.75rem, 4vw + 1rem, 3.5rem);
+    --text-fluid-landing-caption: clamp(0.95rem, 1vw + 0.7rem, 1.1rem);
+    --text-fluid-button: clamp(
+        1rem,
+        1.1vw,
+        1.2rem
+    ); /* $font-button--responsive */
+
+    /* Landing features section (Phase 8D), from _user-variables.scss */
+    --font-heading: "Montserrat", sans-serif; /* $font-landing-heading-text */
+    --color-features-title: oklch(62% 0.018 310);
+    --section-pad-top: clamp(2.5rem, 1.89rem + 2.59vw, 3.5rem);
+    --section-pad-bottom: clamp(3rem, 2.39rem + 2.59vw, 4rem);
+    --features-bleed: 10rem; /* how far the red gradient and the clip reach above the section */
+    --text-fluid-section-title: clamp(1.75rem, 3vw + 1rem, 2.75rem);
+
+    /* Glass surface (Phase 8E), from the $glass-* tokens in _user-variables.scss. Feature cards now; the comparison table, package cards and footer share them */
+    --color-glass: oklch(100% 0 0 / 0.07);
+    --color-glass-hover: oklch(100% 0 0 / 0.1);
+    --color-glass-border: oklch(100% 0 0 / 0.18);
+    --color-glass-highlight: oklch(100% 0 0 / 0.22);
+    --color-glass-shadow: oklch(0% 0 0 / 0.35);
+    --color-glass-body: oklch(100% 0 0 / 0.88);
+    --color-glass-divider: oklch(
+        100% 0 0 / 0.12
+    ); /* $auth-overlay-white-soft: row dividers in the comparison table */
+
+    /* Landing footer (Phase 8H), from $footer-text, $footer-text-link and $footer-text-muted in _user-variables.scss */
+    --color-footer-text: oklch(92.494% 0 0);
+    --color-footer-link: oklch(85.451% 0 0);
+    --color-footer-muted: oklch(68.622% 0 0);
+
+    /* Package section (Phase 8G): the "Book Now" button's resting colours, from $button-color-white / -black */
+    --color-button-white: oklch(95.514% 0.00011 271.152);
+    --color-button-black: oklch(19.574% 0.00002 271.152);
+
+    /* Package comparison table (Phase 8F): the purple to red price text */
+    --gradient-price: linear-gradient(
+        90deg,
+        oklch(0.545 0.236 307.3),
+        oklch(0.58 0.235 350),
+        oklch(0.595 0.234 22.6)
+    );
+
+    /* Phase 7A: shared gradient button and gradient text, from $button-gradient and $gradient-text-* in _user-variables.scss.
+       --gradient-button (above) is the same two colours at 90deg; the primary button needs the colours apart to animate the angle. */
+    --color-button-from: oklch(0.545 0.236 307.3);
+    --color-button-to: oklch(0.595 0.234 22.6);
+    --color-gradient-text-from: oklch(53.617% 0.20836 334.959);
+    --color-gradient-text-via: oklch(58.895% 0.22055 11.639);
+    --color-gradient-text-to: oklch(65.526% 0.23087 26.386);
+
+    /* Phase 7B: auth modal shell, from $auth-overlay-white-*, $auth-scrim-black* and the tagline clamp in _auth-modal.scss.
+       The shadow of the tagline text is --color-shadow, the focus ring --color-auth-focus, the radii --radius-card and --radius-panel. */
+    --color-auth-overlay-soft: oklch(100% 0 0 / 0.12);
+    --color-auth-overlay-faint: oklch(100% 0 0 / 0.35);
+    --color-auth-scrim: oklch(0% 0 0 / 0.65);
+    --color-auth-scrim-clear: oklch(0% 0 0 / 0);
+    --text-fluid-tagline: clamp(1rem, 0.85rem + 1vw, 1.2rem);
+
+    /* Dropdown menu entrance */
+    --animate-dropdown-in: dropdown-in 0.14s ease-out;
+    @keyframes dropdown-in {
+        from {
+            opacity: 0;
+            transform: translateY(-4px) scale(0.98);
+        }
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+}
+
+/* Phase 7A: shared pieces moved from Sass. Utilities, so `important` (above) makes them win over Bootstrap's `.btn` rules,
+   as the Sass `!important` on :active did. */
+
+/* The angle is animated, so it must be a registered property (was in `_gradient-button.scss`). */
+@property --gradient-angle {
+    syntax: "<angle>";
+    initial-value: 90deg;
+    inherits: false;
+}
+
+/* Primary button: purple to red; the gradient turns around on hover. Same name as the Sass class, so no Blade changes. */
+@utility btn-color-gradient--primary {
+    --gradient-angle: 90deg;
+    background: linear-gradient(
+        var(--gradient-angle),
+        var(--color-button-from),
+        var(--color-button-to)
+    );
+    border: none;
+    color: var(--color-pale-white);
+    transition:
+        --gradient-angle 0.3s ease-in-out,
+        opacity 0.15s ease-in-out,
+        color 0.15s ease-in-out;
+
+    &:hover {
+        --gradient-angle: 270deg;
+        border: none;
+        opacity: 0.9;
+        color: var(--color-pale-white);
+    }
+
+    &:active {
+        color: var(--color-pale-white);
+        opacity: 0.8;
+    }
+
+    /* :where() keeps this at zero specificity, so a `focus-visible:shadow-*` ring on the button still wins (the admin sign-in has one). */
+    &:where(:focus) {
+        box-shadow: none;
+        color: var(--color-pale-white);
+    }
+}
+
+/* Secondary button: transparent, fills with the gradient on hover. */
+@utility btn-color-gradient--secondary {
+    color: var(--color-pale-white);
+    background: transparent;
+    border: none;
+    opacity: 1;
+    transition:
+        background 0.3s ease-in-out,
+        color 0.3s ease-in-out,
+        opacity 0.3s ease-in-out;
+
+    &:hover {
+        color: var(--color-pale-white);
+        background: var(--gradient-button);
+        opacity: 0.9;
+    }
+
+    &:active {
+        color: var(--color-pale-white);
+        background: var(--gradient-button);
+        opacity: 0.8;
+        transition: opacity 0.15s ease-in-out;
+    }
+}
+
+/* Gradient text (landing caption). `.packages-title-accent` was in the Sass file and used nowhere, so it is not carried over. */
+@utility text-caption-gradient {
+    background: linear-gradient(
+        90deg,
+        var(--color-gradient-text-from),
+        var(--color-gradient-text-via),
+        var(--color-gradient-text-to)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
+
+/* Keeps Chrome's light-blue / white autofill from painting over the dark inputs (was the `booking-autofill` Sass mixin).
+   The fill colour is `--autofill-bg` (default: the auth field colour; the booking summary will set it to the card colour).
+   Its inset `box-shadow` must not meet a `box-shadow` utility on the same input, so those inputs use an outline for focus. */
+@utility autofill-dark {
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus {
+        -webkit-text-fill-color: var(--color-auth-text);
+        caret-color: var(--color-auth-text);
+        box-shadow: 0 0 0 1000px var(--autofill-bg, var(--color-auth-field-bg))
+            inset;
+        transition: background-color 9999s ease-out 0s;
+    }
+
+    &:-webkit-autofill:focus {
+        box-shadow:
+            0 0 0 1000px var(--autofill-bg, var(--color-auth-field-bg)) inset,
+            0 0 0 3px var(--color-auth-ring-soft);
+    }
+}
+
+/* Page content beside the fixed sidebar (every admin and account page). A utility, not a Blade string, because it
+   defines the responsive --admin-pad variable that other utilities read (p-(--admin-pad), -mx-(--admin-pad)).
+   576px, 992px (sidebar visible) and 1400px are the Sass breakpoints. */
+@utility admin-content {
+    --admin-pad: 1rem;
+    padding: var(--admin-pad);
+    background: var(--color-page);
+    min-height: 100vh;
+
+    @media (min-width: 576px) {
+        --admin-pad: 1.5rem;
+    }
+    @media (min-width: 992px) {
+        --admin-pad: 2rem;
+        margin-left: 19.5rem;
+        border-radius: var(--radius-card) 0 0 var(--radius-card);
+    }
+    @media (min-width: 1400px) {
+        --admin-pad: 3rem;
+    }
+}
+
+/* `hidden` always wins, like Bootstrap's reboot: utilities with a display value must not show a [hidden] element. */
+[hidden]:where(:not([hidden="until-found"])) {
+    display: none !important;
+}
+
+/* Bootstrap's `d-none`. `auth/validation.js` and the admin sign-in scripts toggle it, and the sign-in page has no
+   Bootstrap. Phase 11 needs this rule anyway (see "Bootstrap JS without Bootstrap CSS"). */
+.d-none {
+    display: none !important;
+}
+
+/* Admin sign-in only (`<body class="admin-login-page">`): that entry loads no Bootstrap Reboot and Preflight is not
+   on yet, so it gets the few Reboot rules the page relied on. In the base layer, so every utility and Sass rule wins. */
+@layer base {
+    .admin-login-page,
+    .admin-login-page *,
+    .admin-login-page ::before,
+    .admin-login-page ::after {
+        box-sizing: border-box;
+    }
+    .admin-login-page :is(button, input) {
+        margin: 0;
+        font-family: inherit;
+        font-size: inherit;
+        line-height: inherit;
+    }
+    .admin-login-page a {
+        text-decoration: none;
+    }
+}

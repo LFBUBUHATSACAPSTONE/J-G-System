@@ -59,6 +59,6 @@ $noTracking = $noTracking
 <link rel="icon" type="image/webp" href="{{ $imageUrl }}">
 <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
 
-@vite(['resources/js/app.js'])
+@vite(['resources/js/app.js', 'resources/css/tailwind.css'])
 
 <title>{{ $title }}</title>

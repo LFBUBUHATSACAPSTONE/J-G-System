@@ -21,8 +21,9 @@ if (root) {
     const fitToScreen = () => {
         const vv = window.visualViewport;
         if (vv && phone.matches && !panel.hidden) {
-            panel.style.height = `${vv.height}px`;
-            panel.style.top = `${vv.offsetTop}px`;
+            // `important`: the panel's utilities are `!important`, a plain inline value would lose.
+            panel.style.setProperty("height", `${vv.height}px`, "important");
+            panel.style.setProperty("top", `${vv.offsetTop}px`, "important");
         } else {
             panel.style.removeProperty("height");
             panel.style.removeProperty("top");
@@ -35,7 +36,11 @@ if (root) {
     const setOpen = (open, trigger = returnFocusTarget) => {
         if (open) returnFocusTarget = trigger;
         panel.hidden = !open;
-        document.documentElement.classList.toggle("chat-widget-open", open);
+        // While the full-screen chat is open on a phone, the page behind it must not scroll.
+        document.documentElement.classList.toggle(
+            "max-[575.98px]:overflow-hidden",
+            open,
+        );
         fitToScreen();
         root.querySelectorAll("[data-chat-toggle], [data-chat-open]").forEach(
             (button) => {

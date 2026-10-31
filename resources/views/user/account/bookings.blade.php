@@ -89,55 +89,62 @@ $emptyCopy = [
 'past' => 'No past bookings.',
 'cancelled' => 'No cancelled bookings.',
 ];
+$tabClass = 'group inline-flex flex-none cursor-pointer items-center gap-2 rounded-full border border-transparent bg-surface px-4 py-2 text-fluid-sm leading-normal font-medium text-ink hover:bg-brand-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text [&.is-active]:border-brand-text [&.is-active]:bg-brand-soft [&.is-active]:font-semibold [&.is-active]:text-brand-text';
+$tabCountClass = 'min-w-6 rounded-full bg-panel px-2 text-center text-xs leading-6 text-ink-muted group-[.is-active]:bg-surface group-[.is-active]:text-brand-text';
+$cardClass = '@container rounded-card bg-surface p-4 text-ink min-[576px]:p-6 [&[hidden]]:hidden';
+$emptyClass = '@container flex flex-col items-center gap-3 rounded-card bg-surface px-4 py-8 text-center text-ink min-[576px]:px-6 [&.d-none]:hidden [&>i]:text-[2.5rem] [&>i]:leading-none [&>i]:text-ink-subtle';
+$metaClass = 'mt-4 mb-0 grid grid-cols-[minmax(0,1fr)] gap-x-6 gap-y-2 border-t border-dropdown-border pt-4 @min-[32rem]:grid-cols-2 [&>div]:flex [&>div]:min-w-0 [&>div]:items-start [&>div]:gap-2 [&_dt]:flex [&_dt]:flex-none [&_dt]:text-[1.125rem] [&_dt]:leading-normal [&_dt]:text-brand-text [&_dd]:m-0 [&_dd]:text-fluid-sm [&_dd]:[overflow-wrap-anywhere]';
+$modalGridClass = 'm-0 grid grid-cols-[minmax(0,1fr)] gap-x-6 gap-y-3 rounded-panel bg-panel p-4 min-[576px]:grid-cols-2 [&_dt]:text-sm [&_dt]:font-medium [&_dt]:text-ink-muted [&_dd]:m-0 [&_dd]:text-fluid-sm [&_dd]:[overflow-wrap-anywhere]';
+$statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft px-4 py-3 text-fluid-md font-medium text-success-text [&.is-error]:border-danger-border [&.is-error]:bg-danger-soft [&.is-error]:text-danger-text d-none';
 @endphp
 
 <x-account.layout>
   <div
-    class="account-bookings"
+    class="flex max-w-240 flex-col gap-4"
     data-account-bookings
     data-statuses="{{ json_encode($statuses) }}"
     data-cancel-url-template="{{ Route::has('user.account.bookings.cancel') ? route('user.account.bookings.cancel', ['booking' => '__ID__']) : '#' }}"
     data-reschedule-url="{{ route('user.booking') }}">
 
-    <div class="account-tabs" role="group" aria-label="Filter bookings">
+    <div class="flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Filter bookings">
       @foreach ($tabs as $key => $label)
       <button
         type="button"
-        class="account-tabs__btn{{ $loop->first ? ' is-active' : '' }}"
+        class="{{ $tabClass }}{{ $loop->first ? ' is-active' : '' }}"
         data-bookings-tab="{{ $key }}"
         aria-pressed="{{ $loop->first ? 'true' : 'false' }}">
         <span>{{ $label }}</span>
-        <span class="account-tabs__count" data-bookings-count="{{ $key }}">{{ $counts[$key] }}</span>
+        <span class="{{ $tabCountClass }}" data-bookings-count="{{ $key }}">{{ $counts[$key] }}</span>
       </button>
       @endforeach
     </div>
 
-    <p class="account-form__status is-success d-none" role="status" aria-live="polite" data-bookings-status></p>
+    <p class="{{ $statusClass }}" role="status" aria-live="polite" data-bookings-status></p>
 
-    <ul class="account-bookings__list" data-bookings-list>
+    <ul class="m-0 flex list-none flex-col gap-4 p-0 min-[576px]:gap-6" data-bookings-list>
       @foreach ($rows as $row)
       @php
       $b = $row['b'];
       $payload = $row['payload'];
       @endphp
       <li
-        class="account-booking"
+        class="{{ $cardClass }}"
         data-booking-card
         data-id="{{ $payload['id'] }}"
         data-group="{{ $row['group'] }}"
         data-booking="{{ json_encode($payload) }}">
         <article aria-labelledby="booking-title-{{ $payload['id'] }}">
-          <header class="account-booking__head">
-            <div class="account-booking__heading">
-              <h2 class="account-booking__title" id="booking-title-{{ $payload['id'] }}">{{ $payload['event'] }}</h2>
-              <p class="account-booking__ref">Booking {{ $payload['reference'] }}</p>
+          <header class="flex flex-col items-start gap-3 @min-[32rem]:flex-row @min-[32rem]:justify-between">
+            <div class="min-w-0">
+              <h2 class="m-0 text-fluid-xl font-semibold wrap-anywhere" id="booking-title-{{ $payload['id'] }}">{{ $payload['event'] }}</h2>
+              <p class="mt-1 mb-0 text-sm text-ink-muted">Booking {{ $payload['reference'] }}</p>
             </div>
-            <span class="account-badge account-badge--{{ $row['meta']['tone'] }}" data-booking-badge>
+            <x-account.badge :tone="$row['meta']['tone']" data-booking-badge>
               <i class="ph ph-{{ $row['meta']['icon'] }}" aria-hidden="true"></i>{{ $row['meta']['label'] }}
-            </span>
+            </x-account.badge>
           </header>
 
-          <dl class="account-booking__meta">
+          <dl class="{{ $metaClass }}">
             <div>
               <dt><i class="ph ph-calendar-blank" aria-hidden="true"></i><span class="visually-hidden">Date</span></dt>
               <dd>{{ $row['date'] }}</dd>
@@ -154,12 +161,12 @@ $emptyCopy = [
             </div>
             <div>
               <dt><i class="ph ph-package" aria-hidden="true"></i><span class="visually-hidden">Package</span></dt>
-              <dd>{{ $payload['package'] }}@if ($payload['price']) <span class="account-booking__price">{{ $payload['price'] }}</span>@endif</dd>
+              <dd>{{ $payload['package'] }}@if ($payload['price']) <span class="ml-1 text-ink-muted">{{ $payload['price'] }}</span>@endif</dd>
             </div>
             @if ($payload['payment'])
             <div>
               <dt><i class="ph ph-wallet" aria-hidden="true"></i><span class="visually-hidden">Payment</span></dt>
-              <dd>{{ $payload['payment'] }}@if ($payload['balance'] && (float) preg_replace('/[^0-9.]/', '', $payload['balance']) > 0) <span class="account-booking__price">Balance {{ $payload['balance'] }}</span>@endif</dd>
+              <dd>{{ $payload['payment'] }}@if ($payload['balance'] && (float) preg_replace('/[^0-9.]/', '', $payload['balance']) > 0) <span class="ml-1 text-ink-muted">Balance {{ $payload['balance'] }}</span>@endif</dd>
             </div>
             @endif
           </dl>
@@ -168,30 +175,30 @@ $emptyCopy = [
           <p class="account-booking__note">Your cancellation request was declined. Open View details to see J&amp;G's reason.</p>
           @endif
 
-          <footer class="account-booking__actions" data-booking-actions>
-            <button
-              type="button"
-              class="account-btn account-btn--secondary"
+          @if (($payload['cancellation']['status'] ?? null) === 'declined')
+          <p class="account-booking__note">Your cancellation request was declined. Open View details to see J&amp;G's reason.</p>
+          @endif
+
+          <footer class="mt-4 flex flex-col-reverse gap-3 @min-[32rem]:flex-row @min-[32rem]:items-center @min-[32rem]:justify-end *:w-full @min-[32rem]:*:w-auto" data-booking-actions>
+            <x-account.button
+              variant="secondary"
               data-bs-toggle="modal"
               data-bs-target="#bookingDetailsModal"
               data-booking-open>
               View details
-            </button>
+            </x-account.button>
 
             @if ($row['canCancel'])
-            <button
-              type="button"
-              class="account-btn account-btn--danger-outline"
-              data-booking-cancel>
+            <x-account.button variant="danger-outline" data-booking-cancel>
               Request cancellation
-            </button>
+            </x-account.button>
             @elseif ($payload['status'] === 'pending_cancellation')
             <p class="account-booking__note">Cancellation request sent. Waiting for J&amp;G to review it.</p>
             @elseif ($payload['status'] === 'user_cancelled' || ($payload['status'] === 'cancelled' && ($payload['cancellation']['status'] ?? null) === 'approved'))
             @if ($payload['can_reschedule'])
-            <a class="account-btn account-btn--primary" href="{{ route('user.booking', ['reschedule' => $payload['id']]) }}" data-booking-reschedule>Reschedule</a>
+            <x-account.button :href="route('user.booking', ['reschedule' => $payload['id']])" data-booking-reschedule>Reschedule</x-account.button>
             @elseif ($payload['reschedule_note'])
-            <p class="account-booking__note" data-booking-note>{{ $payload['reschedule_note'] }}</p>
+            <p class="m-0 text-sm text-ink-muted" data-booking-note>{{ $payload['reschedule_note'] }}</p>
             @endif
             @endif
           </footer>
@@ -202,60 +209,60 @@ $emptyCopy = [
 
     {{-- One empty message per tab; bookings.js shows the one that matches the active tab. --}}
     @foreach ($tabs as $key => $label)
-    <section class="account-card account-bookings__empty d-none" data-bookings-empty="{{ $key }}">
+    <section class="{{ $emptyClass }} d-none" data-bookings-empty="{{ $key }}">
       <i class="ph ph-calendar-blank" aria-hidden="true"></i>
-      <p class="account-bookings__empty-title">{{ $emptyCopy[$key] ?? 'No bookings to show.' }}</p>
+      <p class="m-0 text-fluid-heading font-semibold">{{ $emptyCopy[$key] ?? 'No bookings to show.' }}</p>
       @if (in_array($key, ['all', 'upcoming'], true))
-      <a class="account-btn account-btn--primary" href="{{ route('user.landing') }}#packages">Browse packages</a>
+      <x-account.button href="{{ route('user.landing') }}#packages">Browse packages</x-account.button>
       @endif
     </section>
     @endforeach
   </div>
 
   {{-- Details modal: shared by every card, filled by bookings.js from the card's data-booking JSON. --}}
-  <div class="modal fade account-modal" id="bookingDetailsModal" tabindex="-1" aria-labelledby="bookingDetailsTitle" aria-hidden="true">
+  <div class="modal fade font-sans" id="bookingDetailsModal" tabindex="-1" aria-labelledby="bookingDetailsTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header account-modal__header">
+      <div class="modal-content rounded-card border-0 bg-surface text-ink">
+        <div class="modal-header items-start border-0 px-6 pt-6 pb-4">
           <div>
-            <h2 class="account-modal__title" id="bookingDetailsTitle" data-bk="event">Booking details</h2>
-            <p class="account-modal__sub">Booking <span data-bk="reference"></span></p>
+            <h2 class="m-0 text-fluid-xl font-semibold wrap-anywhere" id="bookingDetailsTitle" data-bk="event">Booking details</h2>
+            <p class="mt-1 mb-0 text-sm text-ink-muted">Booking <span data-bk="reference"></span></p>
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
 
-        <div class="modal-body account-modal__body">
-          <p class="account-modal__status"><span class="account-badge" data-bk-badge></span></p>
+        <div class="modal-body flex flex-col gap-6 px-6 py-0">
+          <p class="m-0"><span data-bk-badge></span></p>
 
           {{-- Shown when the booking was cancelled or declined (data-bk-reason); filled by bookings.js. --}}
-          <section class="reason-note" aria-labelledby="bk-reason-label" data-bk-reason hidden>
-            <h3 class="reason-note__label" id="bk-reason-label" data-bk-reason-label></h3>
-            <p class="reason-note__by" data-bk-reason-by></p>
-            <p class="reason-note__text" data-bk-reason-text></p>
+          <section class="m-0 flex flex-col gap-1 rounded-lg border border-danger-border bg-danger-soft px-4 py-3" aria-labelledby="bk-reason-label" data-bk-reason hidden>
+            <h3 class="mb-2 text-sm leading-[1.2] font-semibold text-danger-text" id="bk-reason-label" data-bk-reason-label></h3>
+            <p class="mb-4 text-sm text-ink-muted" data-bk-reason-by></p>
+            <p class="m-0 text-sm wrap-anywhere whitespace-pre-line text-ink" data-bk-reason-text></p>
           </section>
 
           {{-- The client's cancellation request and J&G's answer. Filled by bookings.js from
                data.cancellation: pending / approved / declined / directly cancelled by J&G. --}}
-          <section class="reason-note" aria-labelledby="bk-cancellation-title" data-bk-cancellation hidden>
-            <h3 class="reason-note__label" id="bk-cancellation-title" data-bk-cancellation-title></h3>
-            <p class="reason-note__by" data-bk-cancellation-meta></p>
+          <section class="m-0 flex flex-col gap-1 rounded-lg border border-field-border bg-panel px-4 py-3 [&[hidden]]:hidden" aria-labelledby="bk-cancellation-title" data-bk-cancellation hidden>
+            <h3 class="m-0 text-sm leading-[1.2] font-semibold text-ink" id="bk-cancellation-title" data-bk-cancellation-title></h3>
+            <p class="m-0 text-sm text-ink-muted" data-bk-cancellation-meta></p>
 
-            <div data-bk-cancellation-user hidden>
-              <p class="reason-note__by" data-bk-cancellation-user-label>Your reason</p>
-              <p class="reason-note__text" data-bk-cancellation-user-reason></p>
-              <p class="reason-note__by" data-bk-cancellation-user-date></p>
+            <div class="flex flex-col gap-1 pt-2" data-bk-cancellation-user hidden>
+              <p class="m-0 text-sm text-ink-muted" data-bk-cancellation-user-label>Your reason</p>
+              <p class="m-0 text-sm wrap-anywhere whitespace-pre-line text-ink" data-bk-cancellation-user-reason></p>
+              <p class="m-0 text-sm text-ink-muted" data-bk-cancellation-user-date></p>
             </div>
 
-            <div data-bk-cancellation-admin hidden>
-              <p class="reason-note__by" data-bk-cancellation-admin-label>J&amp;G's reason</p>
-              <p class="reason-note__text" data-bk-cancellation-admin-reason></p>
-              <p class="reason-note__by" data-bk-cancellation-admin-date></p>
+            <div class="flex flex-col gap-1 pt-2" data-bk-cancellation-admin hidden>
+              <p class="m-0 text-sm text-ink-muted" data-bk-cancellation-admin-label>J&amp;G's reason</p>
+              <p class="m-0 text-sm wrap-anywhere whitespace-pre-line text-ink" data-bk-cancellation-admin-reason></p>
+              <p class="m-0 text-sm text-ink-muted" data-bk-cancellation-admin-date></p>
             </div>
           </section>
 
-          <section class="account-modal__section" aria-labelledby="bk-event-title">
-            <h3 class="account-modal__heading" id="bk-event-title">Event</h3>
-            <dl class="account-modal__grid">
+          <section aria-labelledby="bk-event-title">
+            <h3 class="mt-0 mb-3 text-fluid-label font-semibold" id="bk-event-title">Event</h3>
+            <dl class="{{ $modalGridClass }}">
               <div>
                 <dt>Event type</dt>
                 <dd data-bk="type"></dd>
@@ -287,9 +294,9 @@ $emptyCopy = [
             </dl>
           </section>
 
-          <section class="account-modal__section" aria-labelledby="bk-package-title">
-            <h3 class="account-modal__heading" id="bk-package-title">Package and payment</h3>
-            <dl class="account-modal__grid">
+          <section aria-labelledby="bk-package-title">
+            <h3 class="mt-0 mb-3 text-fluid-label font-semibold" id="bk-package-title">Package and payment</h3>
+            <dl class="{{ $modalGridClass }}">
               <div>
                 <dt>Package</dt>
                 <dd data-bk="package"></dd>
@@ -314,8 +321,8 @@ $emptyCopy = [
           </section>
         </div>
 
-        <div class="modal-footer account-modal__footer">
-          <button type="button" class="account-btn account-btn--secondary" data-bs-dismiss="modal">Close</button>
+        <div class="modal-footer flex flex-col-reverse gap-3 border-0 px-6 pt-3 pb-6 min-[576px]:flex-row min-[576px]:justify-end *:m-0 *:w-full min-[576px]:*:w-auto">
+          <x-account.button variant="secondary" data-bs-dismiss="modal">Close</x-account.button>
         </div>
       </div>
     </div>

@@ -6,6 +6,11 @@
 // Markup hooks inside [data-filter-bar]: [data-filter-sheet], [data-filter-toggle], [data-filter-count],
 // [data-filter-chips], [data-filter-clear].
 
+const CHIP =
+    "admin-chip inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-full border-0 px-3 py-1 text-[0.85rem] font-medium text-brand-text hover:bg-brand-soft-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text [&_.ph]:text-fluid-sm";
+const CHIP_FILLED = "bg-brand-soft";
+const CHIP_CLEAR = "admin-chip--clear bg-transparent underline"; // \"Clear all\": text only, no fill
+
 export function initFilterSheet(bar) {
     const selects = [...bar.querySelectorAll("[data-filter-sheet] select")];
     const chips = bar.querySelector("[data-filter-chips]");
@@ -35,7 +40,7 @@ export function initFilterSheet(bar) {
     function chip(text, label, onClick, extraClass = "") {
         const button = document.createElement("button");
         button.type = "button";
-        button.className = `admin-chip ${extraClass}`.trim();
+        button.className = `${CHIP} ${extraClass ? CHIP_CLEAR : CHIP_FILLED}`;
         button.setAttribute("aria-label", label);
         const span = document.createElement("span");
         span.textContent = text;
@@ -74,7 +79,7 @@ export function initFilterSheet(bar) {
                         selects.forEach(reset);
                         toggle?.focus();
                     },
-                    "admin-chip--clear",
+                    "clear",
                 ),
             );
         }

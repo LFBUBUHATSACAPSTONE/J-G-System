@@ -10,6 +10,58 @@ const el = (tag, cls, text) => {
     if (text != null) n.textContent = text;
     return n;
 };
+// Utility strings for the thread, written whole so Tailwind can find them. The same strings are in
+// views/components/chat/thread.blade.php and booking-card.blade.php (server-rendered messages): keep them in step.
+// The BEM names stay in each string as hooks (tests, selectors and the state variants read them).
+const CX = {
+    icon: "chat-icon block size-[1em] flex-none",
+    day: "chat-day my-1 self-center rounded-full bg-panel px-3 py-0.5 text-[0.8125rem] text-ink-muted",
+    unread: "chat-unread my-1 flex items-center gap-3 text-[0.8125rem] font-semibold text-brand-text before:h-px before:flex-auto before:bg-brand-halo after:h-px after:flex-auto after:bg-brand-halo",
+    newpillSlot: "chat-newpill-slot relative z-[4] h-0 flex-none",
+    newpill:
+        "chat-newpill absolute bottom-3 left-1/2 inline-flex min-h-9 -translate-x-1/2 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full border-0 bg-brand px-3.5 py-1.5 text-[0.8125rem] font-semibold text-surface shadow-[0_4px_16px_oklch(0%_0_0/0.25)] pointer-coarse:min-h-11 hover:bg-brand-hover focus-visible:shadow-[0_0_0_4px_var(--color-brand-text)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-surface",
+    msgOut: "chat-msg chat-msg--out group/msg flex max-w-[min(32rem,85%)] flex-col items-end gap-0.5 self-end data-[group=last]:-mt-2 data-[group=middle]:-mt-2 [@media(hover:none)]:max-w-[min(32rem,90%)]",
+    msgIn: "chat-msg chat-msg--in group/msg flex max-w-[min(32rem,85%)] flex-col items-start gap-0.5 self-start data-[group=last]:-mt-2 data-[group=middle]:-mt-2 [@media(hover:none)]:max-w-[min(32rem,90%)]",
+    bubbleOut:
+        "chat-msg__bubble group/bubble relative flex flex-col gap-2 rounded-panel px-[0.9375rem] py-2.5 wrap-anywhere rounded-br-md bg-brand text-surface group-data-[group=last]/msg:rounded-tr-md group-data-[group=middle]/msg:rounded-tr-md group-[.is-sending]/msg:opacity-70 group-[.is-failed]/msg:outline-1 group-[.is-failed]/msg:-outline-offset-1 group-[.is-failed]/msg:outline-danger group-[.is-menu-open]/msg:shadow-[0_0_0_3px_var(--color-brand-halo)] group-[.is-editing]/msg:shadow-[0_0_0_3px_var(--color-brand-halo)] group-[.is-flash]/msg:motion-safe:animate-chat-flash group-[.is-flash]/msg:motion-reduce:shadow-[0_0_0_3px_var(--color-brand-halo)]",
+    bubbleIn:
+        "chat-msg__bubble group/bubble relative flex flex-col gap-2 rounded-panel px-[0.9375rem] py-2.5 wrap-anywhere rounded-bl-md bg-panel text-ink group-data-[group=last]/msg:rounded-tl-md group-data-[group=middle]/msg:rounded-tl-md group-[.is-sending]/msg:opacity-70 group-[.is-failed]/msg:outline-1 group-[.is-failed]/msg:-outline-offset-1 group-[.is-failed]/msg:outline-danger group-[.is-menu-open]/msg:shadow-[0_0_0_3px_var(--color-brand-halo)] group-[.is-editing]/msg:shadow-[0_0_0_3px_var(--color-brand-halo)] group-[.is-flash]/msg:motion-safe:animate-chat-flash group-[.is-flash]/msg:motion-reduce:shadow-[0_0_0_3px_var(--color-brand-halo)]",
+    text: "chat-msg__text m-0 whitespace-pre-wrap wrap-anywhere",
+    meta: "chat-msg__meta flex max-w-full items-center gap-2 [.chat-msg[data-group=first]:not(.is-sending):not(.is-failed)_&:not(:has([data-edited]))]:hidden [.chat-msg[data-group=middle]:not(.is-sending):not(.is-failed)_&:not(:has([data-edited]))]:hidden",
+    time: "chat-msg__time px-1 text-[0.75rem] text-ink-muted [.chat-msg[data-group=first]:not(.is-sending)_&]:hidden [.chat-msg[data-group=middle]:not(.is-sending)_&]:hidden group-[.is-failed]/msg:hidden",
+    edited: "chat-msg__edited text-[0.75rem] italic text-ink-muted",
+    retry: "chat-msg__retry cursor-pointer rounded-sm border-0 bg-transparent px-2 py-1 text-[0.75rem] font-semibold text-danger-text underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text",
+    discard:
+        "chat-msg__discard cursor-pointer rounded-sm border-0 bg-transparent px-2 py-1 text-[0.75rem] font-semibold text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text",
+    actions: "chat-msg__actions pointer-events-none absolute inset-0",
+    moreOut:
+        "chat-msg__more pointer-events-auto absolute top-1/2 right-[calc(100%_+_0.5rem)] grid size-8 -translate-y-1/2 cursor-pointer place-items-center rounded-full border-0 bg-transparent p-0 text-[1.125rem] text-ink-muted opacity-0 transition-opacity duration-[120ms] before:absolute before:inset-y-0 before:left-full before:w-2 hover:bg-panel hover:text-ink focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-text group-hover/bubble:opacity-100 group-focus-within/bubble:opacity-100 group-[.is-menu-open]/msg:opacity-100 [@media(hover:none)]:pointer-events-none",
+    moreIn: "chat-msg__more pointer-events-auto absolute top-1/2 left-[calc(100%_+_0.5rem)] grid size-8 -translate-y-1/2 cursor-pointer place-items-center rounded-full border-0 bg-transparent p-0 text-[1.125rem] text-ink-muted opacity-0 transition-opacity duration-[120ms] before:absolute before:inset-y-0 before:right-full before:w-2 hover:bg-panel hover:text-ink focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-text group-hover/bubble:opacity-100 group-focus-within/bubble:opacity-100 group-[.is-menu-open]/msg:opacity-100 [@media(hover:none)]:pointer-events-none",
+    menuOut:
+        "chat-msg__menu pointer-events-auto absolute top-[calc(100%_+_0.25rem)] right-0 z-[5] min-w-40 rounded-field border border-panel bg-surface p-1 text-left text-ink shadow-[0_6px_24px_oklch(0%_0_0/0.18)] [&.is-up]:top-auto [&.is-up]:bottom-[calc(100%_+_0.25rem)]",
+    menuIn: "chat-msg__menu pointer-events-auto absolute top-[calc(100%_+_0.25rem)] left-0 z-[5] min-w-40 rounded-field border border-panel bg-surface p-1 text-left text-ink shadow-[0_6px_24px_oklch(0%_0_0/0.18)] [&.is-up]:top-auto [&.is-up]:bottom-[calc(100%_+_0.25rem)]",
+    action: "chat-msg__action block min-h-11 w-full cursor-pointer rounded-lg border-0 bg-transparent px-3.5 py-2 text-left text-[0.9375rem] text-ink enabled:hover:bg-panel focus-visible:bg-panel focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-text disabled:cursor-not-allowed disabled:text-ink-muted data-[chat-action=unsend]:text-danger-text",
+    quote: "chat-msg__quote flex max-w-full flex-col rounded-sm border-l-[3px] border-brand-text bg-panel px-2.5 py-1 text-[0.8125rem] text-ink-muted data-[reply-id]:not-[.is-gone]:cursor-pointer data-[reply-id]:not-[.is-gone]:hover:bg-chat-tint data-[reply-id]:focus-visible:outline-2 data-[reply-id]:focus-visible:outline-offset-2 data-[reply-id]:focus-visible:outline-brand-text [&.is-gone]:italic",
+    quoteName: "chat-msg__quote-name truncate font-semibold",
+    quoteText: "chat-msg__quote-text truncate",
+    attachFile:
+        "chat-attach flex items-center gap-2 rounded-field bg-surface px-3 py-2 text-sm text-ink no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text [&_.chat-icon]:text-[1.5rem] [&_.chat-icon]:text-danger",
+    attachImage:
+        "chat-attach chat-attach--image flex items-center gap-2 overflow-hidden rounded-field bg-transparent p-0 text-sm text-ink no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text",
+    attachImg: "block max-h-56 max-w-full rounded-field",
+    attachName: "chat-attach__name max-w-48 truncate",
+    attachSize: "chat-attach__size text-[0.75rem] text-ink-muted",
+    strip: "chat-strip flex w-full flex-none cursor-pointer items-center gap-2.5 border-0 border-b border-panel bg-chat-tint px-4 py-2 text-left text-[0.8125rem] text-ink hover:bg-panel focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-text",
+    stripLabel: "chat-strip__label flex-none font-semibold text-brand-text",
+    stripMain: "chat-strip__main flex min-w-0 flex-auto gap-1.5",
+    stripPkg: "chat-strip__pkg flex-initial truncate font-semibold",
+    fileChip:
+        "inline-flex items-center gap-1.5 rounded-full bg-panel py-0.5 pr-1 pl-2.5 text-[0.8125rem]",
+    fileRemove:
+        "inline-grid size-6 place-items-center rounded-full border-0 bg-transparent p-0 text-ink cursor-pointer focus-visible:outline-2 focus-visible:outline-brand-text",
+    stripWhen:
+        "chat-strip__when min-w-0 shrink-[100] grow-0 basis-auto truncate text-ink-muted",
+};
 // Inline SVG (the user pages load no icon font). Constant markup only, never user text.
 const ICONS = {
     x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
@@ -17,9 +69,15 @@ const ICONS = {
     more: '<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
     "arrow-down": '<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>',
 };
+// The marker carries data-edited: the meta row's variants (CX.meta) look for it.
+const editedMark = () => {
+    const n = el("span", CX.edited, "edited");
+    n.dataset.edited = "";
+    return n;
+};
 const icon = (name) => {
     const t = document.createElement("template");
-    t.innerHTML = `<svg class="chat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${ICONS[name]}</svg>`;
+    t.innerHTML = `<svg class="${CX.icon}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${ICONS[name]}</svg>`;
     return t.content.firstChild;
 };
 const fmtSize = (b) =>
@@ -101,8 +159,8 @@ const pills = new WeakMap();
 function pillFor(log) {
     let state = pills.get(log);
     if (state) return state;
-    const slot = el("div", "chat-newpill-slot");
-    const btn = el("button", "chat-newpill");
+    const slot = el("div", CX.newpillSlot);
+    const btn = el("button", CX.newpill);
     btn.type = "button";
     btn.hidden = true;
     btn.append(icon("arrow-down"), el("span", "chat-newpill__label"));
@@ -151,7 +209,7 @@ export function showUnreadDivider(log, unread) {
     const n = Math.min(Math.max(Number(unread) || 0, 0), incoming.length);
     if (!n) return false;
 
-    const mark = el("div", "chat-unread");
+    const mark = el("div", CX.unread);
     mark.setAttribute("role", "separator");
     mark.append(el("span", "chat-unread__label", "New messages"));
     incoming[incoming.length - n].before(mark);
@@ -241,7 +299,7 @@ function ensureDay(log) {
     const key = dayKey();
     const days = log.querySelectorAll(".chat-day");
     if (!days.length || days[days.length - 1].dataset.day !== key) {
-        const d = el("p", "chat-day", "Today");
+        const d = el("p", CX.day, "Today");
         d.dataset.day = key;
         d.dataset.at = new Date().toISOString();
         log.querySelector(".chat-empty")?.remove();
@@ -269,9 +327,9 @@ function editWindowPassed(msg) {
 // thread.blade.php; the data-chat-action hooks are unchanged. Lives inside the bubble, so
 // editing (which hides the bubble) hides the menu with it.
 function messageActions(root, id, own) {
-    const wrap = el("div", "chat-msg__actions");
+    const wrap = el("div", CX.actions);
 
-    const toggle = el("button", "chat-msg__more");
+    const toggle = el("button", own ? CX.moreOut : CX.moreIn);
     toggle.type = "button";
     toggle.dataset.chatMenuToggle = "";
     toggle.setAttribute("aria-haspopup", "menu");
@@ -279,13 +337,13 @@ function messageActions(root, id, own) {
     toggle.setAttribute("aria-label", "Message options");
     toggle.append(icon("more"));
 
-    const menu = el("div", "chat-msg__menu");
+    const menu = el("div", own ? CX.menuOut : CX.menuIn);
     menu.setAttribute("role", "menu");
     menu.setAttribute("aria-label", "Message options");
     menu.hidden = true;
 
     const add = (action, label, title) => {
-        const b = el("button", "chat-msg__action", label);
+        const b = el("button", CX.action, label);
         b.type = "button";
         b.setAttribute("role", "menuitem");
         b.dataset.chatAction = action;
@@ -387,13 +445,13 @@ function quoteLabel(out, quotedMine, other) {
 
 // A reply quote is a button: click / Enter jumps to the original message (data-reply-id).
 function replyQuote(label, text, replyId) {
-    const q = el("div", "chat-msg__quote");
+    const q = el("div", CX.quote);
     q.setAttribute("role", "button");
     q.tabIndex = 0;
     q.title = "Go to the original message";
     if (replyId) q.dataset.replyId = String(replyId);
-    q.append(el("span", "chat-msg__quote-name", label));
-    if (text) q.append(el("span", "chat-msg__quote-text", text));
+    q.append(el("span", CX.quoteName, label));
+    if (text) q.append(el("span", CX.quoteText, text));
     return q;
 }
 
@@ -426,7 +484,7 @@ function refreshQuotes(log) {
         q.removeAttribute("title");
         const text = q.querySelector(".chat-msg__quote-text");
         if (text) text.textContent = "Message unsent";
-        else q.append(el("span", "chat-msg__quote-text", "Message unsent"));
+        else q.append(el("span", CX.quoteText, "Message unsent"));
     });
 }
 
@@ -435,11 +493,11 @@ function refreshQuotes(log) {
 // clicking it scrolls to the full card. Opt-in with data-chat-booking-strip on the chat root.
 function initBookingStrip(root, log) {
     if (!root.hasAttribute("data-chat-booking-strip")) return () => {};
-    const strip = el("button", "chat-strip");
+    const strip = el("button", CX.strip);
     strip.type = "button";
     strip.hidden = true;
-    const main = el("span", "chat-strip__main");
-    strip.append(el("span", "chat-strip__label", "Your booking"), main);
+    const main = el("span", CX.stripMain);
+    strip.append(el("span", CX.stripLabel, "Your booking"), main);
     log.before(strip);
     let target = null;
     strip.addEventListener("click", () => jumpTo(log, target));
@@ -459,8 +517,8 @@ function initBookingStrip(root, log) {
                 .querySelectorAll(".chat-booking__details dd")[1]
                 ?.textContent.trim() || "";
         main.replaceChildren(
-            el("span", "chat-strip__pkg", name),
-            el("span", "chat-strip__when", when),
+            el("span", CX.stripPkg, name),
+            el("span", CX.stripWhen, when),
         );
         strip.querySelector(".chat-status")?.remove();
         const status = target.querySelector(".chat-status");
@@ -472,7 +530,7 @@ function initBookingStrip(root, log) {
 function markEdited(msg) {
     const meta = msg.querySelector(".chat-msg__meta");
     if (!meta || meta.querySelector(".chat-msg__edited")) return;
-    const marker = el("span", "chat-msg__edited", "edited");
+    const marker = editedMark();
     const actions = meta.querySelector(".chat-msg__actions");
     meta.insertBefore(marker, actions || null);
 }
@@ -500,20 +558,20 @@ export function tidyDays(log) {
 function attachmentNode(file) {
     const url = URL.createObjectURL(file);
     const isImage = file.type.startsWith("image/");
-    const a = el("a", `chat-attach${isImage ? " chat-attach--image" : ""}`);
+    const a = el("a", isImage ? CX.attachImage : CX.attachFile);
     a.href = url;
     a.target = "_blank";
     a.rel = "noopener";
     if (isImage) {
-        const img = el("img");
+        const img = el("img", CX.attachImg);
         img.src = url;
         img.alt = file.name;
         a.append(img);
     } else {
         a.append(
             icon("file"),
-            el("span", "chat-attach__name", file.name),
-            el("span", "chat-attach__size", fmtSize(file.size)),
+            el("span", CX.attachName, file.name),
+            el("span", CX.attachSize, fmtSize(file.size)),
         );
     }
     return a;
@@ -522,7 +580,7 @@ function attachmentNode(file) {
 // Text goes in with textContent only, never innerHTML.
 function appendMessage(log, body, files, pendingReply, other = "them") {
     ensureDay(log);
-    const msg = el("div", "chat-msg chat-msg--out");
+    const msg = el("div", CX.msgOut);
     msg.dataset.own = "1";
     if (pendingReply) {
         msg.append(
@@ -533,12 +591,12 @@ function appendMessage(log, body, files, pendingReply, other = "them") {
             ),
         );
     }
-    const bubble = el("div", "chat-msg__bubble");
+    const bubble = el("div", CX.bubbleOut);
     bubble.append(el("span", "visually-hidden", "You: "));
-    if (body) bubble.append(el("p", "chat-msg__text", body));
+    if (body) bubble.append(el("p", CX.text, body));
     files.forEach((f) => bubble.append(attachmentNode(f)));
-    const meta = el("div", "chat-msg__meta");
-    const time = el("time", "chat-msg__time", "Sending…");
+    const meta = el("div", CX.meta);
+    const time = el("time", CX.time, "Sending…");
     meta.append(time);
     msg.append(bubble, meta);
     log.append(msg);
@@ -551,12 +609,12 @@ function serverAttachmentNode(file) {
     const isImage =
         file.kind === "image" ||
         /\.(jpe?g|png|webp|gif)$/i.test(file.name || "");
-    const a = el("a", `chat-attach${isImage ? " chat-attach--image" : ""}`);
+    const a = el("a", isImage ? CX.attachImage : CX.attachFile);
     a.href = file.url || "#";
     a.target = "_blank";
     a.rel = "noopener";
     if (isImage) {
-        const img = el("img");
+        const img = el("img", CX.attachImg);
         img.src = file.url || "";
         img.alt = file.name || "Attachment";
         img.loading = "lazy";
@@ -564,8 +622,8 @@ function serverAttachmentNode(file) {
     } else {
         a.append(
             icon("file"),
-            el("span", "chat-attach__name", file.name || "Attachment"),
-            el("span", "chat-attach__size", file.size || ""),
+            el("span", CX.attachName, file.name || "Attachment"),
+            el("span", CX.attachSize, file.size || ""),
         );
     }
     return a;
@@ -584,7 +642,7 @@ export function appendIncoming(log, message, root) {
     const other = root?.dataset.chatOther || "Them";
     const self = root?.dataset.chatSelf || "client";
 
-    const msg = el("div", "chat-msg chat-msg--in");
+    const msg = el("div", CX.msgIn);
     if (message.id) msg.dataset.messageId = message.id;
     if (message.reply_to) {
         msg.append(
@@ -596,20 +654,20 @@ export function appendIncoming(log, message, root) {
         );
     }
 
-    const bubble = el("div", "chat-msg__bubble");
+    const bubble = el("div", CX.bubbleIn);
     bubble.append(el("span", "visually-hidden", `${other}: `));
-    if (message.body) bubble.append(el("p", "chat-msg__text", message.body));
+    if (message.body) bubble.append(el("p", CX.text, message.body));
     (message.attachments || []).forEach((f) =>
         bubble.append(serverAttachmentNode(f)),
     );
 
-    const meta = el("div", "chat-msg__meta");
+    const meta = el("div", CX.meta);
     const at = message.at ? new Date(message.at) : new Date();
-    const time = el("time", "chat-msg__time", formatTime(at));
+    const time = el("time", CX.time, formatTime(at));
     time.setAttribute("datetime", at.toISOString());
     time.title = formatStamp(at);
     meta.append(time);
-    if (message.edited) meta.append(el("span", "chat-msg__edited", "edited"));
+    if (message.edited) meta.append(editedMark());
     if (message.id && root)
         bubble.append(messageActions(root, message.id, false));
     msg.append(bubble, meta);
@@ -641,7 +699,7 @@ export function applyMessageChange(log, message) {
     let textEl = bubble.querySelector(".chat-msg__text");
     if (message.body) {
         if (!textEl) {
-            textEl = el("p", "chat-msg__text");
+            textEl = el("p", CX.text);
             const anchor = bubble.querySelector(".visually-hidden");
             if (anchor) anchor.after(textEl);
             else bubble.prepend(textEl);
@@ -936,8 +994,12 @@ export function initChat(root) {
     function renderFiles() {
         list.replaceChildren(
             ...files.map((f, i) => {
-                const li = el("li", null, `${f.name} (${fmtSize(f.size)})`);
-                const rm = el("button");
+                const li = el(
+                    "li",
+                    CX.fileChip,
+                    `${f.name} (${fmtSize(f.size)})`,
+                );
+                const rm = el("button", CX.fileRemove);
                 rm.type = "button";
                 rm.setAttribute("aria-label", `Remove ${f.name}`);
                 rm.append(icon("x"));
@@ -1130,7 +1192,7 @@ export function initChat(root) {
             }
             let textEl = bubble.querySelector(".chat-msg__text");
             if (!textEl) {
-                textEl = el("p", "chat-msg__text");
+                textEl = el("p", CX.text);
                 bubble.insertBefore(
                     textEl,
                     bubble.querySelector(".visually-hidden")?.nextSibling ||
@@ -1333,10 +1395,10 @@ export function initChat(root) {
         msg.classList.remove("is-sending");
         msg.classList.add("is-failed");
         msg.removeAttribute("aria-busy");
-        const retry = el("button", "chat-msg__retry", "Failed. Tap to retry");
+        const retry = el("button", CX.retry, "Failed. Tap to retry");
         retry.type = "button";
         retry.addEventListener("click", () => deliver(entry));
-        const discard = el("button", "chat-msg__discard", "Discard");
+        const discard = el("button", CX.discard, "Discard");
         discard.type = "button";
         discard.setAttribute(
             "aria-label",
