@@ -31,15 +31,15 @@ $badgeTones = ['confirmed' => 'bg-success', 'pending' => 'bg-warning'];
 
   <dl class="mt-0 mb-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-fluid-sm">
     <dt class="font-normal text-ink-muted">Package</dt>
-    <dd class="m-0 wrap:anywhere">{{ $booking['package']['name'] }}</dd>
+    <dd class="m-0 wrap-anywhere">{{ $booking['package']['name'] }}</dd>
     <dt class="font-normal text-ink-muted">Client</dt>
-    <dd class="m-0 wrap:anywhere">{{ $booking['client']['name'] }}</dd>
+    <dd class="m-0 wrap-anywhere">{{ $booking['client']['name'] }}</dd>
     <dt class="font-normal text-ink-muted">Date</dt>
-    <dd class="m-0 wrap:anywhere">{{ $dates }}</dd>
+    <dd class="m-0 wrap-anywhere">{{ $dates }}</dd>
     <dt class="font-normal text-ink-muted">Time</dt>
-    <dd class="m-0 wrap:anywhere">{{ $event['start_time'] }} – {{ $event['end_time'] }}</dd>
+    <dd class="m-0 wrap-anywhere">{{ $event['start_time'] }} – {{ $event['end_time'] }}</dd>
     <dt class="font-normal text-ink-muted">Venue</dt>
-    <dd class="m-0 wrap:anywhere">{{ $event['location'] }}</dd>
+    <dd class="m-0 wrap-anywhere">{{ $event['location'] }}</dd>
   </dl>
 
   <a class="text-fluid-sm font-semibold text-brand-text underline focus-visible:rounded-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" href="{{ $bookingsUrl }}">View in Bookings</a>

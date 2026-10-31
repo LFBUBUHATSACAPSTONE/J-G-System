@@ -34,7 +34,7 @@ $max = (int) config('cancellation.max', 500);
       </div>
 
       <div class="modal-body flex flex-col gap-4 px-6 py-4">
-        <p class="m-0 text-sm wrap:anywhere text-ink-muted" data-action-message></p>
+        <p class="m-0 text-sm wrap-anywhere text-ink-muted" data-action-message></p>
 
         @if ($reason)
         <div class="flex flex-col gap-2" data-action-reason-field>
