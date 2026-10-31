@@ -50,6 +50,8 @@
 @source "../views/components/auth/signup-form.blade.php";
 @source "../views/components/auth/forgot-password-form.blade.php";
 @source "../views/components/auth/new-password-form.blade.php";
+@source "../views/components/auth/verification-form.blade.php";
+@source "../views/components/auth/link-button.blade.php";
 @source "../views/user/landing.blade.php";
 @source "../views/components/landing/landing-caption.blade.php";
 @source "../views/components/landing/features.blade.php";

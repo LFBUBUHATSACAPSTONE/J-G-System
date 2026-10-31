@@ -17,6 +17,9 @@ $errorClass = 'mb-[1rem] text-[0.85rem] text-auth-banner-error';
 $rowClass = 'mb-[1.5rem] flex flex-wrap items-center justify-between gap-[0.5rem] text-[0.8rem] text-auth-text-muted';
 $rowLabelClass = 'flex items-center gap-[0.5rem] [margin:0]';
 $checkClass = 'relative size-4 shrink-0 cursor-pointer appearance-none rounded-[4px] [border:1px_solid_var(--color-auth-border)] bg-auth-field [margin:0] checked:border-brand checked:bg-brand checked:after:absolute checked:after:top-[1px] checked:after:left-[4px] checked:after:h-[8px] checked:after:w-[4px] checked:after:rotate-45 checked:after:border-solid checked:after:border-white checked:after:[border-width:0_2px_2px_0] focus-visible:shadow-[0_0_0_3px_var(--color-auth-ring-soft)] focus-visible:outline-none';
+$submitClass = 'w-full rounded-field text-[0.95rem] font-semibold [padding:0.75rem]';
+$dividerClass = 'mt-[2.5rem] mb-[0.85rem] flex items-center gap-[0.75rem] text-[0.78rem] text-auth-text-muted before:h-px before:flex-1 before:bg-auth-border after:h-px after:flex-1 after:bg-auth-border';
+$ssoClass = 'mb-[0.5rem] flex gap-[0.75rem]';
 @endphp
 
 <h2 class="{{ $titleClass }}">Welcome Back!</h2>
@@ -61,14 +64,14 @@ $checkClass = 'relative size-4 shrink-0 cursor-pointer appearance-none rounded-[
     <a href="#" class="{{ $linkClass }}" data-auth-view="forgot-password">Forgot Password?</a>
   </div>
 
-  <x-button type="submit" class="auth-modal__submit btn-color-gradient--primary">
+  <x-button type="submit" class="btn-color-gradient--primary {{ $submitClass }}">
     Login
   </x-button>
 </form>
 
-<div class="auth-modal__divider">Or sign in with</div>
+<div class="{{ $dividerClass }}">Or sign in with</div>
 
-<div class="auth-modal__sso">
+<div class="{{ $ssoClass }}">
   <x-auth.link-button
     id="google-login-btn"
     :href="route('auth.google.redirect')"

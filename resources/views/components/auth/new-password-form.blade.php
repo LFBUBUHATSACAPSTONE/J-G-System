@@ -13,6 +13,7 @@ $toggleClass = 'absolute top-[2.5rem] right-[0.9rem] [background:none] [border:n
 $fieldErrorClass = 'mt-[0.35rem] text-[0.78rem] text-auth-danger [&:not(.d-none)]:block';
 $errorClass = 'mb-[1rem] text-[0.85rem] text-auth-banner-error';
 $standaloneClass = 'mb-[1.25rem] block text-[0.85rem] font-semibold text-auth-accent no-underline hover:underline';
+$submitClass = 'w-full rounded-field text-[0.95rem] font-semibold [padding:0.75rem]';
 @endphp
 
 <h2 class="{{ $titleClass }}">New Password</h2>
@@ -50,5 +51,5 @@ $standaloneClass = 'mb-[1.25rem] block text-[0.85rem] font-semibold text-auth-ac
 
   <a href="#" class="{{ $standaloneClass }}" data-auth-view="login">Back to Log in</a>
 
-  <x-button type="submit" class="auth-modal__submit btn-color-gradient--primary">Confirm</x-button>
+  <x-button type="submit" class="btn-color-gradient--primary {{ $submitClass }}">Confirm</x-button>
 </form>
