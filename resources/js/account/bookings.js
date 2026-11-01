@@ -15,6 +15,7 @@
 
 import { getCsrfToken } from "../auth/csrf.js";
 import { openActionModal, reasonError } from "../shared/action-modal.js";
+import { paintCancellationTone } from "../shared/cancellation-tone.js";
 
 const ICON_CLASS = "ph ph-";
 
@@ -119,6 +120,8 @@ function initBookings() {
         box.hidden = !show;
         if (!show) return;
 
+        paintCancellationTone(box, cancellation.status);
+
         const title = box.querySelector("[data-bk-cancellation-title]");
         const meta = box.querySelector("[data-bk-cancellation-meta]");
         const userBlock = box.querySelector("[data-bk-cancellation-user]");
@@ -133,7 +136,9 @@ function initBookings() {
         const adminReason = box.querySelector(
             "[data-bk-cancellation-admin-reason]",
         );
-        const adminDate = box.querySelector("[data-bk-cancellation-admin-date]");
+        const adminDate = box.querySelector(
+            "[data-bk-cancellation-admin-date]",
+        );
 
         const when = formatDateTime(cancellation.admin_cancelled_at);
         const requested = formatDateTime(cancellation.user_cancelled_at);

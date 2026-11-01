@@ -16,6 +16,7 @@
 
 import { openActionModal, reasonError } from "../shared/action-modal.js";
 import { getCsrfToken } from "../auth/csrf.js";
+import { paintCancellationTone } from "../shared/cancellation-tone.js";
 
 const TITLES = {
     pending: "Cancellation requested",
@@ -93,6 +94,7 @@ export function initCancellation(modal) {
         section.hidden = !show;
         if (!show) return;
 
+        paintCancellationTone(section, cancellation.status);
         title.textContent = TITLES[cancellation.status] || "Cancellation";
         meta.textContent = metaFor(cancellation);
 
