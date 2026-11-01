@@ -26,9 +26,8 @@ use Illuminate\Support\Facades\Route;
 // user.account.destroy) must not change: the navigation, the sidebar (config/account.php) and the JS
 // build from them.
 
-// The navigation links here; it lands on the first tab of the account that is signed in: the
-// customer's profile tab, or the admin's own account page. It sits OUTSIDE the `role:user` gate,
-// so an admin who opens it lands on their own profile instead of being bounced.
+// The navigation links here; it lands on the customer's profile tab. The outer `user.area`
+// middleware redirects signed-in admins back to the admin dashboard before they can enter here.
 Route::middleware(['auth:web'])->group(function () {
     Route::get('/user/account', fn (CurrentAccount $account) => redirect()->route($account->profileRoute()))
         ->name('user.account');

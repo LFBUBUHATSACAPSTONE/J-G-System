@@ -20,9 +20,8 @@ use Symfony\Component\HttpFoundation\Response;
  * builds its own schema) counts as a regular user, so the customer side keeps working; the admin
  * side always needs an explicit 'admin'.
  *
- * JSON requests get a clean 401/403; page requests are redirected to where the account belongs
- * (an admin is sent to their dashboard, anyone else to the admin sign-in card, which already
- * prints the "no admin access" notice for a signed-in non-admin).
+ * JSON requests get a clean 401/403; page requests are redirected to the landing page belonging
+ * to the signed-in account's role.
  */
 class EnsureRole
 {
@@ -95,6 +94,6 @@ class EnsureRole
             ], 403);
         }
 
-        return redirect()->route($user->isAdmin() ? 'admin.dashboard' : 'admin.login');
+        return redirect()->route($user->isAdmin() ? 'admin.dashboard' : 'user.landing');
     }
 }
