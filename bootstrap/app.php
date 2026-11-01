@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Middleware\EnsureRole;
+use App\Http\Middleware\EnsureAdminArea;
+use App\Http\Middleware\EnsureUserArea;
 use App\Http\Middleware\ResetDefaultGuard;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -17,6 +19,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // `role:admin` / `role:user` — the role gate applied on top of `auth` (see EnsureRole).
         $middleware->alias([
             'role' => EnsureRole::class,
+            'admin.area' => EnsureAdminArea::class,
+            'user.area' => EnsureUserArea::class,
         ]);
 
         // Every request starts on the customer guard again: the `auth:` middleware switches the

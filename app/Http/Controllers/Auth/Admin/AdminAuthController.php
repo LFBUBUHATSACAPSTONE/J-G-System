@@ -9,7 +9,6 @@ use App\Services\Auth\SignIn;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
@@ -18,8 +17,8 @@ use Illuminate\View\View;
 /**
  * Admin sign-in gate (routes/admin/login.php).
  *
- *   GET  /admin  the sign-in card (HTML). A signed-in admin is sent straight to the dashboard; a
- *                signed-in NON-admin sees the card with the "no admin access" notice.
+ *   GET  /admin  the sign-in card (HTML). A signed-in admin is sent to the dashboard and a
+ *                signed-in customer is sent back to the user landing page.
  *   POST /admin/login  JSON only: signs the admin in.
  *
  * Contract (resources/js/admin-login.js, same shape the stub used to answer):
@@ -49,10 +48,12 @@ class AdminAuthController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
+        if ($account->customer()) {
+            return redirect()->route('user.landing');
+        }
+
         return view('admin.login', [
-            // Signed in on the customer session but not an admin: the view prints the notice
-            // above the card.
-            'noAccess' => $account->customerSession() !== null,
+            'noAccess' => false,
         ]);
     }
 
@@ -105,15 +106,6 @@ class AdminAuthController extends Controller
         RateLimiter::clear($limiterKey);
 
         if (! $user->isAdmin()) {
-            // Signed in on the customer session FIRST: a non-admin keeps that session (the card
-            // then shows "no access"), which is the 403 state the front end documents. The
-            // session is only used when it is free, so a signed-in customer is never thrown out
-            // by someone else's failed attempt.
-            if (! Auth::guard('web')->check()) {
-                Auth::guard('web')->login($user, (bool) $request->boolean('remember'));
-                $request->session()->regenerate();
-            }
-
             return response()->json(['message' => self::NO_ACCESS_MESSAGE], 403);
         }
 
