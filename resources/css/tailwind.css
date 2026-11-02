@@ -14,6 +14,7 @@
 @source "../views/components/booking/client-information.blade.php";
 @source "../views/components/booking/event-information.blade.php";
 @source "../views/components/booking/event-schedule.blade.php";
+@source "../views/components/booking/booking-summary.blade.php";
 @source "../views/components/booking/step-actions.blade.php";
 @source "../views/components/booking/step-button.blade.php";
 @source "../views/components/admin/sidebar.blade.php";
