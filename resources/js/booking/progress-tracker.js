@@ -6,7 +6,8 @@
  * calls booking-flow.js's exported setBookingView() directly to jump
  * to an already-unlocked step.
  *
- * States per step (see resources/sass/_progress-tracker.scss):
+ * States per step (read by the utilities in components/progress-tracker.blade.php
+ * through group-[...]/step:, Phase 9A):
  *   is-locked    — index is ahead of the furthest step reached; lock icon
  *   is-open      — reached before via forward progress, currently behind
  *                  the active step (i.e. you clicked Previous back past

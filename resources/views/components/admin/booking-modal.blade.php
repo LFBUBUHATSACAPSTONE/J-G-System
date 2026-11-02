@@ -53,6 +53,11 @@ $serverErrors = isset($errors) ? $errors->toArray() : [];
           Booking details <span data-booking-field="reference"></span>
         </h2>
 
+        {{-- The client's cancellation request and the admin's decision, first and full width so a pending request is
+             the first thing the admin sees. Filled by js/admin/cancellation.js from booking.cancellation; the
+             two buttons only appear while the request is pending. Markup: components/booking/cancellation-card. --}}
+        <x-booking.cancellation-card class="col-span-full" title-id="bm-cancellation-title" :actions="true" />
+
         {{-- Client Information --}}
         <section aria-labelledby="bm-client-title">
           <h3 id="bm-client-title" class="mb-4 text-fluid-xl leading-9 font-bold text-ink short-wide:mb-2">Client Information</h3>
@@ -232,45 +237,14 @@ $serverErrors = isset($errors) ? $errors->toArray() : [];
           </div>
         </section>
 
-        {{-- The client's cancellation request and the admin's decision. Filled by
-             js/admin/cancellation.js from booking.cancellation. The two buttons only appear while
-             the request is pending, so the client's reason and the decision stay in one place. --}}
-        <section class="m-0 flex flex-col gap-1 rounded-lg border border-field-border bg-panel px-4 py-3 [&[hidden]]:hidden" aria-labelledby="bm-cancellation-title" data-cancellation-section hidden>
-          <h3 class="m-0 text-sm leading-[1.2] font-semibold text-ink" id="bm-cancellation-title" data-cancellation-title></h3>
-          <p class="m-0 text-sm text-ink-muted" data-cancellation-meta></p>
-
-          <div class="flex flex-col gap-1 pt-2" data-cancellation-user hidden>
-            <p class="m-0 text-sm text-ink-muted" data-cancellation-user-label>Client's reason</p>
-            <p class="m-0 text-sm wrap-anywhere whitespace-pre-line text-ink" data-cancellation-user-reason></p>
-            <p class="m-0 text-sm text-ink-muted" data-cancellation-user-date></p>
-          </div>
-
-          <div class="flex flex-col gap-1 pt-2" data-cancellation-admin hidden>
-            <p class="m-0 text-sm text-ink-muted" data-cancellation-admin-label>J&amp;G's reason</p>
-            <p class="m-0 text-sm wrap-anywhere whitespace-pre-line text-ink" data-cancellation-admin-reason></p>
-            <p class="m-0 text-sm text-ink-muted" data-cancellation-admin-date></p>
-          </div>
-
-          <div class="flex flex-wrap gap-2 pt-3 [&[hidden]]:hidden" data-cancellation-actions hidden>
-            <button type="button" class="inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-1 text-fluid-sm font-semibold whitespace-nowrap [&_.ph]:text-fluid-lg focus-visible:outline-2 focus-visible:outline-offset-2 border border-danger bg-danger text-on-brand hover:opacity-90 focus-visible:outline-danger" data-approve-cancellation>
-              <i class="ph ph-check" aria-hidden="true"></i>
-              <span>Approve Cancellation</span>
-            </button>
-            <button type="button" class="inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-1 text-fluid-sm font-semibold whitespace-nowrap [&_.ph]:text-fluid-lg focus-visible:outline-2 focus-visible:outline-offset-2 border border-brand-text bg-transparent text-brand-text hover:bg-brand-soft focus-visible:outline-brand-text" data-decline-cancellation>
-              <i class="ph ph-x" aria-hidden="true"></i>
-              <span>Decline Cancellation</span>
-            </button>
-          </div>
-        </section>
-
         {{-- Why it was cancelled or declined (payload.reason, from booking.status_reason). Hidden otherwise. --}}
-        <section class="m-0 flex flex-col gap-1 rounded-lg border border-danger-border bg-danger-soft px-4 py-3" aria-labelledby="bm-reason-label" data-booking-reason hidden>
+        <section class="col-span-full m-0 flex flex-col gap-1 rounded-lg border border-danger-border bg-danger-soft px-4 py-3" aria-labelledby="bm-reason-label" data-booking-reason hidden>
           <h3 class="mb-2 text-sm leading-[1.2] font-semibold text-danger-text" id="bm-reason-label" data-reason-label></h3>
           <p class="mb-4 text-sm text-ink-muted" data-reason-by></p>
           <p class="m-0 text-sm wrap-anywhere whitespace-pre-line text-ink" data-reason-text></p>
         </section>
 
-        <p class="m-0 rounded-field border border-danger-border bg-danger-soft px-3 py-2 text-sm text-danger-text" role="alert" data-booking-error hidden></p>
+        <p class="col-span-full m-0 rounded-field border border-danger-border bg-danger-soft px-3 py-2 text-sm text-danger-text" role="alert" data-booking-error hidden></p>
       </div>
 
       <div class="modal-footer justify-end gap-3 border-0 px-6 pt-3 pb-6 min-[992px]:px-8 short-wide:px-6 short-wide:pb-4 max-[575.98px]:flex-col max-[575.98px]:items-stretch *:m-0 max-[575.98px]:*:w-full">

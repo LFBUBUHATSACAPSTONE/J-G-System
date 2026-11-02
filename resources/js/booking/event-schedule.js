@@ -57,6 +57,21 @@ import { getCsrfToken } from "../auth/csrf.js";
 import { setFieldState } from "../auth/validation.js";
 
 const FORM_ID = "event-schedule-form";
+
+// Class strings for the elements this file builds (Phase 9D). Written whole so Tailwind can find them
+// (js/booking/event-schedule.js is in the @source list of css/tailwind.css). The state classes the code below
+// toggles (`is-weekend`, `is-selected`, `is-full`) are read by the variants; their precedence is the old Sass one:
+// selected > fully booked / disabled > weekend > normal.
+const DAY_CLASS =
+    "flex aspect-square cursor-pointer items-center justify-center rounded-lg bg-transparent text-[0.85rem] text-auth-text [border:0] " +
+    "[&.is-weekend:not(.is-selected):not(:disabled):not(.is-full)]:text-auth-danger " +
+    "[&:not(:disabled):not(.is-selected):hover]:bg-auth-overlay-soft " +
+    "[&.is-selected:not(.is-full)]:bg-brand [&.is-selected]:font-bold " +
+    "focus-visible:shadow-[0_0_0_3px_var(--color-auth-focus-soft)] focus-visible:outline-none " +
+    "disabled:cursor-not-allowed disabled:text-auth-text-faint " +
+    "[&.is-full]:cursor-not-allowed [&.is-full]:text-auth-text-faint [&.is-full]:line-through [&.is-full]:shadow-[inset_0_0_0_1px_var(--color-auth-danger)]";
+const THUMB_CLASS =
+    "pointer-events-none absolute inset-y-0 left-0 z-0 w-1/2 rounded-md bg-brand transition-transform duration-250 ease-[ease]";
 const WEEKDAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 const MONTH_LABELS = [
     "January",
@@ -162,7 +177,7 @@ function initCalendar(form) {
 
             const btn = document.createElement("button");
             btn.type = "button";
-            btn.className = "event-schedule__day";
+            btn.className = DAY_CLASS;
             btn.textContent = day;
             btn.dataset.date = iso;
             if (weekday === 0 || weekday === 6) btn.classList.add("is-weekend");
@@ -203,7 +218,9 @@ function initCalendar(form) {
         }
         emptyEl.classList.toggle("d-none", open);
         if (!open) {
-            const message = emptyEl.querySelector("[data-reschedule-empty-message]");
+            const message = emptyEl.querySelector(
+                "[data-reschedule-empty-message]",
+            );
             if (message) {
                 message.textContent = `Every remaining day in ${MONTH_LABELS[view.month]} ${view.year} is past or fully booked. Try another month.`;
             }
@@ -439,7 +456,7 @@ function initTimeField(input) {
     // translateX() to whichever button is active, so AM/PM glides
     // instead of the highlight jumping.
     const thumb = document.createElement("div");
-    thumb.className = "event-schedule__ampm-thumb";
+    thumb.className = THUMB_CLASS;
     group.prepend(thumb);
 
     const moveThumb = () => {
