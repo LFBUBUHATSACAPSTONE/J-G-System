@@ -13,18 +13,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
-/**
- * Account > Security.
- *
- *   GET   user.account.security         the page (HTML), or the sign-in methods as JSON
- *   PATCH user.account.password.update  JSON only
- *
- * Contract (resources/js/account/security.js):
- *   200 {ok, message}
- *   422 {message, errors{current_password|password|password_confirmation: [msg]}}
- *   429 {message}  too many wrong current passwords
- *   401 {message}  (the `auth` middleware)
- */
+
 class AccountSecurityController extends Controller
 {
     private const MAX_ATTEMPTS = 5;

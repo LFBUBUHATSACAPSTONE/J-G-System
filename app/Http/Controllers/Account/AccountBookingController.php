@@ -11,18 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
-/**
- * Account > My Bookings. Only ever reads or changes the logged-in user's own bookings
- * (`bookings.user_id`). Nothing here deletes a row: cancelling only sets the status.
- *
- *   GET  user.account.bookings                    the page (HTML), or {ok, bookings[]} when the request asks for JSON
- *   POST user.account.bookings.cancel             Submit cancellation request (now requires reason)
- *
- * Cancel request contract (resources/js/account/bookings.js):
- *   200 {ok, message, booking{id, status: 'pending_cancellation', cancellation}}
- *   403 / 409 {message}   not the user's booking / not cancellable any more or the event has started
- *   422 {message, errors}  validation failed (reason required)
- */
+
 class AccountBookingController extends Controller
 {
     public function index(Request $request): View|JsonResponse
@@ -45,26 +34,12 @@ class AccountBookingController extends Controller
             ->all();
 
         if ($request->expectsJson()) {
-            // JSON_PRESERVE_ZERO_FRACTION: the amounts are floats on purpose (see
-            // Booking::toAccountArray), so 3000 has to leave the app as 3000.0 and not as 3000.
             return response()->json(['ok' => true, 'bookings' => $rows], 200, [], JSON_PRESERVE_ZERO_FRACTION);
         }
 
         return view('user.account.bookings', ['bookings' => $rows]);
     }
 
-    /**
-     * The client asks J&G to cancel a booking.
-     *
-     * This is a REQUEST, not an instant cancellation: the booking moves to
-     * `pending_cancellation` until an admin approves or declines it. The client's reason is
-     * stored on its own column so the admin's later decision can never overwrite it.
-     *
-     *   200 {ok, message, booking{id, status, cancellation}}
-     *   403 {message}  not the client's booking
-     *   409 {message}  already pending, not cancellable any more, or the event has started
-     *   422 {message, errors}  the reason is missing or outside config/cancellation.php
-     */
     public function requestCancellation(Request $request, string $booking): JsonResponse
     {
         $min = (int) config('cancellation.min', 10);

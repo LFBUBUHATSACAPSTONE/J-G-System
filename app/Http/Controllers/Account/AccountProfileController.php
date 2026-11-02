@@ -10,17 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule; 
 use Illuminate\View\View;
 
-/**
- * Account > Profile.
- *
- *   GET   user.account.profile         the page (HTML), or the profile as JSON when the request asks for JSON
- *   PATCH user.account.profile.update  JSON only
- *
- * Contract (resources/js/account/profile.js):
- *   200 {ok, message, profile{first_name, middle_name, middle_initial, last_name, email, phone, address}}
- *   422 {message, errors{field: [msg]}}
- *   401 {message}  (the `auth` middleware)
- */
+
 class AccountProfileController extends Controller
 {
     public function show(Request $request): View|JsonResponse

@@ -23,14 +23,6 @@ class CalendarController extends Controller
     }
 
     /**
-     * Everything both the page and the JSON endpoint need:
-     *
-     *   month    => Carbon, any day in the requested month (the view works out the grid)
-     *   events   => bookings that touch the visible grid, shape from Booking::toAdminArray()
-     *   holidays => fixed-date holidays from config, keyed 'Y-m-d' (the shape the view reads)
-     *
-     * The view recomputes the grid from `month`, so the controller uses the same bounds
-     * (Sunday before/after) to decide which bookings to send.
      *
      * @return array{month: Carbon, events: array<int, array<string, mixed>>, holidays: array<string, string>}
      */

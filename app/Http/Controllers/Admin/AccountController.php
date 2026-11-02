@@ -15,22 +15,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
-/**
- * Account page (routes/admin/account.php).
- *
- *   GET   /admin/account  the page (HTML), or the account as JSON when the request asks for JSON
- *   PATCH /admin/account  JSON only: name, email, contact number, password and photo
- *
- * Contract (resources/js/admin/account.js):
- *   200 {ok, message, admin{first_name, middle_name, middle_initial, last_name, email, phone, avatar_url}}
- *   422 {message, errors{field: [msg]}}
- *   429 {message}  too many wrong current passwords
- *   401 {message}  signed out (there is no `auth` middleware on the admin side yet, so the
- *                  controller answers guests itself)
- *
- * The account IS the signed-in user (users table): nothing is ever deleted here, the rows are
- * only updated in place.
- */
+
 class AccountController extends Controller
 {
     /** Wrong "current password" answers allowed before 429 (same numbers as Account > Security). */

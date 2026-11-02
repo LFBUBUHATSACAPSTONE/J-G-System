@@ -14,22 +14,6 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
-/**
- * Admin sign-in gate (routes/admin/login.php).
- *
- *   GET  /admin  the sign-in card (HTML). A signed-in admin is sent to the dashboard and a
- *                signed-in customer is sent back to the user landing page.
- *   POST /admin/login  JSON only: signs the admin in.
- *
- * Contract (resources/js/admin-login.js, same shape the stub used to answer):
- *   200 {ok, redirect}                    signed in; the page goes to `redirect`
- *   422 {message, errors{email|password}} rejected
- *   403 {message}                         signed in, but the account's role is not 'admin'
- *   429 {message}                         too many attempts
- *
- * Who is an admin: users.role === 'admin'. Admin accounts are created by the owner (there is no
- * admin sign-up); every account created through sign-up is a plain 'user'.
- */
 class AdminAuthController extends Controller
 {
     /** Failed sign-ins allowed per email + IP before 429 (same numbers as Account > Security). */
