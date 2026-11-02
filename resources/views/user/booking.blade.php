@@ -37,7 +37,8 @@
   $blockedIconClass = 'mb-6 inline-flex size-16 items-center justify-center rounded-full border-[1px] border-auth-border bg-auth-field-bg text-auth-danger';
   $blockedTitleClass = 'text-fluid-icon leading-tight font-bold [margin:0_0_0.75rem]';
   $blockedMessageClass = 'text-base leading-normal text-auth-text-muted text-balance [margin:0_0_2rem]';
-  $blockedBtnClass = 'block w-full min-[576px]:w-auto min-[576px]:min-w-48';
+  // The same look as the step's Continue button (components/booking/step-button), as a link.
+  $blockedBtnClass = 'btn-color-gradient--primary block w-full rounded-md px-6 py-[0.75rem] text-center text-fluid-button font-bold text-pale-white no-underline min-[576px]:w-auto min-[576px]:min-w-48';
   // Side padding 16 / 24 / 32px; the top gap under the tracker is 24px. The Payment step (booking-summary) has four
   // columns, so while it is the visible view the page is as wide as 1480px (the other steps stay at 1040px).
   $flowClass = 'relative z-1 mx-auto flex w-full max-w-260 flex-[1_0_auto] flex-col px-[1rem] pt-6 pb-8 has-[[data-view=booking-summary]:not(.d-none)]:max-w-370 min-[576px]:px-6 min-[992px]:px-8 min-[992px]:pb-6';
@@ -59,7 +60,7 @@
       </span>
       <h1 class="{{ $blockedTitleClass }}">Reschedule unavailable</h1>
       <p class="{{ $blockedMessageClass }}" role="alert">{{ $rescheduleBlocked }}</p>
-      <a href="{{ route('user.landing') }}" class="btn-color-gradient--primary client-info__btn--confirm font-button--responsive text-pale--white rounded-2 text-decoration-none text-center {{ $blockedBtnClass }}">Back to home</a>
+      <a href="{{ route('user.landing') }}" class="{{ $blockedBtnClass }}">Back to home</a>
     </div>
   </div>
   @else

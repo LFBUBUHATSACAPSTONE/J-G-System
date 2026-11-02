@@ -110,9 +110,8 @@
     </form>
   </div>
 
-  <div class="client-info__actions">
-    <x-button type="button" class="btn-color-gradient--secondary client-info__btn--cancel text-pale--white rounded-2" data-booking-previous>Previous</x-button>
-    <x-button type="submit" form="event-schedule-form" class="client-info__btn--confirm
-    btn-color-gradient--primary font-button--responsive text-pale--white rounded-2">Continue</x-button>
-  </div>
+  <x-booking.step-actions>
+    <x-booking.step-button variant="cancel" data-booking-previous>Previous</x-booking.step-button>
+    <x-booking.step-button type="submit" form="event-schedule-form">Continue</x-booking.step-button>
+  </x-booking.step-actions>
 </div>

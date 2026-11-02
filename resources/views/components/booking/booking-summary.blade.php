@@ -249,11 +249,11 @@
   </div>
 
   <div class="booking-summary__actions">
-    <x-button type="button" class="btn-color-gradient--secondary client-info__btn--cancel text-pale--white rounded-2" data-booking-previous>Previous</x-button>
+    <x-booking.step-button variant="cancel" data-booking-previous>Previous</x-booking.step-button>
     @if ($reschedule)
-    <x-button type="submit" form="payment-form" class="client-info__btn--confirm btn-color-gradient--primary font-button--responsive text-pale--white rounded-2">Confirm Reschedule</x-button>
+    <x-booking.step-button type="submit" form="payment-form">Confirm Reschedule</x-booking.step-button>
     @else
-    <x-button type="submit" form="payment-form" class="client-info__btn--confirm btn-color-gradient--primary font-button--responsive text-pale--white rounded-2">Continue</x-button>
+    <x-booking.step-button type="submit" form="payment-form">Continue</x-booking.step-button>
     @endif
   </div>
 </div>

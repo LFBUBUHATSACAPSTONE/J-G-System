@@ -28,8 +28,7 @@
     </p>
 
     <div class="booking-confirmation__actions">
-      <x-button type="button" class="client-info__btn--confirm
-      btn-color-gradient--primary font-button--responsive text-pale--white rounded-2" data-booking-continue>Continue</x-button>
+      <x-booking.step-button data-booking-continue>Continue</x-booking.step-button>
     </div>
   </div>
 </div>
