@@ -36,26 +36,7 @@ class BookingController extends Controller
             'full_dates' => Booking::fullCapacityDates(),
         ]);
     }
-
-    /**
-     * Admin reviews a client's cancellation request.
-     *
-     * POST /admin/bookings/{booking}/cancellation/review
-     *
-     * Request body:
-     *   action: 'approve' (or 'reject' / 'decline')  required
-     *   reason: string  required to decline, optional to approve
-     *
-     * Approving cancels the booking and keeps the client's original reason. Declining restores
-     * the status the booking had when the request was made and stores the admin's reason next to
-     * (never instead of) the client's reason.
-     *
-     * Responses:
-     *   200 {ok: true, message, booking}   successfully processed
-     *   404 {message}                      booking not found
-     *   409 {message}                      booking has no pending cancellation request
-     *   422 {message, errors}              validation failed
-     */
+    
     public function reviewCancellation(Request $request, string $booking): JsonResponse
     {
         $min = (int) config('cancellation.min', 10);
@@ -63,7 +44,6 @@ class BookingController extends Controller
         $reason = trim((string) $request->input('reason', ''));
         $action = $request->input('action');
 
-        // Accept both "reject" (the internal name) and "decline" (the wording in the UI).
         $rules = [
             'action' => ['required', 'in:approve,reject,decline'],
             'reason' => ['nullable', 'string', "min:{$min}", "max:{$max}"],
@@ -436,11 +416,6 @@ class BookingController extends Controller
     }
 
     /**
-     * Bookings that already hold a slot (config/scheduling.php `counted_statuses`) and share
-     * at least one day with $record's own schedule — EXCLUDING $record itself, whose slot is
-     * the one being decided (it counts as soon as it is approved, so it would otherwise clash
-     * with itself at Verify). Rows are locked for update, exactly like the capacity check on
-     * Approve, so concurrent admin actions are decided against the same data.
      *
      * @return Collection<int, Booking>
      */
@@ -466,19 +441,7 @@ class BookingController extends Controller
             ->get();
     }
 
-    /**
-     * First clash between $schedule and a counted booking in $counted: overlapping it, or
-     * leaving less than the required break (config/scheduling.php `min_gap_minutes`) around
-     * it. Returns ['date' => 'Y-m-d', 'from' => int, 'to' => int, 'reference' => ?string] —
-     * the busy window in minutes past midnight — or null when the schedule is clear.
-     *
-     * The rules mirror App\Http\Controllers\User\BookingController::scheduleConflict() (the rules
-     * the client's booking flow is held to), so a booking can never be approved or verified
-     * into a slot the flow itself would refuse: the clock is read per day (occupiedSpan())
-     * so a multi-day or past-midnight event is compared on the days it really covers, and a
-     * counted booking without a readable clock holds its whole day instead of being guessed
-     * at. A schedule without times cannot be checked and passes, matching how it is stored.
-     */
+    
     private function scheduleConflict(?BookingSchedule $schedule, Collection $counted): ?array
     {
         if (! $schedule || ! $schedule->event_start_date) {
@@ -516,12 +479,6 @@ class BookingController extends Controller
     }
 
     /**
-     * Per day in $first..$last, the [from, to, reference] windows (minutes past midnight) a
-     * new booking may not touch: each counted booking's span on that day PLUS the required
-     * break before and after it. A booking whose clock is missing (or a single-day one whose
-     * end is not after its start) holds the whole day rather than being guessed at, so a
-     * legacy row can never be double-booked.
-     *
      * @return array<string, array<int, array{0:int,1:int,2:?string}>>
      */
     private function blockedWindows(Collection $counted, Carbon $first, Carbon $last): array
@@ -577,10 +534,6 @@ class BookingController extends Controller
     }
 
     /**
-     * The [from, to] minute span ONE of the days of a booking occupies. The two stored clocks
-     * are read as a single continuous interval running from the start clock on the first day
-     * to the end clock on the last day: the rest of the first day from the start clock, every
-     * day in between in full, and the last day up to the end clock.
      *
      * @return array{0:int,1:int} [from, to] in minutes past midnight
      */
