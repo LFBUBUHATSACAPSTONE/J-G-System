@@ -12,6 +12,7 @@
 @source "../views/components/progress-tracker.blade.php";
 @source "../views/user/booking.blade.php";
 @source "../views/components/booking/client-information.blade.php";
+@source "../views/components/booking/event-information.blade.php";
 @source "../views/components/booking/step-actions.blade.php";
 @source "../views/components/booking/step-button.blade.php";
 @source "../views/components/admin/sidebar.blade.php";
