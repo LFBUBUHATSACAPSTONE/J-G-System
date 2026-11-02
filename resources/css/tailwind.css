@@ -9,6 +9,8 @@
 @source "../views/components/booking/action-modal.blade.php";
 @source "../views/components/booking/cancellation-card.blade.php";
 @source "../views/components/account/note.blade.php";
+@source "../views/components/progress-tracker.blade.php";
+@source "../views/user/booking.blade.php";
 @source "../views/components/admin/sidebar.blade.php";
 @source "../views/components/account/sidebar.blade.php";
 @source "../views/components/admin/page-header.blade.php";
@@ -453,6 +455,37 @@
         box-shadow:
             0 0 0 1000px var(--autofill-bg, var(--color-auth-field-bg)) inset,
             0 0 0 3px var(--color-auth-ring-soft);
+    }
+}
+
+/* Phase 9A: the card surface shared by every booking step and the "reschedule unavailable" card (was the `booking-card`
+   Sass mixin, which `booking/_booking-mixins.scss` keeps until the last step is converted). The markup adds its own
+   padding (`px-[1rem] py-6 min-[576px]:p-6`) and the border or shadow it needs. The violet and rose glow is the pseudo-element. */
+@utility booking-card {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    width: 100%;
+    border-radius: var(--radius-card);
+    background: var(--color-auth-surface);
+    color: var(--color-auth-text);
+
+    &::before {
+        content: "";
+        position: absolute;
+        inset: -20% -20% auto auto;
+        width: 70%;
+        height: 60%;
+        background: radial-gradient(
+            circle at top right,
+            var(--color-auth-glow-violet) 0%,
+            var(--color-auth-glow-rose) 45%,
+            transparent 75%
+        );
+        opacity: 0.35;
+        filter: blur(60px);
+        z-index: -1;
+        pointer-events: none;
     }
 }
 

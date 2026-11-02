@@ -15,13 +15,12 @@
 @import "utilities";
 
 // Booking
-@import "./booking/booking-page";
+@import "./booking/booking-mixins";
 @import "./booking/personal-information";
 @import "./booking/event-information";
 @import "./booking/event-schedule";
 @import "./booking/booking-summary";
 @import "./booking/booking-confirmation";
-@import "./booking/progress-tracker";
 
 // CHAT
 
