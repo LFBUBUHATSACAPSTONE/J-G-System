@@ -457,7 +457,7 @@
     color: transparent;
 }
 
-/* Keeps Chrome's light-blue / white autofill from painting over the dark inputs (was the `booking-autofill` Sass mixin).
+/* Keeps Chrome's light-blue / white autofill from painting over the dark inputs (was the `booking-autofill` Sass mixin; `_autofill.scss` was removed with Phase 9G).
    The fill colour is `--autofill-bg` (default: the auth field colour; the booking summary will set it to the card colour).
    Its inset `box-shadow` must not meet a `box-shadow` utility on the same input, so those inputs use an outline for focus. */
 @utility autofill-dark {
