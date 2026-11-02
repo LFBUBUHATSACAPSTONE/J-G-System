@@ -15,6 +15,7 @@
 @source "../views/components/booking/event-information.blade.php";
 @source "../views/components/booking/event-schedule.blade.php";
 @source "../views/components/booking/booking-summary.blade.php";
+@source "../views/components/booking/booking-confirmation.blade.php";
 @source "../views/components/booking/step-actions.blade.php";
 @source "../views/components/booking/step-button.blade.php";
 @source "../views/components/admin/sidebar.blade.php";
@@ -155,6 +156,11 @@
         1.1833rem + 0.2889vw,
         1.4rem
     ); /* admin-fluid(1.4), the title of every booking step (Phase 9B) */
+    --text-fluid-confirm-title: clamp(
+        1.3502rem,
+        1.2593rem + 0.4543vw,
+        1.6rem
+    ); /* admin-fluid(1.6), the title of the Confirmation step (Phase 9F) */
     --text-fluid-month: clamp(
         1.0819rem,
         1.0571rem + 0.1238vw,
@@ -473,7 +479,7 @@
 }
 
 /* Phase 9A: the card surface shared by every booking step and the "reschedule unavailable" card (was the `booking-card`
-   Sass mixin, which `booking/_booking-mixins.scss` keeps until the last step is converted). The markup adds its own
+   Sass mixin; `booking/_booking-mixins.scss` was removed with Phase 9F). The markup adds its own
    padding (`px-[1rem] py-6 min-[576px]:p-6`) and the border or shadow it needs. The violet and rose glow is the pseudo-element. */
 @utility booking-card {
     position: relative;
