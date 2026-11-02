@@ -171,12 +171,17 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
             @endif
           </dl>
 
-          @if (($payload['cancellation']['status'] ?? null) === 'declined')
-          <p class="account-booking__note">Your cancellation request was declined. Open View details to see J&amp;G's reason.</p>
-          @endif
-
-          @if (($payload['cancellation']['status'] ?? null) === 'declined')
-          <p class="account-booking__note">Your cancellation request was declined. Open View details to see J&amp;G's reason.</p>
+          @php
+          $cStatus = $payload['cancellation']['status'] ?? null;
+          // A cancelled booking can be rescheduled (or explains why not); see docs/reschedule-within-original-month.md.
+          $canRebook = $payload['status'] === 'user_cancelled' || ($payload['status'] === 'cancelled' && $cStatus === 'approved');
+          @endphp
+          @if ($payload['status'] === 'pending_cancellation' && ! $row['canCancel'])
+          <x-account.note tone="pending" icon="clock">Cancellation request sent. Waiting for J&amp;G to review it.</x-account.note>
+          @elseif ($cStatus === 'declined')
+          <x-account.note tone="declined" icon="calendar-check">Your cancellation request was declined. Open View details to see J&amp;G's reason.</x-account.note>
+          @elseif ($canRebook && ! $payload['can_reschedule'] && $payload['reschedule_note'])
+          <x-account.note data-booking-note>{{ $payload['reschedule_note'] }}</x-account.note>
           @endif
 
           <footer class="mt-4 flex flex-col-reverse gap-3 @min-[32rem]:flex-row @min-[32rem]:items-center @min-[32rem]:justify-end *:w-full @min-[32rem]:*:w-auto" data-booking-actions>
@@ -192,14 +197,8 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
             <x-account.button variant="danger-outline" data-booking-cancel>
               Request cancellation
             </x-account.button>
-            @elseif ($payload['status'] === 'pending_cancellation')
-            <p class="account-booking__note">Cancellation request sent. Waiting for J&amp;G to review it.</p>
-            @elseif ($payload['status'] === 'user_cancelled' || ($payload['status'] === 'cancelled' && ($payload['cancellation']['status'] ?? null) === 'approved'))
-            @if ($payload['can_reschedule'])
+            @elseif ($canRebook && $payload['can_reschedule'])
             <x-account.button :href="route('user.booking', ['reschedule' => $payload['id']])" data-booking-reschedule>Reschedule</x-account.button>
-            @elseif ($payload['reschedule_note'])
-            <p class="m-0 text-sm text-ink-muted" data-booking-note>{{ $payload['reschedule_note'] }}</p>
-            @endif
             @endif
           </footer>
         </article>
@@ -241,24 +240,9 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
             <p class="m-0 text-sm wrap-anywhere whitespace-pre-line text-ink" data-bk-reason-text></p>
           </section>
 
-          {{-- The client's cancellation request and J&G's answer. Filled by bookings.js from
-               data.cancellation: pending / approved / declined / directly cancelled by J&G. --}}
-          <section class="m-0 flex flex-col gap-1 rounded-lg border border-field-border bg-panel px-4 py-3 [&[hidden]]:hidden" aria-labelledby="bk-cancellation-title" data-bk-cancellation hidden>
-            <h3 class="m-0 text-sm leading-[1.2] font-semibold text-ink" id="bk-cancellation-title" data-bk-cancellation-title></h3>
-            <p class="m-0 text-sm text-ink-muted" data-bk-cancellation-meta></p>
-
-            <div class="flex flex-col gap-1 pt-2" data-bk-cancellation-user hidden>
-              <p class="m-0 text-sm text-ink-muted" data-bk-cancellation-user-label>Your reason</p>
-              <p class="m-0 text-sm wrap-anywhere whitespace-pre-line text-ink" data-bk-cancellation-user-reason></p>
-              <p class="m-0 text-sm text-ink-muted" data-bk-cancellation-user-date></p>
-            </div>
-
-            <div class="flex flex-col gap-1 pt-2" data-bk-cancellation-admin hidden>
-              <p class="m-0 text-sm text-ink-muted" data-bk-cancellation-admin-label>J&amp;G's reason</p>
-              <p class="m-0 text-sm wrap-anywhere whitespace-pre-line text-ink" data-bk-cancellation-admin-reason></p>
-              <p class="m-0 text-sm text-ink-muted" data-bk-cancellation-admin-date></p>
-            </div>
-          </section>
+          {{-- The client's cancellation request and J&G's answer. Filled by bookings.js from data.cancellation:
+               pending / approved / declined / directly cancelled by J&G. Markup: components/booking/cancellation-card. --}}
+          <x-booking.cancellation-card section="data-bk-cancellation" prefix="data-bk-cancellation" title-id="bk-cancellation-title" user-label="Your reason" />
 
           <section aria-labelledby="bk-event-title">
             <h3 class="mt-0 mb-3 text-fluid-label font-semibold" id="bk-event-title">Event</h3>

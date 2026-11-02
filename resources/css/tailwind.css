@@ -7,6 +7,17 @@
    area is converted. `important` is on because Bootstrap's own utilities are !important; remove it, and the
    `@source not inline` line, when the Bootstrap CSS is dropped. */
 @source "../views/components/booking/action-modal.blade.php";
+@source "../views/components/booking/cancellation-card.blade.php";
+@source "../views/components/account/note.blade.php";
+@source "../views/components/progress-tracker.blade.php";
+@source "../views/user/booking.blade.php";
+@source "../views/components/booking/client-information.blade.php";
+@source "../views/components/booking/event-information.blade.php";
+@source "../views/components/booking/event-schedule.blade.php";
+@source "../views/components/booking/booking-summary.blade.php";
+@source "../views/components/booking/booking-confirmation.blade.php";
+@source "../views/components/booking/step-actions.blade.php";
+@source "../views/components/booking/step-button.blade.php";
 @source "../views/components/admin/sidebar.blade.php";
 @source "../views/components/account/sidebar.blade.php";
 @source "../views/components/admin/page-header.blade.php";
@@ -68,11 +79,8 @@
 @source "../js/admin/filter-sheet.js";
 @source "../js/admin/dashboard.js";
 @source "../js/account/bookings.js";
+@source "../js/booking/event-schedule.js";
 @source not inline("collapse container table shadow rounded");
-
-/* Phase 7A: the gradient buttons are used by the auth forms and the booking blades, which are not in the list above yet.
-   Emit them always, so `_gradient-button.scss` can go. Remove this line when those areas are listed (Phase 7 and 9). */
-@source inline("btn-color-gradient--primary btn-color-gradient--secondary");
 
 /* Wide but short viewports (laptops): the booking modal tightens its vertical spacing. */
 @custom-variant short-wide (@media (min-width: 992px) and (max-height: 860px));
@@ -143,6 +151,21 @@
     --color-warning-text: oklch(38.1% 0.07798 87.367);
     --text-fluid-icon: clamp(1.2981rem, 1.2247rem + 0.3671vw, 1.5rem);
     --text-fluid-title: clamp(1.4202rem, 1.3003rem + 0.5996vw, 1.75rem);
+    --text-fluid-booking-title: clamp(
+        1.2411rem,
+        1.1833rem + 0.2889vw,
+        1.4rem
+    ); /* admin-fluid(1.4), the title of every booking step (Phase 9B) */
+    --text-fluid-confirm-title: clamp(
+        1.3502rem,
+        1.2593rem + 0.4543vw,
+        1.6rem
+    ); /* admin-fluid(1.6), the title of the Confirmation step (Phase 9F) */
+    --text-fluid-month: clamp(
+        1.0819rem,
+        1.0571rem + 0.1238vw,
+        1.15rem
+    ); /* admin-fluid(1.15), the calendar month label (Phase 9D) */
     --color-shadow: oklch(0% 0 0 / 0.55);
     --text-fluid-3xl: clamp(1.5836rem, 1.3413rem + 1.2116vw, 2.25rem);
     --color-warning-border: oklch(66.6% 0.13598 87.367);
@@ -403,7 +426,8 @@
     transition:
         background 0.3s ease-in-out,
         color 0.3s ease-in-out,
-        opacity 0.3s ease-in-out;
+        opacity 0.3s ease-in-out,
+        outline-color 0.15s ease-in-out;
 
     &:hover {
         color: var(--color-pale-white);
@@ -433,7 +457,7 @@
     color: transparent;
 }
 
-/* Keeps Chrome's light-blue / white autofill from painting over the dark inputs (was the `booking-autofill` Sass mixin).
+/* Keeps Chrome's light-blue / white autofill from painting over the dark inputs (was the `booking-autofill` Sass mixin; `_autofill.scss` was removed with Phase 9G).
    The fill colour is `--autofill-bg` (default: the auth field colour; the booking summary will set it to the card colour).
    Its inset `box-shadow` must not meet a `box-shadow` utility on the same input, so those inputs use an outline for focus. */
 @utility autofill-dark {
@@ -451,6 +475,37 @@
         box-shadow:
             0 0 0 1000px var(--autofill-bg, var(--color-auth-field-bg)) inset,
             0 0 0 3px var(--color-auth-ring-soft);
+    }
+}
+
+/* Phase 9A: the card surface shared by every booking step and the "reschedule unavailable" card (was the `booking-card`
+   Sass mixin; `booking/_booking-mixins.scss` was removed with Phase 9F). The markup adds its own
+   padding (`px-[1rem] py-6 min-[576px]:p-6`) and the border or shadow it needs. The violet and rose glow is the pseudo-element. */
+@utility booking-card {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    width: 100%;
+    border-radius: var(--radius-card);
+    background: var(--color-auth-surface);
+    color: var(--color-auth-text);
+
+    &::before {
+        content: "";
+        position: absolute;
+        inset: -20% -20% auto auto;
+        width: 70%;
+        height: 60%;
+        background: radial-gradient(
+            circle at top right,
+            var(--color-auth-glow-violet) 0%,
+            var(--color-auth-glow-rose) 45%,
+            transparent 75%
+        );
+        opacity: 0.35;
+        filter: blur(60px);
+        z-index: -1;
+        pointer-events: none;
     }
 }
 
