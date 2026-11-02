@@ -272,13 +272,14 @@ $previewRemoveClass = 'flex-none cursor-pointer rounded-field bg-transparent px-
           <h2 class="{{ $titleClass }}">Payment Form</h2>
 
           <div class="{{ $panelGridClass }}">
-            {{-- Dummy link: replace the href with the real payment details form. --}}
+            {{-- Link to the payment details form (Google Form). The user opens it in a new tab, fills it out and submits it,
+               then comes back to upload a screenshot of the confirmation page. --}}
             <div class="{{ $panelClass }}">
               <h3 class="{{ $panelHeadingClass }}">Payment Details Form</h3>
               <p class="{{ $hintClass }}">Open the form in a new tab, complete it, then come back to upload your proof.</p>
               <a
                 class="{{ $linkBtnClass }}"
-                href="https://docs.google.com/forms/d/e/1FAIpQLSdzOxaL6PBbporQg3l42Tix9nEQEFfCHwfaAr3rfoCbdazDHg/viewform?usp=sharing&ouid=105778766500503633777"
+                href="https://docs.google.com/forms/d/e/1FAIpQLSe8usIS2x0O5BrqwKlnwIZknFrNpmkSBuut9KA5a9Gn2IYvBw/viewform"
                 target="_blank"
                 rel="noopener noreferrer">
                 Open payment details form
