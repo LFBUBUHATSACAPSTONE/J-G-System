@@ -13,6 +13,7 @@
 @source "../views/user/booking.blade.php";
 @source "../views/components/booking/client-information.blade.php";
 @source "../views/components/booking/event-information.blade.php";
+@source "../views/components/booking/event-schedule.blade.php";
 @source "../views/components/booking/step-actions.blade.php";
 @source "../views/components/booking/step-button.blade.php";
 @source "../views/components/admin/sidebar.blade.php";
@@ -76,6 +77,7 @@
 @source "../js/admin/filter-sheet.js";
 @source "../js/admin/dashboard.js";
 @source "../js/account/bookings.js";
+@source "../js/booking/event-schedule.js";
 @source not inline("collapse container table shadow rounded");
 
 /* Wide but short viewports (laptops): the booking modal tightens its vertical spacing. */
@@ -152,6 +154,11 @@
         1.1833rem + 0.2889vw,
         1.4rem
     ); /* admin-fluid(1.4), the title of every booking step (Phase 9B) */
+    --text-fluid-month: clamp(
+        1.0819rem,
+        1.0571rem + 0.1238vw,
+        1.15rem
+    ); /* admin-fluid(1.15), the calendar month label (Phase 9D) */
     --color-shadow: oklch(0% 0 0 / 0.55);
     --text-fluid-3xl: clamp(1.5836rem, 1.3413rem + 1.2116vw, 2.25rem);
     --color-warning-border: oklch(66.6% 0.13598 87.367);
