@@ -57,21 +57,21 @@ $linkClass = 'chat-booking__link mt-3 inline-block text-sm font-semibold text-br
 
   <dl class="{{ $detailsClass }}">
     <div class="{{ $rowClass }}">
-      <dt class="{{ $dtClass }}"><x-chat.icon name="music" /><span class="visually-hidden">Event</span></dt>
+      <dt class="{{ $dtClass }}"><x-chat.icon name="music" /><span class="sr-only">Event</span></dt>
       <dd class="{{ $ddClass }}">{{ $event['name'] }} ({{ $event['type'] }})</dd>
     </div>
     <div class="{{ $rowClass }}">
-      <dt class="{{ $dtClass }}"><x-chat.icon name="calendar" /><span class="visually-hidden">Date</span></dt>
+      <dt class="{{ $dtClass }}"><x-chat.icon name="calendar" /><span class="sr-only">Date</span></dt>
       <dd class="{{ $ddClass }}">{{ $schedule }}</dd>
     </div>
     @if ($time)
     <div class="{{ $rowClass }}">
-      <dt class="{{ $dtClass }}"><x-chat.icon name="clock" /><span class="visually-hidden">Time</span></dt>
+      <dt class="{{ $dtClass }}"><x-chat.icon name="clock" /><span class="sr-only">Time</span></dt>
       <dd class="{{ $ddClass }}">{{ $time }}</dd>
     </div>
     @endif
     <div class="{{ $rowClass }}">
-      <dt class="{{ $dtClass }}"><x-chat.icon name="map-pin" /><span class="visually-hidden">Location</span></dt>
+      <dt class="{{ $dtClass }}"><x-chat.icon name="map-pin" /><span class="sr-only">Location</span></dt>
       <dd class="{{ $ddClass }}">{{ $event['location'] }}</dd>
     </div>
   </dl>

@@ -592,7 +592,7 @@ function appendMessage(log, body, files, pendingReply, other = "them") {
         );
     }
     const bubble = el("div", CX.bubbleOut);
-    bubble.append(el("span", "visually-hidden", "You: "));
+    bubble.append(el("span", "sr-only", "You: "));
     if (body) bubble.append(el("p", CX.text, body));
     files.forEach((f) => bubble.append(attachmentNode(f)));
     const meta = el("div", CX.meta);
@@ -655,7 +655,7 @@ export function appendIncoming(log, message, root) {
     }
 
     const bubble = el("div", CX.bubbleIn);
-    bubble.append(el("span", "visually-hidden", `${other}: `));
+    bubble.append(el("span", "sr-only", `${other}: `));
     if (message.body) bubble.append(el("p", CX.text, message.body));
     (message.attachments || []).forEach((f) =>
         bubble.append(serverAttachmentNode(f)),
@@ -700,7 +700,7 @@ export function applyMessageChange(log, message) {
     if (message.body) {
         if (!textEl) {
             textEl = el("p", CX.text);
-            const anchor = bubble.querySelector(".visually-hidden");
+            const anchor = bubble.querySelector(".sr-only");
             if (anchor) anchor.after(textEl);
             else bubble.prepend(textEl);
         }
@@ -1195,8 +1195,7 @@ export function initChat(root) {
                 textEl = el("p", CX.text);
                 bubble.insertBefore(
                     textEl,
-                    bubble.querySelector(".visually-hidden")?.nextSibling ||
-                        null,
+                    bubble.querySelector(".sr-only")?.nextSibling || null,
                 );
             }
             textEl.textContent = body;

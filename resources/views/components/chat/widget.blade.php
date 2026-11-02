@@ -39,7 +39,7 @@ $starters = [
   @if ($authenticated && $deleteUrl) data-chat-delete-url="{{ $deleteUrl }}" @endif>
   <button type="button" class="relative grid size-14 cursor-pointer place-items-center rounded-full border-0 bg-brand text-[1.75rem] text-on-brand shadow-[0_8px_24px_var(--color-shadow)] hover:bg-brand-hover focus-visible:shadow-[0_0_0_5px_var(--color-brand-text)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-surface max-[575.98px]:group-has-[[data-chat-panel]:not([hidden])]/chat:hidden" aria-expanded="false" aria-controls="chatWidgetPanel" data-chat-toggle>
     <x-chat.icon name="chat" />
-    <span class="visually-hidden">Message us{{ $unread ? ", {$unread} unread" : '' }}</span>
+    <span class="sr-only">Message us{{ $unread ? ", {$unread} unread" : '' }}</span>
     @if ($authenticated)
     <span class="absolute -top-0.5 -right-0.5 grid h-[1.375rem] min-w-[1.375rem] place-items-center rounded-full border-2 border-surface bg-danger px-[0.3125rem] text-[0.6875rem] leading-none font-bold text-on-danger" data-chat-badge @if (! $unread) hidden @endif>{{ $unread > 9 ? '9+' : $unread }}</span>
     @endif

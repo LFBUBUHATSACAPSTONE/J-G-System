@@ -53,7 +53,7 @@ $months = collect($bookings)
         aria-labelledby="historyFilterSheetTitle" data-filter-sheet>
         <div class="offcanvas-header">
           <h2 class="offcanvas-title text-fluid-lg font-semibold" id="historyFilterSheetTitle">Filters</h2>
-          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#historyFilterSheet"
+          <button type="button" class="btn-close-x" data-bs-dismiss="offcanvas" data-bs-target="#historyFilterSheet"
             aria-label="Close filters"></button>
         </div>
 
@@ -104,7 +104,7 @@ $months = collect($bookings)
 
       <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-full bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text admin-filter--search flex-[3_1_18rem] max-md:order-1 max-md:min-w-0 max-md:flex-[1_1_0] max-md:px-4">
         <i class="ph ph-magnifying-glass admin-filter__icon text-fluid-2xl text-ink" aria-hidden="true"></i>
-        <label for="bh-search" class="visually-hidden">Search booking history</label>
+        <label for="bh-search" class="sr-only">Search booking history</label>
         <input type="search" id="bh-search" class="admin-filter__input min-w-0 flex-1 border-0 bg-transparent py-2 text-fluid-sm text-ink outline-0 placeholder:text-ink-subtle placeholder:opacity-100" placeholder="Search"
           autocomplete="off" data-history-search>
       </div>
@@ -123,7 +123,7 @@ $months = collect($bookings)
     {{-- Table --}}
     <div class="admin-bookings__panel rounded-card bg-panel px-6 pt-1 pb-2">
       <table class="admin-bookings__table block w-full border-separate [border-spacing:0_1.1rem] min-[1200px]:table" role="table">
-        <caption class="visually-hidden">Booking history</caption>
+        <caption class="sr-only">Booking history</caption>
         <thead role="rowgroup" class="sr-only min-[1200px]:table-header-group min-[1200px]:not-sr-only min-[1200px]:[&_th]:bg-brand min-[1200px]:[&_th]:p-4 min-[1200px]:[&_th]:text-center min-[1200px]:[&_th]:text-fluid-md min-[1200px]:[&_th]:font-semibold min-[1200px]:[&_th]:text-white min-[1200px]:[&_th:first-child]:rounded-l-panel min-[1200px]:[&_th:last-child]:rounded-r-panel">
           <tr role="row">
             <th role="columnheader" scope="col">Client</th>
@@ -131,7 +131,7 @@ $months = collect($bookings)
             <th role="columnheader" scope="col">Package</th>
             <th role="columnheader" scope="col">Event Type</th>
             <th role="columnheader" scope="col">Status</th>
-            <th role="columnheader" scope="col"><span class="visually-hidden">Details</span></th>
+            <th role="columnheader" scope="col"><span class="sr-only">Details</span></th>
           </tr>
         </thead>
         <tbody role="rowgroup" class="block min-[1200px]:table-row-group" data-history-body>
@@ -147,7 +147,7 @@ $months = collect($bookings)
     </div>
 
     {{-- Announces "Showing X of Y" to screen readers after each filter change. --}}
-    <p class="visually-hidden" role="status" data-history-count></p>
+    <p class="sr-only" role="status" data-history-count></p>
 
     <x-admin.booking-modal />
   </main>

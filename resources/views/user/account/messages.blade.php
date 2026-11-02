@@ -34,7 +34,7 @@ $deleteUrl = Route::has('user.messages.destroy') ? route('user.messages.destroy'
         <h2 class="m-0 truncate text-fluid-label font-semibold" id="account-chat-title">J&amp;G Audio Lights and Sounds</h2>
         <p class="m-0 truncate text-sm text-ink-muted">Ask about packages or your bookings</p>
       </div>
-      <x-account.badge tone="brand" data-chat-badge :hidden="! $unread">{{ $unread > 9 ? '9+' : $unread }} new<span class="visually-hidden"> unread {{ Str::plural('message', $unread) }}</span></x-account.badge>
+      <x-account.badge tone="brand" data-chat-badge :hidden="! $unread">{{ $unread > 9 ? '9+' : $unread }} new<span class="sr-only"> unread {{ Str::plural('message', $unread) }}</span></x-account.badge>
     </header>
 
     <div class="chat-log flex min-h-0 flex-auto flex-col gap-3 overflow-y-auto overscroll-contain px-5 py-4 focus-visible:-outline-offset-2 focus-visible:outline-2 focus-visible:outline-brand-text" role="log" aria-live="polite" tabindex="0" aria-label="Messages with J&G Audio" data-chat-log>

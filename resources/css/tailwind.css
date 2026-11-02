@@ -1,86 +1,26 @@
-@layer theme, base, components, utilities;
-@import "tailwindcss/theme.css";
-@import "tailwindcss/utilities.css" source(none) important;
+/* Fonts. They were `@import url(...)` lines in the Sass entries (`app.scss`, `admin.scss`, `account.scss`), which are gone.
+   An `@import` has to come before the other rules. Nunito (Bootstrap's body font) is not imported any more: the Sass
+   `* { font-family: Poppins }` rule hid it everywhere, and it is not used in any Blade or JS file. */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap");
 
-/* Which files Tailwind reads. Only converted files are listed: the rest of the project still uses Bootstrap
-   classes whose names Tailwind shares (p-4, gap-3, border, collapse, container ...). Add a file here when its
-   area is converted. `important` is on because Bootstrap's own utilities are !important; remove it, and the
-   `@source not inline` line, when the Bootstrap CSS is dropped. */
-@source "../views/components/booking/action-modal.blade.php";
-@source "../views/components/booking/cancellation-card.blade.php";
-@source "../views/components/account/note.blade.php";
-@source "../views/components/progress-tracker.blade.php";
-@source "../views/user/booking.blade.php";
-@source "../views/components/booking/client-information.blade.php";
-@source "../views/components/booking/event-information.blade.php";
-@source "../views/components/booking/event-schedule.blade.php";
-@source "../views/components/booking/booking-summary.blade.php";
-@source "../views/components/booking/booking-confirmation.blade.php";
-@source "../views/components/booking/step-actions.blade.php";
-@source "../views/components/booking/step-button.blade.php";
-@source "../views/components/admin/sidebar.blade.php";
-@source "../views/components/account/sidebar.blade.php";
-@source "../views/components/admin/page-header.blade.php";
-@source "../views/admin/dashboard.blade.php";
-@source "../views/admin/calendar.blade.php";
-@source "../views/admin/messages.blade.php";
-@source "../views/components/admin/stat-card.blade.php";
-@source "../views/components/admin/package-rate.blade.php";
-@source "../views/components/admin/booking-modal.blade.php";
-@source "../views/components/admin/booking-row.blade.php";
-@source "../views/components/admin/edited-note.blade.php";
-@source "../views/components/admin/package-card.blade.php";
-@source "../views/components/admin/package-modal.blade.php";
-@source "../views/components/admin/calendar-event.blade.php";
-@source "../views/components/account/layout.blade.php";
-@source "../views/admin/bookings.blade.php";
-@source "../views/admin/booking-history.blade.php";
-@source "../views/admin/packages.blade.php";
-@source "../views/user/account/bookings.blade.php";
-@source "../views/user/account/messages.blade.php";
-@source "../views/components/chat/thread.blade.php";
-@source "../views/components/chat/booking-card.blade.php";
-@source "../views/components/chat/icon.blade.php";
-@source "../views/components/chat/widget.blade.php";
-@source "../views/components/chat/composer.blade.php";
-@source "../views/components/profile/avatar.blade.php";
-@source "../views/components/profile/field.blade.php";
-@source "../views/components/profile/password-rules.blade.php";
-@source "../views/components/profile/row.blade.php";
-@source "../views/components/profile/status.blade.php";
-@source "../views/admin/account.blade.php";
-@source "../views/user/account/profile.blade.php";
-@source "../views/user/account/security.blade.php";
-@source "../views/components/account/badge.blade.php";
-@source "../views/components/account/button.blade.php";
-@source "../views/components/account/delete-modal.blade.php";
-@source "../views/admin/login.blade.php";
-@source "../views/components/landing/navigation.blade.php";
-@source "../views/components/auth-modal.blade.php";
-@source "../views/components/auth/login-form.blade.php";
-@source "../views/components/auth/signup-form.blade.php";
-@source "../views/components/auth/forgot-password-form.blade.php";
-@source "../views/components/auth/new-password-form.blade.php";
-@source "../views/components/auth/verification-form.blade.php";
-@source "../views/components/auth/link-button.blade.php";
-@source "../views/user/landing.blade.php";
-@source "../views/components/landing/landing-caption.blade.php";
-@source "../views/components/landing/features.blade.php";
-@source "../views/components/landing/package-comparison.blade.php";
-@source "../views/components/landing/footer.blade.php";
-@source "../views/components/landing/coverflow-carousel.blade.php";
-@source "../views/components/booking/package.blade.php";
-@source "../views/components/booking/package-card.blade.php";
-@source "../js/chat/chat.js";
-@source "../js/chat/confirm-dialog.js";
-@source "../js/chat/widget.js";
-@source "../js/shared/action-modal.js";
-@source "../js/admin/dropdown.js";
-@source "../js/admin/filter-sheet.js";
-@source "../js/admin/dashboard.js";
-@source "../js/account/bookings.js";
-@source "../js/booking/event-schedule.js";
-@source not inline("collapse container table shadow rounded");
+/* Phase 11: the Bootstrap CSS is gone, so this is the standard Tailwind 4 layer order, with Preflight in `base`.
+   Rules written below in `base` and `components` lose to every utility, which is what `important` used to guarantee. */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
+
+/* Which files Tailwind reads: the Blade views and the JS (the JS builds class strings), and nothing else. `source(none)` stays
+   so that the docs, `_archive/`, `tests/` and the Laravel default pages are not scanned for class names.
+   Before Phase 11 this was one `@source` line per converted file; every file is converted now, so a new file needs no line. */
+@source "../views";
+@source "../js";
+
+/* Names that mean something else here than in Tailwind. `collapse` is Bootstrap's JS hook class (`.collapse:not(.show)`
+   hides the panel; Tailwind's `collapse` is `visibility: collapse`, which would keep an open panel invisible), and `container`
+   is defined below with Bootstrap's widths (Tailwind's has different max-widths). Both must stay out of the generated utilities. */
+@source not inline("collapse container");
 
 /* Wide but short viewports (laptops): the booking modal tightens its vertical spacing. */
 @custom-variant short-wide (@media (min-width: 992px) and (max-height: 860px));
@@ -536,28 +476,513 @@
     display: none !important;
 }
 
-/* Bootstrap's `d-none`. `auth/validation.js` and the admin sign-in scripts toggle it, and the sign-in page has no
-   Bootstrap. Phase 11 needs this rule anyway (see "Bootstrap JS without Bootstrap CSS"). */
-.d-none {
-    display: none !important;
-}
+/* ======================================================================================================================
+   Phase 11: what Bootstrap's CSS used to provide. Two blocks, both written by hand and both loseable one rule at a time:
+   1. `base`: Reboot parity. Preflight is on now; these rules put back the few Reboot defaults the markup was written against.
+   2. `components`: the Bootstrap JS plugins (modal, offcanvas, collapse) need their CSS. The Blade still uses their class
+      names and `--bs-*` variables as the contract, so the rules below are Bootstrap 5.3's own, cut down to what is used.
+   Both layers sit below `utilities`, so any utility on the element wins, as before.
+   ====================================================================================================================== */
 
-/* Admin sign-in only (`<body class="admin-login-page">`): that entry loads no Bootstrap Reboot and Preflight is not
-   on yet, so it gets the few Reboot rules the page relied on. In the base layer, so every utility and Sass rule wins. */
 @layer base {
-    .admin-login-page,
-    .admin-login-page *,
-    .admin-login-page ::before,
-    .admin-login-page ::after {
-        box-sizing: border-box;
-    }
-    .admin-login-page :is(button, input) {
+    /* Reboot's body (the Sass overrides were $body-bg, $font-size-base 0.9rem, $line-height-base 1.6). The font itself
+       comes from Preflight's `html` rule and `--font-sans` (Poppins), which replaces the Sass `* { font-family }` rule. */
+    body {
         margin: 0;
-        font-family: inherit;
-        font-size: inherit;
-        line-height: inherit;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: #212529;
+        background-color: #f8fafc;
+        -webkit-text-size-adjust: 100%;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    }
+
+    /* The close "X" (was Bootstrap's `--bs-btn-close-bg`); used by the `btn-close-x` utility and the auth modal's close button. */
+    :root {
+        --close-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e");
+    }
+
+    /* Reboot's smooth scrolling for in-page links (`#features`, `#packages`...), and no focus ring on `tabindex="-1"` targets
+       (the modals take focus when they open). */
+    @media (prefers-reduced-motion: no-preference) {
+        :root {
+            scroll-behavior: smooth;
+        }
+    }
+    [tabindex="-1"]:focus:not(:focus-visible) {
+        outline: 0 !important;
+    }
+
+    /* Colourless borders were Bootstrap's `.border` grey (#dee2e6); Preflight's default is currentColor. */
+    *,
+    ::before,
+    ::after,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: #dee2e6;
+    }
+
+    /* Text blocks: Reboot's margins and heading weight. Sizes are never set here: every heading has a text-* utility. */
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        line-height: 1.2;
+    }
+    p {
+        margin-top: 0;
+        margin-bottom: 1rem;
+    }
+    ol,
+    ul {
+        padding-left: 2rem;
+    }
+    ol {
+        list-style: decimal;
+    }
+    ul {
+        list-style: disc;
+    }
+    ol,
+    ul,
+    dl {
+        margin-top: 0;
+        margin-bottom: 1rem;
+    }
+    ol ol,
+    ul ul,
+    ol ul,
+    ul ol {
+        margin-bottom: 0;
+    }
+    dt {
+        font-weight: 700;
+    }
+    dd {
+        margin-bottom: 0.5rem;
+        margin-left: 0;
+    }
+    small {
+        font-size: 0.875em;
+    }
+    label {
+        display: inline-block;
+    }
+    th {
+        text-align: inherit;
+        text-align: -webkit-match-parent;
+    }
+    legend {
+        float: left;
+        width: 100%;
+        padding: 0;
+        margin-bottom: 0.5rem;
+    }
+    legend + * {
+        clear: left;
+    }
+
+    /* Inline replaced elements: Preflight makes them `display: block`; Reboot left them inline. */
+    img,
+    svg,
+    video,
+    canvas,
+    audio,
+    iframe,
+    embed,
+    object {
+        display: inline;
+        vertical-align: middle;
+    }
+
+    /* Links: Reboot's blue underline; every styled link overrides it with its own colour and `no-underline`. */
+    a {
+        color: #0d6efd;
+        text-decoration: underline;
+    }
+    a:hover {
+        color: #0a58ca;
+    }
+    a:not([href]):not([class]),
+    a:not([href]):not([class]):hover {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    /* Preflight leaves the default cursor on buttons. */
+    button:not(:disabled),
+    [role="button"]:not(:disabled),
+    [type="button"]:not(:disabled),
+    [type="reset"]:not(:disabled),
+    [type="submit"]:not(:disabled),
+    summary {
+        cursor: pointer;
+    }
+    button:focus:not(:focus-visible) {
+        outline: 0;
+    }
+
+    /* A <dialog> keeps its centring and the browser's own padding and border (Preflight zeroes all three). */
+    dialog {
+        margin: auto;
+        padding: 1em;
+        border: solid;
+    }
+
+    /* Admin sign-in: its entry never had Reboot, so its text stays at the browser's 16px. */
+    .admin-login-page {
+        font-size: 1rem;
     }
     .admin-login-page a {
         text-decoration: none;
+    }
+}
+
+@layer components {
+    /* ---- helpers ---- */
+    .d-none {
+        display: none !important;
+    }
+    /* ---- collapse (landing menu, landing and admin feature accordions) ---- */
+    .fade {
+        transition: opacity 0.15s linear;
+    }
+    .fade:not(.show) {
+        opacity: 0;
+    }
+    .collapse:not(.show) {
+        display: none;
+    }
+    .collapsing {
+        height: 0;
+        overflow: hidden;
+        transition: height 0.35s ease;
+    }
+
+    /* ---- carousel (Bootstrap's JS plugin contract: the auth modal's slides and dots, `data-bs-ride`) ---- */
+    .carousel {
+        position: relative;
+    }
+    .carousel.pointer-event {
+        touch-action: pan-y;
+    }
+    .carousel-inner {
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+    }
+    .carousel-inner::after {
+        display: block;
+        clear: both;
+        content: "";
+    }
+    .carousel-item {
+        position: relative;
+        display: none;
+        float: left;
+        width: 100%;
+        margin-right: -100%;
+        backface-visibility: hidden;
+        transition: transform 0.6s ease-in-out;
+    }
+    .carousel-item.active,
+    .carousel-item-next,
+    .carousel-item-prev {
+        display: block;
+    }
+    .carousel-item-next:not(.carousel-item-start),
+    .active.carousel-item-end {
+        transform: translateX(100%);
+    }
+    .carousel-item-prev:not(.carousel-item-end),
+    .active.carousel-item-start {
+        transform: translateX(-100%);
+    }
+    .carousel-indicators {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 2;
+        display: flex;
+        justify-content: center;
+        padding: 0;
+        margin-right: 15%;
+        margin-bottom: 1rem;
+        margin-left: 15%;
+    }
+    .carousel-indicators [data-bs-target] {
+        box-sizing: content-box;
+        flex: 0 1 auto;
+        width: 30px;
+        height: 3px;
+        padding: 0;
+        margin-right: 3px;
+        margin-left: 3px;
+        text-indent: -999px;
+        cursor: pointer;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 0;
+        border-top: 10px solid transparent;
+        border-bottom: 10px solid transparent;
+        opacity: 0.5;
+        transition: opacity 0.6s ease;
+    }
+    .carousel-indicators .active {
+        opacity: 1;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .carousel-item,
+        .carousel-indicators [data-bs-target] {
+            transition: none;
+        }
+    }
+
+    /* ---- modal (Bootstrap's JS plugin contract) ----
+       Only what the plugin drives stays here: the root that is hidden until the JS sets `display: block`, the fade, the
+       dialog's slide, and the backdrop the JS creates. The dialog, content, header, body and footer are utilities in each
+       modal's Blade (the class names `modal-dialog`, `modal-content` and `modal-body` stay as hooks: the plugin selects them). */
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1055;
+        display: none;
+        width: 100%;
+        height: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+        outline: 0;
+    }
+    .modal.fade .modal-dialog {
+        transition: transform 0.3s ease-out;
+        transform: translate(0, -50px);
+    }
+    .modal.show .modal-dialog {
+        transform: none;
+    }
+    .modal.modal-static .modal-dialog {
+        transform: scale(1.02);
+    }
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1050;
+        width: 100vw;
+        height: 100vh;
+        background-color: #000;
+    }
+    .modal-backdrop.fade {
+        opacity: 0;
+    }
+    .modal-backdrop.show {
+        opacity: 0.5;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .fade,
+        .collapsing,
+        .modal.fade .modal-dialog {
+            transition: none;
+        }
+    }
+
+    /* ---- offcanvas (admin and account sidebars: offcanvas-lg; admin filter sheets: offcanvas-md) ---- */
+    .offcanvas-lg,
+    .offcanvas-md {
+        --bs-offcanvas-zindex: 1045;
+        --bs-offcanvas-width: 400px;
+        --bs-offcanvas-height: 30vh;
+        --bs-offcanvas-padding-x: 1rem;
+        --bs-offcanvas-padding-y: 1rem;
+        --bs-offcanvas-color: #212529;
+        --bs-offcanvas-bg: #fff;
+        --bs-offcanvas-border-width: 1px;
+        --bs-offcanvas-border-color: rgba(0, 0, 0, 0.175);
+        --bs-offcanvas-box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        --bs-offcanvas-transition: transform 0.3s ease-in-out;
+        --bs-offcanvas-title-line-height: 1.6;
+    }
+    .offcanvas-header {
+        display: flex;
+        align-items: center;
+        padding: var(--bs-offcanvas-padding-y) var(--bs-offcanvas-padding-x);
+    }
+    .offcanvas-header .btn-close-x {
+        padding: calc(var(--bs-offcanvas-padding-y) * 0.5)
+            calc(var(--bs-offcanvas-padding-x) * 0.5);
+        margin: calc(-0.5 * var(--bs-offcanvas-padding-y))
+            calc(-0.5 * var(--bs-offcanvas-padding-x))
+            calc(-0.5 * var(--bs-offcanvas-padding-y)) auto;
+    }
+    .offcanvas-title {
+        margin-bottom: 0;
+        line-height: var(--bs-offcanvas-title-line-height);
+    }
+    .offcanvas-body {
+        flex-grow: 1;
+        padding: var(--bs-offcanvas-padding-y) var(--bs-offcanvas-padding-x);
+        overflow-y: auto;
+    }
+    .offcanvas-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1040;
+        width: 100vw;
+        height: 100vh;
+        background-color: #000;
+    }
+    .offcanvas-backdrop.fade {
+        opacity: 0;
+    }
+    .offcanvas-backdrop.show {
+        opacity: 0.5;
+    }
+    /* Below the breakpoint the element is a fixed panel; from it up the panel is part of the page again. */
+    @media (max-width: 991.98px) {
+        .offcanvas-lg {
+            position: fixed;
+            bottom: 0;
+            z-index: var(--bs-offcanvas-zindex);
+            display: flex;
+            flex-direction: column;
+            max-width: 100%;
+            color: var(--bs-offcanvas-color);
+            visibility: hidden;
+            background-color: var(--bs-offcanvas-bg);
+            background-clip: padding-box;
+            outline: 0;
+            box-shadow: var(--bs-offcanvas-box-shadow);
+            transition: var(--bs-offcanvas-transition);
+        }
+        .offcanvas-lg.offcanvas-start {
+            top: 0;
+            left: 0;
+            width: var(--bs-offcanvas-width);
+            border-right: var(--bs-offcanvas-border-width) solid
+                var(--bs-offcanvas-border-color);
+            transform: translateX(-100%);
+        }
+        .offcanvas-lg.showing,
+        .offcanvas-lg.show:not(.hiding) {
+            transform: none;
+        }
+        .offcanvas-lg.showing,
+        .offcanvas-lg.hiding,
+        .offcanvas-lg.show {
+            visibility: visible;
+        }
+    }
+    @media (max-width: 767.98px) {
+        .offcanvas-md {
+            position: fixed;
+            bottom: 0;
+            z-index: var(--bs-offcanvas-zindex);
+            display: flex;
+            flex-direction: column;
+            max-width: 100%;
+            color: var(--bs-offcanvas-color);
+            visibility: hidden;
+            background-color: var(--bs-offcanvas-bg);
+            background-clip: padding-box;
+            outline: 0;
+            box-shadow: var(--bs-offcanvas-box-shadow);
+            transition: var(--bs-offcanvas-transition);
+        }
+        .offcanvas-md.offcanvas-bottom {
+            right: 0;
+            left: 0;
+            height: var(--bs-offcanvas-height);
+            max-height: 100%;
+            border-top: var(--bs-offcanvas-border-width) solid
+                var(--bs-offcanvas-border-color);
+            transform: translateY(100%);
+        }
+        .offcanvas-md.showing,
+        .offcanvas-md.show:not(.hiding) {
+            transform: none;
+        }
+        .offcanvas-md.showing,
+        .offcanvas-md.hiding,
+        .offcanvas-md.show {
+            visibility: visible;
+        }
+    }
+    @media (min-width: 992px) {
+        .offcanvas-lg {
+            --bs-offcanvas-height: auto;
+            --bs-offcanvas-border-width: 0;
+            background-color: transparent !important;
+        }
+        .offcanvas-lg .offcanvas-header {
+            display: none;
+        }
+        .offcanvas-lg .offcanvas-body {
+            display: flex;
+            flex-grow: 0;
+            padding: 0;
+            overflow-y: visible;
+            background-color: transparent !important;
+        }
+    }
+    @media (min-width: 768px) {
+        .offcanvas-md {
+            --bs-offcanvas-height: auto;
+            --bs-offcanvas-border-width: 0;
+            background-color: transparent !important;
+        }
+        .offcanvas-md .offcanvas-header {
+            display: none;
+        }
+        .offcanvas-md .offcanvas-body {
+            display: flex;
+            flex-grow: 0;
+            padding: 0;
+            overflow-y: visible;
+            background-color: transparent !important;
+        }
+    }
+    @media (max-width: 991.98px) and (prefers-reduced-motion: reduce) {
+        .offcanvas-lg {
+            transition: none;
+        }
+    }
+    @media (max-width: 767.98px) and (prefers-reduced-motion: reduce) {
+        .offcanvas-md {
+            transition: none;
+        }
+    }
+}
+
+/* Close button used in the modal headers and the admin filter sheets (was Bootstrap's `.btn-close`). Padding and margins are set
+   on the element (`p-2 -m-2 ml-auto` in a modal header) so a utility can still change them. */
+@utility btn-close-x {
+    box-sizing: content-box;
+    width: 1em;
+    height: 1em;
+    color: #000;
+    background: transparent var(--close-icon) center / 1em auto no-repeat;
+    border: 0;
+    border-radius: 0.375rem;
+    opacity: 0.5;
+    &:hover {
+        opacity: 0.75;
+    }
+    &:focus {
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgb(13 110 253 / 0.25);
+        opacity: 1;
+    }
+    &:disabled {
+        pointer-events: none;
+        user-select: none;
+        opacity: 0.25;
     }
 }

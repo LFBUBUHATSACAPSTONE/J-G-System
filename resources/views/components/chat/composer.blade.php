@@ -84,8 +84,8 @@ $quickItemClass = 'chat-quickmenu__item block min-h-11 w-full cursor-pointer rou
     <div class="{{ $toolsClass }}" style="--chat-tools: {{ $tools }}">
       <label class="{{ $attachClass }}">
         <x-chat.icon name="paperclip" />
-        <span class="visually-hidden">Attach files (JPG, PNG, WEBP or PDF, up to {{ $att['max_kb'] / 1024 }} MB each)</span>
-        <input type="file" class="visually-hidden" multiple accept="{{ $att['accept'] }}" data-chat-picker>
+        <span class="sr-only">Attach files (JPG, PNG, WEBP or PDF, up to {{ $att['max_kb'] / 1024 }} MB each)</span>
+        <input type="file" class="sr-only" multiple accept="{{ $att['accept'] }}" data-chat-picker>
       </label>
       @if (count($quick))
       <button type="button" class="{{ $quickClass }}" data-chat-quick-toggle aria-haspopup="true" aria-expanded="false" aria-label="Quick replies">

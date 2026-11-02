@@ -24,7 +24,7 @@
     @endif
     <p class="mb-6 rounded-panel border border-success-border bg-success-soft px-6 py-3 font-medium text-success-text data-[tone=danger]:border-danger-border data-[tone=danger]:bg-danger-soft data-[tone=danger]:text-danger-text" role="status" data-package-status hidden></p>
 
-    <h2 class="visually-hidden">Packages</h2>
+    <h2 class="sr-only">Packages</h2>
 
     @if (count($packages) > 0)
     {{-- id: the cards' "See more" toggles use it as data-bs-parent (one open at a time on phones). --}}

@@ -146,26 +146,26 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
 
           <dl class="{{ $metaClass }}">
             <div>
-              <dt><i class="ph ph-calendar-blank" aria-hidden="true"></i><span class="visually-hidden">Date</span></dt>
+              <dt><i class="ph ph-calendar-blank" aria-hidden="true"></i><span class="sr-only">Date</span></dt>
               <dd>{{ $row['date'] }}</dd>
             </div>
             @if ($row['time'])
             <div>
-              <dt><i class="ph ph-clock" aria-hidden="true"></i><span class="visually-hidden">Time</span></dt>
+              <dt><i class="ph ph-clock" aria-hidden="true"></i><span class="sr-only">Time</span></dt>
               <dd>{{ $row['time'] }}</dd>
             </div>
             @endif
             <div>
-              <dt><i class="ph ph-map-pin" aria-hidden="true"></i><span class="visually-hidden">Location</span></dt>
+              <dt><i class="ph ph-map-pin" aria-hidden="true"></i><span class="sr-only">Location</span></dt>
               <dd>{{ $payload['location'] }}</dd>
             </div>
             <div>
-              <dt><i class="ph ph-package" aria-hidden="true"></i><span class="visually-hidden">Package</span></dt>
+              <dt><i class="ph ph-package" aria-hidden="true"></i><span class="sr-only">Package</span></dt>
               <dd>{{ $payload['package'] }}@if ($payload['price']) <span class="ml-1 text-ink-muted">{{ $payload['price'] }}</span>@endif</dd>
             </div>
             @if ($payload['payment'])
             <div>
-              <dt><i class="ph ph-wallet" aria-hidden="true"></i><span class="visually-hidden">Payment</span></dt>
+              <dt><i class="ph ph-wallet" aria-hidden="true"></i><span class="sr-only">Payment</span></dt>
               <dd>{{ $payload['payment'] }}@if ($payload['balance'] && (float) preg_replace('/[^0-9.]/', '', $payload['balance']) > 0) <span class="ml-1 text-ink-muted">Balance {{ $payload['balance'] }}</span>@endif</dd>
             </div>
             @endif
@@ -220,17 +220,17 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
 
   {{-- Details modal: shared by every card, filled by bookings.js from the card's data-booking JSON. --}}
   <div class="modal fade font-sans" id="bookingDetailsModal" tabindex="-1" aria-labelledby="bookingDetailsTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-      <div class="modal-content rounded-card border-0 bg-surface text-ink">
-        <div class="modal-header items-start border-0 px-6 pt-6 pb-4">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable relative w-auto m-2 pointer-events-none min-[576px]:mx-auto min-[576px]:my-7 min-[576px]:max-w-[500px] flex items-center min-h-[calc(100%-1rem)] min-[576px]:min-h-[calc(100%-3.5rem)] h-[calc(100%-1rem)] min-[576px]:h-[calc(100%-3.5rem)] [&_.modal-content]:max-h-full [&_.modal-content]:overflow-hidden [&_.modal-body]:overflow-y-auto">
+      <div class="modal-content relative flex w-full flex-col bg-clip-padding pointer-events-auto outline-0 rounded-card border-0 bg-surface text-ink">
+        <div class="modal-header flex shrink-0 items-start border-0 px-6 pt-6 pb-4">
           <div>
             <h2 class="m-0 text-fluid-xl font-semibold wrap-anywhere" id="bookingDetailsTitle" data-bk="event">Booking details</h2>
             <p class="mt-1 mb-0 text-sm text-ink-muted">Booking <span data-bk="reference"></span></p>
           </div>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close-x p-2 -m-2 ml-auto" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
 
-        <div class="modal-body flex flex-col gap-6 px-6 py-0">
+        <div class="modal-body relative flex-auto flex flex-col gap-6 px-6 py-0">
           <p class="m-0"><span data-bk-badge></span></p>
 
           {{-- Shown when the booking was cancelled or declined (data-bk-reason); filled by bookings.js. --}}
@@ -305,7 +305,7 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
           </section>
         </div>
 
-        <div class="modal-footer flex flex-col-reverse gap-3 border-0 px-6 pt-3 pb-6 min-[576px]:flex-row min-[576px]:justify-end *:m-0 *:w-full min-[576px]:*:w-auto">
+        <div class="modal-footer shrink-0 flex-wrap items-center justify-end flex flex-col-reverse gap-3 border-0 px-6 pt-3 pb-6 min-[576px]:flex-row min-[576px]:justify-end *:m-0 *:w-full min-[576px]:*:w-auto">
           <x-account.button variant="secondary" data-bs-dismiss="modal">Close</x-account.button>
         </div>
       </div>

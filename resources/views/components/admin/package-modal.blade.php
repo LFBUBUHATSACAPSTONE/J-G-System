@@ -41,14 +41,14 @@ $hintClass = 'text-[0.85rem] text-ink-muted';
   data-update-url-template="{{ Route::has('admin.packages.update') ? route('admin.packages.update', ['package' => '__ID__']) : '#' }}"
   data-validation="{{ json_encode($validation) }}"
   @if ($reopen) data-reopen="{{ json_encode($reopen) }}" @endif>
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable min-[576px]:[--bs-modal-width:44rem]">
-    <form class="modal-content rounded-card border-0 bg-surface font-sans text-ink" method="POST" action="#" novalidate data-package-form>
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable relative w-auto m-2 pointer-events-none min-[576px]:mx-auto min-[576px]:my-7 min-[576px]:max-w-[44rem] flex items-center min-h-[calc(100%-1rem)] min-[576px]:min-h-[calc(100%-3.5rem)] h-[calc(100%-1rem)] min-[576px]:h-[calc(100%-3.5rem)] [&_.modal-content]:max-h-full [&_.modal-content]:overflow-hidden [&_.modal-body]:overflow-y-auto">
+    <form class="modal-content relative flex w-full flex-col bg-clip-padding pointer-events-auto outline-0 rounded-card border-0 bg-surface font-sans text-ink" method="POST" action="#" novalidate data-package-form>
       @csrf
       <input type="hidden" name="_method" value="PATCH" data-package-method disabled>
       <input type="hidden" name="_mode" value="" data-package-mode>
       <input type="hidden" name="_package_id" value="" data-package-id>
 
-      <div class="modal-body px-6 pt-6 pb-4">
+      <div class="modal-body relative flex-auto px-6 pt-6 pb-4">
         <div class="mb-4 flex items-baseline justify-between gap-4">
           <h2 id="packageModalTitle" class="m-0 text-fluid-xl font-bold" data-package-title>Package Information</h2>
           <button type="button" class="inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 rounded-full border border-brand-text bg-transparent px-4 py-1 text-fluid-sm font-semibold whitespace-nowrap text-brand-text hover:bg-brand-soft [&_.ph]:text-fluid-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-package-edit>
@@ -117,7 +117,7 @@ $hintClass = 'text-[0.85rem] text-ink-muted';
         </div>
       </div>
 
-      <div class="modal-footer flex-nowrap gap-3 border-0 px-6 pt-3 pb-6 *:m-0">
+      <div class="modal-footer flex shrink-0 items-center justify-end flex-nowrap gap-3 border-0 px-6 pt-3 pb-6 *:m-0">
         <button type="button" class="inline-flex min-h-12 flex-[1_1_0] cursor-pointer items-center justify-center rounded-panel border-0 bg-brand px-4 py-2 text-fluid-base font-semibold text-on-brand hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-bs-dismiss="modal" data-package-back>Back</button>
         <button type="button" class="inline-flex min-h-12 flex-[1_1_0] cursor-pointer items-center justify-center rounded-panel border-0 bg-panel px-4 py-2 text-fluid-base font-semibold text-ink hover:bg-page focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-package-cancel hidden>Cancel</button>
         <button type="submit" class="inline-flex min-h-12 flex-[1_1_0] cursor-pointer items-center justify-center rounded-panel border-0 bg-brand px-4 py-2 text-fluid-base font-semibold text-on-brand hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-package-save hidden>Save</button>

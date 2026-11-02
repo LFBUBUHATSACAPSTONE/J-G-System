@@ -26,14 +26,14 @@ $max = (int) config('cancellation.max', 500);
   data-action-modal
   data-min="{{ $min }}"
   data-max="{{ $max }}">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content rounded-2xl border-0 bg-surface font-sans text-ink">
-      <div class="modal-header items-start gap-4 border-0 px-6 pt-6 pb-0">
+  <div class="modal-dialog modal-dialog-centered relative w-auto m-2 pointer-events-none min-[576px]:mx-auto min-[576px]:my-7 min-[576px]:max-w-[500px] flex items-center min-h-[calc(100%-1rem)] min-[576px]:min-h-[calc(100%-3.5rem)]">
+    <div class="modal-content relative flex w-full flex-col bg-clip-padding pointer-events-auto outline-0 rounded-2xl border-0 bg-surface font-sans text-ink">
+      <div class="modal-header flex shrink-0 items-start gap-4 border-0 px-6 pt-6 pb-0">
         <h2 class="m-0 text-[clamp(1.149rem,1.1123rem+0.1836vw,1.25rem)] leading-[1.3] font-semibold text-ink" id="{{ $id }}Title" data-action-title>Are you sure?</h2>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close-x p-2 -m-2 ml-auto" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-      <div class="modal-body flex flex-col gap-4 px-6 py-4">
+      <div class="modal-body relative flex-auto flex flex-col gap-4 px-6 py-4">
         <p class="m-0 text-sm wrap-anywhere text-ink-muted" data-action-message></p>
 
         @if ($reason)
@@ -61,7 +61,7 @@ $max = (int) config('cancellation.max', 500);
         <p class="m-0 hidden rounded-lg border border-danger-border bg-danger-soft px-3 py-2 text-sm text-danger-text" role="alert" data-action-error></p>
       </div>
 
-      <div class="modal-footer flex-wrap gap-2 border-0 px-6 pt-0 pb-6 max-[575.98px]:flex-col-reverse max-[575.98px]:items-stretch">
+      <div class="modal-footer flex shrink-0 flex-wrap items-center justify-end *:m-1 gap-2 border-0 px-6 pt-0 pb-6 max-[575.98px]:flex-col-reverse max-[575.98px]:items-stretch">
         <button type="button" class="m-0 cursor-pointer rounded-lg border border-field-border bg-transparent px-4 py-2 text-sm font-semibold text-ink transition-colors duration-150 ease-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text enabled:hover:bg-panel disabled:cursor-not-allowed disabled:opacity-60" data-bs-dismiss="modal" data-action-back>Back</button>
         <button type="button" class="m-0 cursor-pointer rounded-lg border border-transparent bg-brand px-4 py-2 text-sm font-semibold text-white transition-colors duration-150 ease-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text enabled:hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60" data-action-confirm>Confirm</button>
       </div>
