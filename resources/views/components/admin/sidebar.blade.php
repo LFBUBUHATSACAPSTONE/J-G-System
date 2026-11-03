@@ -60,7 +60,14 @@ $buttonReset = 'w-full cursor-pointer bg-transparent text-left';
   </nav>
 
   <div class="mt-auto border-t border-sidebar-divider p-4 min-[992px]:mx-8 min-[992px]:px-0 min-[992px]:py-6">
-    <form method="POST" action="{{ Route::has('admin.logout') ? route('admin.logout') : '#' }}">
+    {{-- auth/logout.js (imported by admin.js) asks "Log out?" in a modal, posts this as a fetch (admin.logout answers JSON) and
+         then goes to the admin sign-in card. Without data-logout this was a plain form post: no modal, and the JSON shown as a page. --}}
+    <form
+      method="POST"
+      action="{{ Route::has('admin.logout') ? route('admin.logout') : '#' }}"
+      data-logout
+      data-redirect-first
+      data-redirect-url="{{ Route::has('admin.login') ? route('admin.login') : '/' }}">
       @csrf
       <button type="submit" class="{{ $linkBase }} {{ $linkOn }} {{ $buttonReset }}">
         <i class="ph ph-sign-out" aria-hidden="true"></i>
