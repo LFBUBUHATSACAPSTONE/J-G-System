@@ -23,6 +23,14 @@ return [
     */
   'pages' => [
 
+    'terms' => [
+      'title' => 'Terms and Conditions | J&G Audio Lights and Sounds',
+      'description' => 'The terms and conditions for booking lights, sounds, stage, LED wall and truss services with J&G Audio Lights and Sounds.',
+      'og_title' => 'Terms and Conditions | J&G Audio Lights and Sounds',
+      'og_description' => 'Booking, payment, cancellation, setup and refund terms for J&G Audio Lights and Sounds.',
+      'logo' => 'images/logo/J&G_official_logo.webp',
+    ],
+
     'user.landing' => [
       'title' => 'J&G Audio Lights and Sounds - Sound & Lighting for Every Event',
       'description' => 'Professional audio and lighting solutions for parties, weddings, and concerts. Reliable equipment, expert service — book your event with J&G today.',

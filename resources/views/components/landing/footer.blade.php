@@ -38,6 +38,7 @@ $footerClass = 'w-full shrink-0 border-t-[1px] border-glass-border bg-landing-ba
                 <li><a href="{{ route('user.landing') }}#packages" class="{{ $linkClass }}">Packages</a></li>
                 <li><a href="{{ route('user.landing') }}#inclusions" class="{{ $linkClass }}">Inclusions</a></li>
                 <li><a href="{{ route('user.landing') }}#about" class="{{ $linkClass }}">About</a></li>
+                <li><a href="{{ route('terms') }}" class="{{ $linkClass }}">Terms and Conditions</a></li>
             </ul>
         </div>
 

@@ -83,6 +83,11 @@ $rightClass = 'flex-1 overflow-y-auto [padding:1.5rem_1.5rem_2rem] text-auth-tex
                     <div class="auth-modal__view d-none" data-view="new-password">
                         @include('components.auth.new-password-form')
                     </div>
+
+                    {{-- View: Terms and Conditions (opened from the sign-up checkbox; the text is config/terms.php) --}}
+                    <div class="auth-modal__view d-none" data-view="terms">
+                        @include('components.auth.terms-view')
+                    </div>
                 </div>
 
             </div>

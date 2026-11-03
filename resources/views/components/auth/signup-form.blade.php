@@ -88,7 +88,7 @@ $ssoClass = 'mb-[0.5rem] flex gap-[0.75rem]';
   <div class="{{ $rowClass }}">
     <label class="{{ $rowLabelClass }}">
       <input class="{{ $checkClass }}" type="checkbox" name="terms" required>
-      I agree to the <a href="#" class="{{ $linkClass }}" target="_blank">Terms & Condition</a>
+      I have read and agree to the <a href="{{ route('terms') }}" class="{{ $linkClass }}" data-auth-view="terms" target="_blank" rel="noopener">Terms &amp; Conditions</a>
     </label>
   </div>
   <small class="d-none {{ $fieldErrorClass }}" data-field-error="terms"></small>

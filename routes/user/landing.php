@@ -13,8 +13,11 @@ Route::get('/', function (CurrentAccount $account) {
 
 Route::get('/user/landing', function () {
     $packages = Package::query()->with('equipment')->where('available', true)->orderBy('sort_order')->orderBy('id')->get()
-        ->map(fn (Package $package) => $package->toPublicArray())
+        ->map(fn(Package $package) => $package->toPublicArray())
         ->all();
 
     return view('user.landing', compact('packages'));
 })->name('user.landing');
+
+// The Terms and Conditions page. The same text (config/terms.php) is also the "terms" view of the landing auth modal.
+Route::view('/terms', 'user.terms')->name('terms');
