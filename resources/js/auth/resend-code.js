@@ -11,6 +11,7 @@
  *   422 / 429 {"message": "…"} -> failed / throttled
  */
 
+import { getCsrfToken } from "./csrf.js";
 import {
     setVerificationDestination,
     setVerificationToken,
@@ -42,8 +43,7 @@ async function resendCode(btn, context, verificationToken) {
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN":
-                    form.querySelector('input[name="_token"]')?.value ?? "",
+                "X-CSRF-TOKEN": getCsrfToken(form),
             },
             body: JSON.stringify({
                 context,

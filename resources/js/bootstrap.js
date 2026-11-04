@@ -9,7 +9,10 @@ import 'bootstrap';
 import axios from 'axios';
 window.axios = axios;
 
+const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || document.querySelector('input[name="_token"]')?.value || '';
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+window.axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+window.axios.defaults.headers.common['X-XSRF-TOKEN'] = csrfToken;
 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening

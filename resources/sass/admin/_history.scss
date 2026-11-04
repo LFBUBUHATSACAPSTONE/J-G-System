@@ -1,0 +1,89 @@
+// Admin Booking History page. Tokens only: everything comes from _admin-variables.scss.
+// Reuses the Bookings page's rows, filters, pills and modal (_bookings.scss), so import this
+// file AFTER "admin/bookings". It only adds: the state tabs, the brand pill, and the
+// "Ongoing" row highlight (same mechanics as the Pending highlight on Bookings).
+
+// State tabs 
+.admin-history__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.admin-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.25rem 1.25rem;
+    border: 1px solid transparent;
+    border-radius: $admin-radius-pill;
+    background: $admin-surface;
+    color: $admin-text-primary;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+
+    &:hover {
+        border-color: $admin-brand-text;
+    }
+
+    &:focus-visible {
+        outline: $admin-focus-ring-width solid $admin-focus-ring;
+        outline-offset: $admin-focus-ring-offset;
+    }
+
+    // The selected tab is filled; the text label is what says which one it is, not the colour.
+    &[aria-pressed="true"] {
+        background: $admin-brand;
+        border-color: $admin-brand;
+        color: $admin-on-brand;
+    }
+
+    &__count {
+        color: $admin-text-muted;
+        font-size: 0.8rem;
+        font-weight: 400;
+
+        &:empty {
+            display: none;
+        }
+    }
+
+    &[aria-pressed="true"] &__count {
+        color: $admin-on-brand-muted;
+    }
+}
+
+// Upcoming / Ongoing badges 
+// Both use `.admin-badge--brand` (Ongoing adds `--solid`), defined with the other tones in _bookings.scss.
+
+// Ongoing row: outline + "Happening now" chip 
+.admin-bookings__chip--ongoing {
+    background: $admin-brand;
+    color: $admin-on-brand;
+}
+
+.admin-bookings__row.is-ongoing {
+    margin-top: 1.5rem; // room for the chip
+    border-color: $admin-brand;
+}
+
+@media (min-width: $admin-bookings-table-breakpoint) {
+    .admin-bookings__row.is-ongoing {
+        margin-top: 0;
+
+        .admin-bookings__cell {
+            border-block: 2px solid $admin-brand;
+
+            &:first-child {
+                border-left: 2px solid $admin-brand;
+            }
+            &:last-child {
+                border-right: 2px solid $admin-brand;
+            }
+        }
+    }
+}

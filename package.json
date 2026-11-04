@@ -15,5 +15,8 @@
         "sass": "^1.104.1",
         "tailwindcss": "^4.0.0",
         "vite": "^6.0.11"
+    },
+    "dependencies": {
+        "@phosphor-icons/web": "^2.1.2"
     }
 }

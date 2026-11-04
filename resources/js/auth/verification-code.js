@@ -34,6 +34,7 @@
  */
 
 import { setAuthView } from "../auth-modal.js";
+import { getCsrfToken } from "./csrf.js";
 import { setResetCredentials } from "./new-password.js";
 
 const AUTH_MODAL_ID = "authModal";
@@ -173,11 +174,11 @@ async function submitVerificationCode(modalEl, form) {
     try {
         const response = await fetch(form.action, {
             method: "POST",
+            credentials: "same-origin",
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN":
-                    form.querySelector('input[name="_token"]')?.value ?? "",
+                "X-CSRF-TOKEN": getCsrfToken(form),
             },
             body: JSON.stringify({
                 code,
@@ -188,12 +189,14 @@ async function submitVerificationCode(modalEl, form) {
 
         if (response.ok) {
             if (verificationContext === "signup") {
+                resetVerificationCode();
                 setAuthView(modalEl, "login");
                 return;
             }
 
             const data = await response.json().catch(() => ({}));
             setResetCredentials({ token: data.token, email: data.email });
+            resetVerificationCode();
             setAuthView(modalEl, "new-password");
             return;
         }

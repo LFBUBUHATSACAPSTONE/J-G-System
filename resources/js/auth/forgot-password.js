@@ -11,6 +11,7 @@
  * If `destination` is omitted, a masked version of the typed value is shown.
  */
 
+import { getCsrfToken } from "./csrf.js";
 import { setAuthView, focusFirstField } from "../auth-modal.js";
 import {
     setVerificationDestination,
@@ -18,7 +19,9 @@ import {
 } from "./verification-code.js";
 import {
     getIdentifierError,
-    wireLiveField,
+    wireLiveFieldImmediate,
+    clearAllFieldStates,
+    clearInvalidWithoutFieldError,
     setFieldState,
 } from "./validation.js";
 
@@ -31,7 +34,8 @@ function initForgotPassword() {
 
     const form = modalEl.querySelector(`${VIEW_SELECTOR} form`);
     if (form) {
-        wireLiveField(form, "identifier", getIdentifierError);
+        // Validates on every keystroke (not on blur).
+        wireLiveFieldImmediate(form, "identifier", getIdentifierError);
     }
 
     modalEl.addEventListener("submit", (event) => {
@@ -48,7 +52,10 @@ function initForgotPassword() {
 
     modalEl.addEventListener("hidden.bs.modal", () => {
         const target = modalEl.querySelector(`${VIEW_SELECTOR} form`);
-        if (target) clearError(target);
+        if (target) {
+            clearError(target);
+            clearAllFieldStates(target);
+        }
     });
 }
 
@@ -75,8 +82,7 @@ async function submitForgotPassword(modalEl, form) {
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN":
-                    form.querySelector('input[name="_token"]')?.value ?? "",
+                "X-CSRF-TOKEN": getCsrfToken(form),
             },
             body: JSON.stringify({ identifier }),
         });
@@ -86,7 +92,7 @@ async function submitForgotPassword(modalEl, form) {
             showError(
                 form,
                 data.message ||
-                    "We couldn't find an account with that email or phone number.",
+                    "We couldn't find an account with that email address.",
             );
             return;
         }
@@ -109,11 +115,8 @@ async function submitForgotPassword(modalEl, form) {
 }
 
 function maskIdentifier(value) {
-    if (value.includes("@")) {
-        const [local, domain] = value.split("@");
-        return `${local[0] ?? ""}***@${domain}`;
-    }
-    return `${"*".repeat(Math.max(value.length - 3, 0))}${value.slice(-3)}`;
+    const [local = "", domain = ""] = value.split("@");
+    return `${local[0] ?? ""}***@${domain}`;
 }
 
 function showError(form, message) {
@@ -130,9 +133,7 @@ function clearError(form) {
         errorEl.textContent = "";
         errorEl.classList.add("d-none");
     }
-    form.querySelector('input[name="identifier"]')?.classList.remove(
-        "is-invalid",
-    );
+    clearInvalidWithoutFieldError(form);
 }
 
 document.addEventListener("DOMContentLoaded", initForgotPassword);
