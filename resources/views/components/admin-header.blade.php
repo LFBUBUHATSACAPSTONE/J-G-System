@@ -17,7 +17,7 @@ $navLabel = collect(config('admin.nav', []))
 $appName = config('admin.name', 'J&G Admin');
 $label = $page['title'] ?? $navLabel;
 
-$title = $title ?? ($label ? "{$label} | {$appName}" : $appName);
+$title = $title ?? ($label ? "{$label} - {$appName}" : $appName);
 $description = $description ?? $page['description'] ?? config('admin.default_description');
 $noindex = $noindex ?? $page['noindex'] ?? config('admin.noindex', true);
 $imageUrl = asset(config('admin.logo', 'images/logo/J&G_official_logo.webp'));
@@ -46,6 +46,6 @@ $imageUrl = asset(config('admin.logo', 'images/logo/J&G_official_logo.webp'));
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
 
-@vite(['resources/sass/admin.scss', 'resources/js/admin.js'])
+@vite(['resources/sass/admin.scss', 'resources/js/admin.js', 'resources/css/tailwind.css'])
 
 <title>{{ $title }}</title>

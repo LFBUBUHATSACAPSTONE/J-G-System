@@ -18,15 +18,60 @@
  * dispatches a bubbling `booking:previous` CustomEvent, same as
  * event-information.js.
  *
+ * Event limit (config/scheduling.php, max 3 events per day + min 120-minute gap):
+ *   - GET `booking.availability` ?month=YYYY-MM -> { limit, gap_minutes, month, full: ["YYYY-MM-DD", …] }
+ *     is called when the step opens and on every month change. A day is `full` when it is
+ *     at the event limit OR its existing bookings (plus the gap around each) cover the
+ *     whole clock — no time left that could fit another event. Full days get `.is-full`,
+ *     aria-disabled and a "fully booked" label, and can't be picked or included in a range.
+ *     If the call fails the calendar stays usable: the server still rejects a full day on submit.
+ *   - Two bookings on the same day may not overlap and need the configured gap between
+ *     them (an event ending at 3 PM holds the slot until 5 PM). The server answers a
+ *     422 with `errors.start_time` (and NO `full_dates`) naming the blocked window; the
+ *     generic error path below shows it under the time fields.
+ *   - A `booking:schedule-conflict` event (detail: { fullDates, message })
+ *     marks those days full, clears the selection and shows the message.
+ *     This step fires it on a 422 that carries `full_dates`; the Booking
+ *     Summary step fires it too, and booking-flow.js sends the client back here.
+ *   - A `booking:schedule-time-conflict` event (detail: { message }) is fired
+ *     by the Booking Summary step when the server rejects the times (overlap or
+ *     too-small gap). booking-flow.js sends the client back here and this step
+ *     shows the message under the time fields without clearing the selection.
+ *
+ * Reschedule mode: data-initial-month="YYYY-MM" opens the calendar on the original booking's
+ * month. Users can navigate through any current or future month. If the viewed month has no open
+ * days, the calendar stays visible so they can move to another month. The submit also sends
+ * `reschedule_id` (from #bookingFlow[data-reschedule-id]); the server checks availability and
+ * whether the original booking is still eligible for rescheduling.
+ *
  * Expected back-end contract for `booking.event-schedule`:
  *   200 JSON -> saved, caller advances to the next step
  *   422 {"message": "…", "errors": {"event_start_date": ["…"], …}} -> rejected
+ *   422 {"message": "…", "errors": {"start_time": ["…"]}}
+ *       -> the time overlaps an existing booking or breaks the required gap
+ *   422 {"message": "…", "errors": {…}, "full_dates": ["YYYY-MM-DD", …]}
+ *       -> a day in the range is at the event limit or fully covered (race: someone else took it)
  */
 
 import { getCsrfToken } from "../auth/csrf.js";
 import { setFieldState } from "../auth/validation.js";
 
 const FORM_ID = "event-schedule-form";
+
+// Class strings for the elements this file builds (Phase 9D). Written whole so Tailwind can find them
+// (js/booking/event-schedule.js is in the @source list of css/tailwind.css). The state classes the code below
+// toggles (`is-weekend`, `is-selected`, `is-full`) are read by the variants; their precedence is the old Sass one:
+// selected > fully booked / disabled > weekend > normal.
+const DAY_CLASS =
+    "flex aspect-square cursor-pointer items-center justify-center rounded-lg bg-transparent text-[0.85rem] text-auth-text [border:0] " +
+    "[&.is-weekend:not(.is-selected):not(:disabled):not(.is-full)]:text-auth-danger " +
+    "[&:not(:disabled):not(.is-selected):hover]:bg-auth-overlay-soft " +
+    "[&.is-selected:not(.is-full)]:bg-brand [&.is-selected]:font-bold " +
+    "focus-visible:shadow-[0_0_0_3px_var(--color-auth-focus-soft)] focus-visible:outline-none " +
+    "disabled:cursor-not-allowed disabled:text-auth-text-faint " +
+    "[&.is-full]:cursor-not-allowed [&.is-full]:text-auth-text-faint [&.is-full]:line-through [&.is-full]:shadow-[inset_0_0_0_1px_var(--color-auth-danger)]";
+const THUMB_CLASS =
+    "pointer-events-none absolute inset-y-0 left-0 z-0 w-1/2 rounded-md bg-brand transition-transform duration-250 ease-[ease]";
 const WEEKDAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 const MONTH_LABELS = [
     "January",
@@ -92,9 +137,24 @@ function initCalendar(form) {
     const rangeLabel = form.querySelector("[data-selected-range]");
 
     const today = startOfDay(new Date());
+    // Rescheduling opens on the original booking's month, but remains navigable from this month
+    // onward. The server separately enforces the original booking's reschedule eligibility.
+    const initialMonth = /^\d{4}-(0[1-9]|1[0-2])$/.test(
+        root.dataset.initialMonth ?? "",
+    )
+        ? root.dataset.initialMonth
+        : null;
     const minView = { year: today.getFullYear(), month: today.getMonth() };
-    const view = { ...minView };
+    const view = initialMonth
+        ? {
+              year: Number(initialMonth.slice(0, 4)),
+              month: Number(initialMonth.slice(5, 7)) - 1,
+          }
+        : { ...minView };
+    const emptyEl = form.querySelector("[data-reschedule-empty]");
     const selection = { start: null, end: null };
+    const availabilityUrl = root.dataset.availabilityUrl;
+    const fullDates = new Set(); // days at the event limit, as local YYYY-MM-DD strings
 
     const render = () => {
         label.textContent = `${MONTH_LABELS[view.month]} ${view.year}`;
@@ -102,7 +162,6 @@ function initCalendar(form) {
             "is-invisible",
             view.year === minView.year && view.month === minView.month,
         );
-
         daysEl.innerHTML = "";
         const firstDay = new Date(view.year, view.month, 1);
         const daysInMonth = new Date(view.year, view.month + 1, 0).getDate();
@@ -118,7 +177,7 @@ function initCalendar(form) {
 
             const btn = document.createElement("button");
             btn.type = "button";
-            btn.className = "event-schedule__day";
+            btn.className = DAY_CLASS;
             btn.textContent = day;
             btn.dataset.date = iso;
             if (weekday === 0 || weekday === 6) btn.classList.add("is-weekend");
@@ -126,12 +185,46 @@ function initCalendar(form) {
                 btn.classList.add("is-selected");
             }
             if (date < today) btn.disabled = true;
+            if (fullDates.has(iso)) {
+                // aria-disabled (not disabled) so the label is still announced.
+                btn.classList.add("is-full");
+                btn.setAttribute("aria-disabled", "true");
+                btn.setAttribute(
+                    "aria-label",
+                    `${formatDisplayDate(iso)}, fully booked`,
+                );
+                btn.title = "Fully booked";
+            }
 
-            btn.addEventListener("click", () => selectDate(iso));
+            btn.addEventListener("click", () => {
+                if (btn.classList.contains("is-full")) return;
+                selectDate(iso);
+            });
             daysEl.appendChild(btn);
         }
 
         updateRangeLabel();
+        updateEmptyState();
+    };
+
+    // Keep the calendar and Continue visible when a month is full so users can navigate onward.
+    const updateEmptyState = () => {
+        if (!initialMonth || !emptyEl) return;
+        const daysInMonth = new Date(view.year, view.month + 1, 0).getDate();
+        let open = false;
+        for (let day = 1; day <= daysInMonth && !open; day++) {
+            const date = new Date(view.year, view.month, day);
+            open = date >= today && !fullDates.has(toIso(date));
+        }
+        emptyEl.classList.toggle("d-none", open);
+        if (!open) {
+            const message = emptyEl.querySelector(
+                "[data-reschedule-empty-message]",
+            );
+            if (message) {
+                message.textContent = `Every remaining day in ${MONTH_LABELS[view.month]} ${view.year} is past or fully booked. Try another month.`;
+            }
+        }
     };
 
     const updateRangeLabel = () => {
@@ -148,7 +241,56 @@ function initCalendar(form) {
         rangeLabel.classList.add("has-value");
     };
 
+    const monthKey = () =>
+        `${view.year}-${String(view.month + 1).padStart(2, "0")}`;
+
+    const clearSelection = () => {
+        selection.start = null;
+        selection.end = null;
+        startInput.value = "";
+        endInput.value = "";
+    };
+
+    // A range may not cover a full day, even one in between its ends.
+    const rangeHasFull = (from, to) =>
+        daysBetween(from, to).some((d) => fullDates.has(d));
+
+    // Fresh data can turn the picked day(s) full. Never keep such a selection.
+    const dropSelectionIfFull = () => {
+        if (!selection.start || !rangeHasFull(selection.start, selection.end))
+            return;
+        clearSelection();
+        showError(
+            form,
+            "The dates you selected just became fully booked. Please choose again.",
+            [root],
+        );
+    };
+
+    // Replaces what we know about the viewed month with the server's answer, so a day that
+    // was freed (a cancellation) opens up again.
+    const loadAvailability = async () => {
+        if (!availabilityUrl) return;
+        const key = monthKey();
+        try {
+            const response = await fetch(`${availabilityUrl}?month=${key}`, {
+                headers: { Accept: "application/json" },
+            });
+            if (!response.ok) return;
+            const data = await response.json();
+            [...fullDates]
+                .filter((d) => d.startsWith(key))
+                .forEach((d) => fullDates.delete(d));
+            (data.full ?? []).forEach((d) => fullDates.add(d));
+            dropSelectionIfFull();
+            render();
+        } catch {
+            // Fail open: the server still refuses a full day when the step is submitted.
+        }
+    };
+
     const selectDate = (iso) => {
+        if (fullDates.has(iso)) return;
         if (!selection.start || selection.start !== selection.end) {
             // Nothing picked yet, or a full multi-day range was already
             // picked — start a fresh selection. A single click alone is
@@ -163,7 +305,15 @@ function initCalendar(form) {
             selection.end = iso;
         } else {
             // Same day again (no-op) or a later day — extend into a
-            // multi-day range.
+            // multi-day range, unless it would cover a fully booked day.
+            if (rangeHasFull(selection.start, iso)) {
+                showError(
+                    form,
+                    "That range includes a fully booked day. Pick dates without one.",
+                    [root],
+                );
+                return;
+            }
             selection.end = iso;
         }
         startInput.value = selection.start ?? "";
@@ -179,6 +329,7 @@ function initCalendar(form) {
             view.year -= 1;
         }
         render();
+        loadAvailability();
     });
 
     nextBtn.addEventListener("click", () => {
@@ -188,15 +339,85 @@ function initCalendar(form) {
             view.year += 1;
         }
         render();
+        loadAvailability();
     });
 
+    // A day filled up after the client picked it (this step's 422, or the Booking Summary's).
+    document.addEventListener("booking:schedule-conflict", (event) => {
+        const { fullDates: dates = [], message } = event.detail ?? {};
+        dates.forEach((d) => fullDates.add(d));
+        clearSelection();
+
+        // Show the month of the first full day so the client sees what changed.
+        const first = [...dates].sort()[0];
+        if (first) {
+            const [y, m] = first.split("-").map(Number);
+            if (
+                y > minView.year ||
+                (y === minView.year && m - 1 >= minView.month)
+            ) {
+                view.year = y;
+                view.month = m - 1;
+            }
+        }
+        render();
+        showError(
+            form,
+            message ||
+                "That day is no longer available. Please choose another date.",
+            [root],
+        );
+        loadAvailability();
+    });
+
+    // The Booking Summary rejected the times (overlap or too-small gap). Show it under the time
+    // fields; the calendar selection and the typed times are still in the DOM, so nothing is
+    // cleared — the client just adjusts the time and tries again.
+    document.addEventListener("booking:schedule-time-conflict", (event) => {
+        const inputs = [
+            form.querySelector('[name="start_time"]'),
+            form.querySelector('[name="end_time"]'),
+        ]
+            .map((input) => input?.closest(".event-schedule__time-field"))
+            .filter(Boolean);
+        showError(
+            form,
+            event.detail?.message ||
+                "That time overlaps an existing booking or breaks the required gap. Please choose another time.",
+            inputs,
+        );
+    });
+
+    // The other steps live in the same page, so refresh whenever this one becomes visible again.
+    const step = form.closest(".booking-flow__view");
+    if (step) {
+        new MutationObserver(() => {
+            if (!step.classList.contains("d-none")) loadAvailability();
+        }).observe(step, { attributes: true, attributeFilter: ["class"] });
+    }
+
     render();
+    loadAvailability();
 }
 
 function startOfDay(date) {
     const d = new Date(date);
     d.setHours(0, 0, 0, 0);
     return d;
+}
+
+// Every local YYYY-MM-DD from `from` to `to`, both included.
+function daysBetween(from, to) {
+    const days = [];
+    const [y, m, d] = from.split("-").map(Number);
+    const cursor = new Date(y, m - 1, d);
+    for (let guard = 0; guard < 400; guard++) {
+        const iso = toIso(cursor);
+        if (iso > to) break;
+        days.push(iso);
+        cursor.setDate(cursor.getDate() + 1);
+    }
+    return days;
 }
 
 function toIso(date) {
@@ -235,7 +456,7 @@ function initTimeField(input) {
     // translateX() to whichever button is active, so AM/PM glides
     // instead of the highlight jumping.
     const thumb = document.createElement("div");
-    thumb.className = "event-schedule__ampm-thumb";
+    thumb.className = THUMB_CLASS;
     group.prepend(thumb);
 
     const moveThumb = () => {
@@ -257,29 +478,63 @@ function initTimeField(input) {
 }
 
 /*
- Turns raw keystrokes into a masked H:MM / HH:MM string. Only "10", "11"
- and "12" ever use two hour digits — typing "9" then "3" reads as 9:03,
- not the impossible 09/3 — and the minute is clamped a digit at a time
- (tens digit capped at 5, full pair capped at 59).
+ Turns raw keystrokes into a masked H:MM / HH:MM string. Digits alone are ambiguous at the
+ hour: "1" then "0" could be 1:0x or 10:xx, so the hour is resolved three ways, in order:
+   1. an explicit separator wins ("1:00" -> hour 1; "10:00" -> hour 10), so 1:00-1:29 can be
+      typed. "." counts as a colon, because phone number keypads have a period but often no
+      colon: "1.00" -> 1:00;
+   2. a leading zero means a one-digit hour ("0100" -> 1:00);
+   3. otherwise only "10", "11" and "12" use two hour digits — typing "9" then "3" reads as
+      9:03, not the impossible 09/3.
+ The minute is clamped a digit at a time (tens digit capped at 5, full pair capped at 59).
 */
 function formatTimeDigits(raw) {
+    const clampHour = (hour) => {
+        const hourNum = Number(hour);
+        if (hourNum === 0) return "";
+        return hourNum > 12 ? "12" : String(hourNum);
+    };
+    const clampMinute = (minute) => {
+        if (minute.length === 1 && Number(minute) > 5) return "5";
+        if (minute.length === 2 && Number(minute) > 59) return "59";
+        return minute;
+    };
+
+    // 1. Explicit separator (":" or "."): the digits before it are the hour, the digits after it
+    // the minute.
+    const colonAt = raw.search(/[:.]/);
+    if (colonAt > 0) {
+        const hour = clampHour(
+            raw.slice(0, colonAt).replace(/\D/g, "").slice(0, 2),
+        );
+        if (!hour) return "";
+        const minute = clampMinute(
+            raw
+                .slice(colonAt + 1)
+                .replace(/\D/g, "")
+                .slice(0, 2),
+        );
+        return `${hour}:${minute}`;
+    }
+
     const digits = raw.replace(/\D/g, "").slice(0, 4);
     if (!digits) return "";
 
+    // 2. Leading zero: "01".."09" is a one-digit hour.
+    if (digits[0] === "0" && digits.length > 1 && digits[1] !== "0") {
+        const hour = digits[1];
+        const minute = clampMinute(digits.slice(2, 4));
+        return minute ? `${hour}:${minute}` : hour;
+    }
+
+    // 3. Only "10", "11" and "12" take two hour digits.
     const hourLen =
         digits.length >= 2 && ["10", "11", "12"].includes(digits.slice(0, 2))
             ? 2
             : 1;
 
-    let hour = digits.slice(0, hourLen);
-    let minute = digits.slice(hourLen, hourLen + 2);
-
-    const hourNum = Number(hour);
-    if (hourNum === 0) hour = "";
-    else if (hourNum > 12) hour = "12";
-
-    if (minute.length === 1 && Number(minute) > 5) minute = "5";
-    if (minute.length === 2 && Number(minute) > 59) minute = "59";
+    const hour = clampHour(digits.slice(0, hourLen));
+    const minute = clampMinute(digits.slice(hourLen, hourLen + 2));
 
     return minute ? `${hour}:${minute}` : hour;
 }
@@ -307,6 +562,28 @@ function toMinutes(value, period) {
     return hour * 60 + minute;
 }
 
+// An event must run at least one hour (start to end, across all its days).
+const MIN_EVENT_MINUTES = 60;
+
+// Returns '' when the length is fine or can't be checked yet (a date or time
+// is missing/invalid, which the other checks report).
+function getDurationError(startDate, endDate, startMinutes, endMinutes) {
+    if (!startDate || !endDate || startMinutes === null || endMinutes === null)
+        return "";
+
+    const dayDiff = Math.round(
+        (Date.parse(`${endDate}T00:00:00Z`) -
+            Date.parse(`${startDate}T00:00:00Z`)) /
+            86400000,
+    );
+    const duration = dayDiff * 1440 + endMinutes - startMinutes;
+
+    if (duration <= 0) return "End time must be later than start time.";
+    if (duration < MIN_EVENT_MINUTES)
+        return "The event must be at least 1 hour long.";
+    return "";
+}
+
 async function submitEventSchedule(form) {
     const field = (name) => form.querySelector(`[name="${name}"]`);
     const startDateInput = field("event_start_date");
@@ -323,6 +600,8 @@ async function submitEventSchedule(form) {
     const submitBtn = document.querySelector(
         `[form="${form.id}"][type="submit"]`,
     );
+
+    const rescheduleId = form.closest("#bookingFlow")?.dataset.rescheduleId;
 
     clearError(form);
 
@@ -346,17 +625,22 @@ async function submitEventSchedule(form) {
         ],
         [
             endTimeInput.closest(".event-schedule__time-field"),
-            // Only a same-day event has a strict, checkable ordering —
-            // a multi-day range can legitimately end earlier in the
-            // clock than it starts (it just spans into the next day).
-            startDateInput.value &&
-            startDateInput.value === endDateInput.value &&
-            !getTimeError(startTimeInput.value, "Start time") &&
-            !getTimeError(endTimeInput.value, "End time") &&
-            toMinutes(endTimeInput.value, getPeriod(endAmpmGroup)) <=
-                toMinutes(startTimeInput.value, getPeriod(startAmpmGroup))
-                ? "End time must be later than start time."
-                : "",
+            // Whole event length (dates + times) must be at least one hour.
+            // A multi-day range can end earlier in the clock than it starts,
+            // so the length is measured across the dates, not the clock alone.
+            getDurationError(
+                startDateInput.value,
+                endDateInput.value,
+                getTimeError(startTimeInput.value, "Start time")
+                    ? null
+                    : toMinutes(
+                          startTimeInput.value,
+                          getPeriod(startAmpmGroup),
+                      ),
+                getTimeError(endTimeInput.value, "End time")
+                    ? null
+                    : toMinutes(endTimeInput.value, getPeriod(endAmpmGroup)),
+            ),
             "end_time",
         ],
     ];
@@ -379,6 +663,7 @@ async function submitEventSchedule(form) {
                 "X-CSRF-TOKEN": getCsrfToken(form),
             },
             body: JSON.stringify({
+                ...(rescheduleId ? { reschedule_id: rescheduleId } : {}),
                 event_start_date: startDateInput.value,
                 event_end_date: endDateInput.value,
                 start_time: `${startTimeInput.value.trim()} ${getPeriod(startAmpmGroup)}`,
@@ -388,6 +673,21 @@ async function submitEventSchedule(form) {
 
         if (!response.ok) {
             const data = await response.json().catch(() => ({}));
+
+            // A day in the range is at the event limit: the calendar takes it from here.
+            if (Array.isArray(data.full_dates) && data.full_dates.length) {
+                form.dispatchEvent(
+                    new CustomEvent("booking:schedule-conflict", {
+                        bubbles: true,
+                        detail: {
+                            fullDates: data.full_dates,
+                            message: data.message,
+                        },
+                    }),
+                );
+                return;
+            }
+
             const errors = data.errors ?? {};
             const invalidInputs = Object.keys(errors)
                 .map((name) => {

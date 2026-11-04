@@ -1,7 +1,7 @@
 class CoverflowCarousel {
     constructor(root) {
         this.root = root;
-        this.slides = Array.from(root.querySelectorAll(".coverflow__slide"));
+        this.slides = Array.from(root.querySelectorAll("[data-index]"));
         this.interval = parseInt(root.dataset.interval || "2000", 10);
         this.currentIndex = 0;
         this.timer = null;
@@ -12,7 +12,7 @@ class CoverflowCarousel {
 
         // Snap into place on first paint, then enable transitions for all later moves
         requestAnimationFrame(() => {
-            requestAnimationFrame(() => root.classList.add("coverflow--ready"));
+            requestAnimationFrame(() => root.setAttribute("data-ready", ""));
         });
 
         this.play();
@@ -23,25 +23,18 @@ class CoverflowCarousel {
         const half = Math.floor(total / 2);
 
         this.slides.forEach((slide, i) => {
-            slide.classList.remove(
-                "is-center",
-                "is-left-1",
-                "is-left-2",
-                "is-right-1",
-                "is-right-2",
-                "is-hidden",
-            );
-
             let diff = (i - this.currentIndex) % total;
             if (diff > half) diff -= total;
             if (diff < -half) diff += total;
 
-            if (diff === 0) slide.classList.add("is-center");
-            else if (diff === 1) slide.classList.add("is-right-1");
-            else if (diff === 2) slide.classList.add("is-right-2");
-            else if (diff === -1) slide.classList.add("is-left-1");
-            else if (diff === -2) slide.classList.add("is-left-2");
-            else slide.classList.add("is-hidden");
+            // The position is an attribute; the utilities in coverflow-carousel.blade.php read it.
+            let pos = "hidden";
+            if (diff === 0) pos = "center";
+            else if (diff === 1) pos = "right-1";
+            else if (diff === 2) pos = "right-2";
+            else if (diff === -1) pos = "left-1";
+            else if (diff === -2) pos = "left-2";
+            slide.dataset.pos = pos;
         });
     }
 

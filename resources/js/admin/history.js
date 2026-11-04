@@ -1,5 +1,7 @@
 // Admin Booking History page: state tabs, filters, sort and search over the rows already on the
 // page.
+// The phone filter sheet (chips, count badge, "Clear all") is started by bookings.js for every
+// [data-filter-bar], so this file only has to announce each apply() (see the end of apply()).
 // Row markup comes from <x-admin.booking-row :history="true">: each <tr> carries
 //   data-status-group (ongoing | upcoming | completed | cancelled), data-rank, data-date (start),
 //   data-month (Y-m of the start date), data-package, data-name, data-search.
@@ -85,6 +87,9 @@ function init() {
 
         emptyMessage.hidden = visible.size > 0;
         count.textContent = `Showing ${visible.size} of ${rows.length} bookings`;
+
+        // Lets the filter bar (chips + badge) follow along, same event as the Bookings page.
+        document.dispatchEvent(new CustomEvent("admin:filters-applied"));
     }
 
     tabs.forEach((tab) =>

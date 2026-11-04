@@ -37,7 +37,7 @@ return [
     'admin.bookings' => [
       'heading'     => 'Bookings',
       'subheading'  => 'Review requests and verify payments',
-      'description' => 'Review, confirm or decline incoming booking requests and verify GCash payments.',
+      'description' => 'Review, confirm or decline incoming booking requests and verify payments.',
     ],
     'admin.messages' => [
       'heading'     => 'Messages',
@@ -77,7 +77,7 @@ return [
   'nav' => [
     ['label' => 'Dashboard',       'route' => 'admin.dashboard',       'active' => 'admin.dashboard',        'icon' => 'chart-bar'],
     ['label' => 'Bookings',        'route' => 'admin.bookings',        'active' => 'admin.bookings*',        'icon' => 'notebook'],
-    ['label' => 'Message',         'route' => 'admin.messages',        'active' => 'admin.messages*',        'icon' => 'chat-text'],
+    ['label' => 'Messages',         'route' => 'admin.messages',        'active' => 'admin.messages*',        'icon' => 'chat-text'],
     ['label' => 'Booking History', 'route' => 'admin.booking-history', 'active' => 'admin.booking-history*', 'icon' => 'clock-counter-clockwise'],
     ['label' => 'Packages',        'route' => 'admin.packages',        'active' => 'admin.packages*',        'icon' => 'package'],
     ['label' => 'Calendar',        'route' => 'admin.calendar',        'active' => 'admin.calendar*',        'icon' => 'calendar-dots'],

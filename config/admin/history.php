@@ -14,7 +14,8 @@ return [
   //
   // 'partial' = a verified down payment. Remove it from this list if only fully paid bookings
   // should appear here.
-  'terminal_statuses' => ['cancelled', 'declined'],
+  // Legacy `user_cancelled` records remain in history under the shared `cancelled` group.
+  'terminal_statuses' => ['cancelled', 'admin_cancelled', 'declined', 'user_cancelled'],
   'history_statuses'  => ['approved', 'completed'],
   'paid_states'       => ['paid', 'partial'],
 
@@ -23,12 +24,12 @@ return [
   //   Ongoing   = today is between the start and end date, inclusive
   //   Completed = from the day AFTER the end date
   // Cancelled and Declined are not phases: they keep their own badge from config/admin-bookings.php
-  // and share the `cancelled` group, so these two keys only add the rank and the edit lock.
+  // and share the `cancelled` group, so these keys only add the rank and the edit lock.
   //
   // rank        => Default sort order (lowest first)
   // group       => tab the row belongs to (matches 'tabs' below)
   // highlight   => draws an outline + chip on the row; highlight_class / chip / chip_class style it
-  // editable    => false hides Edit in the View Details modal
+  // editable    => no longer read: the History modal is view-only for every phase (row sets editable = ! $history)
   // icon        => Phosphor icon name (ph-<icon>) inside the badge; decorative
   // badge       => the read-only badge in the Status column (tone: brand | success | warning | danger | neutral)
   'phases' => [
@@ -70,11 +71,11 @@ return [
 
   // State tabs above the filters. Keys must match the `group` values above ('all' shows everything).
   'tabs' => [
-    'all'       => 'All',
-    'ongoing'   => 'Ongoing',
-    'upcoming'  => 'Upcoming',
-    'completed' => 'Completed',
-    'cancelled' => 'Cancelled', // includes Declined
+    'all'            => 'All',
+    'ongoing'        => 'Ongoing',
+    'upcoming'       => 'Upcoming',
+    'completed'      => 'Completed',
+    'cancelled'      => 'Cancelled', // includes Declined
   ],
 
   // "Sorted by:" dropdown. Keys are handled in resources/js/admin/history.js.

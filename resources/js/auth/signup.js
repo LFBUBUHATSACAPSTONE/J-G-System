@@ -22,6 +22,7 @@ import {
     getIdentifierError,
     getPasswordError,
     getNameError,
+    getOptionalNameError,
     wireLiveFieldImmediate,
     clearInvalidWithoutFieldError,
     clearAllFieldStates,
@@ -43,9 +44,13 @@ function initSignup() {
         // each validator sees the already-filtered value (otherwise a typed
         // "1" would flash an error for text that is about to be removed).
         initNameFilter(form, "first_name");
+        initNameFilter(form, "middle_name");
         initNameFilter(form, "last_name");
         wireLiveFieldImmediate(form, "first_name", (v) =>
             getNameError(v, "First name"),
+        );
+        wireLiveFieldImmediate(form, "middle_name", (v) =>
+            getOptionalNameError(v, "Middle name"),
         );
         wireLiveFieldImmediate(form, "last_name", (v) =>
             getNameError(v, "Last name"),
@@ -55,7 +60,7 @@ function initSignup() {
         wireLiveFieldImmediate(form, "password", getPasswordError);
 
         /* Checkboxes don't fit wireLiveFieldImmediate's 'input' pattern (there's nothing to "type"), so this listens to 'change' directly. Only clears the error once checked — unchecking after already having agreed re-flags it immediately, same as any other live field.
-        */
+         */
         const termsInput = form.querySelector('[name="terms"]');
         const termsError = form.querySelector('[data-field-error="terms"]');
         termsInput?.addEventListener("change", () => {
@@ -101,6 +106,7 @@ function initNameFilter(form, fieldName) {
 async function submitSignup(modalEl, form) {
     const field = (name) => form.querySelector(`[name="${name}"]`);
     const firstNameInput = field("first_name");
+    const middleNameInput = field("middle_name");
     const lastNameInput = field("last_name");
     const identifierInput = field("identifier");
     const passwordInput = field("password");
@@ -111,6 +117,10 @@ async function submitSignup(modalEl, form) {
 
     const checks = [
         [firstNameInput, getNameError(firstNameInput.value, "First name")],
+        [
+            middleNameInput,
+            getOptionalNameError(middleNameInput.value, "Middle name"),
+        ],
         [lastNameInput, getNameError(lastNameInput.value, "Last name")],
         [identifierInput, getIdentifierError(identifierInput.value)],
         [passwordInput, getPasswordError(passwordInput.value)],
@@ -140,9 +150,14 @@ async function submitSignup(modalEl, form) {
             },
             body: JSON.stringify({
                 first_name: firstNameInput.value.trim(),
+                middle_name: middleNameInput.value.trim(),
                 last_name: lastNameInput.value.trim(),
                 identifier,
+                // The register endpoint validates `email` and a confirmed
+                // password, so send those names too (the field is email-only).
+                email: identifier,
                 password: passwordInput.value,
+                password_confirmation: passwordInput.value,
                 terms: field("terms").checked,
             }),
         });
@@ -150,8 +165,13 @@ async function submitSignup(modalEl, form) {
         if (!response.ok) {
             const data = await response.json().catch(() => ({}));
             const errors = data.errors ?? {};
+            // Server error keys `email` / `phone` belong to the Email input.
+            const inputName = (name) =>
+                name === "email" || name === "phone" ? "identifier" : name;
             const invalidInputs = Object.keys(errors)
-                .map((name) => form.querySelector(`[name="${name}"]`))
+                .map((name) =>
+                    form.querySelector(`[name="${inputName(name)}"]`),
+                )
                 .filter(Boolean);
             showError(
                 form,

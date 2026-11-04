@@ -1,0 +1,19 @@
+// Keeps Chrome's light-blue/white autofill from painting over the dark inputs.
+// Shared by the user auth modal, the admin sign-in and the booking inputs.
+// Imported after the tokens ($auth-field-bg, $auth-text-primary, $auth-focus-ring-soft).
+@mixin booking-autofill($bg: $auth-field-bg) {
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus {
+        -webkit-text-fill-color: $auth-text-primary;
+        caret-color: $auth-text-primary;
+        box-shadow: 0 0 0 1000px $bg inset;
+        transition: background-color 9999s ease-out 0s;
+    }
+
+    &:-webkit-autofill:focus {
+        box-shadow:
+            0 0 0 1000px $bg inset,
+            0 0 0 3px $auth-focus-ring-soft;
+    }
+}

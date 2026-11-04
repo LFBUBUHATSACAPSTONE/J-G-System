@@ -1,5 +1,19 @@
+import { initFilterSheet } from "./filter-sheet.js";
+import { openActionModal, reasonError } from "../shared/action-modal.js";
+import { initCancellation } from "./cancellation.js";
+import {
+    getRequiredError,
+    getEmailError,
+    getContactNumberError,
+    getNameError,
+    isContactNumberUntouched,
+    wireLiveField,
+    wireLiveFieldImmediate,
+    setFieldState,
+} from "../auth/validation.js"; // shared with the user-side booking form
+
 // Admin Bookings page: filter / sort / search the rows (also from ?status= ?package= ?booking=
-// links, see applyQueryParams), fill the booking modal, confirm destructive actions. No framework. The modal and confirm prompt are shared with the
+// links, see applyQueryParams), fill the booking modal, confirm destructive actions. The modal and confirm prompt are shared with the
 // The modal itself is Bootstrap's (admin.js already loads Bootstrap for the sidebar offcanvas).
 
 const getPath = (obj, path) =>
@@ -59,6 +73,9 @@ function initList(body) {
 
         emptyMessage.hidden = visible.size > 0;
         count.textContent = `Showing ${visible.size} of ${rows.length} bookings`;
+
+        // Lets the filter bar (chips + badge) follow along, including after deep-link params.
+        document.dispatchEvent(new CustomEvent("admin:filters-applied"));
     }
 
     [sortSelect, statusSelect, packageSelect].forEach((el) =>
@@ -138,18 +155,125 @@ function applyQueryParams({
     );
 }
 
-//  Modal: fill from the clicked row, Edit toggle
+//  Modal: fill from the clicked row, Edit toggle, validation
+//  Validation mirrors the user-side booking form (resources/js/booking/client-information.js and
+//  event-information.js): the same helpers from ../auth/validation.js, the same messages, the same
+//  "filter while typing" rules (letters-only name, digits-only phone / guests). The form stays a
+//  normal PATCH post (novalidate); JS only blocks the submit while a field is invalid.
 function initModal(modal) {
     const form = modal.querySelector("form");
     const editButton = modal.querySelector("[data-booking-edit]");
     const saveButton = modal.querySelector("[data-booking-save]");
     const editable = [...modal.querySelectorAll("[data-editable]")];
     const urlTemplate = modal.dataset.updateUrlTemplate;
+    const lockDays = Number(modal.dataset.locationLockDays) || 0;
+    const banner = modal.querySelector("[data-booking-error]");
+
+    const field = (name) => form.querySelector(`[name="${name}"]`);
+    const errorFor = (name) =>
+        form.querySelector(`[data-field-error="${name}"]`);
+
+    const locationInput = field("event_location");
+    const lockNote = modal.querySelector("[data-location-lock]");
+    const typeSelect = field("event_type");
+    const typeOther = field("event_type_other");
+    const typeDisplay = modal.querySelector("[data-type-display]");
+    const typeSelectWrap = modal.querySelector("[data-type-select-wrap]");
+    const typeOtherWrap = modal.querySelector("[data-type-other-wrap]");
+    const typeLabel = modal.querySelector("[data-type-label]");
+    const othersTag = modal.querySelector("[data-others-tag]");
+    const typeChange = modal.querySelector("[data-type-change]");
 
     let current = null;
     let editing = false;
+    let locationLocked = false;
+
+    // Event Location locks from `location_lock_days` before the start date (config/scheduling.php).
+    // The backend must refuse the change as well; this only greys the field out.
+    function isLocationLocked(booking) {
+        const start = booking?.event?.start_date;
+        if (!start || !lockDays) return false;
+        const [year, month, day] = start.split("-").map(Number);
+        const lockFrom = new Date(year, month - 1, day - lockDays);
+        const now = new Date();
+        const today = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate(),
+        );
+        return today >= lockFrom;
+    }
+
+    // "Edited" label + the client's original value, from booking.edited = { path: original }.
+    function renderEdited(booking) {
+        const edited = booking.edited ?? {};
+        modal.querySelectorAll("[data-edited-note]").forEach((note) => {
+            const path = note.dataset.editedNote;
+            const has = Object.prototype.hasOwnProperty.call(edited, path);
+            note.hidden = !has;
+            if (has) {
+                note.querySelector("[data-edited-original]").textContent =
+                    isEmpty(edited[path]) ? "--" : edited[path];
+            }
+        });
+    }
+
+    // Event type: text while viewing; dropdown while editing; "Others" turns the dropdown into a
+    // text field in the same spot and tags the label.
+    function syncType() {
+        const isOthers = typeSelect.value === "Others";
+        const wasOthers = current?.event?.type_value === "Others";
+
+        typeDisplay.hidden = editing;
+        typeSelectWrap.hidden = !editing || isOthers;
+        typeOtherWrap.hidden = !editing || !isOthers;
+        othersTag.hidden = !(editing ? isOthers : wasOthers);
+        // The dropdown moves its id onto its visible button, so the label can point at it.
+        typeLabel.htmlFor = !editing
+            ? typeDisplay.id
+            : isOthers
+              ? typeOther.id
+              : "bm-event-type-select";
+    }
+
+    // Proof of submission (payment.proof_url): thumbnail that opens full size, or the empty text.
+    // Only an http(s) or same-site URL (or an image data: URI) is used, anything else counts as none.
+    const proofLink = modal.querySelector("[data-proof-link]");
+    const proofImg = modal.querySelector("[data-proof-img]");
+    const proofEmpty = modal.querySelector("[data-proof-empty]");
+
+    function renderProof(booking) {
+        const url = booking.payment?.proof_url;
+        const usable =
+            typeof url === "string" &&
+            /^(https?:\/\/|\/|data:image\/)/i.test(url);
+        proofLink.hidden = !usable;
+        proofEmpty.hidden = usable;
+        if (usable) {
+            proofLink.href = url;
+            proofImg.src = url;
+        } else {
+            proofLink.removeAttribute("href");
+            proofImg.removeAttribute("src");
+        }
+    }
+
+    // Reason for cancelling / declining (booking.reason = {label, by, text} or null).
+    const reasonBox = modal.querySelector("[data-booking-reason]");
+    function renderReason(booking) {
+        const reason = booking.reason;
+        reasonBox.hidden = !reason;
+        if (!reason) return;
+        reasonBox.querySelector("[data-reason-label]").textContent =
+            reason.label;
+        reasonBox.querySelector("[data-reason-by]").textContent = reason.by
+            ? `Given by ${reason.by}`
+            : "";
+        reasonBox.querySelector("[data-reason-text]").textContent = reason.text;
+    }
 
     function fill(booking) {
+        renderReason(booking);
         modal.querySelectorAll("[data-booking-field]").forEach((el) => {
             const value = getPath(booking, el.dataset.bookingField);
 
@@ -169,10 +293,81 @@ function initModal(modal) {
             }
         });
 
-        form.action = urlTemplate.replace(
-            "__ID__",
-            encodeURIComponent(booking.id),
+        form.setAttribute(
+            "action",
+            urlTemplate.replace("__ID__", encodeURIComponent(booking.id)),
         );
+
+        locationLocked = isLocationLocked(booking);
+        lockNote.hidden = !(locationLocked && booking.editable !== false);
+        locationInput.classList.toggle("is-locked", locationLocked);
+        renderEdited(booking);
+        renderProof(booking);
+        syncType();
+    }
+
+    // ---- Errors -------------------------------------------------------------------------------
+    function clearErrors() {
+        form.querySelectorAll("[data-field-error]").forEach((el) => {
+            el.textContent = "";
+            el.classList.add("d-none");
+        });
+        form.querySelectorAll(".is-invalid").forEach((el) =>
+            el.classList.remove("is-invalid"),
+        );
+        showBanner("");
+    }
+
+    function showBanner(message) {
+        banner.textContent = message;
+        banner.hidden = !message;
+    }
+
+    // Same rules and messages as the user side. Returns [element, message, error key] per field.
+    function validate() {
+        const value = (name) => field(name).value;
+        const isOthers = typeSelect.value === "Others";
+        const contact = field("venue_contact_person");
+        const venueType = field("venue_type");
+
+        return [
+            [
+                field("client_name"),
+                getNameError(value("client_name"), "Client name"),
+            ],
+            [field("client_email"), getEmailError(value("client_email"))],
+            [
+                field("client_phone"),
+                getContactNumberError(value("client_phone")),
+            ],
+            [
+                field("client_address"),
+                getRequiredError(value("client_address"), "Address"),
+            ],
+            [
+                field("event_name"),
+                getRequiredError(value("event_name"), "Event name"),
+            ],
+            [typeSelect, typeSelect.value ? "" : "Select an event type."],
+            [
+                typeOther,
+                isOthers ? getRequiredError(typeOther.value, "Event type") : "",
+            ],
+            [
+                locationInput,
+                locationLocked
+                    ? ""
+                    : getRequiredError(locationInput.value, "Event location"),
+            ],
+            // Optional: only checked as a phone number if something was typed.
+            [
+                contact,
+                isContactNumberUntouched(contact.value)
+                    ? ""
+                    : getContactNumberError(contact.value),
+            ],
+            [venueType, venueType.value ? "" : "Select a venue type."],
+        ];
     }
 
     function setEditing(on) {
@@ -184,6 +379,9 @@ function initModal(modal) {
             if (el instanceof HTMLSelectElement) el.disabled = !on;
             else el.readOnly = !on;
         });
+        // A locked location stays read-only even in edit mode (it still posts its current value).
+        if (locationLocked) locationInput.readOnly = true;
+
         saveButton.hidden = !on;
         // Label and icon swap in place (the button holds an icon, so textContent would wipe it).
         const label = editButton.querySelector("[data-booking-edit-label]");
@@ -192,10 +390,98 @@ function initModal(modal) {
         if (icon) icon.className = `ph ${on ? "ph-x" : "ph-pencil-simple"}`;
 
         if (on) editable[0]?.focus();
+        else clearErrors();
         // Cancelling an edit puts the original values back.
         if (!on && wasEditing && current) fill(current);
+        syncType();
     }
 
+    // ---- Live feedback + input filters (same wiring as the user-side steps) -------------------
+    // The helpers check on blur / input; the gate keeps them quiet while the modal is read-only.
+    const gate = (check) => (value) => (editing ? check(value) : "");
+    wireLiveField(
+        form,
+        "client_name",
+        gate((v) => getNameError(v, "Client name")),
+    );
+    wireLiveFieldImmediate(form, "client_email", gate(getEmailError));
+    wireLiveFieldImmediate(form, "client_phone", gate(getContactNumberError));
+    wireLiveField(
+        form,
+        "client_address",
+        gate((v) => getRequiredError(v, "Address")),
+    );
+    wireLiveField(
+        form,
+        "event_name",
+        gate((v) => getRequiredError(v, "Event name")),
+    );
+    wireLiveField(
+        form,
+        "event_location",
+        gate((v) =>
+            locationLocked ? "" : getRequiredError(v, "Event location"),
+        ),
+    );
+    wireLiveFieldImmediate(
+        form,
+        "venue_contact_person",
+        gate(getContactNumberError),
+        {
+            allowEmpty: true,
+            isEmpty: isContactNumberUntouched,
+        },
+    );
+    wireLiveField(
+        form,
+        "event_type_other",
+        gate((v) => getRequiredError(v, "Event type")),
+    );
+
+    const filterInput = (name, pattern) =>
+        field(name).addEventListener("input", (event) => {
+            event.target.value = event.target.value.replace(pattern, "");
+        });
+    filterInput("client_name", /[^A-Za-z\s]/g); // letters only, like First/Last Name
+    filterInput("client_phone", /\D/g);
+    filterInput("venue_contact_person", /\D/g);
+    filterInput("guest_count", /\D/g);
+
+    // Plain class toggles on the native <select>s (the styled dropdown fires `change` on them).
+    typeSelect.addEventListener("change", () => {
+        setFieldState(typeSelect, errorFor("event_type"), "");
+        syncType();
+        if (typeSelect.value === "Others") typeOther.focus();
+    });
+    field("venue_type").addEventListener("change", (event) =>
+        setFieldState(event.target, errorFor("venue_type"), ""),
+    );
+    typeChange.addEventListener("click", () => {
+        typeSelect.value = ""; // goes through the dropdown, so its button updates too
+        typeOther.value = "";
+        setFieldState(typeOther, errorFor("event_type_other"), "");
+        syncType();
+        typeSelect.focus();
+    });
+
+    // is-invalid -> aria-invalid, for screen readers.
+    new MutationObserver((records) =>
+        records.forEach(({ target }) => {
+            if (target.matches("input, select"))
+                target.setAttribute(
+                    "aria-invalid",
+                    String(target.classList.contains("is-invalid")),
+                );
+        }),
+    ).observe(form, {
+        attributes: true,
+        attributeFilter: ["class"],
+        subtree: true,
+    });
+
+    form.addEventListener("input", () => showBanner(""));
+
+    // ---- Modal events -------------------------------------------------------------------------
     modal.addEventListener("show.bs.modal", (event) => {
         const trigger = event.relatedTarget;
         if (!trigger?.dataset.booking) return;
@@ -204,7 +490,7 @@ function initModal(modal) {
         setEditing(false);
         fill(current);
 
-        // History: finished and cancelled bookings are records, so they cannot be edited.
+        // History is a record, so there is nothing to edit there.
         editButton.hidden = current.editable === false;
     });
 
@@ -212,17 +498,183 @@ function initModal(modal) {
 
     editButton.addEventListener("click", () => setEditing(!editing));
 
-    // Enter inside a read-only field must not submit the form.
+    // Enter inside a read-only field must not submit the form; an edit with a bad field must not either.
     form.addEventListener("submit", (event) => {
-        if (!editing) event.preventDefault();
+        if (!editing) {
+            event.preventDefault();
+            return;
+        }
+
+        form.querySelectorAll('input[type="text"]').forEach((input) => {
+            input.value = input.value.trim();
+        });
+        if (typeSelect.value !== "Others") typeOther.value = ""; // no stale "Others" text
+        // Stored numbers may carry spaces ("0917 000 0001"); post plain digits like the user side.
+        ["client_phone", "venue_contact_person"].forEach((name) => {
+            field(name).value = field(name).value.replace(/\D/g, "");
+        });
+
+        const checks = validate();
+        checks.forEach(([el, message]) =>
+            setFieldState(el, errorFor(el.name), message),
+        );
+        const firstFailure = checks.find(([, message]) => message);
+        if (firstFailure) {
+            event.preventDefault();
+            showBanner("Please fix the highlighted fields, then save again.");
+            firstFailure[0].focus();
+        }
+    });
+
+    // After a failed save the backend redirects back with errors; restoreServerErrors (below)
+    // opens the booking and fires this so the admin lands in edit mode with the messages shown.
+    modal.addEventListener("booking:restore", ({ detail }) => {
+        setEditing(true);
+        Object.entries(detail.old).forEach(([name, value]) => {
+            const el = field(name);
+            if (!el || (el === locationInput && locationLocked)) return;
+            if (el.type !== "hidden" && el.name !== "_token")
+                el.value = value ?? "";
+        });
+        syncType();
+
+        const errors = Object.entries(detail.errors);
+        errors.forEach(([name, messages]) => {
+            const el = field(name);
+            if (el) setFieldState(el, errorFor(name), messages[0]);
+        });
+        if (errors.length)
+            showBanner(
+                "Some details could not be saved. Please check the highlighted fields.",
+            );
     });
 }
 
-//  Confirm destructive actions (Decline / Cancel)
+// Backend contract (docs/backend-impact.md, section 16): on a rejected save, redirect back with
+// the errors and old input and flash `edit_booking_id`. The modal then reopens on that booking.
+function restoreServerErrors(modal) {
+    const bookingId = modal.dataset.serverBooking;
+    const errors = JSON.parse(modal.dataset.serverErrors || "{}");
+    if (!bookingId || !Object.keys(errors).length) return;
+
+    const row = document.querySelector(
+        `[data-booking-row][data-booking-id="${bookingId}"]`,
+    );
+    const trigger = row?.querySelector('[data-bs-toggle="modal"]');
+    if (!trigger) return;
+
+    modal.addEventListener(
+        "shown.bs.modal",
+        () =>
+            modal.dispatchEvent(
+                new CustomEvent("booking:restore", {
+                    detail: {
+                        errors,
+                        old: JSON.parse(modal.dataset.serverOld || "{}"),
+                    },
+                }),
+            ),
+        { once: true },
+    );
+    trigger.click();
+}
+
+//  Status actions (Approve / Decline / Verify Payment / Cancel) open the shared action modal first.
+//  Decline and Cancel also ask for a required reason, posted as `reason` next to `action`.
 function initConfirm() {
-    document.addEventListener("submit", (event) => {
-        const message = event.target.dataset?.confirm;
-        if (message && !window.confirm(message)) event.preventDefault();
+    const actionModal = document.getElementById("bookingActionModal");
+
+    const feedbackBox = () =>
+        document.querySelector("[data-bookings-feedback]");
+    const showFeedback = (message) => {
+        const feedback = feedbackBox();
+        if (!feedback) return;
+        feedback.textContent = message;
+        feedback.dataset.tone = "danger";
+        feedback.hidden = false;
+        feedback.focus?.();
+    };
+
+    // One POST for every status form and for the booking modal's own form. Throws an Error with the
+    // server's message (field = "reason" when the server refused the reason itself).
+    async function post(form, formData) {
+        // Status buttons are named "action", which can shadow the form.action
+        // property in some browsers. Read the literal attribute to get the URL.
+        const actionUrl = form.getAttribute("action");
+        if (!actionUrl) throw new Error("The booking action URL is missing.");
+
+        const response = await fetch(actionUrl, {
+            method: form.getAttribute("method") || "GET",
+            body: formData,
+            headers: {
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+            },
+        });
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            const reasonMessage = result.errors?.reason?.[0];
+            const message =
+                reasonMessage ||
+                result.message ||
+                Object.values(result.errors || {})
+                    .flat()
+                    .join(" ");
+            const error = reasonError(
+                message || "The booking could not be updated.",
+            );
+            if (!reasonMessage) delete error.field;
+            throw error;
+        }
+
+        window.location.reload();
+    }
+
+    document.addEventListener("submit", async (event) => {
+        const form = event.target;
+        if (!(form instanceof HTMLFormElement)) return;
+
+        const isStatusForm = form.matches(".admin-bookings__action-form");
+        if (!isStatusForm && !form.closest("#bookingModal")) return;
+
+        event.preventDefault();
+        const feedback = feedbackBox();
+        if (feedback) {
+            feedback.hidden = true;
+            feedback.textContent = "";
+            delete feedback.dataset.tone;
+        }
+
+        const formData = new FormData(form, event.submitter);
+
+        if (isStatusForm && actionModal) {
+            const copy = JSON.parse(form.dataset.actionModalCopy || "{}");
+            await openActionModal(actionModal, {
+                title: copy.title,
+                message: copy.message,
+                confirmLabel: copy.confirm,
+                tone: copy.tone,
+                reason: Boolean(copy.reason_label),
+                reasonLabel: copy.reason_label,
+                reasonHint: copy.reason_hint,
+                onConfirm: (reason) => {
+                    if (reason !== null) formData.set("reason", reason);
+                    return post(form, formData);
+                },
+            });
+            return;
+        }
+
+        try {
+            await post(form, formData);
+        } catch (error) {
+            showFeedback(
+                error instanceof Error
+                    ? error.message
+                    : "The booking could not be updated.",
+            );
+        }
     });
 }
 
@@ -231,9 +683,14 @@ function init() {
     // View Details button on load, and the modal fills in its show.bs.modal handler.
     const modal = document.getElementById("bookingModal");
     if (modal) initModal(modal);
+    if (modal) initCancellation(modal);
 
     const body = document.querySelector("[data-bookings-body]");
     if (body) initList(body);
+    if (modal) restoreServerErrors(modal); // after the list, so the row's button exists
+
+    // After initList, so chips reflect any ?status= / ?package= deep link.
+    document.querySelectorAll("[data-filter-bar]").forEach(initFilterSheet);
 
     initConfirm();
 }

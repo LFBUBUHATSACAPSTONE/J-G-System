@@ -3,11 +3,11 @@ import { Collapse } from "bootstrap";
 /**
  * Navbar in-page links (Home / Feature / Package -> # / #features / #packages).
  *
- * Scrolling itself is left to the browser (CSS `scroll-behavior: smooth`
- * in _utilities.scss, `scroll-padding-top` in _navigation.scss), so this
+ * Scrolling itself is left to the browser (smooth scrolling comes from
+ * Bootstrap's reboot, `scroll-padding-top` on <html> in landing.blade.php), so this
  * file never calls preventDefault() on the links. What it owns:
  *
- *  1. ACTIVE STATE — exactly one link carries `.active` + aria-current.
+ *  1. ACTIVE STATE — exactly one link carries aria-current="location" (the styles key off it).
  *     - Clicking a link makes it active immediately.
  *     - While the page is scrolling toward that link's section (smooth
  *       scroll passes through other sections) the scroll-spy is paused,
@@ -49,7 +49,7 @@ function initNavigation() {
     const header = navEl.closest("header");
 
     // Expose the real sticky-header height so the hero background can
-    // extend exactly that far up behind it (see .landing-hero__bg).
+    // extend exactly that far up behind it (see the hero image in landing.blade.php).
     if (header) {
         const syncHeaderHeight = () =>
             document.documentElement.style.setProperty(
@@ -73,7 +73,6 @@ function initNavigation() {
     function setActive(name) {
         links.forEach((link) => {
             const isActive = link.dataset.navTarget === name;
-            link.classList.toggle("active", isActive);
             if (isActive) {
                 link.setAttribute("aria-current", "location");
             } else {

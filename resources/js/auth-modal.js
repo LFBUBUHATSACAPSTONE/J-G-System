@@ -73,14 +73,9 @@ function togglePasswordVisibility(btn) {
     const show = input.type === "password";
     input.type = show ? "text" : "password";
 
-    const icon = btn.querySelector("img");
-
-    if (icon) {
-        icon.src = show
-            ? "/images/icons/auth/hide_password.svg"
-            : "/images/icons/auth/show_password.svg";
-        icon.alt = show ? "Hide Password" : "Show Password";
-    }
+    const icon = btn.querySelector("i");
+    if (icon) icon.className = `ph ph-${show ? "eye-slash" : "eye"}`;
+    btn.setAttribute("aria-label", show ? "Hide password" : "Show password");
     btn.setAttribute("aria-pressed", String(show));
 }
 

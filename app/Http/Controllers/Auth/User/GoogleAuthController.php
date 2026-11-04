@@ -1,0 +1,202 @@
+<?php
+
+namespace App\Http\Controllers\Auth\User;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Services\Auth\SignIn;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\GoogleProvider;
+use Throwable;
+
+
+if (is_file($caBundle = dirname(__DIR__, 7) . '/apache/bin/curl-ca-bundle.crt')) {
+    // Socialite's token exchange runs through cURL (Guzzle), so set BOTH the
+    // OpenSSL and cURL CA locations — either one alone leaves the other empty.
+    ini_set('openssl.cafile', $caBundle);
+    ini_set('curl.cainfo', $caBundle);
+}
+
+class GoogleAuthController extends Controller
+{
+    private function getProvider(): GoogleProvider
+    {
+        $provider = Socialite::driver('google');
+        $caBundle = dirname(__DIR__, 7) . '/apache/bin/curl-ca-bundle.crt';
+        if (is_file($caBundle)) {
+            $provider->setHttpClient(new \GuzzleHttp\Client(['verify' => $caBundle]));
+        }
+        return $provider;
+    }
+
+    public function redirect(): RedirectResponse
+    {
+        $state = Str::random(40);
+        $provider = $this->getProvider();
+
+        try {
+            request()->session()->put($this->stateSessionKey($state), $state);
+
+            // Keep OAuth state in a first-party cookie as well as the session. This supports
+            // browser redirects where one of the two cookies is not returned to the callback.
+            return $provider
+                ->stateless()
+                ->with(['state' => $state])
+                ->redirect()
+                ->withCookie($this->stateCookie($state));
+        } catch (Throwable $exception) {
+            Log::warning('Google sign-in redirect failed.', [
+                'exception' => $exception::class,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return $this->failure('Google sign-in could not be completed. Please try again.');
+        }
+    }
+
+    public function callback(SignIn $signIn): RedirectResponse
+    {
+        try {
+            $stateParameter = (string) request()->query('state', '');
+            $stateCookie = $stateParameter !== ''
+                ? (string) request()->cookie($this->stateCookieName($stateParameter), '')
+                : '';
+            $stateSession = $stateParameter !== ''
+                ? (string) request()->session()->pull($this->stateSessionKey($stateParameter), '')
+                : '';
+            $cookieMatches = $stateCookie !== '' && hash_equals($stateCookie, $stateParameter);
+            $sessionMatches = $stateSession !== '' && hash_equals($stateSession, $stateParameter);
+
+            if ($stateParameter === '' || (! $cookieMatches && ! $sessionMatches)) {
+                Log::warning('Google OAuth state validation failed.', [
+                    'host' => request()->getHost(),
+                    'has_state_parameter' => $stateParameter !== '',
+                    'has_matching_state_cookie' => $cookieMatches,
+                    'has_matching_session_state' => $sessionMatches,
+                ]);
+
+                return $this->failure('Your Google sign-in session expired...');
+            }
+
+            /** @var GoogleProvider $provider */
+            $provider = $this->getProvider();
+            $googleUser = $provider->stateless()->user();
+            $googleId = (string) $googleUser->getId();
+            $email = strtolower(trim((string) ($googleUser->getEmail() ?? '')));
+            $userData = $googleUser->user ?? [];
+            $isEmailVerified = (bool) ($userData['email_verified'] ?? $userData['verified_email'] ?? false);
+
+            if ($googleId === '' || ! filter_var($email, FILTER_VALIDATE_EMAIL) || ! $isEmailVerified) {
+                return $this->failure('Google did not provide a verified email address for this account.');
+            }
+
+            $closed = User::onlyTrashed()
+                ->where(fn ($query) => $query->where('google_id', $googleId)->orWhereRaw('LOWER(email) = ?', [$email]))
+                ->exists();
+            if ($closed) {
+                return $this->failure('This account has been deleted and can no longer be used to sign in.');
+            }
+
+            $user = User::where('google_id', $googleId)->first();
+
+            if (! $user) {
+                $user = User::whereRaw('LOWER(email) = ?', [$email])->first();
+
+                if ($user && $user->google_id && $user->google_id !== $googleId) {
+                    return $this->failure('This email is linked to a different Google account.');
+                }
+
+                if ($user) {
+                    $user->google_id = $googleId;
+                    $user->email_verified_at ??= now();
+                    $user->save();
+                } else {
+                    $displayName = trim((string) ($googleUser->getName() ?: strstr($email, '@', true) ?: $email));
+                    $nameParts = preg_split('/\s+/', $displayName, 2) ?: [];
+
+                    $user = User::create([
+                        'first_name' => $nameParts[0] ?? $displayName,
+                        'last_name' => $nameParts[1] ?? '',
+                        'email' => $email,
+                        'google_id' => $googleId,
+                        'password' => Hash::make(Str::random(40)),
+                    ]);
+                    $user->email_verified_at = now();
+                    $user->save();
+                }
+            }
+
+            // Do not carry a previous failed attempt's flash message into a successful login.
+            request()->session()->forget('auth_error');
+
+            // Admin accounts belong on the admin side; the customer area is `role:user` only.
+            if ($user->isAdmin()) {
+                $signIn->admin($user, true);
+            } else {
+                $signIn->customer($user, true);
+            }
+
+            // Regenerate session to ensure security and prevent session fixation
+            request()->session()->regenerate();
+
+            if ($user->isAdmin()) {
+                return redirect()->route('admin.dashboard')->withCookie($this->forgetStateCookie($stateParameter));
+            }
+
+            return redirect()->route('user.landing')->withCookie($this->forgetStateCookie($stateParameter));
+        } catch (Throwable $exception) {
+            Log::warning('Google sign-in failed.', [
+                'exception' => $exception::class,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return $this->failure('Google sign-in could not be completed. Please try again.');
+        }
+    }
+
+    private function failure(string $message): RedirectResponse
+    {
+        return redirect()->route('user.landing')
+            ->with('auth_error', $message)
+            ->withCookie($this->forgetStateCookie((string) request()->query('state', '')));
+    }
+
+    private function stateCookie(string $state)
+    {
+        return cookie(
+            $this->stateCookieName($state),
+            $state,
+            15,
+            config('session.path', '/'),
+            config('session.domain'),
+            config('session.secure'),
+            true,
+            false,
+            config('session.same_site', 'lax'),
+        );
+    }
+
+    private function forgetStateCookie(string $state = '')
+    {
+        return cookie()->forget(
+            $state !== '' ? $this->stateCookieName($state) : 'google_oauth_state',
+            config('session.path', '/'),
+            config('session.domain'),
+        );
+    }
+
+    private function stateCookieName(string $state): string
+    {
+        return 'google_oauth_state_'.substr(hash('sha256', $state), 0, 20);
+    }
+
+    private function stateSessionKey(string $state): string
+    {
+        return 'google_oauth_state_session_'.hash('sha256', $state);
+    }
+
+}

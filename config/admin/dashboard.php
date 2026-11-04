@@ -17,12 +17,12 @@ return [
     'total'     => ['label' => 'Total Bookings',    'status' => 'all',       'higher' => 'good',    'hint' => 'All time',                'featured' => true],
     'confirmed' => ['label' => 'Confirmed Events',  'status' => 'approved',  'higher' => 'good',    'hint' => 'Approved and paid'],
     'pending'   => ['label' => 'Pending Approval',  'status' => 'pending',   'higher' => 'neutral', 'hint' => 'Waiting for your review'],
-    'payment'   => ['label' => 'Payment to Verify', 'status' => 'payment',   'higher' => 'neutral', 'hint' => 'GCash proof to check'],
+    'payment'   => ['label' => 'Payment to Verify', 'status' => 'payment',   'higher' => 'neutral', 'hint' => 'Payment proof to check'],
     'cancelled' => ['label' => 'Cancelled Events',  'status' => 'cancelled', 'higher' => 'bad',     'hint' => 'Cancelled and declined'],
   ],
 
   // "Needs your attention": how many rows to show before "View all".
-  'attention_limit' => 5,
+  'attention_limit' => 3,
 
   // Button text per booking status in the attention list (keys of config/admin/bookings.php 'statuses').
   'attention_actions' => [
@@ -30,8 +30,8 @@ return [
     'pending_payment' => 'Verify payment',
   ],
 
-  // "Upcoming events": how many rows to show.
-  'upcoming_limit' => 5,
+  // "Upcoming events": how many rows to show before "View all ... in Calendar".
+  'upcoming_limit' => 3,
 
   // Package Rate donut: the largest N packages get their own slice, the rest are grouped as "Other".
   'chart_top' => 5,

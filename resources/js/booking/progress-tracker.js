@@ -6,11 +6,13 @@
  * calls booking-flow.js's exported setBookingView() directly to jump
  * to an already-unlocked step.
  *
- * States per step (see resources/sass/_progress-tracker.scss):
+ * States per step (read by the utilities in components/progress-tracker.blade.php
+ * through group-[...]/step:, Phase 9A):
  *   is-locked    — index is ahead of the furthest step reached; lock icon
  *   is-open      — reached before via forward progress, currently behind
  *                  the active step (i.e. you clicked Previous back past
  *                  it); filled circle, no number
+ *   (data-flow-locked on the root: all steps but the current are disabled)
  *   is-numbered  — the current step, or a step fully completed and
  *                  behind current; filled circle with its number, bold
  *                  label
@@ -38,6 +40,8 @@ function initProgressTracker() {
         const currentIndex = STEP_ORDER.indexOf(currentView);
         if (currentIndex > furthestIndex) furthestIndex = currentIndex;
 
+        const frozen = root.hasAttribute("data-flow-locked");
+
         steps.forEach((el) => {
             const index = STEP_ORDER.indexOf(el.dataset.step);
             const circle = el.querySelector(".progress-tracker__circle");
@@ -50,7 +54,13 @@ function initProgressTracker() {
                 return;
             }
 
-            circle.removeAttribute("disabled");
+            // Flow locked (payment submitted): every step except the current
+            // one stays visible as completed but is no longer clickable.
+            if (frozen && index !== currentIndex) {
+                circle.setAttribute("disabled", "");
+            } else {
+                circle.removeAttribute("disabled");
+            }
             el.classList.add(index <= currentIndex ? "is-numbered" : "is-open");
         });
 

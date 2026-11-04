@@ -36,8 +36,16 @@ return [
     */
 
     'guards' => [
+        // The customer session: the landing page, the booking flow and the account area.
         'web' => [
             'driver' => 'session',
+            'provider' => 'users',
+        ],
+
+        // The admin session: the panel under /admin. It is a session of its own (see
+        // App\Auth\AdminGuard), so signing in on one side never signs the other side out.
+        'admin' => [
+            'driver' => 'admin',
             'provider' => 'users',
         ],
     ],

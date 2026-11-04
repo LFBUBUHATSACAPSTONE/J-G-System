@@ -27,6 +27,7 @@ import {
     getEmailError,
     getContactNumberError,
     getNameError,
+    getOptionalNameError,
     wireLiveField,
     wireLiveFieldImmediate,
     setFieldState,
@@ -38,9 +39,12 @@ function initPersonalInformation() {
     const form = document.getElementById(FORM_ID);
     if (!form) return;
 
-    // First/Last Name: letters only (no digits/symbols), blur-gated like
+    // First/Middle/Last Name: letters only (no digits/symbols), blur-gated like
     // the rest of the auth modal's plain text fields.
     wireLiveField(form, "first_name", (v) => getNameError(v, "First name"));
+    wireLiveField(form, "middle_name", (v) =>
+        getOptionalNameError(v, "Middle name"),
+    );
     wireLiveField(form, "last_name", (v) => getNameError(v, "Last name"));
     // Email and Contact Number give feedback from the very first keystroke
     // rather than waiting for a first blur, since a malformed email/phone
@@ -53,6 +57,7 @@ function initPersonalInformation() {
     wireLiveField(form, "address", (v) => getRequiredError(v, "Address"));
 
     initNameFilter(form, "first_name");
+    initNameFilter(form, "middle_name");
     initNameFilter(form, "last_name");
     initDigitsOnlyFilter(form, "contact_number");
 
@@ -107,6 +112,7 @@ function initDigitsOnlyFilter(form, fieldName) {
 async function submitPersonalInformation(form) {
     const field = (name) => form.querySelector(`[name="${name}"]`);
     const firstNameInput = field("first_name");
+    const middleNameInput = field("middle_name");
     const lastNameInput = field("last_name");
     const emailInput = field("email");
     const contactInput = field("contact_number");
@@ -119,6 +125,10 @@ async function submitPersonalInformation(form) {
 
     const checks = [
         [firstNameInput, getNameError(firstNameInput.value, "First name")],
+        [
+            middleNameInput,
+            getOptionalNameError(middleNameInput.value, "Middle name"),
+        ],
         [lastNameInput, getNameError(lastNameInput.value, "Last name")],
         [emailInput, getEmailError(emailInput.value)],
         [contactInput, getContactNumberError(contactInput.value)],
@@ -147,6 +157,7 @@ async function submitPersonalInformation(form) {
             },
             body: JSON.stringify({
                 first_name: firstNameInput.value.trim(),
+                middle_name: middleNameInput.value.trim(),
                 last_name: lastNameInput.value.trim(),
                 email: emailInput.value.trim(),
                 contact_number: contactInput.value.trim(),

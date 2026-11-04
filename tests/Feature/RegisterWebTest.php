@@ -53,11 +53,44 @@ class RegisterWebTest extends TestCase
         $response->assertOk()->assertJsonPath('ok', true);
         $this->assertDatabaseHas('users', [
             'email' => 'ana@example.com',
-            'name' => 'Ana Cruz',
+            'first_name' => 'Ana',
+            'last_name' => 'Cruz',
         ]);
         $user = User::where('email', 'ana@example.com')->firstOrFail();
         $this->assertNotNull($user->email_verified_at);
         $this->assertTrue(Hash::check('StrongPass1!', $user->password));
+    }
+
+    public function test_signup_saves_the_middle_name_after_code_verification(): void
+    {
+        Mail::fake();
+
+        $response = $this->postJson('/register', [
+            'first_name' => 'Ana',
+            'middle_name' => 'Santos',
+            'last_name' => 'Cruz',
+            'identifier' => 'ana@example.com',
+            'password' => 'StrongPass1!',
+            'terms' => true,
+        ]);
+
+        $response->assertStatus(201);
+
+        $code = Mail::sent(VerificationCodeMail::class)->first()->code;
+
+        $this->postJson('/verification/confirm', [
+            'code' => $code,
+            'context' => 'signup',
+            'verification_token' => $response->json('verification_token'),
+        ])->assertOk()->assertJsonPath('ok', true);
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'ana@example.com',
+            'middle_name' => 'Santos',
+            'middle_initial' => 'S',
+        ]);
+
+        $this->assertSame('Santos', User::where('email', 'ana@example.com')->firstOrFail()->middle_name);
     }
 
     public function test_invalid_signup_code_does_not_create_user(): void
@@ -130,7 +163,8 @@ class RegisterWebTest extends TestCase
         Mail::fake();
 
         User::factory()->create([
-            'name' => 'Test User',
+            'first_name' => 'Test',
+            'last_name' => 'User',
             'email' => 'test@example.com',
             'phone' => '09123456789',
             'password' => Hash::make('password123'),
@@ -143,7 +177,14 @@ class RegisterWebTest extends TestCase
         ]);
 
         $loginResponse->assertOk()
-            ->assertJsonPath('ok', true);
+            ->assertJsonPath('ok', true)
+            ->assertJsonPath('redirect', route('user.landing'));
+
+        $this->assertAuthenticated();
+        $this->get(route('user.landing'))
+            ->assertOk()
+            ->assertDontSee('data-chat-open', false)
+            ->assertSee('title="My account"', false);
 
         $forgotResponse = $this->postJson('/password/email', [
             'identifier' => 'test@example.com',
@@ -265,6 +306,30 @@ class RegisterWebTest extends TestCase
         Mail::assertNothingOutgoing();
     }
 
+    public function test_landing_header_shows_profile_icon_to_authenticated_users(): void
+    {
+        $this->get(route('user.landing'))
+            ->assertOk()
+            ->assertDontSee('data-chat-open', false)
+            ->assertSee('data-auth-view="signup"', false)
+            ->assertSee('data-auth-view="login"', false)
+            ->assertSee('class="rounded-3 btn-color-gradient--primary px-3 py-2"', false)
+            ->assertSee('class="rounded-3 btn-color-gradient--secondary px-3 py-2"', false)
+            ->assertSee('id="landing-book-now" data-bs-toggle="modal"', false)
+            ->assertSee('class="package-card__cta" data-package-select data-bs-toggle="modal"', false);
+
+        $this->actingAs(User::factory()->create())
+            ->get(route('user.landing'))
+            ->assertOk()
+            ->assertDontSee('data-chat-open', false)
+            ->assertSee('title="My account"', false)
+            ->assertSee('href="' . route('user.account') . '"', false)
+            ->assertSee('id="landing-book-now" href="#packages"', false)
+            ->assertDontSee('id="landing-book-now" data-bs-toggle="modal"', false)
+            ->assertSee('class="package-card__cta" data-package-select href="' . route('user.booking').'?package=', false)
+            ->assertDontSee('class="package-card__cta" data-package-select data-bs-toggle="modal"', false);
+    }
+
     public function test_google_callback_creates_and_authenticates_verified_user(): void
     {
         $googleUser = GoogleUser::fake([
@@ -281,9 +346,11 @@ class RegisterWebTest extends TestCase
         $response = $this->withCookie('google_oauth_state', 'test-oauth-state')
             ->get('/auth/google/callback?state=test-oauth-state');
 
-        $response->assertRedirect(route('home'));
+        $response->assertRedirect(route('user.landing'));
         $this->assertAuthenticated();
         $this->assertDatabaseHas('users', [
+            'first_name' => 'Google',
+            'last_name' => 'User',
             'email' => 'google-user@example.com',
             'google_id' => 'google-user-123',
         ]);
@@ -300,5 +367,4 @@ class RegisterWebTest extends TestCase
             ->assertCookie('google_oauth_state', $redirectQuery['state'] ?? null);
         $this->assertNotEmpty($redirectQuery['state'] ?? null);
     }
-
 }

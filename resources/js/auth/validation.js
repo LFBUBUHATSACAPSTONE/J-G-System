@@ -267,6 +267,14 @@ function getNameError(value, label) {
     return "";
 }
 
+/*
+ Same rule as getNameError, but the field may stay empty (Middle name).
+ Once something is typed it must be letters only.
+ */
+function getOptionalNameError(value, label) {
+    return value.trim() ? getNameError(value, label) : "";
+}
+
 export {
     EMAIL_REGEX,
     PASSWORD_REGEX,
@@ -285,6 +293,7 @@ export {
     normalizeContactNumberInput,
     isContactNumberUntouched,
     getNameError,
+    getOptionalNameError,
     getMatchError,
     wireLiveField,
     wireLiveFieldImmediate,

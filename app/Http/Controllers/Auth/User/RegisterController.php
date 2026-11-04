@@ -1,0 +1,143 @@
+<?php
+
+namespace App\Http\Controllers\Auth\User;
+
+use App\Http\Controllers\Controller;
+use App\Mail\VerificationCodeMail;
+use App\Models\User;
+use App\Models\VerificationCode;
+use App\Services\Auth\ModalAuthService;
+use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rules\Password as PasswordRule;
+use Throwable;
+
+class RegisterController extends Controller
+{
+
+    use RegistersUsers;
+
+    /**
+     * Where to redirect users after registration.
+     *
+     * @var string
+     */
+    protected $redirectTo = '/home';
+
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware('guest');
+    }
+
+    public function register(Request $request, ModalAuthService $authService): JsonResponse
+    {
+        $validated = $request->validate([
+            'first_name' => ['required', 'string', 'max:255'],
+            'middle_name' => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z\s]+$/'],
+            'middle_initial' => ['nullable', 'string', 'max:1', 'regex:/^[A-Za-z]$/'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'identifier' => ['required', 'string', 'max:255'],
+            'password' => ['required', 'string', PasswordRule::min(8)->mixedCase()->numbers()->symbols()],
+            'terms' => ['accepted'],
+        ], [
+            'middle_name.regex' => 'Middle name can only contain letters and spaces.',
+            'middle_initial.regex' => 'Middle initial must be a single letter.',
+        ]);
+
+        $identifier = trim((string) $validated['identifier']);
+        $email = str_contains($identifier, '@') ? strtolower($identifier) : null;
+
+        // Sign-up verifies ownership through email, so an email address is required.
+        if ($email === null || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return response()->json([
+                'message' => 'Please sign up with an email address so we can send your verification code.',
+                'errors' => [
+                    'identifier' => ['Please sign up with an email address so we can send your verification code.'],
+                ],
+            ], 422);
+        }
+
+        $phone = str_contains($identifier, '@')
+            ? null
+            : preg_replace('/\D+/', '', $identifier);
+
+        // A deleted account keeps its email reserved (deleting is a soft delete, nothing is removed).
+        if (User::onlyTrashed()->whereRaw('LOWER(email) = ?', [$email])->exists()) {
+            return response()->json([
+                'message' => 'This email belongs to a deleted account and cannot be used to sign up again.',
+                'errors' => [
+                    'email' => ['This email belongs to a deleted account and cannot be used to sign up again.'],
+                ],
+            ], 422);
+        }
+
+        // Block re-registration of an email that already has a verified account.
+        $existing = User::whereRaw('LOWER(email) = ?', [$email])->first();
+
+        if ($existing && $existing->email_verified_at) {
+            return response()->json([
+                'message' => 'An account with this email is already verified. Please log in or use Forgot Password.',
+                'errors' => [
+                    'email' => ['An account with this email is already verified. Please log in or use Forgot Password.'],
+                ],
+            ], 422);
+        }
+
+        // The sign-up form posts a middle name; keep accepting a lone middle initial as well.
+        $middleName = trim((string) ($validated['middle_name'] ?? ''));
+        if ($middleName === '') {
+            $middleName = strtoupper(trim((string) ($validated['middle_initial'] ?? '')));
+        }
+        $middleName = $middleName !== '' ? $middleName : null;
+
+        // Hold the registration details until the emailed code is confirmed. The account row is
+        // only created in ModalVerificationController::verificationConfirm().
+        $registration = [
+            'first_name' => trim((string) $validated['first_name']),
+            'middle_name' => $middleName,
+            'middle_initial' => $middleName !== null ? mb_strtoupper(mb_substr($middleName, 0, 1)) : null,
+            'last_name' => trim((string) $validated['last_name']),
+            'email' => $email,
+            'phone' => $phone,
+            'password' => Hash::make((string) $validated['password']),
+        ];
+
+        try {
+            $code = (string) random_int(100000, 999999);
+            $verification = VerificationCode::create([
+                'user_id' => $existing?->id,
+                'identifier' => $identifier,
+                'context' => 'signup',
+                'code_hash' => Hash::make($code),
+                'pending_data' => Crypt::encryptString((string) json_encode($registration)),
+                'expires_at' => now()->addMinutes(10),
+            ]);
+
+            Mail::to($email)->send(new VerificationCodeMail($code, 'account registration'));
+        } catch (Throwable $exception) {
+            Log::error('Sign-up verification code could not be sent.', [
+                'identifier' => $identifier,
+                'exception' => $exception->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'We could not send the verification code. Please try again later.',
+            ], 503);
+        }
+
+        return response()->json([
+            'destination' => $authService->maskIdentifier($email),
+            'verification_token' => Crypt::encryptString((string) json_encode(['id' => $verification->id])),
+        ], 201);
+    }
+}
