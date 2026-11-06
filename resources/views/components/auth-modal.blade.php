@@ -6,11 +6,11 @@
     Bootstrap's p-*, m-*, border are !important utilities with other values (docs/tailwind-migration.md, Conventions).
 --}}
 @php
-$dialogClass = 'w-[calc(100%-2rem)] max-w-[880px] [margin:1rem_auto] min-[560px]:w-[calc(100%-8rem)] min-[560px]:[margin:1.25rem_auto] min-[768px]:w-[calc(100%-3rem)] min-[768px]:[margin:1.5rem_auto]';
-$contentClass = 'relative isolate max-h-[calc(100vh-3rem)] overflow-hidden rounded-card bg-auth-surface [border:none] before:pointer-events-none before:absolute before:inset-[-20%_-20%_auto_auto] before:z-[-1] before:h-[60%] before:w-[70%] before:bg-[radial-gradient(circle_at_top_right,var(--color-auth-glow-violet)_0%,var(--color-auth-glow-rose)_45%,transparent_75%)] before:opacity-35 before:blur-[60px]';
-$headerClass = 'absolute top-3 right-3 z-2 [border:none] [padding:0]';
-$closeClass = 'box-border size-9 rounded-full bg-transparent bg-none [margin:0] [padding:0] opacity-100 transition-[background-color] duration-150 ease-[ease] hover:bg-auth-overlay-soft focus:shadow-none focus:outline-none focus-visible:shadow-[0_0_0_3px_var(--color-auth-focus)] before:absolute before:inset-0 before:rounded-[inherit] before:[background:var(--bs-btn-close-bg)_center/0.9em_auto_no-repeat] before:[filter:invert(1)_grayscale(1)_brightness(2)] before:opacity-70 before:transition-[opacity] before:duration-150 before:ease-[ease] hover:before:opacity-100 focus-visible:before:opacity-100';
-$bodyClass = 'flex max-h-[calc(100vh-3rem)] flex-col [padding:0] min-[768px]:min-h-[540px] min-[768px]:flex-row';
+$dialogClass = 'relative pointer-events-none flex items-center min-h-[calc(100%-1rem)] min-[576px]:min-h-[calc(100%-3.5rem)] w-[calc(100%-2rem)] max-w-[880px] [margin:1rem_auto] min-[560px]:w-[calc(100%-8rem)] min-[560px]:[margin:1.25rem_auto] min-[768px]:w-[calc(100%-3rem)] min-[768px]:[margin:1.5rem_auto]';
+$contentClass = 'relative isolate flex w-full flex-col bg-clip-padding pointer-events-auto outline-0 max-h-[calc(100vh-3rem)] overflow-hidden rounded-card bg-auth-surface [border:none] before:pointer-events-none before:absolute before:inset-[-20%_-20%_auto_auto] before:z-[-1] before:h-[60%] before:w-[70%] before:bg-[radial-gradient(circle_at_top_right,var(--color-auth-glow-violet)_0%,var(--color-auth-glow-rose)_45%,transparent_75%)] before:opacity-35 before:blur-[60px]';
+$headerClass = 'flex shrink-0 items-center absolute top-3 right-3 z-2 [border:none] [padding:0]';
+$closeClass = 'box-border size-9 rounded-full bg-transparent bg-none [margin:0] [padding:0] opacity-100 transition-[background-color] duration-150 ease-[ease] hover:bg-auth-overlay-soft focus:shadow-none focus:outline-none focus-visible:shadow-[0_0_0_3px_var(--color-auth-focus)] before:absolute before:inset-0 before:rounded-[inherit] before:[background:var(--close-icon)_center/0.9em_auto_no-repeat] before:[filter:invert(1)_grayscale(1)_brightness(2)] before:opacity-70 before:transition-[opacity] before:duration-150 before:ease-[ease] hover:before:opacity-100 focus-visible:before:opacity-100';
+$bodyClass = 'relative flex-auto flex max-h-[calc(100vh-3rem)] flex-col [padding:0] min-[768px]:min-h-[540px] min-[768px]:flex-row';
 $leftClass = 'relative hidden shrink-0 min-[768px]:block min-[768px]:w-[44%] min-[768px]:p-[1rem]';
 $carouselClass = 'h-[160px] overflow-hidden rounded-panel min-[768px]:h-full';
 $innerClass = 'h-full rounded-panel';
@@ -26,7 +26,7 @@ $rightClass = 'flex-1 overflow-y-auto [padding:1.5rem_1.5rem_2rem] text-auth-tex
         <div class="modal-content {{ $contentClass }}">
 
             <div class="modal-header {{ $headerClass }}">
-                <button type="button" class="btn-close {{ $closeClass }}" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="{{ $closeClass }}" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
             <div class="modal-body {{ $bodyClass }}">

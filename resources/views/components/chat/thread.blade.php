@@ -79,7 +79,7 @@ $editable = $out && ($item['editable'] ?? true);
   </div>
   @endif
   <div class="{{ $bubbleClasses[$dir] }}">
-    <span class="visually-hidden">{{ $out ? 'You' : $other }}: </span>
+    <span class="sr-only">{{ $out ? 'You' : $other }}: </span>
     @if (! empty($item['body']))
     <p class="{{ $textClass }}">{{ $item['body'] }}</p>
     @endif
@@ -104,12 +104,12 @@ $editable = $out && ($item['editable'] ?? true);
     <div class="{{ $actionsClass }}">
       <button type="button" class="{{ $moreClasses[$dir] }}" data-chat-menu-toggle aria-haspopup="menu" aria-expanded="false" aria-label="Message options"><x-chat.icon name="more" /></button>
       <div class="{{ $menuClasses[$dir] }}" role="menu" aria-label="Message options" hidden>
-        <button type="button" role="menuitem" class="{{ $actionClass }}" data-chat-action="reply" data-chat-action-id="{{ $id }}">Reply<span class="visually-hidden"> to this message</span></button>
+        <button type="button" role="menuitem" class="{{ $actionClass }}" data-chat-action="reply" data-chat-action-id="{{ $id }}">Reply<span class="sr-only"> to this message</span></button>
         @if ($editable)
-        <button type="button" role="menuitem" class="{{ $actionClass }}" data-chat-action="edit" data-chat-action-id="{{ $id }}" title="Edit{{ $editHint }}">Edit<span class="visually-hidden"> this message</span></button>
+        <button type="button" role="menuitem" class="{{ $actionClass }}" data-chat-action="edit" data-chat-action-id="{{ $id }}" title="Edit{{ $editHint }}">Edit<span class="sr-only"> this message</span></button>
         @endif
         @if ($out)
-        <button type="button" role="menuitem" class="{{ $actionClass }}" data-chat-action="unsend" data-chat-action-id="{{ $id }}" title="Unsend">Unsend<span class="visually-hidden"> this message</span></button>
+        <button type="button" role="menuitem" class="{{ $actionClass }}" data-chat-action="unsend" data-chat-action-id="{{ $id }}" title="Unsend">Unsend<span class="sr-only"> this message</span></button>
         @endif
       </div>
     </div>

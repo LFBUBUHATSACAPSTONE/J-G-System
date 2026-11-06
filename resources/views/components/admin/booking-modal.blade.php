@@ -43,13 +43,13 @@ $serverErrors = isset($errors) ? $errors->toArray() : [];
   data-server-booking="{{ session('edit_booking_id') }}"
   data-update-url-template="{{ Route::has('admin.bookings.update') ? route('admin.bookings.update', ['booking' => '__ID__']) : '#' }}"
   data-review-url-template="{{ Route::has('admin.bookings.cancellation.review') ? route('admin.bookings.cancellation.review', ['booking' => '__ID__']) : '#' }}">
-  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-    <form class="modal-content rounded-card border-0 bg-surface font-sans text-ink" method="POST" action="#" novalidate>
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable relative w-auto m-2 pointer-events-none min-[576px]:mx-auto min-[576px]:my-7 min-[576px]:max-w-[500px] flex items-center min-h-[calc(100%-1rem)] min-[576px]:min-h-[calc(100%-3.5rem)] h-[calc(100%-1rem)] min-[576px]:h-[calc(100%-3.5rem)] [&_.modal-content]:max-h-full [&_.modal-content]:overflow-hidden [&_.modal-body]:overflow-y-auto min-[992px]:max-w-[800px] min-[1200px]:max-w-[1140px]">
+    <form class="modal-content relative flex w-full flex-col bg-clip-padding pointer-events-auto outline-0 rounded-card border-0 bg-surface font-sans text-ink" method="POST" action="#" novalidate>
       @csrf
       @method('PATCH')
 
-      <div class="modal-body grid gap-6 p-6 min-[992px]:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] min-[992px]:px-8 short-wide:gap-4 short-wide:px-6 short-wide:py-4">
-        <h2 id="bookingModalTitle" class="visually-hidden col-span-full">
+      <div class="modal-body relative flex-auto grid gap-6 p-6 min-[992px]:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] min-[992px]:px-8 short-wide:gap-4 short-wide:px-6 short-wide:py-4">
+        <h2 id="bookingModalTitle" class="sr-only col-span-full">
           Booking details <span data-booking-field="reference"></span>
         </h2>
 
@@ -217,7 +217,7 @@ $serverErrors = isset($errors) ? $errors->toArray() : [];
                 <div class="rounded-field border border-field-border bg-surface px-4 py-3 text-center" role="group" aria-labelledby="bm-proof-label" data-booking-proof>
                   <a class="block rounded-field focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink" href="#" target="_blank" rel="noopener noreferrer" hidden data-proof-link>
                     <img class="block max-h-40 w-full rounded-field object-contain" alt="Proof of submission uploaded by the client" loading="lazy" data-proof-img>
-                    <span class="visually-hidden">Open the proof of submission in a new tab</span>
+                    <span class="sr-only">Open the proof of submission in a new tab</span>
                   </a>
                   <p class="m-0 text-fluid-md text-ink-muted" data-proof-empty>No proof uploaded</p>
                 </div>
@@ -247,7 +247,7 @@ $serverErrors = isset($errors) ? $errors->toArray() : [];
         <p class="col-span-full m-0 rounded-field border border-danger-border bg-danger-soft px-3 py-2 text-sm text-danger-text" role="alert" data-booking-error hidden></p>
       </div>
 
-      <div class="modal-footer justify-end gap-3 border-0 px-6 pt-3 pb-6 min-[992px]:px-8 short-wide:px-6 short-wide:pb-4 max-[575.98px]:flex-col max-[575.98px]:items-stretch *:m-0 max-[575.98px]:*:w-full">
+      <div class="modal-footer flex shrink-0 flex-wrap items-center justify-end gap-3 border-0 px-6 pt-3 pb-6 min-[992px]:px-8 short-wide:px-6 short-wide:pb-4 max-[575.98px]:flex-col max-[575.98px]:items-stretch *:m-0 max-[575.98px]:*:w-full">
         <button type="submit" class="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-panel border-0 bg-brand px-12 py-2 text-fluid-base font-semibold text-on-brand hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-booking-save hidden>Save changes</button>
         <button type="button" class="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-panel border border-brand-text bg-transparent px-12 py-2 text-fluid-base font-semibold text-brand-text hover:bg-brand-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-bs-dismiss="modal">Back</button>
       </div>

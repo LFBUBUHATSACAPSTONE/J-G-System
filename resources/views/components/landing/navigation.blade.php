@@ -10,9 +10,9 @@ $navBadgeClass = 'absolute -top-1.5 -right-1.5 grid min-w-5 h-5 place-items-cent
 @endphp
 
 <header class="sticky top-0 z-1020 border-b border-on-brand/25 bg-on-brand/10 backdrop-blur-md">
-  <nav class="navbar navbar-expand-lg navbar-dark relative py-4">
-    <div class="d-flex align-items-center container px-4 min-[992px]:relative min-[992px]:px-12">
-      <a href="{{ route('user.landing') }}#" class="navbar-brand hidden min-[992px]:block">
+  <nav class="relative flex flex-wrap items-center justify-between py-4">
+    <div class="mx-auto flex w-full flex-wrap items-center justify-between px-4 min-[576px]:max-w-[540px] min-[768px]:max-w-[720px] min-[992px]:relative min-[992px]:max-w-[960px] min-[992px]:flex-nowrap min-[992px]:px-12 min-[1200px]:max-w-[1140px] min-[1400px]:max-w-[1320px]">
+      <a href="{{ route('user.landing') }}#" class="navbar-brand hidden py-[0.3125rem] mr-4 text-[1.25rem] whitespace-nowrap no-underline min-[992px]:block">
         <img src="{{ asset('images/logo/J&G_official_logo.webp') }}" alt=" Business Logo" class="relative z-1 w-20">
       </a>
 
@@ -22,17 +22,17 @@ $navBadgeClass = 'absolute -top-1.5 -right-1.5 grid min-w-5 h-5 place-items-cent
         </svg>
       </button>
 
-      <div class="collapse navbar-collapse below-lg:absolute below-lg:inset-x-0 below-lg:top-full below-lg:bg-nav-menu below-lg:backdrop-blur-md" id="nav">
+      <div class="collapse basis-full grow items-center min-[992px]:flex! min-[992px]:basis-auto below-lg:absolute below-lg:inset-x-0 below-lg:top-full below-lg:bg-nav-menu below-lg:backdrop-blur-md" id="nav">
         {{-- Menu padding and bottom line live here, not on #nav: Bootstrap animates only #nav's height, so padding on it stayed visible as a strip while closing. From lg up this wrapper disappears (contents). --}}
         <div class="px-6 pt-2 pb-[1rem] border-b border-on-brand/25 min-[992px]:contents">
-          <ul class="navbar-nav gap-[0.25rem] min-[992px]:absolute min-[992px]:left-1/2 min-[992px]:-translate-x-1/2 min-[992px]:flex-row min-[992px]:gap-4 min-[1200px]:gap-12">
-            <li class="nav-item"><a href="{{ route('user.landing') }}#" class="{{ $navLinkClass }}" data-nav-target="home" aria-current="location">Home</a></li>
-            <li class="nav-item"><a href="{{ route('user.landing') }}#features" class="{{ $navLinkClass }}" data-nav-target="features">Features</a></li>
-            <li class="nav-item"><a href="{{ route('user.landing') }}#packages" class="{{ $navLinkClass }}" data-nav-target="packages">Packages</a></li>
-            <li class="nav-item"><a href="{{ route('user.landing') }}#inclusions" class="{{ $navLinkClass }}" data-nav-target="inclusions">Inclusions</a></li>
-            <li class="nav-item"><a href="{{ route('user.landing') }}#about" class="{{ $navLinkClass }}" data-nav-target="about">About</a></li>
+          <ul class="flex flex-col pl-0 mb-0 list-none gap-[0.25rem] min-[992px]:absolute min-[992px]:left-1/2 min-[992px]:-translate-x-1/2 min-[992px]:flex-row min-[992px]:gap-4 min-[1200px]:gap-12">
+            <li><a href="{{ route('user.landing') }}#" class="{{ $navLinkClass }}" data-nav-target="home" aria-current="location">Home</a></li>
+            <li><a href="{{ route('user.landing') }}#features" class="{{ $navLinkClass }}" data-nav-target="features">Features</a></li>
+            <li><a href="{{ route('user.landing') }}#packages" class="{{ $navLinkClass }}" data-nav-target="packages">Packages</a></li>
+            <li><a href="{{ route('user.landing') }}#inclusions" class="{{ $navLinkClass }}" data-nav-target="inclusions">Inclusions</a></li>
+            <li><a href="{{ route('user.landing') }}#about" class="{{ $navLinkClass }}" data-nav-target="about">About</a></li>
             @auth
-            <li class="nav-item min-[992px]:hidden">
+            <li class="min-[992px]:hidden">
               <a href="{{ route('user.account') }}" class="{{ $navLinkClass }}">
                 Account
                 @if (($chatUnread ?? 0) > 0)
