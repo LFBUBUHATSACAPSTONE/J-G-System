@@ -33,6 +33,7 @@ function initList(body) {
     const searchInput = document.querySelector("[data-bookings-search]");
     const emptyMessage = document.querySelector("[data-bookings-empty]");
     const count = document.querySelector("[data-bookings-count]");
+    let selectedBookingId = null;
 
     if (!rows.length) return;
 
@@ -58,7 +59,9 @@ function initList(body) {
                 (row) =>
                     (status === "all" || row.dataset.statusGroup === status) &&
                     (pkg === "all" || row.dataset.package === pkg) &&
-                    (!query || row.dataset.search.includes(query)),
+                    (!query || row.dataset.search.includes(query)) &&
+                    (!selectedBookingId ||
+                        row.dataset.bookingId === selectedBookingId),
             ),
         );
 
@@ -78,10 +81,33 @@ function initList(body) {
         document.dispatchEvent(new CustomEvent("admin:filters-applied"));
     }
 
-    [sortSelect, statusSelect, packageSelect].forEach((el) =>
-        el.addEventListener("change", apply),
+    function clearSelectedBooking() {
+        if (!selectedBookingId) return;
+        selectedBookingId = null;
+
+        const params = new URLSearchParams(window.location.search);
+        params.delete("selected_booking");
+        const query = params.toString();
+        window.history.replaceState(
+            null,
+            "",
+            window.location.pathname +
+                (query ? `?${query}` : "") +
+                window.location.hash,
+        );
+    }
+
+    sortSelect.addEventListener("change", apply);
+    [statusSelect, packageSelect].forEach((el) =>
+        el.addEventListener("change", () => {
+            clearSelectedBooking();
+            apply();
+        }),
     );
-    searchInput.addEventListener("input", apply);
+    searchInput.addEventListener("input", () => {
+        clearSelectedBooking();
+        apply();
+    });
 
     applyQueryParams({
         rows,
@@ -90,6 +116,9 @@ function initList(body) {
         packageSelect,
         searchInput,
         apply,
+        selectBooking: (id) => {
+            selectedBookingId = id;
+        },
     });
 }
 
@@ -98,8 +127,9 @@ function initList(body) {
 //   ?status=approved|pending|payment|cancelled|completed   (keys of 'status_filters')
 //   ?package=<package id>                                  (same ids as the Package filter)
 //   ?sort=default|alpha|date   ?q=<search text>
-//   ?booking=<booking id>   scrolls to that row and opens its View Details modal
-// Unknown values are ignored, so a stale link still opens the page. Nothing is written to the URL.
+//   ?booking=<id>           filters to the row, opens View Details, then becomes selected_booking
+//   ?selected_booking=<id>  filters to the row without reopening the modal on refresh
+// Unknown values are ignored, so a stale link still opens the page.
 function applyQueryParams({
     rows,
     sortSelect,
@@ -107,6 +137,7 @@ function applyQueryParams({
     packageSelect,
     searchInput,
     apply,
+    selectBooking,
 }) {
     const params = new URLSearchParams(window.location.search);
     if (![...params.keys()].length) return;
@@ -123,12 +154,14 @@ function applyQueryParams({
     setIfValid(packageSelect, params.get("package"));
     setIfValid(sortSelect, params.get("sort"));
     if (params.get("q")) searchInput.value = params.get("q");
+    const openBookingId = params.get("booking");
+    const id = openBookingId || params.get("selected_booking");
+    const row = id
+        ? rows.find((candidate) => candidate.dataset.bookingId === id)
+        : null;
+    if (row) selectBooking(id);
     apply();
 
-    const id = params.get("booking");
-    if (!id) return;
-
-    const row = rows.find((candidate) => candidate.dataset.bookingId === id);
     if (!row) return;
 
     // The filters in the link may hide the booking (for example a stale status): show everything.
@@ -140,19 +173,22 @@ function applyQueryParams({
     }
 
     row.scrollIntoView({ block: "center" });
-    // A real click on the row's own button, so Bootstrap sets relatedTarget and the modal fills as usual.
-    row.querySelector('[data-bs-toggle="modal"]')?.click();
+    if (openBookingId) {
+        // A real click lets Bootstrap populate the modal from this row as usual.
+        row.querySelector('[data-bs-toggle="modal"]')?.click();
 
-    // Drop ?booking= so a refresh does not reopen the modal; the filters stay in the URL.
-    params.delete("booking");
-    const query = params.toString();
-    window.history.replaceState(
-        null,
-        "",
-        window.location.pathname +
-            (query ? `?${query}` : "") +
-            window.location.hash,
-    );
+        // Preserve the single-row filter without reopening the modal on refresh.
+        params.delete("booking");
+        params.set("selected_booking", id);
+        const query = params.toString();
+        window.history.replaceState(
+            null,
+            "",
+            window.location.pathname +
+                (query ? `?${query}` : "") +
+                window.location.hash,
+        );
+    }
 }
 
 //  Modal: fill from the clicked row, Edit toggle, validation

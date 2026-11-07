@@ -13,7 +13,9 @@ $sameDay = $event['start_date']->isSameDay($event['end_date']);
 $dates = $sameDay
 ? $event['start_date']->format('M j, Y')
 : $event['start_date']->format('M j') . ' – ' . $event['end_date']->format('M j, Y');
-$bookingsUrl = \Illuminate\Support\Facades\Route::has('admin.bookings') ? route('admin.bookings') : '#';
+$bookingsUrl = \Illuminate\Support\Facades\Route::has('admin.bookings')
+? route('admin.bookings', ['booking' => $booking['id']])
+: '#';
 
 // Whole class strings, picked by tone (confirmed | pending).
 $eventBase = 'rounded-panel border-l-4 bg-panel p-4 text-ink';
