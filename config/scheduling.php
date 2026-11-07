@@ -22,4 +22,8 @@ return [
   // therefore keeps 3 PM - 5 PM on hold with the default 120 minutes. 0 disables the
   // break and leaves only the overlap check.
   'min_gap_minutes' => 120,
+
+  // User bookings use the actual event times with no additional buffer. The admin
+  // scheduling flow continues to use min_gap_minutes above.
+  'user_min_gap_minutes' => 0,
 ];

@@ -16,6 +16,12 @@ final class Scheduling
         return max(0, (int) config('scheduling.min_gap_minutes', 0));
     }
 
+    /** Required break for user bookings, in minutes. Never negative. */
+    public static function userMinGapMinutes(): int
+    {
+        return max(0, (int) config('scheduling.user_min_gap_minutes', 0));
+    }
+
     /** Events allowed on one calendar day. Never negative. */
     public static function maxEventsPerDay(): int
     {
