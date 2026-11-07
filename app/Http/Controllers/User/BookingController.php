@@ -204,7 +204,7 @@ class BookingController extends Controller
 
         return response()->json([
             'limit' => (int) config('scheduling.max_events_per_day', 3),
-            'gap_minutes' => max(0, (int) config('scheduling.min_gap_minutes', 0)),
+            'gap_minutes' => Scheduling::userMinGapMinutes(),
             'month' => $month,
             'full' => $full,
         ]);
@@ -280,8 +280,7 @@ class BookingController extends Controller
             ], 422);
         }
 
-        // The day has slots left, but this exact time may still clash: overlapping an
-        // existing event, or leaving less than the required break before/after one.
+        // The day has slots left, but this exact time may still overlap an existing event.
         $conflict = $this->scheduleConflict(
             Carbon::parse($data['event_start_date']),
             Carbon::parse($data['event_end_date']),
@@ -605,7 +604,7 @@ class BookingController extends Controller
             'booking_schedules.event_end_time',
         ]);
 
-        $gap = Scheduling::minGapMinutes();
+        $gap = Scheduling::userMinGapMinutes();
         $counts = [];
         $windows = [];
 
@@ -802,7 +801,7 @@ class BookingController extends Controller
      */
     private function scheduleConflictMessage(string $iso, int $busyFrom, int $busyTo): string
     {
-        $gap = Scheduling::minGapMinutes();
+        $gap = Scheduling::userMinGapMinutes();
         $break = $gap > 0
             ? ' Bookings on the same day need at least '.Scheduling::humanizeMinutes($gap).' between them.'
             : '';
