@@ -40,7 +40,7 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
 @endphp
 
 <x-account.layout>
-  <div class="flex max-w-240 flex-col gap-6">
+  <div class="flex mx-auto w-full max-w-240 flex-col gap-6">
 
     <section class="{{ $cardClass }}" aria-labelledby="account-password-title">
       <h2 class="{{ $cardTitleClass }}" id="account-password-title">Change password</h2>

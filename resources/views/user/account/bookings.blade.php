@@ -100,7 +100,7 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
 
 <x-account.layout>
   <div
-    class="flex max-w-240 flex-col gap-4"
+    class="flex mx-auto w-full max-w-240 flex-col gap-4"
     data-account-bookings
     data-statuses="{{ json_encode($statuses) }}"
     data-cancel-url-template="{{ Route::has('user.account.bookings.cancel') ? route('user.account.bookings.cancel', ['booking' => '__ID__']) : '#' }}"

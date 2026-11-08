@@ -16,11 +16,11 @@ $logoutUrl = Route::has('admin.logout') ? route('admin.logout') : '';
 
 $sessions = $sessions ?? [];
 $lastLogin = $lastLogin ?? null;
-$cardClass = 'w-full max-w-xl rounded-card bg-surface p-4 font-sans text-ink min-[576px]:p-8';
-$cardTitleClass = 'mb-6 text-center text-fluid-icon font-bold text-ink';
-$actionsClass = 'mt-6 grid grid-cols-2 gap-3 [&_form]:contents';
-$primaryBtnClass = 'w-full cursor-pointer rounded-field border-2 border-transparent bg-brand px-4 py-2 leading-normal font-semibold text-on-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text enabled:hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50';
-$secondaryBtnClass = 'w-full cursor-pointer rounded-field border-2 border-transparent bg-brand-soft px-4 py-2 leading-normal font-semibold text-brand-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text enabled:hover:bg-brand-soft-hover disabled:cursor-not-allowed disabled:opacity-50';
+$cardClass = '@container rounded-card bg-surface p-4 font-sans text-ink min-[576px]:p-6';
+$cardTitleClass = 'mb-4 text-fluid-xl font-semibold text-ink';
+$actionsClass = 'mt-6 flex flex-col gap-3 min-[576px]:flex-row [&_form]:contents';
+$primaryBtnClass = 'w-full min-[576px]:w-auto min-[576px]:px-6 cursor-pointer rounded-field border-2 border-transparent bg-brand px-4 py-2 leading-normal font-semibold text-on-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text enabled:hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50';
+$secondaryBtnClass = 'w-full min-[576px]:w-auto min-[576px]:px-6 cursor-pointer rounded-field border-2 border-transparent bg-brand-soft px-4 py-2 leading-normal font-semibold text-brand-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text enabled:hover:bg-brand-soft-hover disabled:cursor-not-allowed disabled:opacity-50';
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -32,10 +32,10 @@ $secondaryBtnClass = 'w-full cursor-pointer rounded-field border-2 border-transp
 <body class="app-shell bg-sidebar font-sans">
   <x-admin.sidebar />
 
-  <main class="admin-content font-sans" data-admin-account data-profile-root>
+  <main class="admin-content font-sans [--admin-max:61.5rem]" data-admin-account data-profile-root>
     <x-admin.page-header />
 
-    <div class="grid grid-cols-[minmax(0,1fr)] items-start gap-6 min-[1200px]:grid-cols-[minmax(0,36rem)_minmax(0,24rem)]">
+    <div class="mx-auto grid w-full max-w-246 grid-cols-[minmax(0,1fr)] items-start gap-6 min-[1200px]:grid-cols-[minmax(0,36rem)_minmax(0,24rem)]">
 
       {{-- ============ Profile (shared card: components/profile/*, sass/profile, js/account/profile-core.js) ============ --}}
       <section class="{{ $cardClass }}" aria-labelledby="admin-account-title">
