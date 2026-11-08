@@ -12,7 +12,6 @@
 @php
 $reschedule = $reschedule ?? null;
 $rescheduleMonthLabel = $reschedule ? \Carbon\Carbon::createFromFormat('!Y-m', $reschedule['month'])->format('F Y') : null;
-$minGap = \App\Support\Scheduling::minGapLabel();
 $stepClass = 'relative z-1 flex flex-col items-start gap-6';
 $cardClass = 'booking-card flex-1 px-[1rem] py-6 min-[576px]:p-6';
 $titleClass = 'text-fluid-booking-title font-bold [margin:0_0_1.5rem] min-[992px]:[margin:0_0_2rem]';
@@ -138,9 +137,6 @@ $hintClass = 'text-[0.8rem] leading-[1.5] text-auth-text-muted [margin:0]';
             <p class="{{ $reminderClass }}">
               <strong>Reminder:</strong>
               Double-check your selected schedule. Changes may not be allowed once you proceed.
-              @if ($minGap)
-              Bookings on the same day need at least <strong>{{ $minGap }}</strong> between them, and a day closes once it is fully booked.
-              @endif
             </p>
           </div>
         </div>
