@@ -452,6 +452,15 @@
 /* Page content beside the fixed sidebar (every admin and account page). A utility, not a Blade string, because it
    defines the responsive --admin-pad variable that other utilities read (p-(--admin-pad), -mx-(--admin-pad)).
    576px, 992px (sidebar visible) and 1400px are the Sass breakpoints. */
+/* Account and admin pages (the <body class="app-shell ..."> of every page that uses the dark sidebar): slightly smaller
+   corners than the user-facing pages. The three radius tokens are redefined for everything inside the body, so
+   `rounded-card`, `rounded-panel`, `rounded-field` and the content panel's curve (`admin-content`) all follow. */
+@utility app-shell {
+    --radius-card: 20px;
+    --radius-panel: 14px;
+    --radius-field: 10px;
+}
+
 @utility admin-content {
     --admin-pad: 1rem;
     padding: var(--admin-pad);

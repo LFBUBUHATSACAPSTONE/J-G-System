@@ -29,7 +29,7 @@ $secondaryBtnClass = 'w-full cursor-pointer rounded-field border-2 border-transp
   <x-admin-header />
 </head>
 
-<body class="bg-sidebar font-sans">
+<body class="app-shell bg-sidebar font-sans">
   <x-admin.sidebar />
 
   <main class="admin-content font-sans" data-admin-account data-profile-root>

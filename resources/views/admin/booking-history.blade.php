@@ -19,7 +19,7 @@ $months = collect($bookings)
   <x-admin-header />
 </head>
 
-<body class="bg-sidebar font-sans">
+<body class="app-shell bg-sidebar font-sans">
   <x-admin.sidebar />
 
   <main class="font-sans admin-content admin-bookings admin-history">

@@ -55,7 +55,7 @@
     <title>{{ $tabTitle }}</title>
   </head>
 
-  <body class="bg-sidebar font-sans">
+  <body class="app-shell bg-sidebar font-sans">
     <x-account.sidebar />
 
     <main class="admin-content font-sans">
