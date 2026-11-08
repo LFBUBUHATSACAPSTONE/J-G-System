@@ -106,6 +106,13 @@ $previewRemoveClass = 'flex-none cursor-pointer rounded-field bg-transparent px-
           <h2 class="{{ $titleClass }}">Booking Summary</h2>
 
           <div class="{{ $receiptClass }}">
+            @unless ($reschedule)
+            <div class="{{ $rowClass }}">
+              <span class="{{ $labelClass }}">Booking Reference</span>
+              <span class="{{ $valueClass }}">#{{ $bookingReference ?? '' }}</span>
+            </div>
+            @endunless
+
             <h3 class="{{ $sectionClass }}">Personal Information</h3>
 
             <div class="{{ $rowClass }}">
