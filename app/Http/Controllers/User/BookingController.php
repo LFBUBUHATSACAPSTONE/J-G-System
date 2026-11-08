@@ -66,14 +66,22 @@ class BookingController extends Controller
         }
 
         if (($draft['package_id'] ?? null) !== $packageId) {
-            $draft = ['package_id' => $packageId];
-            $request->session()->put('booking_draft', $draft);
+            $draft = [
+                'package_id' => $packageId,
+                'package_price' => $package->price,
+                'reference' => $this->newReference(),
+            ];
+        } else {
+            $draft['package_price'] ??= $package->price;
+            $draft['reference'] ??= $this->newReference();
         }
+        $request->session()->put('booking_draft', $draft);
 
         return view('user.booking', $this->summaryData($draft) + [
             'packageId' => $packageId,
             'packageName' => $package->name,
-            'packageCost' => $package->price,
+            'packageCost' => $draft['package_price'],
+            'bookingReference' => $draft['reference'],
             'clientInformation' => $this->clientInformation($request, $draft),
         ]);
     }
@@ -346,6 +354,7 @@ class BookingController extends Controller
                         'reference' => $this->newReference(),
                         'status' => 'pending',
                         'package_id' => $original->package_id,
+                        'package_price' => $original->package_price ?? $original->package?->price,
                         'rescheduled_from_id' => $original->id,
                         'submitted_at' => now(),
                     ],
@@ -414,7 +423,8 @@ class BookingController extends Controller
         }
 
         $data = $validator->validated();
-        $packageCents = (int) $package['price'] * 100;
+        $packagePrice = (float) ($draft['package_price'] ?? $package->price);
+        $packageCents = (int) round($packagePrice * 100);
         $paymentCents = $data['payment_option'] === 'full'
             ? $packageCents
             : (int) round((float) $data['down_payment_amount'] * 100);
@@ -433,7 +443,7 @@ class BookingController extends Controller
 
         $userId = $request->user()?->id;
 
-        [$booking, $fullDates, $conflict] = DB::transaction(function () use ($draft, $package, $data, $paymentCents, $userId, $request) {
+        [$booking, $fullDates, $conflict] = DB::transaction(function () use ($draft, $package, $packagePrice, $data, $paymentCents, $userId, $request) {
             $fullDates = $this->fullDatesBetween(
                 Carbon::parse($draft['event_start_date']),
                 Carbon::parse($draft['event_end_date']),
@@ -459,6 +469,8 @@ class BookingController extends Controller
                 'client_phone' => $draft['client_phone'],
                 'client_address' => $draft['client_address'],
                 'package_id' => $package->id,
+                'package_price' => $packagePrice,
+                'reference' => $draft['reference'] ?? $this->newReference(),
                 'submitted_at' => now(),
             ]);
 
@@ -503,14 +515,14 @@ class BookingController extends Controller
                 [
                     'package_id' => $source->package?->id,
                     'package_name' => $source->package?->name,
-                    'package_price' => $source->package?->price,
+                    'package_price' => $source->package_price ?? $source->package?->price,
                 ],
             );
         } else {
             $data = $source;
             $package = Package::find($data['package_id'] ?? '');
             $data['package_name'] = $package?->name;
-            $data['package_price'] = $package?->price;
+            $data['package_price'] ??= $package?->price;
         }
 
         $start = $data['event_start_date'] ?? null;
@@ -535,6 +547,7 @@ class BookingController extends Controller
             'packageCost' => $data['package_price'] ?? null,
             'packageId' => $data['package_id'] ?? null,
             'packageName' => $data['package_name'] ?? '',
+            'bookingReference' => $data['reference'] ?? null,
         ];
     }
 

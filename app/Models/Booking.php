@@ -27,6 +27,7 @@ class Booking extends Model
         'client_phone',
         'client_address',
         'package_id',
+        'package_price',
         'rescheduled_from_id',
         'submitted_at',
         'approved_at',
@@ -150,6 +151,7 @@ class Booking extends Model
         $schedule = $this->schedule;
         $payment = $this->payment;
         $package = $this->package;
+        $packagePrice = $this->package_price ?? $package?->price;
         $paymentMethod = $payment?->payment_method;
         $paymentAmount = $payment?->payment_amount;
 
@@ -200,7 +202,7 @@ class Booking extends Model
             'package' => [
                 'id' => $package?->id,
                 'name' => $package?->name,
-                'price' => $package?->price === null ? null : (float) $package->price,
+                'price' => $packagePrice === null ? null : (float) $packagePrice,
             ],
             'submitted_at' => $this->submitted_at,
             // Why a booking was declined. The cancellation request has its own, richer payload
