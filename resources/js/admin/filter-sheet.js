@@ -7,7 +7,7 @@
 // [data-filter-chips], [data-filter-clear].
 
 const CHIP =
-    "admin-chip inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-full border-0 px-3 py-1 text-[0.85rem] font-medium text-brand-text hover:bg-brand-soft-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text [&_.ph]:text-fluid-sm";
+    "admin-chip inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-control border-0 px-3 py-1 text-[0.85rem] font-medium text-brand-text hover:bg-brand-soft-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text [&_.ph]:text-fluid-sm";
 const CHIP_FILLED = "bg-brand-soft";
 const CHIP_CLEAR = "admin-chip--clear bg-transparent underline"; // \"Clear all\": text only, no fill
 

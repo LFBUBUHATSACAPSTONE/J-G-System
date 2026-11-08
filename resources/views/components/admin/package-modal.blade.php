@@ -51,7 +51,7 @@ $hintClass = 'text-[0.85rem] text-ink-muted';
       <div class="modal-body relative flex-auto px-6 pt-6 pb-4">
         <div class="mb-4 flex items-baseline justify-between gap-4">
           <h2 id="packageModalTitle" class="m-0 text-fluid-xl font-bold" data-package-title>Package Information</h2>
-          <button type="button" class="inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 rounded-full border border-brand-text bg-transparent px-4 py-1 text-fluid-sm font-semibold whitespace-nowrap text-brand-text hover:bg-brand-soft [&_.ph]:text-fluid-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-package-edit>
+          <button type="button" class="inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 rounded-control border border-brand-text bg-transparent px-4 py-1 text-fluid-sm font-semibold whitespace-nowrap text-brand-text hover:bg-brand-soft [&_.ph]:text-fluid-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-package-edit>
             <i class="ph ph-pencil-simple" aria-hidden="true"></i>
             <span>Edit</span>
           </button>

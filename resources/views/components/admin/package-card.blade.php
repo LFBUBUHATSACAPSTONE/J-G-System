@@ -45,7 +45,7 @@ $availabilityUrl = Route::has('admin.packages.availability')
     <h3 id="pkg-{{ $id }}-name" class="m-0 text-fluid-title font-semibold text-brand-text">{{ $package['name'] }}</h3>
     <button
       type="button"
-      class="inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 rounded-full border border-brand-text bg-transparent px-4 py-1 text-fluid-sm font-semibold whitespace-nowrap text-brand-text hover:bg-brand-soft [&_.ph]:text-fluid-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text"
+      class="inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 rounded-control border border-brand-text bg-transparent px-4 py-1 text-fluid-sm font-semibold whitespace-nowrap text-brand-text hover:bg-brand-soft [&_.ph]:text-fluid-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text"
       data-bs-toggle="modal"
       data-bs-target="#packageModal"
       data-package="{{ json_encode($payload) }}"
@@ -117,7 +117,7 @@ $availabilityUrl = Route::has('admin.packages.availability')
       <input type="hidden" name="availability" value="{{ $key }}">
       <button
         type="submit"
-        class="inline-flex min-h-12 w-full cursor-pointer items-center justify-center rounded-full border px-4 py-2 text-center text-fluid-md font-medium aria-pressed:cursor-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text {{ $pillTone }}"
+        class="inline-flex min-h-12 w-full cursor-pointer items-center justify-center rounded-control border px-4 py-2 text-center text-fluid-md font-medium aria-pressed:cursor-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text {{ $pillTone }}"
         aria-pressed="{{ $active ? 'true' : 'false' }}">{{ $state['label'] }}</button>
     </form>
     @endforeach

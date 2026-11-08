@@ -13,9 +13,7 @@ $sameDay = $event['start_date']->isSameDay($event['end_date']);
 $dates = $sameDay
 ? $event['start_date']->format('M j, Y')
 : $event['start_date']->format('M j') . ' – ' . $event['end_date']->format('M j, Y');
-$bookingsUrl = \Illuminate\Support\Facades\Route::has('admin.bookings')
-? route('admin.bookings', ['booking' => $booking['id']])
-: '#';
+$bookingsUrl = \Illuminate\Support\Facades\Route::has('admin.bookings') ? route('admin.bookings') : '#';
 
 // Whole class strings, picked by tone (confirmed | pending).
 $eventBase = 'rounded-panel border-l-4 bg-panel p-4 text-ink';
@@ -26,7 +24,7 @@ $badgeTones = ['confirmed' => 'bg-success', 'pending' => 'bg-warning'];
 <article {{ $attributes->class([$eventBase, $eventTones[$tone] ?? 'border-l-transparent']) }}>
   <header class="flex items-center justify-between gap-2">
     <span class="text-fluid-sm font-bold text-brand-text">{{ $booking['reference'] }}</span>
-    <span class="rounded-full px-3 py-1 text-[0.8rem] font-semibold whitespace-nowrap text-ink {{ $badgeTones[$tone] ?? '' }}">{{ $label }}</span>
+    <span class="rounded-badge px-3 py-1 text-[0.8rem] font-semibold whitespace-nowrap text-ink {{ $badgeTones[$tone] ?? '' }}">{{ $label }}</span>
   </header>
 
   <h3 class="my-2 text-fluid-name font-bold">{{ $event['name'] }}</h3>

@@ -29,7 +29,7 @@ $imageUrl = asset(config('admin.logo', 'images/logo/J&G_official_logo.webp'));
 
 // Class strings (Tailwind, Phase 10A), written whole so Tailwind can find them.
 $cardClass = 'relative isolate w-full max-w-md overflow-hidden rounded-card bg-auth-surface px-6 pt-6 pb-8 shadow-[0_1rem_3rem_var(--color-shadow)] md:px-11 md:py-8 before:pointer-events-none before:absolute before:-top-[20%] before:-right-[20%] before:-z-1 before:h-[60%] before:w-[70%] before:bg-[image:radial-gradient(circle_at_top_right,var(--color-auth-glow-violet)_0%,var(--color-auth-glow-rose)_45%,transparent_75%)] before:opacity-35 before:blur-[60px]';
-$badgeClass = 'rounded-full bg-brand px-3 py-1 text-sm font-semibold tracking-[0.08em] text-on-brand uppercase';
+$badgeClass = 'rounded-badge bg-brand px-3 py-1 text-sm font-semibold tracking-[0.08em] text-on-brand uppercase';
 $titleClass = 'mx-0 mt-0 mb-[0.4rem] text-[1.5rem] leading-[1.2] font-bold md:text-[1.75rem]';
 $subtitleClass = 'mx-0 mt-0 mb-5 text-[0.85rem] text-auth-text-muted';
 $labelClass = 'mb-[0.35rem] block text-[0.8rem] font-normal text-auth-text-muted';

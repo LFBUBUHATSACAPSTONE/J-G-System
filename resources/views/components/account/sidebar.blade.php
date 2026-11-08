@@ -14,7 +14,7 @@ $linkDanger = 'text-sidebar-danger hover:bg-sidebar-hover';
 $buttonReset = 'w-full bg-transparent text-left';
 $backClass = 'inline-flex items-center gap-2 rounded-field px-3 py-2 text-[0.9rem] font-medium text-surface no-underline hover:bg-sidebar-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring [&_i]:text-fluid-heading [&_i]:leading-none';
 $badgeClass = 'ml-auto min-w-[1.375rem] flex-none rounded-full bg-brand px-2 py-0 text-center text-xs leading-[1.4] font-semibold text-on-brand';
-$soonClass = 'ml-auto rounded-full border border-sidebar-divider px-2 py-1 text-xs leading-[1.2] text-sidebar-soon';
+$soonClass = 'ml-auto rounded-badge border border-sidebar-divider px-2 py-1 text-xs leading-[1.2] text-sidebar-soon';
 @endphp
 <button
   type="button"

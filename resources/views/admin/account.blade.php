@@ -126,7 +126,7 @@ $secondaryBtnClass = 'w-full cursor-pointer rounded-field border-2 border-transp
               </span>
             </span>
             @if (! empty($session['current']))
-            <span class="flex-none rounded-full bg-success-soft px-3 py-0.5 text-[0.8125rem] font-semibold text-success-text">This device</span>
+            <span class="flex-none rounded-badge bg-success-soft px-3 py-0.5 text-[0.8125rem] font-semibold text-success-text">This device</span>
             @endif
           </li>
           @endforeach

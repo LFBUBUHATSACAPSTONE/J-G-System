@@ -80,7 +80,7 @@ $serverErrors = isset($errors) ? $errors->toArray() : [];
         <section aria-labelledby="bm-event-title">
           <div class="mb-4 flex items-center justify-between gap-4 short-wide:mb-2">
             <h3 id="bm-event-title" class="m-0 text-fluid-xl leading-9 font-bold text-ink">Event Information</h3>
-            <button type="button" class="inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 rounded-full border border-brand-text bg-transparent px-4 py-1 text-fluid-sm font-semibold whitespace-nowrap text-brand-text hover:bg-brand-soft [&_.ph]:text-fluid-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-booking-edit>
+            <button type="button" class="inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 rounded-control border border-brand-text bg-transparent px-4 py-1 text-fluid-sm font-semibold whitespace-nowrap text-brand-text hover:bg-brand-soft [&_.ph]:text-fluid-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-booking-edit>
               <i class="ph ph-pencil-simple" aria-hidden="true" data-booking-edit-icon></i>
               <span data-booking-edit-label>Edit</span>
             </button>
@@ -122,7 +122,7 @@ $serverErrors = isset($errors) ? $errors->toArray() : [];
                   <input type="text" id="bm-event-type-other" name="event_type_other" class="{{ $controlClass }} {{ $editableClass }}" readonly
                     placeholder="Type the event type" aria-describedby="bm-err-event-type-other"
                     data-booking-field="event.type_other" data-editable>
-                  <button type="button" class="inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 rounded-full border border-brand-text bg-transparent px-4 py-1 text-fluid-sm font-semibold whitespace-nowrap text-brand-text hover:bg-brand-soft [&_.ph]:text-fluid-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-type-change
+                  <button type="button" class="inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 rounded-control border border-brand-text bg-transparent px-4 py-1 text-fluid-sm font-semibold whitespace-nowrap text-brand-text hover:bg-brand-soft [&_.ph]:text-fluid-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-type-change
                     aria-label="Choose the event type from the list">
                     <i class="ph ph-caret-down" aria-hidden="true"></i>
                   </button>

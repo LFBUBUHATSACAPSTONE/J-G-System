@@ -74,6 +74,10 @@
     --radius-card: 28px;
     --radius-panel: 20px;
     --radius-field: 12px;
+    /* Buttons, filters, tabs and chips in the admin and account views (were pills, `rounded-full`) and their status badges.
+       Not redefined in `app-shell`: they are only used inside it. */
+    --radius-control: 12px;
+    --radius-badge: 8px;
 
     /* Fluid type, same curve as admin-fluid(): text-fluid-sm = 0.9rem max ... 2xl = 1.375rem max */
     --text-fluid-sm: clamp(0.8952rem, 0.8934rem + 0.0088vw, 0.9rem);

@@ -45,7 +45,7 @@
         </div>
 
         <div class="offcanvas-body flex flex-col gap-3 pt-0 md:contents!">
-          <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-full bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text flex-none md:flex-[1_1_14rem]">
+          <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-control bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text flex-none md:flex-[1_1_14rem]">
             <label for="bk-sort" class="admin-filter__label text-fluid-sm font-medium whitespace-nowrap text-ink">Sorted by:</label>
             <div class="admin-filter__control relative min-w-0 flex-1">
               <select id="bk-sort" class="admin-filter__select" data-bookings-sort>
@@ -56,7 +56,7 @@
             </div>
           </div>
 
-          <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-full bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text flex-none md:flex-[1_1_14rem]">
+          <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-control bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text flex-none md:flex-[1_1_14rem]">
             <label for="bk-status" class="admin-filter__label text-fluid-sm font-medium whitespace-nowrap text-ink">Status:</label>
             <div class="admin-filter__control relative min-w-0 flex-1">
               <select id="bk-status" class="admin-filter__select" data-bookings-status>
@@ -67,7 +67,7 @@
             </div>
           </div>
 
-          <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-full bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text flex-none md:flex-[1_1_14rem]">
+          <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-control bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text flex-none md:flex-[1_1_14rem]">
             <label for="bk-package" class="admin-filter__label text-fluid-sm font-medium whitespace-nowrap text-ink">Package:</label>
             <div class="admin-filter__control relative min-w-0 flex-1">
               <select id="bk-package" class="admin-filter__select" data-bookings-package>
@@ -88,14 +88,14 @@
         </div>
       </div>
 
-      <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-full bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text admin-filter--search flex-[3_1_18rem] max-md:order-1 max-md:min-w-0 max-md:flex-[1_1_0] max-md:px-4">
+      <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-control bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text admin-filter--search flex-[3_1_18rem] max-md:order-1 max-md:min-w-0 max-md:flex-[1_1_0] max-md:px-4">
         <i class="ph ph-magnifying-glass admin-filter__icon text-fluid-2xl text-ink" aria-hidden="true"></i>
         <label for="bk-search" class="sr-only">Search bookings</label>
         <input type="search" id="bk-search" class="admin-filter__input min-w-0 flex-1 border-0 bg-transparent py-2 text-fluid-sm text-ink outline-0 placeholder:text-ink-subtle placeholder:opacity-100" placeholder="Search"
           autocomplete="off" data-bookings-search>
       </div>
 
-      <button type="button" class="admin-filters-toggle inline-flex min-h-13 cursor-pointer items-center gap-2 rounded-full border-0 bg-surface px-6 py-1 text-fluid-sm font-medium whitespace-nowrap text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text max-md:order-2 md:hidden [&_.ph]:text-fluid-xl" data-bs-toggle="offcanvas"
+      <button type="button" class="admin-filters-toggle inline-flex min-h-13 cursor-pointer items-center gap-2 rounded-control border-0 bg-surface px-6 py-1 text-fluid-sm font-medium whitespace-nowrap text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text max-md:order-2 md:hidden [&_.ph]:text-fluid-xl" data-bs-toggle="offcanvas"
         data-bs-target="#bookingsFilterSheet" aria-controls="bookingsFilterSheet" data-filter-toggle>
         <i class="ph ph-sliders-horizontal" aria-hidden="true"></i>
         <span>Filters</span>

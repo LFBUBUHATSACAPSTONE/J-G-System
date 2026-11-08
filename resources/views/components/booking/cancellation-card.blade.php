@@ -14,12 +14,12 @@
 @php
 $cardClass = 'group/cc m-0 flex flex-col gap-4 rounded-panel border border-field-border bg-panel p-4 min-[576px]:p-5 [&[hidden]]:hidden data-[tone=pending]:border-warning-border data-[tone=pending]:bg-warning-soft/40 data-[tone=cancelled]:border-danger-border data-[tone=cancelled]:bg-danger-soft/70 data-[tone=declined]:border-brand/40 data-[tone=declined]:bg-brand-soft';
 $iconClass = 'grid size-9 shrink-0 place-items-center rounded-full bg-surface text-xl leading-none text-ink-muted group-data-[tone=pending]/cc:text-warning-text group-data-[tone=cancelled]/cc:text-danger-text group-data-[tone=declined]/cc:text-brand-text';
-$pillClass = 'shrink-0 rounded-full border border-field-border bg-surface px-3 py-1 text-[0.8125rem] leading-[1.4] font-medium text-ink-muted empty:hidden group-data-[tone=pending]/cc:border-warning-border group-data-[tone=pending]/cc:text-warning-text group-data-[tone=cancelled]/cc:border-danger-border group-data-[tone=cancelled]/cc:text-danger-text group-data-[tone=declined]/cc:border-brand/40 group-data-[tone=declined]/cc:text-brand-text';
+$pillClass = 'shrink-0 rounded-badge border border-field-border bg-surface px-3 py-1 text-[0.8125rem] leading-[1.4] font-medium text-ink-muted empty:hidden group-data-[tone=pending]/cc:border-warning-border group-data-[tone=pending]/cc:text-warning-text group-data-[tone=cancelled]/cc:border-danger-border group-data-[tone=cancelled]/cc:text-danger-text group-data-[tone=declined]/cc:border-brand/40 group-data-[tone=declined]/cc:text-brand-text';
 $reasonClass = 'grid gap-1 [&[hidden]]:hidden';
 $labelClass = 'm-0 flex flex-wrap items-baseline gap-x-2 text-sm';
 $dateClass = 'text-ink-muted empty:hidden before:mr-2 before:content-["·"]';
 $quoteClass = 'm-0 rounded-r-field rounded-l-sm border-l-4 border-l-field-border bg-surface px-3 py-2 text-sm wrap-anywhere whitespace-pre-line text-ink group-data-[tone=pending]/cc:border-l-warning-border group-data-[tone=cancelled]/cc:border-l-danger-border group-data-[tone=declined]/cc:border-l-brand';
-$buttonClass = 'inline-flex min-h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-full border px-5 py-1 text-fluid-sm font-semibold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 min-[420px]:w-auto [&_.ph]:text-fluid-lg';
+$buttonClass = 'inline-flex min-h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-control border px-5 py-1 text-fluid-sm font-semibold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 min-[420px]:w-auto [&_.ph]:text-fluid-lg';
 @endphp
 <section {{ $attributes->class([$cardClass]) }} aria-labelledby="{{ $titleId }}" {{ $section }} data-tone="neutral" hidden>
   <header class="flex items-start gap-3">

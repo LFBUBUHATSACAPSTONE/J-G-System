@@ -31,7 +31,7 @@ function formatDateTime(value) {
 
 // Same strings as components/account/badge.blade.php and button.blade.php: keep them in sync.
 const BADGE =
-    "inline-flex items-center gap-1 rounded-full px-3 py-1 text-[0.8125rem] leading-[1.4] font-medium [&[hidden]]:hidden [&_i]:text-base [&_i]:leading-none";
+    "inline-flex items-center gap-1 rounded-badge px-3 py-1 text-[0.8125rem] leading-[1.4] font-medium [&[hidden]]:hidden [&_i]:text-base [&_i]:leading-none";
 const BADGE_TONES = {
     success: "bg-success-soft text-success-text",
     warning: "bg-warning-soft text-warning-text",
