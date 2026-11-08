@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Schema;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -36,7 +34,6 @@ class User extends Authenticatable
         'first_name',
         'middle_name',
         'last_name',
-        'middle_initial',
         'email',
         'role',
         'google_id',
@@ -98,36 +95,11 @@ class User extends Authenticatable
         return ! $this->isAdmin();
     }
 
-    /**
-     * The full middle name (users.middle_name), falling back to the legacy one-letter
-     * middle_initial for accounts that were created before that column existed.
-     */
-    protected function middleName(): Attribute
-    {
-        return Attribute::get(fn (?string $value): ?string => filled($value) ? $value : $this->middle_initial);
-    }
-
-    /**
-     * Store a middle name on this account and keep the legacy middle_initial column in sync.
-     * Both columns are checked because older databases (and some tests) may not have the new
-     * middle_name column yet; the middle initial still remains the source used by the admin side.
-     */
+    /** Store a middle name on this account. */
     public function setMiddleName(?string $middleName): void
     {
         $middleName = trim((string) $middleName);
-        $middleName = $middleName !== '' ? $middleName : null;
-
-        if (Schema::hasColumn($this->getTable(), 'middle_name')) {
-            $this->middle_name = $middleName;
-        } else {
-            $this->middle_name = $middleName;
-        }
-
-        if (Schema::hasColumn($this->getTable(), 'middle_initial')) {
-            $this->middle_initial = $middleName !== null
-                ? mb_strtoupper(mb_substr($middleName, 0, 1))
-                : null;
-        }
+        $this->middle_name = $middleName !== '' ? $middleName : null;
     }
 
     /**

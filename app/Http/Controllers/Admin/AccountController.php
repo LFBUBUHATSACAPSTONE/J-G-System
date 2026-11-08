@@ -123,7 +123,7 @@ class AccountController extends Controller
         ])->all());
 
         if (array_key_exists('middle_name', $validated)) {
-            // Stores the full middle name and keeps middle_initial in sync.
+            // Store the full middle name; compatibility responses derive its initial.
             $user->setMiddleName($validated['middle_name']);
         } elseif (array_key_exists('middle_initial', $validated)) {
             // Older payloads only carry the single-letter initial.
@@ -216,7 +216,9 @@ class AccountController extends Controller
             'first_name' => $user?->first_name,
             'middle_name' => $user?->middle_name,
             'last_name' => $user?->last_name,
-            'middle_initial' => $user?->middle_initial,
+            'middle_initial' => filled($user?->middle_name)
+                ? mb_strtoupper(mb_substr($user->middle_name, 0, 1))
+                : null,
             'email' => $user?->email,
             'phone' => $user?->phone,
             'avatar_url' => $user?->avatar_url,

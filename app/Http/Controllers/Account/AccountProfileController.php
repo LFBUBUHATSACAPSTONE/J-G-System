@@ -84,10 +84,10 @@ class AccountProfileController extends Controller
         $user->fill(collect($validated)->except(['middle_name', 'middle_initial'])->all());
 
         if (array_key_exists('middle_name', $validated)) {
-            // Stores the middle name and derives middle_initial from its first letter.
+            // Store the full middle name; the compatibility response derives its initial.
             $user->setMiddleName($validated['middle_name']);
         } elseif (array_key_exists('middle_initial', $validated)) {
-            // Legacy payload: a lone initial is kept in both columns.
+            // Legacy payload: store the provided initial as the available middle-name value.
             $user->setMiddleName($validated['middle_initial']);
         }
 
@@ -105,7 +105,9 @@ class AccountProfileController extends Controller
         return [
             'first_name' => $user->first_name,
             'middle_name' => $user->middle_name,
-            'middle_initial' => $user->middle_initial,
+            'middle_initial' => filled($user->middle_name)
+                ? mb_strtoupper(mb_substr($user->middle_name, 0, 1))
+                : null,
             'last_name' => $user->last_name,
             'email' => $user->email,
             'phone' => $user->phone,
