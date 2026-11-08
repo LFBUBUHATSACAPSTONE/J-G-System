@@ -9,6 +9,7 @@
 'interval' => 2000,
 // true inside the landing hero: the carousel then takes the height the hero has left over (the hero sets
 // --hero-carousel-min) instead of its own fluid height.
+// The hero carousel is hidden at 768px and below (the caption and Book Now button carry the hero there).
 'fill' => false,
 ])
 
@@ -19,7 +20,7 @@
 // The slides use the posters' own aspect ratio (2048x1717) so object-cover has nothing to crop. Their width
 // follows the carousel's height (cqh), capped by the --coverflow-*-cap values; the height comes from the ratio.
 $rootSize = $fill
-? 'h-auto min-h-(--hero-carousel-min) max-h-[min(65vw,580px)] flex-[1_1_0] [margin-block:auto] max-[768.01px]:max-h-[300px]'
+? 'h-auto min-h-(--hero-carousel-min) max-h-[min(65vw,580px)] flex-[1_1_0] [margin-block:auto] max-[768.01px]:hidden'
 : 'h-[clamp(260px,45vw,580px)] short-landscape:h-[clamp(180px,40vh,260px)]';
 $rootClass = 'group/cf relative z-1 w-full overflow-hidden select-none [container-type:size] [--coverflow-ratio:2048_/_1717] [--coverflow-center-cap:760px] [--coverflow-side-cap:420px] max-[992.01px]:[--coverflow-center-cap:460px] max-[992.01px]:[--coverflow-side-cap:230px] max-[768.01px]:[--coverflow-center-cap:270px] max-[768.01px]:[--coverflow-side-cap:130px] ' . $rootSize;
 $trackClass = 'relative h-full w-full [--coverflow-center-width:min(var(--coverflow-center-cap),109cqh)] [--coverflow-side-width:min(var(--coverflow-side-cap),55cqh)]';
