@@ -3,7 +3,7 @@
 return [
     'budget-lite' => [
         'name' => 'Budget Lite',
-        'price' => 5000,
+        'price' => 7000,
         'features' => [
             'Ideal for small and intimate events',
             'Basic yet clear sound setup',
@@ -14,7 +14,7 @@ return [
     ],
     'budget-party' => [
         'name' => 'Budget Party',
-        'price' => 10000,
+        'price' => 15000,
         'features' => [
             'Perfect for birthdays and school programs',
             'Brighter party lighting',
@@ -25,7 +25,7 @@ return [
     ],
     'budget-wedding' => [
         'name' => 'Budget Wedding',
-        'price' => 18000,
+        'price' => 20000,
         'features' => [
             'Best for simple weddings',
             'LED wall with live feed',

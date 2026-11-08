@@ -5,9 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * The sign-up, profile and booking forms all collect a middle name, while the original
- * users table only had the one-letter middle_initial. Keep both: middle_name stores what
- * the client typed, middle_initial stays in sync for the admin pages and older data.
+ * The sign-up, profile and booking forms collect a middle name. This migration adds the
+ * full-name field to accounts created under the original one-letter middle-initial schema.
  */
 return new class extends Migration
 {
