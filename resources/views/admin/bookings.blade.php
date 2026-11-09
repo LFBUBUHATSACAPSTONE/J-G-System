@@ -79,6 +79,27 @@
             </div>
           </div>
 
+          {{-- Event date range: From / To + quick chips. Logic in resources/js/admin/date-range.js,
+               filtering in bookings.js, text in config/admin/bookings.php 'date_filter'.
+               Phones: inside the sheet. From 768px: its own full-width row under the filters
+               (the sheet is "display: contents", so md:order-1 puts it after the search pill). --}}
+          @php($dateFilter = config('admin.bookings.date_filter'))
+          <div class="admin-date-filter flex flex-col gap-3 md:order-1 md:flex-[0_0_100%] md:flex-row md:flex-wrap md:items-center" role="group" aria-label="{{ $dateFilter['label'] }}" data-date-range>
+            <div class="flex min-h-13 flex-wrap items-center gap-x-3 gap-y-1 rounded-control bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text">
+              <span class="text-fluid-sm font-medium whitespace-nowrap text-ink">{{ $dateFilter['label'] }}:</span>
+              <label for="bk-date-from" class="text-fluid-sm text-ink-muted">{{ $dateFilter['from'] }}</label>
+              <input type="date" id="bk-date-from" class="min-w-0 border-0 bg-transparent py-2 text-fluid-sm text-ink outline-0" data-date-from>
+              <label for="bk-date-to" class="text-fluid-sm text-ink-muted">{{ $dateFilter['to'] }}</label>
+              <input type="date" id="bk-date-to" class="min-w-0 border-0 bg-transparent py-2 text-fluid-sm text-ink outline-0" data-date-to>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              @foreach ($dateFilter['chips'] as $key => $label)
+              <button type="button" class="inline-flex min-h-9 cursor-pointer items-center rounded-control border border-brand-text bg-surface px-3 py-1 text-[0.85rem] font-medium text-brand-text hover:bg-brand-soft-hover aria-pressed:border-brand aria-pressed:bg-brand aria-pressed:text-on-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" aria-pressed="false" data-date-chip="{{ $key }}">{{ $label }}</button>
+              @endforeach
+              <button type="button" class="inline-flex min-h-9 cursor-pointer items-center rounded-control border-0 bg-transparent px-3 py-1 text-[0.85rem] font-medium text-brand-text underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text [[hidden]]:hidden" data-date-clear hidden>{{ $dateFilter['clear'] }}</button>
+            </div>
+          </div>
+
           {{-- Sheet footer (phones only): filtering is live, "Done" just closes the sheet. --}}
           <div class="admin-filter-sheet__actions mt-2 grid grid-cols-2 gap-3 md:hidden">
             <button type="button" class="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-panel border border-brand-text bg-transparent px-4 py-2 text-fluid-base font-semibold text-brand-text hover:bg-brand-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text disabled:cursor-not-allowed disabled:opacity-50" data-filter-clear disabled>Clear all</button>
@@ -134,8 +155,9 @@
         </tbody>
       </table>
 
-      <p class="admin-bookings__empty m-0 px-2 py-6 text-center text-fluid-sm text-ink-muted" data-bookings-empty @if (count($bookings)> 0) hidden @endif>
-        @if (count($bookings) > 0) No bookings match your filters. @else No bookings yet. @endif
+      <p class="admin-bookings__empty m-0 px-2 py-6 text-center text-fluid-sm text-ink-muted" data-bookings-empty data-date-messages="{{ json_encode(config('admin.bookings.date_filter')) }}" @if (count($bookings)> 0) hidden @endif>
+        <span data-bookings-empty-text>@if (count($bookings) > 0) No bookings match your filters. @else No bookings yet. @endif</span>
+        <button type="button" class="ml-2 cursor-pointer border-0 bg-transparent p-0 font-semibold text-brand-text underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text [[hidden]]:hidden" data-bookings-empty-clear hidden>{{ config('admin.bookings.date_filter.clear') }}</button>
       </p>
     </div>
 
