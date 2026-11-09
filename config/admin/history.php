@@ -104,5 +104,12 @@ return [
     'empty_from'   => 'No bookings from :from onward',
     'empty_to'     => 'No bookings up to :to',
     'empty_single' => 'No bookings on :from',
+    // Removable chip in the phone filter sheet and its badge ("Event date: Nov 10 – Nov 13").
+    'summary'      => [
+      'range'  => ':from – :to',
+      'single' => ':from',
+      'from'   => 'From :from',
+      'to'     => 'Up to :to',
+    ],
   ],
 ];

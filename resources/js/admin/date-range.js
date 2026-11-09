@@ -73,6 +73,33 @@ export function formatDate(iso) {
     }).format(new Date(Date.UTC(year, month - 1, day)));
 }
 
+// Short date for chips: "Nov 10", with the year only when it is not the current year (Manila).
+function formatChipDate(iso) {
+    const [year, month, day] = iso.split("-").map(Number);
+    const sameYear = year === Number(manilaToday().slice(0, 4));
+    return new Intl.DateTimeFormat("en-US", {
+        timeZone: "UTC",
+        month: "short",
+        day: "numeric",
+        ...(sameYear ? {} : { year: "numeric" }),
+    }).format(new Date(Date.UTC(year, month - 1, day)));
+}
+
+// Text for the active-range chip in the phone filter sheet, from the config 'summary' templates.
+export function dateSummary(labels, from, to) {
+    const template =
+        from && to
+            ? from === to
+                ? labels.single
+                : labels.range
+            : from
+              ? labels.from
+              : labels.to;
+    return (template ?? "")
+        .replace(":from", from ? formatChipDate(from) : "")
+        .replace(":to", to ? formatChipDate(to) : "");
+}
+
 // Empty-state text from the config templates ("No bookings from :from to :to", ...).
 export function dateMessage(labels, from, to) {
     const template =

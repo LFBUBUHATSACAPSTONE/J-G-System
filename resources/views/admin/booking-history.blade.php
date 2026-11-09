@@ -97,7 +97,7 @@ $months = collect($bookings)
                config/admin/history.php 'date_filter'). It narrows the Month filter further.
                Phones: inside the sheet. From 768px: its own full-width row under the filters. --}}
           @php($dateFilter = config('admin.history.date_filter'))
-          <div class="admin-date-filter flex flex-col gap-3 md:order-1 md:flex-[0_0_100%] md:flex-row md:flex-wrap md:items-center" role="group" aria-label="{{ $dateFilter['label'] }}" data-date-range>
+          <div class="admin-date-filter flex flex-col gap-3 md:order-1 md:flex-[0_0_100%] md:flex-row md:flex-wrap md:items-center" role="group" aria-label="{{ $dateFilter['label'] }}" data-date-range data-date-summary="{{ json_encode($dateFilter['summary']) }}">
             <div class="flex min-h-13 flex-wrap items-center gap-x-3 gap-y-1 rounded-control bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text">
               <span class="text-fluid-sm font-medium whitespace-nowrap text-ink">{{ $dateFilter['label'] }}:</span>
               <label for="bh-date-from" class="text-fluid-sm text-ink-muted">{{ $dateFilter['from'] }}</label>
