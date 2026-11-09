@@ -173,6 +173,7 @@ $chip = 'admin-bookings__chip absolute -top-[1.15rem] left-5 rounded-badge px-3 
   data-booking-id="{{ $booking['id'] }}"
   data-name="{{ Str::lower($booking['client']['name']) }}"
   data-date="{{ $start->toDateString() }}"
+  data-end-date="{{ $end->toDateString() }}"
   data-month="{{ $start->format('Y-m') }}"
   data-rank="{{ $status['rank'] ?? 0 }}"
   data-package="{{ $package['id'] }}"
