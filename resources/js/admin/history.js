@@ -1,10 +1,18 @@
-// Admin Booking History page: state tabs, filters, sort and search over the rows already on the
-// page.
+// Admin Booking History page: state tabs, filters, event date range, sort and search over the rows
+// already on the page. The date range (From / To / chips) is shared with Bookings: ./date-range.js.
+// It is kept in ?from=YYYY-MM-DD&to=YYYY-MM-DD; invalid dates are ignored.
 // The phone filter sheet (chips, count badge, "Clear all") is started by bookings.js for every
 // [data-filter-bar], so this file only has to announce each apply() (see the end of apply()).
 // Row markup comes from <x-admin.booking-row :history="true">: each <tr> carries
 //   data-status-group (ongoing | upcoming | completed | cancelled), data-rank, data-date (start),
-//   data-month (Y-m of the start date), data-package, data-name, data-search.
+//   data-end-date, data-month (Y-m of the start date), data-package, data-name, data-search.
+
+import {
+    initDateRange,
+    overlapsRange,
+    isIsoDate,
+    dateMessage,
+} from "./date-range.js";
 
 function init() {
     const body = document.querySelector("[data-history-body]");
@@ -22,6 +30,50 @@ function init() {
     if (!rows.length) return;
 
     let phase = "all";
+
+    // Event date range. Rows carry data-date (start) and data-end-date; a booking matches when its
+    // dates overlap the range. Works together with the Month filter (both must match).
+    const dateRoot = document.querySelector("[data-date-range]");
+    const dates = dateRoot
+        ? initDateRange(dateRoot, {
+              onChange: () => {
+                  syncDateParams();
+                  apply();
+              },
+          })
+        : null;
+    const emptyText = document.querySelector("[data-history-empty-text]");
+    const emptyClear = document.querySelector("[data-history-empty-clear]");
+    const emptyDefault = emptyText?.textContent.trim() ?? "";
+    const dateLabels = JSON.parse(emptyMessage?.dataset.dateMessages || "{}");
+
+    function syncDateParams() {
+        const { from, to } = dates ? dates.get() : { from: "", to: "" };
+        const params = new URLSearchParams(window.location.search);
+        if (from) params.set("from", from);
+        else params.delete("from");
+        if (to) params.set("to", to);
+        else params.delete("to");
+        const query = params.toString();
+        window.history.replaceState(
+            null,
+            "",
+            window.location.pathname +
+                (query ? `?${query}` : "") +
+                window.location.hash,
+        );
+    }
+
+    // Deep link / shared view: ?from= ?to=. From after To is swapped.
+    if (dates) {
+        const params = new URLSearchParams(window.location.search);
+        let from = params.get("from") ?? "";
+        let to = params.get("to") ?? "";
+        if (!isIsoDate(from)) from = "";
+        if (!isIsoDate(to)) to = "";
+        if (from && to && from > to) [from, to] = [to, from];
+        dates.set(from, to, { silent: true });
+    }
 
     // Tab counts are totals per state, so they stay put while the other filters change.
     tabs.forEach((tab) => {
@@ -59,13 +111,26 @@ function init() {
         const month = monthSelect.value;
         const query = searchInput.value.trim().toLowerCase();
 
+        const { from, to } = dates ? dates.get() : { from: "", to: "" };
+
+        // Every filter except the dates, so the empty state can tell whether the dates are why
+        // nothing is left.
+        const matchesOthers = (row) =>
+            (phase === "all" || row.dataset.statusGroup === phase) &&
+            (pkg === "all" || row.dataset.package === pkg) &&
+            (month === "all" || row.dataset.month === month) &&
+            (!query || row.dataset.search.includes(query));
+
         const visible = new Set(
             rows.filter(
                 (row) =>
-                    (phase === "all" || row.dataset.statusGroup === phase) &&
-                    (pkg === "all" || row.dataset.package === pkg) &&
-                    (month === "all" || row.dataset.month === month) &&
-                    (!query || row.dataset.search.includes(query)),
+                    matchesOthers(row) &&
+                    overlapsRange(
+                        row.dataset.date,
+                        row.dataset.endDate,
+                        from,
+                        to,
+                    ),
             ),
         );
 
@@ -86,6 +151,15 @@ function init() {
         );
 
         emptyMessage.hidden = visible.size > 0;
+
+        // Name the range when the dates are what emptied the list, with a way back.
+        const datesCause =
+            !visible.size && Boolean(from || to) && rows.some(matchesOthers);
+        if (emptyText)
+            emptyText.textContent = datesCause
+                ? dateMessage(dateLabels, from, to)
+                : emptyDefault;
+        if (emptyClear) emptyClear.hidden = !datesCause;
         count.textContent = `Showing ${visible.size} of ${rows.length} bookings`;
 
         // Lets the filter bar (chips + badge) follow along, same event as the Bookings page.
@@ -102,6 +176,8 @@ function init() {
         el.addEventListener("change", apply),
     );
     searchInput.addEventListener("input", apply);
+    // "Clear dates" in the empty state (the one next to the inputs is wired in date-range.js).
+    emptyClear?.addEventListener("click", () => dates?.clear());
 
     apply(); // sets the Default order on load
 }
