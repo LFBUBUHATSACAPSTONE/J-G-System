@@ -33,6 +33,8 @@ function initList(body) {
     const searchInput = document.querySelector("[data-bookings-search]");
     const emptyMessage = document.querySelector("[data-bookings-empty]");
     const count = document.querySelector("[data-bookings-count]");
+    const focusBar = document.querySelector("[data-bookings-focus]");
+    const showAllButton = document.querySelector("[data-bookings-show-all]");
     let selectedBookingId = null;
 
     if (!rows.length) return;
@@ -77,6 +79,9 @@ function initList(body) {
         emptyMessage.hidden = visible.size > 0;
         count.textContent = `Showing ${visible.size} of ${rows.length} bookings`;
 
+        // "Showing 1 booking. Show all" only while a link has focused one booking.
+        if (focusBar) focusBar.hidden = !selectedBookingId;
+
         // Lets the filter bar (chips + badge) follow along, including after deep-link params.
         document.dispatchEvent(new CustomEvent("admin:filters-applied"));
     }
@@ -96,6 +101,14 @@ function initList(body) {
                 window.location.hash,
         );
     }
+
+    // "Show all": drop the focus (and ?selected_booking=) and list every row again. The bar disappears,
+    // so focus moves to the list instead of being lost.
+    showAllButton?.addEventListener("click", () => {
+        clearSelectedBooking();
+        apply();
+        body.focus({ preventScroll: true });
+    });
 
     sortSelect.addEventListener("change", apply);
     [statusSelect, packageSelect].forEach((el) =>
@@ -128,7 +141,10 @@ function initList(body) {
 //   ?package=<package id>                                  (same ids as the Package filter)
 //   ?sort=default|alpha|date   ?q=<search text>
 //   ?booking=<id>           filters to the row, opens View Details, then becomes selected_booking
-//   ?selected_booking=<id>  filters to the row without reopening the modal on refresh
+//                           (Dashboard Review / Verify payment)
+//   ?selected_booking=<id>  filters to the row, modal stays closed, survives a refresh
+//                           (Dashboard Upcoming Events, Calendar "View in Bookings")
+// While one booking is focused a bar above the table says "Showing 1 booking" with a "Show all" button.
 // Unknown values are ignored, so a stale link still opens the page.
 function applyQueryParams({
     rows,

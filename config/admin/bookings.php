@@ -193,6 +193,12 @@ return [
     'completed'      => 'Completed',
   ],
 
+  // Bar above the table while a link (Calendar, Upcoming Events, Review) has focused ONE booking.
+  'focus' => [
+    'showing_one' => 'Showing 1 booking',
+    'show_all'    => 'Show all',
+  ],
+
   // "Sorted by:" dropdown. Keys are handled in resources/js/admin/bookings.js.
   'sorts' => [
     'default' => 'Default',      // the order the backend sent

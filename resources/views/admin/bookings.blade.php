@@ -106,6 +106,13 @@
       <div class="admin-filter-chips flex flex-[0_0_100%] flex-wrap gap-2 max-md:order-3 md:hidden [[hidden]]:hidden" data-filter-chips hidden></div>
     </div>
 
+    {{-- Focus bar: shown only while a link has narrowed the list to one booking (?selected_booking=).
+         bookings.js shows it, hides it again when a filter changes, and "Show all" restores the list. --}}
+    <div class="admin-bookings__focus mb-4 flex flex-wrap items-center justify-between gap-3 rounded-panel bg-brand-soft px-4 py-2 text-fluid-sm text-ink [&[hidden]]:hidden" data-bookings-focus hidden>
+      <span class="font-medium">{{ config('admin.bookings.focus.showing_one') }}</span>
+      <button type="button" class="inline-flex min-h-10 cursor-pointer items-center rounded-control border border-brand-text bg-surface px-4 py-1 text-fluid-sm font-semibold text-brand-text hover:bg-brand-soft-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-bookings-show-all>{{ config('admin.bookings.focus.show_all') }}</button>
+    </div>
+
     {{-- Table --}}
     <div class="admin-bookings__panel rounded-card bg-panel px-6 pt-1 pb-2">
       <table class="admin-bookings__table block w-full border-separate [border-spacing:0_1.1rem] min-[1200px]:table" role="table">
@@ -120,7 +127,7 @@
             <th role="columnheader" scope="col">Actions</th>
           </tr>
         </thead>
-        <tbody role="rowgroup" class="block min-[1200px]:table-row-group" data-bookings-body>
+        <tbody role="rowgroup" tabindex="-1" class="block outline-none min-[1200px]:table-row-group" data-bookings-body>
           @foreach ($bookings as $booking)
           <x-admin.booking-row :booking="$booking" :index="$loop->index" :full-dates="$fullDates ?? []" />
           @endforeach

@@ -407,7 +407,8 @@ if (dashboard) {
                             ? `In ${days} days`
                             : "";
                 const item = makeElement("a", UP_ITEM);
-                item.href = bookingsUrl({ booking: event.id });
+                // Filter to the booking only; the admin sees it in context and opens View Details when needed.
+                item.href = bookingsUrl({ selected_booking: event.id });
                 item.setAttribute(
                     "aria-label",
                     `${event.event} for ${event.client}, ${dateLabel(

@@ -38,6 +38,8 @@ class AdminBookingsTest extends TestCase
             ->assertSee('data-booking-row', false)
             ->assertSee('data-search="', false)
             ->assertSee('data-booking="', false)
+            ->assertSee('data-bookings-focus', false)
+            ->assertSee('data-bookings-show-all', false)
             ->assertSee('name="guest_count"', false)
             ->assertSee('name="venue_type"', false)
             ->assertDontSee('<<<<<<<', false)
@@ -418,7 +420,7 @@ class AdminBookingsTest extends TestCase
         // The second overlaps the booking that now holds the slot: refused, status untouched.
         $this->postJson(route('admin.bookings.status', $second), ['action' => 'approve'])
             ->assertStatus(409)
-            ->assertJsonPath('message', fn (string $message) => str_contains($message, 'schedule conflicts with #JG-OVERLAP-1'));
+            ->assertJsonPath('message', fn(string $message) => str_contains($message, 'schedule conflicts with #JG-OVERLAP-1'));
 
         $this->assertDatabaseHas('bookings', [
             'id' => $second->id,
@@ -454,7 +456,7 @@ class AdminBookingsTest extends TestCase
 
         $this->postJson(route('admin.bookings.status', $first), ['action' => 'verify'])
             ->assertStatus(409)
-            ->assertJsonPath('message', fn (string $message) => str_contains($message, 'schedule conflicts with #JG-VERIFY-CLASH-2'));
+            ->assertJsonPath('message', fn(string $message) => str_contains($message, 'schedule conflicts with #JG-VERIFY-CLASH-2'));
 
         $this->assertDatabaseHas('bookings', [
             'id' => $first->id,
