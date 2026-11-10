@@ -2,6 +2,7 @@
 import "bootstrap";
 import "@phosphor-icons/web/regular";
 
+import "./shared/toast.js"; // toasts: showToast() / queueToast() (docs/toast-notifications.md)
 import "./account/profile.js";
 import "./account/bookings.js";
 import "./account/messages.js";

@@ -8,6 +8,7 @@
 </head>
 
 <body>
+  <x-toast.region />
   @include('components.landing.navigation')
 
   @php
