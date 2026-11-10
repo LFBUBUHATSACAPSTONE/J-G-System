@@ -1,5 +1,6 @@
 import { initFilterSheet } from "./filter-sheet.js";
 import { openActionModal, reasonError } from "../shared/action-modal.js";
+import { queueToast, showToast } from "../shared/toast.js";
 import { initCancellation } from "./cancellation.js";
 import {
     initDateRange,
@@ -720,14 +721,9 @@ function initConfirm() {
 
     const feedbackBox = () =>
         document.querySelector("[data-bookings-feedback]");
-    const showFeedback = (message) => {
-        const feedback = feedbackBox();
-        if (!feedback) return;
-        feedback.textContent = message;
-        feedback.dataset.tone = "danger";
-        feedback.hidden = false;
-        feedback.focus?.();
-    };
+    // A failure outside an action modal (the booking modal's edit): a toast that stays until closed.
+    // Failures inside Approve / Decline / Cancel stay in that modal's own red line.
+    const showFeedback = (message) => showToast({ tone: "danger", message });
 
     // One POST for every status form and for the booking modal's own form. Throws an Error with the
     // server's message (field = "reason" when the server refused the reason itself).
@@ -773,6 +769,22 @@ function initConfirm() {
             return;
         }
 
+        const bookingId =
+            form.closest("[data-booking-row]")?.dataset.bookingId ||
+            form.closest("#bookingModal")?.dataset.bookingId;
+        if (bookingId) {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("booking");
+            url.searchParams.set("selected_booking", bookingId);
+            window.location.assign(url.href);
+            return;
+        }
+
+        // The page reloads to show the new status, so the message is queued for the next page.
+        queueToast({
+            tone: "success",
+            message: result.message || "Booking status updated.",
+        });
         window.location.reload();
     }
 
