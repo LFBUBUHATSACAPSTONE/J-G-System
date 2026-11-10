@@ -30,7 +30,7 @@ const CX = {
     meta: "chat-msg__meta flex max-w-full items-center gap-2 [.chat-msg[data-group=first]:not(.is-sending):not(.is-failed)_&:not(:has([data-edited]))]:hidden [.chat-msg[data-group=middle]:not(.is-sending):not(.is-failed)_&:not(:has([data-edited]))]:hidden",
     time: "chat-msg__time px-1 text-[0.75rem] text-ink-muted [.chat-msg[data-group=first]:not(.is-sending)_&]:hidden [.chat-msg[data-group=middle]:not(.is-sending)_&]:hidden group-[.is-failed]/msg:hidden",
     edited: "chat-msg__edited text-[0.75rem] italic text-ink-muted",
-    retry: "chat-msg__retry cursor-pointer rounded-sm border-0 bg-transparent px-2 py-1 text-[0.75rem] font-semibold text-danger-text underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text",
+    retry: "chat-msg__retry cursor-pointer rounded-sm border-0 bg-transparent px-2 py-1 inline-flex items-center gap-1 text-[0.75rem] font-semibold text-danger-text no-underline hover:bg-danger-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text",
     discard:
         "chat-msg__discard cursor-pointer rounded-sm border-0 bg-transparent px-2 py-1 text-[0.75rem] font-semibold text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text",
     actions: "chat-msg__actions pointer-events-none absolute inset-0",
@@ -1409,6 +1409,10 @@ export function initChat(root) {
         msg.removeAttribute("aria-busy");
         const retry = el("button", CX.retry, "Failed. Tap to retry");
         retry.type = "button";
+        const retryIcon = document.createElement("i");
+        retryIcon.className = "ph ph-arrow-clockwise";
+        retryIcon.setAttribute("aria-hidden", "true");
+        retry.prepend(retryIcon);
         retry.addEventListener("click", () => deliver(entry));
         const discard = el("button", CX.discard, "Discard");
         discard.type = "button";
