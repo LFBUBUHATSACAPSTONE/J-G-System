@@ -211,6 +211,7 @@ class MessageController extends Controller
                 'unread' => $unread,
                 'conversation_id' => null,
                 'messages' => [],
+                'message_cursor' => 0,
                 'messages_changed' => [],
                 'messages_synced_at' => $this->messages->changedCursor(),
                 'bookings' => $bookings,
@@ -232,6 +233,9 @@ class MessageController extends Controller
             'unread' => $unread,
             'conversation_id' => $conversation->id,
             'messages' => $messages,
+            'message_cursor' => $conversation->messages()
+                ->where('sender_type', 'admin')
+                ->max('id') ?? 0,
             // Edits/unsends of messages already on the page, on top of the new ones above.
             'messages_changed' => $this->messages->changedMessages($conversation->id, $changedSince, $after),
             'messages_synced_at' => $this->messages->changedCursor(),

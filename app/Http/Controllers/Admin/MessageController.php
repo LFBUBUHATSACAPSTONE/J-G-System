@@ -81,6 +81,9 @@ class MessageController extends Controller
             'ok' => true,
             'unread' => $this->messages->unreadCountForAdmin(),
             'messages' => $messages,
+            'message_cursor' => Message::query()
+                ->where('sender_type', 'client')
+                ->max('id') ?? 0,
             // Every conversation: an edit or unsend on either side updates/removes the
             // message in its own panel without a refresh.
             'messages_changed' => $this->messages->changedMessages(null, $changedSince, $after),
