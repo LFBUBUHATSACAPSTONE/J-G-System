@@ -758,33 +758,25 @@ function initConfirm() {
             throw error;
         }
 
-        const bookingId =
-            form.closest("[data-booking-row]")?.dataset.bookingId ||
-            form.closest("#bookingModal")?.dataset.bookingId;
-        if (bookingId) {
-            const url = new URL(window.location.href);
-            url.searchParams.delete("booking");
-            url.searchParams.set("selected_booking", bookingId);
-            window.location.assign(url.href);
-            return;
-        }
-
-        const bookingId =
-            form.closest("[data-booking-row]")?.dataset.bookingId ||
-            form.closest("#bookingModal")?.dataset.bookingId;
-        if (bookingId) {
-            const url = new URL(window.location.href);
-            url.searchParams.delete("booking");
-            url.searchParams.set("selected_booking", bookingId);
-            window.location.assign(url.href);
-            return;
-        }
-
-        // The page reloads to show the new status, so the message is queued for the next page.
+        // The page reloads (or moves to the focused booking) to show the new status, so the
+        // message is queued for the next page. It must be queued BEFORE the redirect below.
         queueToast({
             tone: "success",
             message: result.message || "Booking status updated.",
         });
+
+        // Keep the booking in focus after the action: reload on ?selected_booking=<id>.
+        const bookingId =
+            form.closest("[data-booking-row]")?.dataset.bookingId ||
+            form.closest("#bookingModal")?.dataset.bookingId;
+        if (bookingId) {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("booking");
+            url.searchParams.set("selected_booking", bookingId);
+            window.location.assign(url.href);
+            return;
+        }
+
         window.location.reload();
     }
 
