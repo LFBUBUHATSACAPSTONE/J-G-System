@@ -12,10 +12,11 @@
  *   - transport "json":      PATCH with a JSON body of `jsonFields`, always all of them        [customer]
  *
  * Markup hooks: [data-profile-root], [data-row], [data-row-view|value|edit|panel|cancel],
- * [data-profile-save], [data-profile-reset], [data-profile-status], [data-profile-confirm],
+ * [data-profile-save], [data-profile-reset], [data-profile-confirm],
  * [data-field-error="<name>"], [data-avatar], [data-avatar-pick], [data-avatar-input].
  */
 import { getCsrfToken } from "../auth/csrf.js";
+import { dismissToast, showToast } from "../shared/toast.js";
 import {
     getPasswordError,
     wireLiveField,
@@ -50,7 +51,6 @@ export function initProfileForm(cfg) {
 
     const saveBtn = root.querySelector("[data-profile-save]");
     const resetBtn = root.querySelector("[data-profile-reset]");
-    const statusEl = root.querySelector("[data-profile-status]");
     const confirmBox = root.querySelector("[data-profile-confirm]");
     const avatarBox = root.querySelector("[data-avatar]");
     const avatarInput = root.querySelector("[data-avatar-input]");
@@ -160,16 +160,23 @@ export function initProfileForm(cfg) {
         if (resetBtn) resetBtn.disabled = saving || !dirty;
     }
 
+    // Results are toasts (docs/ui-redesign.md decision A): success closes by itself, a failure stays until
+    // closed. Field errors stay under their fields. An old failure toast is closed when the person edits again.
+    let errorToast = null;
+
     function showStatus(message, type) {
-        statusEl.textContent = message;
-        statusEl.classList.toggle("is-error", type === "error");
-        statusEl.classList.remove("d-none");
+        dismissToast(errorToast);
+        errorToast = null;
+        if (type === "error") {
+            errorToast = showToast({ tone: "danger", message });
+        } else {
+            showToast({ tone: "success", message, icon: "profile" });
+        }
     }
 
     function clearStatus() {
-        statusEl.textContent = "";
-        statusEl.classList.add("d-none");
-        statusEl.classList.remove("is-error");
+        dismissToast(errorToast);
+        errorToast = null;
     }
 
     // ---------- rows ----------

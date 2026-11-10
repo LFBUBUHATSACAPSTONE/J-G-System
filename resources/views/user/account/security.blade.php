@@ -36,7 +36,6 @@ $ruleClass = 'flex items-center gap-2 [&.is-met]:text-success-text [&_i]:flex-no
 $noteClass = 'm-0 flex items-start gap-3 rounded-panel bg-panel p-4 text-fluid-sm text-ink-muted [&_i]:flex-none [&_i]:text-fluid-xl [&_i]:leading-none';
 $methodsClass = 'm-0 flex list-none flex-col gap-4 p-0';
 $methodClass = 'flex items-center gap-4 rounded-panel bg-panel p-4 [&>i]:flex-none [&>i]:text-fluid-icon [&>i]:leading-none';
-$statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft px-4 py-3 text-fluid-md font-medium text-success-text [&.is-error]:border-danger-border [&.is-error]:bg-danger-soft [&.is-error]:text-danger-text d-none';
 @endphp
 
 <x-account.layout>
@@ -99,8 +98,6 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
           </li>
           @endforeach
         </ul>
-
-        <p class="{{ $statusClass }}" role="status" aria-live="polite" data-password-status></p>
 
         <div class="flex">
           <x-account.button type="submit" data-password-save disabled>Save new password</x-account.button>

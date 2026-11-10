@@ -229,6 +229,11 @@ function dismiss(entry) {
     }, LEAVE_MS);
 }
 
+// Closes a toast returned by showToast() (for example an old error when the person starts editing again).
+export function dismissToast(entry) {
+    if (entry) dismiss(entry);
+}
+
 export function showToast({
     tone = "info",
     message = "",

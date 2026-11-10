@@ -85,10 +85,6 @@ $secondaryBtnClass = 'w-full min-[576px]:w-auto min-[576px]:px-6 cursor-pointer 
           </x-profile.row>
         </div>
 
-        <div class="@min-[34rem]:col-span-2 [&:has(>.d-none)]:hidden">
-          <x-profile.status />
-        </div>
-
         <div class="{{ $actionsClass }} @min-[34rem]:col-span-2">
           <button type="button" class="{{ $secondaryBtnClass }}" data-profile-reset disabled>Discard changes</button>
           <button type="submit" class="{{ $primaryBtnClass }}" data-profile-save disabled>Save changes</button>
