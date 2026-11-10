@@ -58,6 +58,14 @@ $serverErrors = isset($errors) ? $errors->toArray() : [];
              two buttons only appear while the request is pending. Markup: components/booking/cancellation-card. --}}
         <x-booking.cancellation-card class="col-span-full" title-id="bm-cancellation-title" :actions="true" />
 
+        {{-- Why it was cancelled or declined (payload.reason, from booking.status_reason). Hidden otherwise. Second full-width block, right under the cancellation card
+             (UI redesign, docs/ui-redesign.md change 1): the admin no longer scrolls past Package and Payment to find it. --}}
+        <section class="col-span-full m-0 flex flex-col gap-1 rounded-lg border border-danger-border bg-danger-soft px-4 py-3" aria-labelledby="bm-reason-label" data-booking-reason hidden>
+          <h3 class="mb-2 text-sm leading-[1.2] font-semibold text-danger-text" id="bm-reason-label" data-reason-label></h3>
+          <p class="mb-4 text-sm text-ink-muted" data-reason-by></p>
+          <p class="m-0 text-sm wrap-anywhere whitespace-pre-line text-ink" data-reason-text></p>
+        </section>
+
         {{-- Client Information --}}
         <section aria-labelledby="bm-client-title">
           <h3 id="bm-client-title" class="mb-4 text-fluid-xl leading-9 font-bold text-ink short-wide:mb-2">Client Information</h3>
@@ -235,13 +243,6 @@ $serverErrors = isset($errors) ? $errors->toArray() : [];
               </div>
             </div>
           </div>
-        </section>
-
-        {{-- Why it was cancelled or declined (payload.reason, from booking.status_reason). Hidden otherwise. --}}
-        <section class="col-span-full m-0 flex flex-col gap-1 rounded-lg border border-danger-border bg-danger-soft px-4 py-3" aria-labelledby="bm-reason-label" data-booking-reason hidden>
-          <h3 class="mb-2 text-sm leading-[1.2] font-semibold text-danger-text" id="bm-reason-label" data-reason-label></h3>
-          <p class="mb-4 text-sm text-ink-muted" data-reason-by></p>
-          <p class="m-0 text-sm wrap-anywhere whitespace-pre-line text-ink" data-reason-text></p>
         </section>
 
         <p class="col-span-full m-0 rounded-field border border-danger-border bg-danger-soft px-3 py-2 text-sm text-danger-text" role="alert" data-booking-error hidden></p>
