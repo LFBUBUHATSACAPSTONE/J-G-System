@@ -43,6 +43,7 @@ return [
       'group'     => 'pending',
       'highlight' => true,
       'chip'      => 'Needs Review',
+      'chip_icon' => 'bell-ringing',
       'actions'   => [
         [
           'action' => 'decline',
@@ -133,6 +134,7 @@ return [
       'group'     => 'cancellation',
       'highlight' => true,
       'chip'      => 'Cancellation Request',
+      'chip_icon' => 'clock-countdown',
       'actions'   => [],
       'badge'     => ['tone' => 'warning', 'solid' => false],
     ],

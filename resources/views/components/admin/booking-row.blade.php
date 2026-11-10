@@ -155,15 +155,18 @@ $highlight = ($status['highlight'] ?? false) ? ($status['highlight_class'] ?? 'i
 $cellOutline = 'min-[1200px]:mt-0 min-[1200px]:[&>td]:border-y-2 min-[1200px]:[&>td:first-child]:border-l-2 min-[1200px]:[&>td:last-child]:border-r-2';
 $rowClass = 'admin-bookings__row relative mb-6 grid grid-cols-2 gap-x-4 gap-y-3 rounded-card border-2 bg-surface p-6 text-fluid-md text-ink [&[hidden]]:hidden! min-[1200px]:m-0 min-[1200px]:table-row min-[1200px]:border-0 min-[1200px]:bg-transparent min-[1200px]:p-0 '
 . match ($highlight) {
-'is-pending' => "mt-6 border-warning-border {$cellOutline} min-[1200px]:[&>td]:border-warning-border",
-'is-ongoing' => "mt-6 border-brand {$cellOutline} min-[1200px]:[&>td]:border-brand",
+'is-pending' => "border-warning-border pt-[3.75rem] {$cellOutline} min-[1200px]:[&>td]:border-warning-border min-[1200px]:[&>td]:pt-[3.25rem]",
+'is-ongoing' => "border-brand pt-[3.75rem] {$cellOutline} min-[1200px]:[&>td]:border-brand min-[1200px]:[&>td]:pt-[3.25rem]",
 default => 'border-transparent',
 };
-$cell = 'admin-bookings__cell min-w-0 before:block before:text-xs before:text-ink-muted before:content-[attr(data-label)] min-[1200px]:bg-surface min-[1200px]:p-4 min-[1200px]:align-middle min-[1200px]:before:hidden min-[1200px]:first:relative min-[1200px]:first:rounded-l-card min-[1200px]:first:pl-6 min-[1200px]:last:rounded-r-card min-[1200px]:last:pr-6';
-$chip = 'admin-bookings__chip absolute -top-[1.15rem] left-5 rounded-badge px-3 text-[0.85rem] font-medium '
-. ($highlight === 'is-ongoing' ? 'bg-brand text-white' : 'bg-chip-pending text-ink')
-. (isset($status['chip_class']) ? ' ' . $status['chip_class'] : '');
-@endphp
+$cell = 'admin-bookings__cell min-w-0 before:block before:text-xs before:text-ink-muted before:content-[attr(data-label)] min-[1200px]:bg-surface min-[1200px]:p-4 min-[1200px]:align-middle min-[1200px]:before:hidden min-[1200px]:first:rounded-l-card min-[1200px]:first:pl-6 min-[1200px]:last:rounded-r-card min-[1200px]:last:pr-6';
+// The banner: one line (never wraps; long text is cut with an ellipsis), pinned inside the top edge of the
+// row. It is positioned against the row (position: relative on <tr>), so it spans the whole card on phones
+  // and the whole row on desktop, and it can never cover the client name (the row / cells reserve the space).
+  $chip = 'admin-bookings__chip absolute inset-x-0 top-0 flex h-9 items-center gap-2 overflow-hidden rounded-t-[calc(var(--radius-card)-2px)] px-6 text-[0.85rem] font-semibold whitespace-nowrap min-[1200px]:inset-x-[2px] min-[1200px]:top-[2px] [&_.ph]:flex-none [&_.ph]:text-fluid-lg '
+  . ($highlight === 'is-ongoing' ? 'bg-brand text-white' : 'bg-chip-pending text-ink')
+  . (isset($status['chip_class']) ? ' ' . $status['chip_class'] : '');
+  @endphp
 
 <tr
   role="row"
@@ -182,7 +185,12 @@ $chip = 'admin-bookings__chip absolute -top-[1.15rem] left-5 rounded-badge px-3 
 
   <td role="cell" class="{{ $cell }} col-span-full" data-label="Client">
     @if ($status['highlight'] ?? false)
-    <span class="{{ $chip }}">{{ $status['chip'] ?? $status['label'] }}</span>
+    <span class="{{ $chip }}">
+      @if (! empty($status['chip_icon']))
+      <i class="ph ph-{{ $status['chip_icon'] }}" aria-hidden="true"></i>
+      @endif
+      <span class="min-w-0 truncate">{{ $status['chip'] ?? $status['label'] }}</span>
+    </span>
     @endif
     <span class="admin-bookings__name font-medium">{{ $booking['client']['name'] }}</span>
     <span class="admin-bookings__ref ml-2 text-brand-text">{{ $ref }}</span>
