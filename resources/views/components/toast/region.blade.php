@@ -18,6 +18,7 @@ $settings = [
 'max' => $toast['max_visible'],
 'mergeMs' => $toast['merge_window_ms'],
 'durations' => $toast['durations_ms'],
+'icons' => $toast['icons'],
 'close' => $toast['labels']['close'],
 'merged' => $toast['labels']['merged'],
 ];

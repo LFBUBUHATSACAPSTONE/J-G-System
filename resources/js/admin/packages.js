@@ -439,6 +439,7 @@ function initModal(modal) {
 
             queueToast({
                 tone: "success",
+                icon: "package-saved",
                 message: body.message || "Package saved successfully.",
             });
             window.location.reload();

@@ -98,7 +98,7 @@ function start() {
             : cfg.link
               ? { label: text.open, href: cfg.link }
               : null;
-        showToast({ tone: "info", message, action });
+        showToast({ tone: "info", message, action, icon: "chat" });
     };
 
     // Bookings approved for this client (4C). Remembers every id it is given, so the same booking is never
@@ -124,6 +124,7 @@ function start() {
                   );
         showToast({
             tone: "success",
+            icon: "booking-approved",
             message: message.replace(/\s{2,}/g, " ").trim(),
             action: cfg.bookingsLink
                 ? { label: text.open_bookings, href: cfg.bookingsLink }
