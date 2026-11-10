@@ -109,9 +109,15 @@ $availabilityUrl = Route::has('admin.packages.availability')
     'warning' => 'border-warning-border bg-transparent text-warning-text aria-pressed:border-warning aria-pressed:bg-warning aria-pressed:text-ink',
     'neutral' => 'border-field-border bg-transparent text-ink',
     ][$state['tone']] ?? '';
-    $confirm = $state['confirm'] ? str_replace('{name}', $package['name'], $state['confirm']) : null;
+    $confirm = $state['confirm'] ?? null;
+    $confirmData = $confirm ? [
+    'title' => str_replace('{name}', $package['name'], $confirm['title']),
+    'message' => str_replace('{name}', $package['name'], $confirm['message']),
+    'label' => $confirm['label'],
+    'tone' => $confirm['tone'] ?? 'danger',
+    ] : null;
     @endphp
-    <form class="contents" method="POST" action="{{ $availabilityUrl }}" @if ($confirm && ! $active) data-confirm="{{ $confirm }}" @endif>
+    <form class="contents" method="POST" action="{{ $availabilityUrl }}" @if ($confirmData && ! $active) data-confirm="{{ $confirmData['message'] }}" data-confirm-title="{{ $confirmData['title'] }}" data-confirm-label="{{ $confirmData['label'] }}" data-confirm-tone="{{ $confirmData['tone'] }}" @endif>
       @csrf
       @method('PATCH')
       <input type="hidden" name="availability" value="{{ $key }}">

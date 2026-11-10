@@ -3,6 +3,7 @@
 //   import { showToast } from "../shared/toast.js";
 //   showToast({ tone: "success", message: "Booking status updated." });
 //   showToast({ tone: "info", message: "New message", action: { label: "Open", href: "/admin/messages" } });
+//   showToast({ tone: "success", message: "Profile saved", icon: "profile" });   // icon key from config/toast.php 'icons'
 //
 // or, without importing anything:
 //   document.dispatchEvent(new CustomEvent("toast:show", { detail: { tone: "danger", message: "..." } }));
@@ -18,6 +19,8 @@
 // close by themselves; danger stays until closed (duration 0). The timer pauses while the pointer or keyboard
 // focus is on a toast and while the tab is hidden. Success / info / warning are role="status" (polite),
 // danger is role="alert". Focus is never moved to a toast; Escape inside one closes it.
+// Icon: each tone has a default icon; a toast may carry its own `icon` (a key of config/toast.php 'icons', or a
+// Phosphor class matching ph-[a-z0-9-]+). Anything else falls back to the tone icon. Icons are classes, never HTML.
 // The text is always set with textContent, never as HTML.
 
 const TONES = {
@@ -45,13 +48,13 @@ const TONES = {
 
 // Tailwind class strings (kept whole so Tailwind can find them in this file).
 const TOAST =
-    "pointer-events-auto flex w-full max-w-[24rem] items-start gap-3 rounded-panel border px-4 py-3 text-fluid-sm shadow-[0_12px_32px_-8px_rgb(0_0_0/0.22),0_2px_6px_rgb(0_0_0/0.08)] animate-toast-in transition-[opacity,translate] duration-200 data-leaving:-translate-y-2 data-leaving:opacity-0 motion-reduce:animate-none motion-reduce:data-leaving:translate-y-0";
-const ICON = "ph flex-none pt-0.5 text-fluid-xl";
-const TEXT = "m-0 min-w-0 flex-1 pt-1 font-medium break-words";
+    "pointer-events-auto flex w-fit min-w-[18rem] max-w-full min-[576px]:max-w-[40rem] items-center gap-3 rounded-panel border px-4 py-3 text-fluid-sm shadow-[0_12px_32px_-8px_rgb(0_0_0/0.22),0_2px_6px_rgb(0_0_0/0.08)] animate-toast-in transition-[opacity,translate] duration-200 data-leaving:-translate-y-2 data-leaving:opacity-0 motion-reduce:animate-none motion-reduce:data-leaving:translate-y-0";
+const ICON = "ph flex-none text-fluid-xl";
+const TEXT = "m-0 min-w-0 flex-1 font-medium break-words";
 const BADGE =
     "ml-2 inline-block rounded-full bg-black/10 px-2 text-xs font-semibold [[hidden]]:hidden";
 const ACTION =
-    "flex-none cursor-pointer self-center border-0 bg-transparent p-0 text-fluid-sm font-semibold text-current underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current";
+    "inline-flex flex-none cursor-pointer items-center gap-1 self-center rounded-full border-0 bg-transparent px-2 py-1 text-fluid-sm font-semibold whitespace-nowrap text-current no-underline hover:bg-black/10 focus-visible:bg-black/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current";
 const CLOSE =
     "-mr-1 inline-flex size-8 flex-none cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 text-current hover:bg-black/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current";
 
@@ -65,6 +68,7 @@ let cfg = {
     close: "Close notification",
     merged: "x:count",
     durations: { success: 5000, info: 5000, warning: 8000, danger: 0 },
+    icons: {},
 };
 const active = [];
 const queue = [];
@@ -78,11 +82,22 @@ function setup() {
             ...cfg,
             ...given,
             durations: { ...cfg.durations, ...given.durations },
+            icons: { ...cfg.icons, ...given.icons },
         };
     } catch {
         // keep the defaults
     }
     return true;
+}
+
+const ICON_PATTERN = /^ph-[a-z0-9-]+$/;
+
+// A key of cfg.icons, or a Phosphor class that passes the pattern; otherwise the tone's own icon.
+function iconFor(entry) {
+    const given = entry.icon ? String(entry.icon) : "";
+    const named =
+        given && Object.hasOwn(cfg.icons, given) ? cfg.icons[given] : given;
+    return ICON_PATTERN.test(named) ? named : TONES[entry.tone].icon;
 }
 
 function startTimer(entry) {
@@ -116,7 +131,7 @@ function build(entry) {
     el.dataset.tone = entry.tone;
 
     const icon = document.createElement("i");
-    icon.className = `${ICON} ${tone.icon}`;
+    icon.className = `${ICON} ${iconFor(entry)}`;
     icon.setAttribute("aria-hidden", "true");
 
     const text = document.createElement("p");
@@ -136,6 +151,10 @@ function build(entry) {
             : document.createElement("button");
         action.className = ACTION;
         action.textContent = entry.action.label;
+        const arrow = document.createElement("i");
+        arrow.className = "ph ph-arrow-right text-fluid-base";
+        arrow.setAttribute("aria-hidden", "true");
+        action.append(arrow);
         if (entry.action.href) action.href = entry.action.href;
         else action.type = "button";
         action.addEventListener("click", () => {
@@ -210,7 +229,17 @@ function dismiss(entry) {
     }, LEAVE_MS);
 }
 
-export function showToast({ tone = "info", message = "", action = null } = {}) {
+// Closes a toast returned by showToast() (for example an old error when the person starts editing again).
+export function dismissToast(entry) {
+    if (entry) dismiss(entry);
+}
+
+export function showToast({
+    tone = "info",
+    message = "",
+    action = null,
+    icon = "",
+} = {}) {
     const text = String(message ?? "").trim();
     if (!text) return null;
     if (!region?.isConnected && !setup()) return null;
@@ -242,6 +271,7 @@ export function showToast({ tone = "info", message = "", action = null } = {}) {
         tone: kind,
         message: text,
         action,
+        icon,
         count: 1,
         duration,
         remaining: duration,
@@ -265,12 +295,17 @@ const PENDING_KEY = "jg.toast.pending";
 const PENDING_MAX_AGE_MS = 60000;
 const PENDING_MAX = 5;
 
-export function queueToast({ tone = "success", message = "" } = {}) {
+export function queueToast({ tone = "success", message = "", icon = "" } = {}) {
     const text = String(message ?? "").trim();
     if (!text) return;
     try {
         const list = JSON.parse(sessionStorage.getItem(PENDING_KEY) || "[]");
-        list.push({ tone, message: text, at: Date.now() });
+        list.push({
+            tone,
+            message: text,
+            icon: String(icon || ""),
+            at: Date.now(),
+        });
         sessionStorage.setItem(
             PENDING_KEY,
             JSON.stringify(list.slice(-PENDING_MAX)),
@@ -294,7 +329,11 @@ function showPending() {
     const now = Date.now();
     list.forEach((item) => {
         if (item && now - Number(item.at) <= PENDING_MAX_AGE_MS) {
-            showToast({ tone: item.tone, message: item.message });
+            showToast({
+                tone: item.tone,
+                message: item.message,
+                icon: item.icon,
+            });
         }
     });
 }

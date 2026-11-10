@@ -11,11 +11,12 @@
  *   200 {"ok": true, "message": "…"}                    -> saved, the form is cleared
  *   422 {"message": "…", "errors": {"current_password": ["…"], "password": ["…"]}}
  *       (wrong current password, rule not met, same as the old password)
- *   401 / 403 {"message": "…"}                          -> shown above the button
+ *   401 / 403 {"message": "…"}                          -> shown as a red toast
  * The server must enforce every rule below again; this file is only the first line of feedback.
  */
 
 import { getCsrfToken } from "../auth/csrf.js";
+import { dismissToast, showToast } from "../shared/toast.js";
 import { syncPasswordChecklist } from "./profile-rules.js";
 import {
     getPasswordError,
@@ -36,7 +37,6 @@ function initSecurity() {
     const errorEl = (name) =>
         form.querySelector(`[data-field-error="${name}"]`);
     const saveBtn = form.querySelector("[data-password-save]");
-    const statusEl = form.querySelector("[data-password-status]");
     const current = field("current_password");
     const next = field("password");
     const confirm = field("password_confirmation");
@@ -82,17 +82,23 @@ function initSecurity() {
     const isValid = () => checks.every(([input, fn]) => !fn(input.value));
     const syncButton = () => (saveBtn.disabled = !isValid());
 
+    // Results are toasts (docs/ui-redesign.md decision A): success closes by itself, a failure stays until
+    // closed. Field errors stay under their fields. An old failure toast is closed when the person edits again.
+    let errorToast = null;
+
     function showStatus(message, type) {
-        statusEl.textContent = message;
-        statusEl.classList.toggle("is-success", type === "success");
-        statusEl.classList.toggle("is-error", type === "error");
-        statusEl.classList.remove("d-none");
+        dismissToast(errorToast);
+        errorToast = null;
+        if (type === "error") {
+            errorToast = showToast({ tone: "danger", message });
+        } else {
+            showToast({ tone: "success", message, icon: "password" });
+        }
     }
 
     function clearStatus() {
-        statusEl.textContent = "";
-        statusEl.classList.add("d-none");
-        statusEl.classList.remove("is-success", "is-error");
+        dismissToast(errorToast);
+        errorToast = null;
     }
 
     form.addEventListener("input", () => {

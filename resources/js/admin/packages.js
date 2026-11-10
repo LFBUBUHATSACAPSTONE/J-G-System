@@ -2,8 +2,10 @@
 // one shared modal in three modes (view / edit / create), Price formatting,
 // small client-side checks, and reopening after a server validation error.
 // Bootstrap's modal is used through its data attributes (admin.js already loads Bootstrap).
-// The confirm() prompt on "Unavailable" is the global [data-confirm] listener in bookings.js.
+// "Unavailable" asks first in the shared confirmation modal (#packageActionModal, js/shared/action-modal.js);
+// its text comes from config/admin/packages.php through the form's data-confirm-* attributes.
 
+import { openActionModal } from "../shared/action-modal.js";
 import { queueToast, showToast } from "../shared/toast.js";
 
 const money = (value) => `Php ${Number(value).toLocaleString("en-US")}`;
@@ -13,7 +15,8 @@ const EMPTY = { id: null, name: "", price: null, features: [], equipment: {} };
 // Results are toasts (docs/toast-notifications-phases.md, Phase 2C). A save reloads the page, so its
 // message is queued for the next page; the availability toggle does not reload, so it shows at once.
 // Failures are danger toasts, which stay until closed. Field errors (422) stay under the field.
-const showResult = (message) => showToast({ tone: "success", message });
+const showResult = (message, icon) =>
+    showToast({ tone: "success", message, icon });
 const showFailure = (message) => showToast({ tone: "danger", message });
 
 async function sendJson(url, method, csrfToken, payload) {
@@ -439,6 +442,7 @@ function initModal(modal) {
 
             queueToast({
                 tone: "success",
+                icon: "package-saved",
                 message: body.message || "Package saved successfully.",
             });
             window.location.reload();
@@ -467,12 +471,11 @@ function initModal(modal) {
 }
 
 function initAvailabilityForms() {
-    document.querySelectorAll("[data-package-card] form").forEach((form) => {
-        form.addEventListener("submit", async (event) => {
-            event.preventDefault();
-            const message = form.dataset.confirm;
-            if (message && !window.confirm(message)) return;
+    const actionModal = document.getElementById("packageActionModal");
 
+    document.querySelectorAll("[data-package-card] form").forEach((form) => {
+        // Sends the change. Throws on any failure; the caller decides where the message is shown.
+        const sendChange = async () => {
             const button = form.querySelector('button[type="submit"]');
             button.disabled = true;
             try {
@@ -504,13 +507,50 @@ function initAvailabilityForms() {
                     const stateButton = stateForm.querySelector("button");
                     stateButton.setAttribute("aria-pressed", String(active));
                 });
-                showResult(body.message);
+                showResult(
+                    body.message,
+                    body.data.available
+                        ? "package-available"
+                        : "package-unavailable",
+                );
+            } catch (error) {
+                // A dropped connection reaches here as a TypeError ("Failed to fetch"): say it in plain words.
+                if (error instanceof TypeError)
+                    throw new Error(
+                        "Something went wrong. Please check your connection and try again.",
+                    );
+                throw error;
+            } finally {
+                button.disabled = false;
+            }
+        };
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const message = form.dataset.confirm;
+
+            // With a confirmation: the modal stays open and shows a failure in its own red line (no toast).
+            if (message && actionModal) {
+                await openActionModal(actionModal, {
+                    title: form.dataset.confirmTitle,
+                    message,
+                    confirmLabel: form.dataset.confirmLabel,
+                    tone: form.dataset.confirmTone || "danger",
+                    onConfirm: sendChange,
+                });
+                return;
+            }
+
+            // Safety net: a page without the modal still asks before it marks a package unavailable.
+            if (message && !window.confirm(message)) return;
+
+            // Without a confirmation (Available): a failure is a danger toast.
+            try {
+                await sendChange();
             } catch (error) {
                 showFailure(
                     error.message || "Unable to update package availability.",
                 );
-            } finally {
-                button.disabled = false;
             }
         });
     });

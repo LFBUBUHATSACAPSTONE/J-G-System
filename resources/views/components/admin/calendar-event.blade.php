@@ -43,5 +43,5 @@ $dates = $sameDay
       <dd class="m-0 wrap-anywhere">{{ $event['location'] }}</dd>
     </dl>
 
-    <a class="text-fluid-sm font-semibold text-brand-text underline focus-visible:rounded-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" href="{{ $bookingsUrl }}">View in Bookings</a>
+    <a class="-ml-2 inline-flex items-center gap-1 self-start rounded-full px-2 py-1 text-fluid-sm font-semibold text-brand-text no-underline hover:bg-brand-soft-hover focus-visible:bg-brand-soft-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" href="{{ $bookingsUrl }}">View in Bookings <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
   </article>

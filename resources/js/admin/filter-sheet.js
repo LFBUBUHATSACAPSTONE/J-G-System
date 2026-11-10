@@ -14,7 +14,7 @@ import { dateSummary, isIsoDate } from "./date-range.js";
 const CHIP =
     "admin-chip inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-control border-0 px-3 py-1 text-[0.85rem] font-medium text-brand-text hover:bg-brand-soft-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text [&_.ph]:text-fluid-sm";
 const CHIP_FILLED = "bg-brand-soft";
-const CHIP_CLEAR = "admin-chip--clear bg-transparent underline"; // \"Clear all\": text only, no fill
+const CHIP_CLEAR = "admin-chip--clear bg-transparent font-semibold!"; // "Clear all": no fill, no underline; the icon and the hover fill are its cues
 
 export function initFilterSheet(bar) {
     const selects = [...bar.querySelectorAll("[data-filter-sheet] select")];
@@ -66,6 +66,12 @@ export function initFilterSheet(bar) {
         button.type = "button";
         button.className = `${CHIP} ${extraClass ? CHIP_CLEAR : CHIP_FILLED}`;
         button.setAttribute("aria-label", label);
+        if (extraClass) {
+            const lead = document.createElement("i");
+            lead.className = "ph ph-x-circle";
+            lead.setAttribute("aria-hidden", "true");
+            button.append(lead);
+        }
         const span = document.createElement("span");
         span.textContent = text;
         button.append(span);

@@ -90,8 +90,6 @@ $secondaryBtnClass = 'w-full min-[576px]:w-auto min-[576px]:px-6 cursor-pointer 
               password autocomplete="current-password"
               hint="Needed to confirm a change to your email or password." />
           </div>
-
-          <x-profile.status />
         </form>
 
         <div class="{{ $actionsClass }}">

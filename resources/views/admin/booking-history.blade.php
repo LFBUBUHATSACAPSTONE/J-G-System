@@ -126,7 +126,7 @@
 
       <p class="admin-bookings__empty m-0 px-2 py-6 text-center text-fluid-sm text-ink-muted" data-history-empty data-date-messages="{{ json_encode(config('admin.history.date_filter')) }}" @if (count($bookings)> 0) hidden @endif>
         <span data-history-empty-text>@if (count($bookings) > 0) No bookings match your filters. @else No booking history yet. @endif</span>
-        <button type="button" class="ml-2 cursor-pointer border-0 bg-transparent p-0 font-semibold text-brand-text underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text [[hidden]]:hidden" data-history-empty-clear hidden>{{ config('admin.history.date_filter.clear') }}</button>
+        <button type="button" class="ml-2 inline-flex cursor-pointer items-center gap-1 rounded-full border-0 bg-transparent px-3 py-1 font-semibold text-brand-text no-underline hover:bg-brand-soft-hover focus-visible:bg-brand-soft-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text [[hidden]]:hidden" data-history-empty-clear hidden><i class="ph ph-x" aria-hidden="true"></i>{{ config('admin.history.date_filter.clear') }}</button>
       </p>
     </div>
 

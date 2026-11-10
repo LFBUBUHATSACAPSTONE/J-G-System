@@ -28,6 +28,21 @@ return [
     'error'  => 'danger',
   ],
 
+  // Icons (docs/ui-redesign.md section 4). A toast without an icon key shows its tone's default icon
+  // (success ph-check-circle, info ph-info, warning ph-warning, danger ph-warning-circle). A script passes the
+  // key, for example showToast({ tone: "success", message, icon: "profile" }). Unknown key = tone icon.
+  // Values must be Phosphor class names (ph-...).
+  'icons' => [
+    'chat'                => 'ph-chat-circle-text',
+    'booking-approved'    => 'ph-calendar-check',
+    'cancellation-sent'   => 'ph-paper-plane-tilt',
+    'package-saved'       => 'ph-package',
+    'package-available'   => 'ph-eye',
+    'package-unavailable' => 'ph-eye-slash',
+    'profile'             => 'ph-user-check',
+    'password'            => 'ph-lock-key',
+  ],
+
   'labels' => [
     'region' => 'Notifications',
     'close'  => 'Close notification',

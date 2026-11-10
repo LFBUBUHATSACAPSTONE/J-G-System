@@ -28,7 +28,7 @@ return [
   //
   // rank        => Default sort order (lowest first)
   // group       => tab the row belongs to (matches 'tabs' below)
-  // highlight   => draws an outline + chip on the row; highlight_class / chip / chip_class style it
+  // highlight   => draws an outline + a one-line banner at the top of the row; highlight_class / chip (banner text) / chip_icon / chip_class style it
   // editable    => no longer read: the History modal is view-only for every phase (row sets editable = ! $history)
   // icon        => Phosphor icon name (ph-<icon>) inside the badge; decorative
   // badge       => the read-only badge in the Status column (tone: brand | success | warning | danger | neutral)
@@ -42,6 +42,7 @@ return [
       'highlight'       => true,
       'highlight_class' => 'is-ongoing',
       'chip'            => 'Happening now',
+      'chip_icon'       => 'broadcast',
       'chip_class'      => 'admin-bookings__chip--ongoing',
       'badge'           => ['tone' => 'brand', 'solid' => true],
     ],

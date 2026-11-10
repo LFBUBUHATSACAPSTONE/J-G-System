@@ -43,7 +43,7 @@ $detailsClass = 'chat-booking__details mt-3 mb-0 grid gap-1.5 text-sm';
 $rowClass = 'flex items-start gap-2';
 $dtClass = 'flex-none font-normal text-ink-muted';
 $ddClass = 'm-0 wrap-anywhere';
-$linkClass = 'chat-booking__link mt-3 inline-block text-sm font-semibold text-brand-text underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text';
+$linkClass = 'chat-booking__link -ml-2 mt-3 inline-flex items-center gap-1 rounded-full px-2 py-1 text-sm font-semibold text-brand-text no-underline hover:bg-brand-soft-hover focus-visible:bg-brand-soft-hover focus-visible:rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text';
 @endphp
 
 <article class="{{ $cardClass }}" data-booking-id="{{ $booking['id'] }}" aria-label="Booking {{ $booking['reference'] }}{{ $past ? ', finished' : '' }}">
@@ -77,6 +77,6 @@ $linkClass = 'chat-booking__link mt-3 inline-block text-sm font-semibold text-br
   </dl>
 
   @if ($admin && ! $past && Route::has('admin.bookings'))
-  <a class="{{ $linkClass }}" href="{{ route('admin.bookings') }}">View in Bookings</a>
+  <a class="{{ $linkClass }}" href="{{ route('admin.bookings') }}">View in Bookings <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
   @endif
 </article>

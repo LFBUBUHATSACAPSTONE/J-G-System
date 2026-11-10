@@ -45,7 +45,7 @@ $chipClass = 'inline-flex min-h-10 cursor-pointer items-center justify-center ro
     </div>
 
     <div class="flex items-center justify-between gap-3">
-      <button type="button" class="inline-flex min-h-10 cursor-pointer items-center border-0 bg-transparent px-1 py-1 text-[0.85rem] font-medium text-brand-text underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text [[hidden]]:hidden" data-date-clear hidden>{{ $filter['clear'] }}</button>
+      <button type="button" class="inline-flex min-h-10 cursor-pointer items-center gap-1 rounded-full border-0 bg-transparent px-3 py-1 text-[0.85rem] font-semibold text-brand-text no-underline hover:bg-brand-soft-hover focus-visible:bg-brand-soft-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text [[hidden]]:hidden" data-date-clear hidden><i class="ph ph-x" aria-hidden="true"></i>{{ $filter['clear'] }}</button>
       <button type="button" class="ml-auto inline-flex min-h-10 cursor-pointer items-center justify-center rounded-control border-0 bg-brand px-6 py-1 text-[0.85rem] font-semibold text-on-brand hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-date-done>{{ $filter['done'] }}</button>
     </div>
   </div>
