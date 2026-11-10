@@ -37,6 +37,9 @@
 
     <x-admin.package-modal />
 
+    {{-- Confirmation for "Unavailable" (shared modal, no reason box). Filled by packages.js from each form's data-confirm-* (config/admin/packages.php). --}}
+    <x-booking.action-modal id="packageActionModal" />
+
     <button type="button" class="admin-packages__add fixed right-[calc(1.25rem+env(safe-area-inset-right,0px))] bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))] z-1030 inline-flex min-h-14 min-w-14 cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-brand p-2 font-semibold text-white shadow-[0_6px_18px_var(--color-shadow)] transition-[background-color,box-shadow] duration-200 hover:bg-brand-hover hover:shadow-[0_8px_24px_var(--color-shadow)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text motion-reduce:transition-none min-[576px]:right-[calc(1.75rem+env(safe-area-inset-right,0px))] min-[576px]:bottom-[calc(1.75rem+env(safe-area-inset-bottom,0px))] min-[576px]:px-6 [&_.ph]:text-fluid-icon" data-bs-toggle="modal" data-bs-target="#packageModal">
       <i class="ph ph-plus" aria-hidden="true"></i>
       <span class="sr-only min-[576px]:not-sr-only">Add New Package</span>

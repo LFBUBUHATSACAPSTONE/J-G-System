@@ -5,7 +5,9 @@
 // key => value sent by the Available / Unavailable buttons (`availability` field)
 // label => button text
 // tone => pill tone (success | danger); the look is the utility classes in components/admin/package-card.blade.php
-// confirm => optional confirm() prompt before the form posts ({name} is the package name)
+// confirm => optional confirmation before the change is sent; null = none. Shown in the shared confirmation modal
+//   (components/booking/action-modal.blade.php, packageActionModal on the Packages page). {name} is the package name.
+//   title / message = modal text, label = confirm button text, tone = danger | success | brand
 return [
 
   'availability' => [
@@ -17,7 +19,12 @@ return [
     'unavailable' => [
       'label' => 'Unavailable',
       'tone' => 'danger',
-      'confirm' => 'Mark {name} as unavailable? Clients will not be able to select it when booking.',
+      'confirm' => [
+        'title' => 'Mark {name} as unavailable?',
+        'message' => 'Clients will not be able to select it when booking.',
+        'label' => 'Mark unavailable',
+        'tone' => 'danger',
+      ],
     ],
   ],
 
