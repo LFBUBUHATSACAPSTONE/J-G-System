@@ -301,7 +301,10 @@ class MessagingTest extends TestCase
             ->assertJsonPath('unread', 2)
             ->assertJsonCount(1, 'messages')
             ->assertJsonPath('messages.0.body', 'Brand new reply')
-            ->assertJsonPath('messages.0.from', 'admin');
+            ->assertJsonPath('messages.0.from', 'admin')
+            ->assertJsonPath('message_cursor', $conversation->messages()
+                ->where('sender_type', 'admin')
+                ->max('id'));
     }
 
     public function test_marking_read_clears_the_client_badge_but_not_the_admin_one(): void
@@ -708,7 +711,10 @@ class MessagingTest extends TestCase
             ->assertJsonCount(1, 'messages')
             ->assertJsonPath('messages.0.body', 'Brand new note')
             ->assertJsonPath('messages.0.from', 'client')
-            ->assertJsonPath('messages.0.conversation_id', $conversation->id);
+            ->assertJsonPath('messages.0.conversation_id', $conversation->id)
+            ->assertJsonPath('message_cursor', $conversation->messages()
+                ->where('sender_type', 'client')
+                ->max('id'));
     }
 
     public function test_admin_updates_ignores_admin_messages(): void

@@ -12,14 +12,13 @@
 //     answer with a `chat:polled` event and this file reads it. No request of its own.
 //   - OWN POLL: every other page (admin pages, account pages, booking flow, terms). Slow (poll_ms), paused while
 //     the tab is hidden, doubling after a failure up to max_ms, stopped for good on 401 / 403 / 419.
-//   - Account > Messages already shows the thread live: nothing to do there.
+//   - Dedicated Messages panels show the thread live: record incoming message cursors silently, without a toast.
 //
 // Baseline (a page that has just loaded must not toast the past): the first poll of a browser session is silent.
-// It asks for messages after an id nothing can reach, so only `unread` and the server clock come back. When
-// `unread` later goes UP, the list is fetched once, only messages created after the baseline are toasted, and the
-// highest id is kept as the cursor. From then on each poll asks only for newer messages. The state lives in
-// sessionStorage (`jg.toast.feed.<side>`), so moving between pages neither replays nor loses a message. If storage
-// is blocked the feed still works, it just starts from a new baseline on every page.
+// The response supplies the latest relevant message id as a cursor. Later polls request only newer messages,
+// regardless of whether the unread total changed (it may change concurrently when another view marks messages
+// read). The state lives in sessionStorage (`jg.toast.feed.<side>`), so moving between pages neither replays nor
+// loses a message. If storage is blocked the feed still works, it just starts from a new baseline on every page.
 //
 // "Booking approved" (client side): the `bookings` list holds this client's newly approved bookings. Other
 // workflow notifications carry their own database notification id and are de-duplicated separately.
@@ -79,6 +78,31 @@ function start() {
         cfg.side === "user"
             ? document.querySelector("[data-account-chat][data-chat-updates-url]")
             : null;
+
+    const rememberCursor = (top) => {
+        if (top > (state.after ?? 0)) {
+            state.after = top;
+            save();
+        }
+    };
+
+    const rememberMessages = (messages) =>
+        rememberCursor(
+            Math.max(
+                0,
+                ...messages.map((message) => Number(message?.id) || 0),
+            ),
+        );
+
+    const rememberRenderedMessages = () => {
+        const top = [...document.querySelectorAll("[data-message-id]")].reduce(
+            (max, node) => Math.max(max, Number(node.dataset.messageId) || 0),
+            0,
+        );
+        rememberCursor(top);
+    };
+
+    if (adminMessages || accountMessages) rememberRenderedMessages();
 
     // The text for n new messages, and where the toast leads.
     const announce = (messages, { open = null } = {}) => {
@@ -199,8 +223,12 @@ function start() {
                 save();
             }
 
-            // The admin Messages page already displays incoming messages in its open thread.
-            if ((adminMessages || accountMessages) && !detail.widget) return;
+            // Dedicated Messages panels display incoming messages inline. Keep their cursor in
+            // sync so those messages are not toasted later after navigating to another view.
+            if ((adminMessages || accountMessages) && !detail.widget) {
+                rememberMessages(detail.messages || []);
+                return;
+            }
 
             // The thread is open and the person is looking at it: it shows there, no toast.
             const watching =
@@ -295,35 +323,31 @@ function start() {
             return;
         }
 
-        // First poll of the session: silent, learn the baseline.
+        // First poll of the session: stay silent for existing messages and learn the id baseline.
         if (state.base === null) {
             state.base = data.messages_synced_at || new Date().toISOString();
+            state.after = Number(data.message_cursor) || 0;
             state.unread = unread;
             save();
             return;
         }
 
-        // Something arrived since the baseline: fetch the list once.
-        if (unread > (state.unread ?? 0)) {
-            const full = await get(0);
-            if (!full) return;
-            const since = Date.parse(state.base) || 0;
-            const fresh = (full.messages || []).filter(
-                (m) => m.from === wanted && Date.parse(m.at) >= since,
-            );
-            const top = Math.max(
-                0,
-                ...(full.messages || []).map((m) => Number(m.id) || 0),
-            );
-            state.after = top; // from now on each poll asks only for newer ones
-            state.unread = unread;
-            save();
-            announce(fresh);
-            return;
-        }
-
-        state.unread = unread; // read elsewhere: keep the baseline in step
+        // Migrate a feed state saved by the earlier unread-count-based cursor. Fetch once and
+        // use its timestamp baseline so a message arriving during the upgrade is not lost.
+        const full = await get(0);
+        if (!full) return;
+        const since = Date.parse(state.base) || 0;
+        const fresh = (full.messages || []).filter(
+            (m) => m.from === wanted && Date.parse(m.at) >= since,
+        );
+        const top = Math.max(
+            0,
+            ...(full.messages || []).map((m) => Number(m.id) || 0),
+        );
+        state.after = top;
+        state.unread = unread;
         save();
+        announce(fresh);
     };
 
     const schedule = () => {
