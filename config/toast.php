@@ -33,4 +33,29 @@ return [
     'close'  => 'Close notification',
     'merged' => 'x:count', // shown on a merged toast, e.g. "x2"
   ],
+
+  // Toasts between the two parties (Phase 4, docs/toast-notifications-phases.md section 6).
+  // The browser asks the existing `updates` endpoints (admin.messages.updates / user.messages.updates);
+  // nothing here needs a new route. Only messages are fed so far (4B).
+  'feed' => [
+    // Pace of the page's own poll (pages that have no chat poller). Same idea as chat.js: slow, paused while the
+    // tab is hidden, doubling after each failure up to max_ms.
+    'poll_ms' => 15000,
+    'max_ms'  => 60000,
+
+    // New text for these toasts lives here, not in the views or scripts. :count is filled in by the script.
+    'text' => [
+      'admin' => [
+        'message'  => 'New message from a client',
+        'messages' => ':count new client messages',
+        'open'     => 'Open',
+      ],
+      'user' => [
+        'message'  => 'New reply from J&G',
+        'messages' => ':count new replies from J&G',
+        'open'     => 'Open chat',
+      ],
+    ],
+  ],
+
 ];
