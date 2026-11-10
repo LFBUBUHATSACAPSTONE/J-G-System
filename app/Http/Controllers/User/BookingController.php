@@ -247,6 +247,19 @@ class BookingController extends Controller
         }
 
         $data = $validator->validated();
+        if ($reschedule && ! $this->rescheduleDatesStayInOriginalMonth(
+            $reschedule,
+            $data['event_start_date'],
+            $data['event_end_date'],
+        )) {
+            $message = 'Rescheduled dates must remain within the original event month.';
+
+            return $this->validationError([
+                'event_start_date' => [$message],
+                'event_end_date' => [$message],
+            ], $message);
+        }
+
         if ($data['event_start_date'] === $data['event_end_date']
             && $this->timeInMinutes($data['end_time']) <= $this->timeInMinutes($data['start_time'])) {
             return $this->validationError(['end_time' => ['End time must be later than start time.']]);
@@ -328,6 +341,13 @@ class BookingController extends Controller
             $schedule = $request->session()->get('booking_reschedule_'.$original->id);
             if (! $schedule) {
                 return $this->jsonError('Choose and save a new schedule before confirming the reschedule.', 409);
+            }
+            if (! $this->rescheduleDatesStayInOriginalMonth(
+                $original,
+                $schedule['event_start_date'],
+                $schedule['event_end_date'],
+            )) {
+                return $this->jsonError('Rescheduled dates must remain within the original event month.', 422);
             }
 
             [$booking, $fullDates, $conflict] = DB::transaction(function () use ($original, $schedule) {
@@ -582,6 +602,15 @@ class BookingController extends Controller
         }
 
         return [$booking, null];
+    }
+
+    private function rescheduleDatesStayInOriginalMonth(Booking $booking, string $startDate, string $endDate): bool
+    {
+        $originalMonth = $booking->schedule?->event_start_date?->format('Y-m');
+
+        return $originalMonth !== null
+            && Carbon::parse($startDate)->format('Y-m') === $originalMonth
+            && Carbon::parse($endDate)->format('Y-m') === $originalMonth;
     }
 
     /**
