@@ -10,7 +10,7 @@
   <x-admin-header />
 </head>
 
-<body class="bg-sidebar font-sans">
+<body class="app-shell bg-sidebar font-sans">
   <x-admin.sidebar />
 
   <main class="admin-content">
@@ -24,14 +24,14 @@
         <h2 id="chatListTitle" class="mt-0 mb-3 text-fluid-2xl font-semibold text-ink">Chat List</h2>
 
         <div class="mb-3 grid gap-2">
-          <div class="relative flex items-center rounded-full border border-field-border bg-surface px-4 focus-within:border-brand-text focus-within:ring-3 focus-within:ring-brand-halo [&_.chat-icon]:text-ink-muted">
+          <div class="relative flex items-center rounded-control border border-field-border bg-surface px-4 focus-within:border-brand-text focus-within:ring-3 focus-within:ring-brand-halo [&_.chat-icon]:text-ink-muted">
             <x-chat.icon name="search" />
             <label class="sr-only" for="chatSearch">Search chats</label>
             <input id="chatSearch" class="min-w-0 flex-1 border-0 bg-transparent px-2 py-3 text-ink outline-none placeholder:text-ink-subtle" type="search" placeholder="Search chats" autocomplete="off" data-chat-search>
           </div>
           <div class="flex gap-2" role="group" aria-label="Filter chats">
-            <button type="button" class="cursor-pointer rounded-full border border-field-border bg-surface px-4 py-1 text-ink aria-pressed:border-brand aria-pressed:bg-brand aria-pressed:text-on-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" aria-pressed="true" data-chat-filter="all">All</button>
-            <button type="button" class="cursor-pointer rounded-full border border-field-border bg-surface px-4 py-1 text-ink aria-pressed:border-brand aria-pressed:bg-brand aria-pressed:text-on-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" aria-pressed="false" data-chat-filter="unread">Unread</button>
+            <button type="button" class="cursor-pointer rounded-control border border-field-border bg-surface px-4 py-1 text-ink aria-pressed:border-brand aria-pressed:bg-brand aria-pressed:text-on-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" aria-pressed="true" data-chat-filter="all">All</button>
+            <button type="button" class="cursor-pointer rounded-control border border-field-border bg-surface px-4 py-1 text-ink aria-pressed:border-brand aria-pressed:bg-brand aria-pressed:text-on-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" aria-pressed="false" data-chat-filter="unread">Unread</button>
           </div>
         </div>
 

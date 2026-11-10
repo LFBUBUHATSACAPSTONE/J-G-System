@@ -11,7 +11,7 @@
   <x-admin-header />
 </head>
 
-<body class="bg-sidebar font-sans">
+<body class="app-shell bg-sidebar font-sans">
   <x-admin.sidebar />
 
   <main class="font-sans admin-content admin-packages">
@@ -28,7 +28,7 @@
 
     @if (count($packages) > 0)
     {{-- id: the cards' "See more" toggles use it as data-bs-parent (one open at a time on phones). --}}
-    <div class="mb-16 grid grid-cols-1 gap-4 min-[768px]:grid-cols-2 min-[768px]:gap-6 min-[1200px]:grid-cols-3" id="adminPackagesGrid">
+    <div class="mb-16 flex flex-wrap justify-center gap-4 min-[768px]:gap-6 [&>*]:w-full min-[768px]:[&>*]:w-[calc((100%-1.5rem)/2)] min-[1200px]:[&>*]:w-[calc((100%-3rem)/3)]" id="adminPackagesGrid">
       @foreach ($packages as $package)
       <x-admin.package-card :package="$package" />
       @endforeach

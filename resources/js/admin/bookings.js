@@ -2,6 +2,12 @@ import { initFilterSheet } from "./filter-sheet.js";
 import { openActionModal, reasonError } from "../shared/action-modal.js";
 import { initCancellation } from "./cancellation.js";
 import {
+    initDateRange,
+    overlapsRange,
+    isIsoDate,
+    dateMessage,
+} from "./date-range.js";
+import {
     getRequiredError,
     getEmailError,
     getContactNumberError,
@@ -12,8 +18,8 @@ import {
     setFieldState,
 } from "../auth/validation.js"; // shared with the user-side booking form
 
-// Admin Bookings page: filter / sort / search the rows (also from ?status= ?package= ?booking=
-// links, see applyQueryParams), fill the booking modal, confirm destructive actions. The modal and confirm prompt are shared with the
+// Admin Bookings page: filter / sort / search / date-range the rows (also from ?status= ?package=
+// ?booking= ?from= ?to= links, see applyQueryParams), fill the booking modal, confirm destructive actions. The modal and confirm prompt are shared with the
 // The modal itself is Bootstrap's (admin.js already loads Bootstrap for the sidebar offcanvas).
 
 const getPath = (obj, path) =>
@@ -33,9 +39,28 @@ function initList(body) {
     const searchInput = document.querySelector("[data-bookings-search]");
     const emptyMessage = document.querySelector("[data-bookings-empty]");
     const count = document.querySelector("[data-bookings-count]");
+    const focusBar = document.querySelector("[data-bookings-focus]");
+    const showAllButton = document.querySelector("[data-bookings-show-all]");
     let selectedBookingId = null;
 
     if (!rows.length) return;
+
+    // Event date range (From / To / chips, see ./date-range.js). Any change drops a single-booking
+    // focus, like the other filters, and is mirrored in ?from= ?to= so the view can be shared.
+    const dateRoot = document.querySelector("[data-date-range]");
+    const dates = dateRoot
+        ? initDateRange(dateRoot, {
+              onChange: () => {
+                  clearSelectedBooking();
+                  syncDateParams();
+                  apply();
+              },
+          })
+        : null;
+    const emptyText = document.querySelector("[data-bookings-empty-text]");
+    const emptyClear = document.querySelector("[data-bookings-empty-clear]");
+    const emptyDefault = emptyText?.textContent.trim() ?? "";
+    const dateLabels = JSON.parse(emptyMessage?.dataset.dateMessages || "{}");
 
     // Keys match config/admin/bookings.php 'sorts'.
     const byIndex = (a, b) => Number(a.dataset.index) - Number(b.dataset.index);
@@ -54,14 +79,26 @@ function initList(body) {
         const pkg = packageSelect.value;
         const query = searchInput.value.trim().toLowerCase();
 
+        const { from, to } = dates ? dates.get() : { from: "", to: "" };
+
+        // Every filter except the dates, so the empty state can tell whether the dates are why
+        // nothing is left.
+        const matchesOthers = (row) =>
+            (status === "all" || row.dataset.statusGroup === status) &&
+            (pkg === "all" || row.dataset.package === pkg) &&
+            (!query || row.dataset.search.includes(query)) &&
+            (!selectedBookingId || row.dataset.bookingId === selectedBookingId);
+
         const visible = new Set(
             rows.filter(
                 (row) =>
-                    (status === "all" || row.dataset.statusGroup === status) &&
-                    (pkg === "all" || row.dataset.package === pkg) &&
-                    (!query || row.dataset.search.includes(query)) &&
-                    (!selectedBookingId ||
-                        row.dataset.bookingId === selectedBookingId),
+                    matchesOthers(row) &&
+                    overlapsRange(
+                        row.dataset.date,
+                        row.dataset.endDate,
+                        from,
+                        to,
+                    ),
             ),
         );
 
@@ -75,10 +112,39 @@ function initList(body) {
             .forEach((row) => body.appendChild(row));
 
         emptyMessage.hidden = visible.size > 0;
+
+        // Name the range when the dates are what emptied the list, with a way back.
+        const datesCause =
+            !visible.size && Boolean(from || to) && rows.some(matchesOthers);
+        if (emptyText)
+            emptyText.textContent = datesCause
+                ? dateMessage(dateLabels, from, to)
+                : emptyDefault;
+        if (emptyClear) emptyClear.hidden = !datesCause;
         count.textContent = `Showing ${visible.size} of ${rows.length} bookings`;
+
+        // "Showing 1 booking. Show all" only while a link has focused one booking.
+        if (focusBar) focusBar.hidden = !selectedBookingId;
 
         // Lets the filter bar (chips + badge) follow along, including after deep-link params.
         document.dispatchEvent(new CustomEvent("admin:filters-applied"));
+    }
+
+    function syncDateParams() {
+        const { from, to } = dates ? dates.get() : { from: "", to: "" };
+        const params = new URLSearchParams(window.location.search);
+        if (from) params.set("from", from);
+        else params.delete("from");
+        if (to) params.set("to", to);
+        else params.delete("to");
+        const query = params.toString();
+        window.history.replaceState(
+            null,
+            "",
+            window.location.pathname +
+                (query ? `?${query}` : "") +
+                window.location.hash,
+        );
     }
 
     function clearSelectedBooking() {
@@ -97,6 +163,16 @@ function initList(body) {
         );
     }
 
+    // "Show all": drop the focus (and ?selected_booking=) and list every row again. The bar disappears,
+    // so focus moves to the list instead of being lost.
+    showAllButton?.addEventListener("click", () => {
+        clearSelectedBooking();
+        dates?.clear({ silent: true });
+        syncDateParams();
+        apply();
+        body.focus({ preventScroll: true });
+    });
+
     sortSelect.addEventListener("change", apply);
     [statusSelect, packageSelect].forEach((el) =>
         el.addEventListener("change", () => {
@@ -108,6 +184,8 @@ function initList(body) {
         clearSelectedBooking();
         apply();
     });
+    // "Clear dates" in the empty state (the one next to the inputs is wired in date-range.js).
+    emptyClear?.addEventListener("click", () => dates?.clear());
 
     applyQueryParams({
         rows,
@@ -115,6 +193,8 @@ function initList(body) {
         statusSelect,
         packageSelect,
         searchInput,
+        dates,
+        syncDateParams,
         apply,
         selectBooking: (id) => {
             selectedBookingId = id;
@@ -127,8 +207,13 @@ function initList(body) {
 //   ?status=approved|pending|payment|cancelled|completed   (keys of 'status_filters')
 //   ?package=<package id>                                  (same ids as the Package filter)
 //   ?sort=default|alpha|date   ?q=<search text>
+//   ?from=YYYY-MM-DD  ?to=YYYY-MM-DD   event date range (a booking matches when its dates overlap it;
+//                           one end alone means "onward" / "up to"; invalid dates are ignored)
 //   ?booking=<id>           filters to the row, opens View Details, then becomes selected_booking
-//   ?selected_booking=<id>  filters to the row without reopening the modal on refresh
+//                           (Dashboard Review / Verify payment)
+//   ?selected_booking=<id>  filters to the row, modal stays closed, survives a refresh
+//                           (Dashboard Upcoming Events, Calendar "View in Bookings")
+// While one booking is focused a bar above the table says "Showing 1 booking" with a "Show all" button.
 // Unknown values are ignored, so a stale link still opens the page.
 function applyQueryParams({
     rows,
@@ -136,6 +221,8 @@ function applyQueryParams({
     statusSelect,
     packageSelect,
     searchInput,
+    dates,
+    syncDateParams,
     apply,
     selectBooking,
 }) {
@@ -154,6 +241,14 @@ function applyQueryParams({
     setIfValid(packageSelect, params.get("package"));
     setIfValid(sortSelect, params.get("sort"));
     if (params.get("q")) searchInput.value = params.get("q");
+    if (dates) {
+        let from = params.get("from") ?? "";
+        let to = params.get("to") ?? "";
+        if (!isIsoDate(from)) from = "";
+        if (!isIsoDate(to)) to = "";
+        if (from && to && from > to) [from, to] = [to, from];
+        dates.set(from, to, { silent: true });
+    }
     const openBookingId = params.get("booking");
     const id = openBookingId || params.get("selected_booking");
     const row = id
@@ -169,6 +264,8 @@ function applyQueryParams({
         statusSelect.value = "all";
         packageSelect.value = "all";
         searchInput.value = "";
+        dates?.clear({ silent: true });
+        syncDateParams();
         apply();
     }
 

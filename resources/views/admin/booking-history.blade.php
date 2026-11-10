@@ -4,14 +4,6 @@
      Which bookings are sent is the controller's job (rule in config/admin/history.php).
      State tabs, filters, sorting and search run in the browser (resources/js/admin/history.js).
      The row and the View Details modal are the Bookings page's own components. --}}
-@php
-// Month filter options come from the data, newest first: ['2026-10' => 'October 2026', ...]
-$months = collect($bookings)
-->map(fn ($booking) => $booking['event']['start_date']->format('Y-m'))
-->unique()
-->sortDesc()
-->mapWithKeys(fn ($month) => [$month => \Illuminate\Support\Carbon::parse($month . '-01')->format('F Y')]);
-@endphp
 <!DOCTYPE html>
 <html lang="en">
 
@@ -19,7 +11,7 @@ $months = collect($bookings)
   <x-admin-header />
 </head>
 
-<body class="bg-sidebar font-sans">
+<body class="app-shell bg-sidebar font-sans">
   <x-admin.sidebar />
 
   <main class="font-sans admin-content admin-bookings admin-history">
@@ -32,7 +24,7 @@ $months = collect($bookings)
     {{-- State tabs. Buttons with aria-pressed (there are no tab panels to switch). Counts are filled by history.js. --}}
     <div class="admin-history__tabs -mx-(--admin-pad) mb-4 flex flex-nowrap gap-3 overflow-x-auto px-(--admin-pad) py-1 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] md:mx-0 md:flex-wrap md:overflow-x-visible md:p-0 [&::-webkit-scrollbar]:hidden" role="group" aria-label="Show bookings by state">
       @foreach (config('admin.history.tabs') as $value => $label)
-      <button type="button" class="admin-tab group/tab inline-flex min-h-11 flex-none cursor-pointer items-center gap-2 rounded-full border border-transparent bg-surface px-6 py-1 text-fluid-sm font-medium whitespace-nowrap text-ink not-aria-pressed:hover:border-brand-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text aria-pressed:border-brand aria-pressed:bg-brand aria-pressed:text-white" data-history-tab="{{ $value }}"
+      <button type="button" class="admin-tab group/tab inline-flex min-h-11 flex-none cursor-pointer items-center gap-2 rounded-control border border-transparent bg-surface px-6 py-1 text-fluid-sm font-medium whitespace-nowrap text-ink not-aria-pressed:hover:border-brand-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text aria-pressed:border-brand aria-pressed:bg-brand aria-pressed:text-white" data-history-tab="{{ $value }}"
         aria-pressed="{{ $loop->first ? 'true' : 'false' }}">
         {{ $label }}
         <span class="admin-tab__count text-[0.8rem] font-normal text-ink-muted group-aria-pressed/tab:text-on-brand-muted empty:hidden" data-history-tab-count="{{ $value }}"></span>
@@ -41,7 +33,7 @@ $months = collect($bookings)
     </div>
 
     {{-- Filters
-         Same pattern as the Bookings page. Below 768px: search + a "Filters" button; Sort / Package / Month
+         Same pattern as the Bookings page. Below 768px: search + a "Filters" button; Sort / Package / Event date
          live in a bottom sheet (Bootstrap .offcanvas-md) and active ones show as removable chips.
          From 768px the sheet is "display: contents", so the pills sit inline as before.
          The state tabs above stay outside the sheet on purpose: they are the main way to switch
@@ -58,7 +50,7 @@ $months = collect($bookings)
         </div>
 
         <div class="offcanvas-body flex flex-col gap-3 pt-0 md:contents!">
-          <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-full bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text flex-none md:flex-[1_1_14rem]">
+          <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-control bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text flex-none md:flex-[1_1_14rem]">
             <label for="bh-sort" class="admin-filter__label text-fluid-sm font-medium whitespace-nowrap text-ink">Sorted by:</label>
             <div class="admin-filter__control relative min-w-0 flex-1">
               <select id="bh-sort" class="admin-filter__select" data-history-sort>
@@ -69,7 +61,7 @@ $months = collect($bookings)
             </div>
           </div>
 
-          <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-full bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text flex-none md:flex-[1_1_14rem]">
+          <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-control bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text flex-none md:flex-[1_1_14rem]">
             <label for="bh-package" class="admin-filter__label text-fluid-sm font-medium whitespace-nowrap text-ink">Package:</label>
             <div class="admin-filter__control relative min-w-0 flex-1">
               <select id="bh-package" class="admin-filter__select" data-history-package>
@@ -81,17 +73,11 @@ $months = collect($bookings)
             </div>
           </div>
 
-          <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-full bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text flex-none md:flex-[1_1_14rem]">
-            <label for="bh-month" class="admin-filter__label text-fluid-sm font-medium whitespace-nowrap text-ink">Month:</label>
-            <div class="admin-filter__control relative min-w-0 flex-1">
-              <select id="bh-month" class="admin-filter__select" data-history-month>
-                <option value="all">All</option>
-                @foreach ($months as $value => $label)
-                <option value="{{ $value }}">{{ $label }}</option>
-                @endforeach
-              </select>
-            </div>
-          </div>
+          {{-- Event date: one pill like the others (it replaced the Month filter); the From / To + Today / Tomorrow /
+               This week panel opens from it. Logic in resources/js/admin/date-range.js, filtering in history.js,
+               text in config/admin/history.php 'date_filter'. Phones: the panel opens inline inside this sheet.
+               From 768px: a popover. --}}
+          <x-admin.date-filter page="history" prefix="bh" />
 
           {{-- Sheet footer (phones only): filtering is live, "Done" just closes the sheet. --}}
           <div class="admin-filter-sheet__actions mt-2 grid grid-cols-2 gap-3 md:hidden">
@@ -102,14 +88,14 @@ $months = collect($bookings)
         </div>
       </div>
 
-      <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-full bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text admin-filter--search flex-[3_1_18rem] max-md:order-1 max-md:min-w-0 max-md:flex-[1_1_0] max-md:px-4">
+      <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-control bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text admin-filter--search flex-[3_1_18rem] md:max-[1279px]:flex-[1_0_100%] max-md:order-1 max-md:min-w-0 max-md:flex-[1_1_0] max-md:px-4">
         <i class="ph ph-magnifying-glass admin-filter__icon text-fluid-2xl text-ink" aria-hidden="true"></i>
         <label for="bh-search" class="sr-only">Search booking history</label>
         <input type="search" id="bh-search" class="admin-filter__input min-w-0 flex-1 border-0 bg-transparent py-2 text-fluid-sm text-ink outline-0 placeholder:text-ink-subtle placeholder:opacity-100" placeholder="Search"
           autocomplete="off" data-history-search>
       </div>
 
-      <button type="button" class="admin-filters-toggle inline-flex min-h-13 cursor-pointer items-center gap-2 rounded-full border-0 bg-surface px-6 py-1 text-fluid-sm font-medium whitespace-nowrap text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text max-md:order-2 md:hidden [&_.ph]:text-fluid-xl" data-bs-toggle="offcanvas"
+      <button type="button" class="admin-filters-toggle inline-flex min-h-13 cursor-pointer items-center gap-2 rounded-control border-0 bg-surface px-6 py-1 text-fluid-sm font-medium whitespace-nowrap text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text max-md:order-2 md:hidden [&_.ph]:text-fluid-xl" data-bs-toggle="offcanvas"
         data-bs-target="#historyFilterSheet" aria-controls="historyFilterSheet" data-filter-toggle>
         <i class="ph ph-sliders-horizontal" aria-hidden="true"></i>
         <span>Filters</span>
@@ -141,8 +127,9 @@ $months = collect($bookings)
         </tbody>
       </table>
 
-      <p class="admin-bookings__empty m-0 px-2 py-6 text-center text-fluid-sm text-ink-muted" data-history-empty @if (count($bookings)> 0) hidden @endif>
-        @if (count($bookings) > 0) No bookings match your filters. @else No booking history yet. @endif
+      <p class="admin-bookings__empty m-0 px-2 py-6 text-center text-fluid-sm text-ink-muted" data-history-empty data-date-messages="{{ json_encode(config('admin.history.date_filter')) }}" @if (count($bookings)> 0) hidden @endif>
+        <span data-history-empty-text>@if (count($bookings) > 0) No bookings match your filters. @else No booking history yet. @endif</span>
+        <button type="button" class="ml-2 cursor-pointer border-0 bg-transparent p-0 font-semibold text-brand-text underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text [[hidden]]:hidden" data-history-empty-clear hidden>{{ config('admin.history.date_filter.clear') }}</button>
       </p>
     </div>
 

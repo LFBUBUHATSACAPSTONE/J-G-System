@@ -74,6 +74,10 @@
     --radius-card: 28px;
     --radius-panel: 20px;
     --radius-field: 12px;
+    /* Buttons, filters, tabs and chips in the admin and account views (were pills, `rounded-full`) and their status badges.
+       Not redefined in `app-shell`: they are only used inside it. */
+    --radius-control: 12px;
+    --radius-badge: 8px;
 
     /* Fluid type, same curve as admin-fluid(): text-fluid-sm = 0.9rem max ... 2xl = 1.375rem max */
     --text-fluid-sm: clamp(0.8952rem, 0.8934rem + 0.0088vw, 0.9rem);
@@ -452,9 +456,26 @@
 /* Page content beside the fixed sidebar (every admin and account page). A utility, not a Blade string, because it
    defines the responsive --admin-pad variable that other utilities read (p-(--admin-pad), -mx-(--admin-pad)).
    576px, 992px (sidebar visible) and 1400px are the Sass breakpoints. */
+/* Account and admin pages (the <body class="app-shell ..."> of every page that uses the dark sidebar): slightly smaller
+   corners than the user-facing pages. The three radius tokens are redefined for everything inside the body, so
+   `rounded-card`, `rounded-panel`, `rounded-field` and the content panel's curve (`admin-content`) all follow. */
+@utility app-shell {
+    --radius-card: 20px;
+    --radius-panel: 14px;
+    --radius-field: 10px;
+}
+
+/* Page content is capped at `--admin-max` (default 90rem, set per page with `[--admin-max:60rem]` on <main>) and centred in
+   the area beside the sidebar: the side padding grows once the screen is wider than the cap. `--admin-side` is the sidebar
+   (19.5rem from 992px). Fixed elements (modals, the floating add button) are not affected. */
 @utility admin-content {
     --admin-pad: 1rem;
+    --admin-side: 0rem;
     padding: var(--admin-pad);
+    padding-inline: max(
+        var(--admin-pad),
+        calc((100vw - var(--admin-side) - var(--admin-max, 90rem)) / 2)
+    );
     background: var(--color-page);
     min-height: 100vh;
 
@@ -463,6 +484,7 @@
     }
     @media (min-width: 992px) {
         --admin-pad: 2rem;
+        --admin-side: 19.5rem;
         margin-left: 19.5rem;
         border-radius: var(--radius-card) 0 0 var(--radius-card);
     }

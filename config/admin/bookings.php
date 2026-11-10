@@ -193,6 +193,12 @@ return [
     'completed'      => 'Completed',
   ],
 
+  // Bar above the table while a link (Calendar, Upcoming Events, Review) has focused ONE booking.
+  'focus' => [
+    'showing_one' => 'Showing 1 booking',
+    'show_all'    => 'Show all',
+  ],
+
   // "Sorted by:" dropdown. Keys are handled in resources/js/admin/bookings.js.
   'sorts' => [
     'default' => 'Default',      // the order the backend sent
@@ -207,4 +213,33 @@ return [
   // form (resources/views/components/booking/event-information.blade.php). "Others" turns the
   // dropdown into a text field (see booking-modal.blade.php); keep it last.
   'event_types' => ['Baby Shower', 'Bridal Shower', 'Birthday Party', 'Concert', 'Family Reunion', 'Team-Building Event', 'Wedding', 'Others'],
+
+  // Date range filter (From / To inputs and quick chips). Text lives here so the views hard-code none.
+  // The range matches a booking when its event dates (data-date to data-end-date) overlap it.
+  // Chips use Asia/Manila dates; the week starts on Monday. Handled in resources/js/admin/bookings.js.
+  'date_filter' => [
+    'label'        => 'Event date',
+    'from'         => 'From',
+    'to'           => 'To',
+    'clear'        => 'Clear dates',
+    'all'          => 'All',   // pill text while no range is set ("Event date: All")
+    'done'         => 'Done',  // closes the From / To panel; filtering is already live
+    'chips'        => [
+      'today'     => 'Today',
+      'tomorrow'  => 'Tomorrow',
+      'this_week' => 'This week',
+    ],
+    // :from and :to become formatted dates (e.g. "Nov 10"). The first two are used when only one end is set.
+    'empty'        => 'No bookings from :from to :to',
+    'empty_from'   => 'No bookings from :from onward',
+    'empty_to'     => 'No bookings up to :to',
+    'empty_single' => 'No bookings on :from',
+    // Removable chip in the phone filter sheet and its badge ("Event date: Nov 10 – Nov 13").
+    'summary'      => [
+      'range'  => ':from – :to',
+      'single' => ':from',
+      'from'   => 'From :from',
+      'to'     => 'Up to :to',
+    ],
+  ],
 ];

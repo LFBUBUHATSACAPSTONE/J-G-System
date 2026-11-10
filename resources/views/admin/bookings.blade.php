@@ -14,7 +14,7 @@
   <x-admin-header />
 </head>
 
-<body class="bg-sidebar font-sans">
+<body class="app-shell bg-sidebar font-sans">
   <x-admin.sidebar />
 
   <main class="font-sans admin-content admin-bookings">
@@ -31,9 +31,9 @@
     <p class="mb-6 rounded-panel border border-success-border bg-success-soft px-6 py-3 font-medium text-success-text data-[tone=danger]:border-danger-border data-[tone=danger]:bg-danger-soft data-[tone=danger]:text-danger-text" role="status" tabindex="-1" data-bookings-feedback hidden></p>
 
     {{-- Filters
-         Below 768px: search + a "Filters" button; Sort / Status / Package live in a bottom sheet
+         Below 768px: search + a "Filters" button; Sort / Status / Package / Event date live in a bottom sheet
          (Bootstrap .offcanvas-md) and active ones show as removable chips. From 768px the sheet
-         is "display: contents", so the four pills sit inline exactly as before.
+         is "display: contents", so the filter pills sit inline in one row.
          The selects keep their data-bookings-* hooks, so bookings.js filtering is unchanged. --}}
     <div class="admin-bookings__filters mb-6 flex flex-wrap gap-4 max-md:gap-3" role="search" aria-label="Filter bookings" data-filter-bar>
       <div class="admin-filter-sheet offcanvas-md offcanvas-bottom rounded-t-card font-sans [--bs-offcanvas-bg:var(--color-page)] [--bs-offcanvas-border-width:0] [--bs-offcanvas-color:var(--color-ink)] [--bs-offcanvas-height:auto] [--bs-offcanvas-padding-x:1.5rem] [--bs-offcanvas-padding-y:1rem] md:contents" tabindex="-1" id="bookingsFilterSheet"
@@ -45,7 +45,7 @@
         </div>
 
         <div class="offcanvas-body flex flex-col gap-3 pt-0 md:contents!">
-          <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-full bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text flex-none md:flex-[1_1_14rem]">
+          <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-control bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text flex-none md:flex-[1_1_14rem]">
             <label for="bk-sort" class="admin-filter__label text-fluid-sm font-medium whitespace-nowrap text-ink">Sorted by:</label>
             <div class="admin-filter__control relative min-w-0 flex-1">
               <select id="bk-sort" class="admin-filter__select" data-bookings-sort>
@@ -56,7 +56,7 @@
             </div>
           </div>
 
-          <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-full bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text flex-none md:flex-[1_1_14rem]">
+          <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-control bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text flex-none md:flex-[1_1_14rem]">
             <label for="bk-status" class="admin-filter__label text-fluid-sm font-medium whitespace-nowrap text-ink">Status:</label>
             <div class="admin-filter__control relative min-w-0 flex-1">
               <select id="bk-status" class="admin-filter__select" data-bookings-status>
@@ -67,7 +67,7 @@
             </div>
           </div>
 
-          <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-full bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text flex-none md:flex-[1_1_14rem]">
+          <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-control bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text flex-none md:flex-[1_1_14rem]">
             <label for="bk-package" class="admin-filter__label text-fluid-sm font-medium whitespace-nowrap text-ink">Package:</label>
             <div class="admin-filter__control relative min-w-0 flex-1">
               <select id="bk-package" class="admin-filter__select" data-bookings-package>
@@ -79,6 +79,11 @@
             </div>
           </div>
 
+          {{-- Event date: one pill like the others; the From / To + Today / Tomorrow / This week panel opens from it.
+               Logic in resources/js/admin/date-range.js, filtering in bookings.js, text in config/admin/bookings.php
+               'date_filter'. Phones: the panel opens inline inside this sheet. From 768px: a popover. --}}
+          <x-admin.date-filter page="bookings" prefix="bk" />
+
           {{-- Sheet footer (phones only): filtering is live, "Done" just closes the sheet. --}}
           <div class="admin-filter-sheet__actions mt-2 grid grid-cols-2 gap-3 md:hidden">
             <button type="button" class="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-panel border border-brand-text bg-transparent px-4 py-2 text-fluid-base font-semibold text-brand-text hover:bg-brand-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text disabled:cursor-not-allowed disabled:opacity-50" data-filter-clear disabled>Clear all</button>
@@ -88,14 +93,14 @@
         </div>
       </div>
 
-      <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-full bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text admin-filter--search flex-[3_1_18rem] max-md:order-1 max-md:min-w-0 max-md:flex-[1_1_0] max-md:px-4">
+      <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-control bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text admin-filter--search flex-[3_1_18rem] md:max-[1279px]:flex-[1_0_100%] max-md:order-1 max-md:min-w-0 max-md:flex-[1_1_0] max-md:px-4">
         <i class="ph ph-magnifying-glass admin-filter__icon text-fluid-2xl text-ink" aria-hidden="true"></i>
         <label for="bk-search" class="sr-only">Search bookings</label>
         <input type="search" id="bk-search" class="admin-filter__input min-w-0 flex-1 border-0 bg-transparent py-2 text-fluid-sm text-ink outline-0 placeholder:text-ink-subtle placeholder:opacity-100" placeholder="Search"
           autocomplete="off" data-bookings-search>
       </div>
 
-      <button type="button" class="admin-filters-toggle inline-flex min-h-13 cursor-pointer items-center gap-2 rounded-full border-0 bg-surface px-6 py-1 text-fluid-sm font-medium whitespace-nowrap text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text max-md:order-2 md:hidden [&_.ph]:text-fluid-xl" data-bs-toggle="offcanvas"
+      <button type="button" class="admin-filters-toggle inline-flex min-h-13 cursor-pointer items-center gap-2 rounded-control border-0 bg-surface px-6 py-1 text-fluid-sm font-medium whitespace-nowrap text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text max-md:order-2 md:hidden [&_.ph]:text-fluid-xl" data-bs-toggle="offcanvas"
         data-bs-target="#bookingsFilterSheet" aria-controls="bookingsFilterSheet" data-filter-toggle>
         <i class="ph ph-sliders-horizontal" aria-hidden="true"></i>
         <span>Filters</span>
@@ -104,6 +109,13 @@
 
       {{-- Active filters as removable chips (phones only; filled by filter-sheet.js) --}}
       <div class="admin-filter-chips flex flex-[0_0_100%] flex-wrap gap-2 max-md:order-3 md:hidden [[hidden]]:hidden" data-filter-chips hidden></div>
+    </div>
+
+    {{-- Focus bar: shown only while a link has narrowed the list to one booking (?selected_booking=).
+         bookings.js shows it, hides it again when a filter changes, and "Show all" restores the list. --}}
+    <div class="admin-bookings__focus mb-4 flex flex-wrap items-center justify-between gap-3 rounded-panel bg-brand-soft px-4 py-2 text-fluid-sm text-ink [&[hidden]]:hidden" data-bookings-focus hidden>
+      <span class="font-medium">{{ config('admin.bookings.focus.showing_one') }}</span>
+      <button type="button" class="inline-flex min-h-10 cursor-pointer items-center rounded-control border border-brand-text bg-surface px-4 py-1 text-fluid-sm font-semibold text-brand-text hover:bg-brand-soft-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" data-bookings-show-all>{{ config('admin.bookings.focus.show_all') }}</button>
     </div>
 
     {{-- Table --}}
@@ -120,15 +132,16 @@
             <th role="columnheader" scope="col">Actions</th>
           </tr>
         </thead>
-        <tbody role="rowgroup" class="block min-[1200px]:table-row-group" data-bookings-body>
+        <tbody role="rowgroup" tabindex="-1" class="block outline-none min-[1200px]:table-row-group" data-bookings-body>
           @foreach ($bookings as $booking)
           <x-admin.booking-row :booking="$booking" :index="$loop->index" :full-dates="$fullDates ?? []" />
           @endforeach
         </tbody>
       </table>
 
-      <p class="admin-bookings__empty m-0 px-2 py-6 text-center text-fluid-sm text-ink-muted" data-bookings-empty @if (count($bookings)> 0) hidden @endif>
-        @if (count($bookings) > 0) No bookings match your filters. @else No bookings yet. @endif
+      <p class="admin-bookings__empty m-0 px-2 py-6 text-center text-fluid-sm text-ink-muted" data-bookings-empty data-date-messages="{{ json_encode(config('admin.bookings.date_filter')) }}" @if (count($bookings)> 0) hidden @endif>
+        <span data-bookings-empty-text>@if (count($bookings) > 0) No bookings match your filters. @else No bookings yet. @endif</span>
+        <button type="button" class="ml-2 cursor-pointer border-0 bg-transparent p-0 font-semibold text-brand-text underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text [[hidden]]:hidden" data-bookings-empty-clear hidden>{{ config('admin.bookings.date_filter.clear') }}</button>
       </p>
     </div>
 

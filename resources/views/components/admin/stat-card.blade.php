@@ -53,7 +53,7 @@ $dir = ! $hasChange ? null : ($change > 0 ? 'up' : ($change < 0 ? 'down' : 'flat
       <p class="m-0 text-fluid-stat font-bold leading-none max-[575.98px]:text-fluid-3xl {{ $palette['value'] }}">{{ $value }}</p>
 
       @if ($hasChange)
-      <span class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-[0.8rem] font-semibold max-[575.98px]:whitespace-nowrap {{ $deltaClass }}">
+      <span class="inline-flex items-center gap-1 rounded-badge px-3 py-1 text-[0.8rem] font-semibold max-[575.98px]:whitespace-nowrap {{ $deltaClass }}">
         <i class="ph ph-{{ $icon }}" aria-hidden="true"></i>
         <span aria-hidden="true">{{ $text }}</span>
         <span class="sr-only">{{ $spoken }}</span>

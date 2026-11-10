@@ -121,6 +121,21 @@ class AdminCalendarTest extends TestCase
             ->assertJsonCount(0, 'events');
     }
 
+    public function test_calendar_event_links_to_bookings_filtered_to_that_booking(): void
+    {
+        $booking = $this->booking([
+            'reference' => 'JG-CAL-LINK',
+            'status' => 'approved',
+            'event_start_date' => Carbon::today()->addDay()->toDateString(),
+            'event_end_date' => Carbon::today()->addDay()->toDateString(),
+        ]);
+
+        // "View in Bookings" lands on Bookings with only this booking listed and the modal closed.
+        $this->get(route('admin.calendar'))
+            ->assertOk()
+            ->assertSee(route('admin.bookings', ['selected_booking' => $booking->id]), false);
+    }
+
     private function booking(array $overrides = []): Booking
     {
         static $sequence = 0;

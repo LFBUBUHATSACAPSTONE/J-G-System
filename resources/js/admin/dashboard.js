@@ -24,7 +24,7 @@ if (dashboard) {
 
     // Whole class strings (never built from pieces) so Tailwind can find them.
     const BADGE_BASE =
-        "inline-flex items-center gap-2 rounded-full py-1 pr-4 pl-3 text-sm leading-[1.3] font-semibold whitespace-nowrap [&_.ph]:text-fluid-lg";
+        "inline-flex items-center gap-2 rounded-badge py-1 pr-4 pl-3 text-sm leading-[1.3] font-semibold whitespace-nowrap [&_.ph]:text-fluid-lg";
     const BADGE_TONES = {
         warning: "bg-warning-soft text-warning-text",
         success: "bg-success-soft text-success-text",
@@ -54,7 +54,7 @@ if (dashboard) {
     const STAT_VALUE =
         "m-0 text-fluid-stat font-bold leading-none max-[575.98px]:text-fluid-3xl";
     const STAT_DELTA =
-        "inline-flex items-center gap-1 rounded-full px-3 py-1 text-[0.8rem] font-semibold max-[575.98px]:whitespace-nowrap";
+        "inline-flex items-center gap-1 rounded-badge px-3 py-1 text-[0.8rem] font-semibold max-[575.98px]:whitespace-nowrap";
     const STAT_CAPTION =
         "m-0 text-fluid-sm max-[575.98px]:text-[0.8rem] max-[575.98px]:whitespace-nowrap max-[399.98px]:col-start-1 max-[399.98px]:row-start-2";
     const STAT_PLAIN = {
@@ -91,7 +91,7 @@ if (dashboard) {
     const ATTN_REF = "ml-2 text-[0.85rem] text-ink-muted max-[575.98px]:ml-0";
     const ATTN_META = "mt-0.5 mb-0 text-[0.85rem] text-ink-muted";
     const ATTN_ACTION =
-        "inline-flex items-center gap-1 rounded-full border border-brand-text bg-surface px-4 py-2 text-sm font-semibold whitespace-nowrap text-brand-text no-underline hover:bg-brand-soft-hover max-[575.98px]:min-h-11 max-[575.98px]:justify-center max-[575.98px]:justify-self-stretch focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text forced-colors:focus-visible:outline-[color:Highlight]";
+        "inline-flex items-center gap-1 rounded-control border border-brand-text bg-surface px-4 py-2 text-sm font-semibold whitespace-nowrap text-brand-text no-underline hover:bg-brand-soft-hover max-[575.98px]:min-h-11 max-[575.98px]:justify-center max-[575.98px]:justify-self-stretch focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text forced-colors:focus-visible:outline-[color:Highlight]";
 
     // Upcoming events
     const UP_ITEM =
@@ -407,7 +407,8 @@ if (dashboard) {
                             ? `In ${days} days`
                             : "";
                 const item = makeElement("a", UP_ITEM);
-                item.href = bookingsUrl({ booking: event.id });
+                // Filter to the booking only; the admin sees it in context and opens View Details when needed.
+                item.href = bookingsUrl({ selected_booking: event.id });
                 item.setAttribute(
                     "aria-label",
                     `${event.event} for ${event.client}, ${dateLabel(

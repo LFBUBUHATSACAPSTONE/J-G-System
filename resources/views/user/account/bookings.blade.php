@@ -89,7 +89,7 @@ $emptyCopy = [
 'past' => 'No past bookings.',
 'cancelled' => 'No cancelled bookings.',
 ];
-$tabClass = 'group inline-flex flex-none cursor-pointer items-center gap-2 rounded-full border border-transparent bg-surface px-4 py-2 text-fluid-sm leading-normal font-medium text-ink hover:bg-brand-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text [&.is-active]:border-brand-text [&.is-active]:bg-brand-soft [&.is-active]:font-semibold [&.is-active]:text-brand-text';
+$tabClass = 'group inline-flex flex-none cursor-pointer items-center gap-2 rounded-control border border-transparent bg-surface px-4 py-2 text-fluid-sm leading-normal font-medium text-ink hover:bg-brand-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text [&.is-active]:border-brand-text [&.is-active]:bg-brand-soft [&.is-active]:font-semibold [&.is-active]:text-brand-text';
 $tabCountClass = 'min-w-6 rounded-full bg-panel px-2 text-center text-xs leading-6 text-ink-muted group-[.is-active]:bg-surface group-[.is-active]:text-brand-text';
 $cardClass = '@container rounded-card bg-surface p-4 text-ink min-[576px]:p-6 [&[hidden]]:hidden';
 $emptyClass = '@container flex flex-col items-center gap-3 rounded-card bg-surface px-4 py-8 text-center text-ink min-[576px]:px-6 [&.d-none]:hidden [&>i]:text-[2.5rem] [&>i]:leading-none [&>i]:text-ink-subtle';
@@ -100,7 +100,7 @@ $statusClass = 'm-0 rounded-panel border border-success-border bg-success-soft p
 
 <x-account.layout>
   <div
-    class="flex max-w-240 flex-col gap-4"
+    class="flex mx-auto w-full max-w-240 flex-col gap-4"
     data-account-bookings
     data-statuses="{{ json_encode($statuses) }}"
     data-cancel-url-template="{{ Route::has('user.account.bookings.cancel') ? route('user.account.bookings.cancel', ['booking' => '__ID__']) : '#' }}"

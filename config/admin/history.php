@@ -85,4 +85,33 @@ return [
     'date'    => 'Date, soonest first',   // event start date
     'recent'  => 'Date, latest first',    // event start date
   ],
+
+  // Date range filter (From / To inputs and quick chips). Text lives here so the views hard-code none.
+  // The range matches a booking when its event dates (data-date to data-end-date) overlap it.
+  // Chips use Asia/Manila dates; the week starts on Monday. Handled in resources/js/admin/history.js.
+  'date_filter' => [
+    'label'        => 'Event date',
+    'from'         => 'From',
+    'to'           => 'To',
+    'clear'        => 'Clear dates',
+    'all'          => 'All',   // pill text while no range is set ("Event date: All")
+    'done'         => 'Done',  // closes the From / To panel; filtering is already live
+    'chips'        => [
+      'today'     => 'Today',
+      'tomorrow'  => 'Tomorrow',
+      'this_week' => 'This week',
+    ],
+    // :from and :to become formatted dates (e.g. "Nov 10"). The first two are used when only one end is set.
+    'empty'        => 'No bookings from :from to :to',
+    'empty_from'   => 'No bookings from :from onward',
+    'empty_to'     => 'No bookings up to :to',
+    'empty_single' => 'No bookings on :from',
+    // Removable chip in the phone filter sheet and its badge ("Event date: Nov 10 – Nov 13").
+    'summary'      => [
+      'range'  => ':from – :to',
+      'single' => ':from',
+      'from'   => 'From :from',
+      'to'     => 'Up to :to',
+    ],
+  ],
 ];

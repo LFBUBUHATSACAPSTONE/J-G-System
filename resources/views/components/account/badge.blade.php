@@ -10,4 +10,4 @@ $tones = [
 'neutral' => 'bg-panel text-ink-muted',
 ];
 @endphp
-<span {{ $attributes->class(['inline-flex items-center gap-1 rounded-full px-3 py-1 text-[0.8125rem] leading-[1.4] font-medium [&[hidden]]:hidden [&_i]:text-base [&_i]:leading-none', $tones[$tone] ?? $tones['neutral']]) }}>{{ $slot }}</span>
+<span {{ $attributes->class(['inline-flex items-center gap-1 rounded-badge px-3 py-1 text-[0.8125rem] leading-[1.4] font-medium [&[hidden]]:hidden [&_i]:text-base [&_i]:leading-none', $tones[$tone] ?? $tones['neutral']]) }}>{{ $slot }}</span>
