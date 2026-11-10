@@ -31,9 +31,9 @@
     <p class="mb-6 rounded-panel border border-success-border bg-success-soft px-6 py-3 font-medium text-success-text data-[tone=danger]:border-danger-border data-[tone=danger]:bg-danger-soft data-[tone=danger]:text-danger-text" role="status" tabindex="-1" data-bookings-feedback hidden></p>
 
     {{-- Filters
-         Below 768px: search + a "Filters" button; Sort / Status / Package live in a bottom sheet
+         Below 768px: search + a "Filters" button; Sort / Status / Package / Event date live in a bottom sheet
          (Bootstrap .offcanvas-md) and active ones show as removable chips. From 768px the sheet
-         is "display: contents", so the four pills sit inline exactly as before.
+         is "display: contents", so the filter pills sit inline in one row.
          The selects keep their data-bookings-* hooks, so bookings.js filtering is unchanged. --}}
     <div class="admin-bookings__filters mb-6 flex flex-wrap gap-4 max-md:gap-3" role="search" aria-label="Filter bookings" data-filter-bar>
       <div class="admin-filter-sheet offcanvas-md offcanvas-bottom rounded-t-card font-sans [--bs-offcanvas-bg:var(--color-page)] [--bs-offcanvas-border-width:0] [--bs-offcanvas-color:var(--color-ink)] [--bs-offcanvas-height:auto] [--bs-offcanvas-padding-x:1.5rem] [--bs-offcanvas-padding-y:1rem] md:contents" tabindex="-1" id="bookingsFilterSheet"
@@ -79,26 +79,10 @@
             </div>
           </div>
 
-          {{-- Event date range: From / To + quick chips. Logic in resources/js/admin/date-range.js,
-               filtering in bookings.js, text in config/admin/bookings.php 'date_filter'.
-               Phones: inside the sheet. From 768px: its own full-width row under the filters
-               (the sheet is "display: contents", so md:order-1 puts it after the search pill). --}}
-          @php($dateFilter = config('admin.bookings.date_filter'))
-          <div class="admin-date-filter flex flex-col gap-3 md:order-1 md:flex-[0_0_100%] md:flex-row md:flex-wrap md:items-center" role="group" aria-label="{{ $dateFilter['label'] }}" data-date-range data-date-summary="{{ json_encode($dateFilter['summary']) }}">
-            <div class="flex min-h-13 flex-wrap items-center gap-x-3 gap-y-1 rounded-control bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text">
-              <span class="text-fluid-sm font-medium whitespace-nowrap text-ink">{{ $dateFilter['label'] }}:</span>
-              <label for="bk-date-from" class="text-fluid-sm text-ink-muted">{{ $dateFilter['from'] }}</label>
-              <input type="date" id="bk-date-from" class="min-w-0 border-0 bg-transparent py-2 text-fluid-sm text-ink outline-0" data-date-from>
-              <label for="bk-date-to" class="text-fluid-sm text-ink-muted">{{ $dateFilter['to'] }}</label>
-              <input type="date" id="bk-date-to" class="min-w-0 border-0 bg-transparent py-2 text-fluid-sm text-ink outline-0" data-date-to>
-            </div>
-            <div class="flex flex-wrap items-center gap-2">
-              @foreach ($dateFilter['chips'] as $key => $label)
-              <button type="button" class="inline-flex min-h-9 cursor-pointer items-center rounded-control border border-brand-text bg-surface px-3 py-1 text-[0.85rem] font-medium text-brand-text hover:bg-brand-soft-hover aria-pressed:border-brand aria-pressed:bg-brand aria-pressed:text-on-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text" aria-pressed="false" data-date-chip="{{ $key }}">{{ $label }}</button>
-              @endforeach
-              <button type="button" class="inline-flex min-h-9 cursor-pointer items-center rounded-control border-0 bg-transparent px-3 py-1 text-[0.85rem] font-medium text-brand-text underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text [[hidden]]:hidden" data-date-clear hidden>{{ $dateFilter['clear'] }}</button>
-            </div>
-          </div>
+          {{-- Event date: one pill like the others; the From / To + Today / Tomorrow / This week panel opens from it.
+               Logic in resources/js/admin/date-range.js, filtering in bookings.js, text in config/admin/bookings.php
+               'date_filter'. Phones: the panel opens inline inside this sheet. From 768px: a popover. --}}
+          <x-admin.date-filter page="bookings" prefix="bk" />
 
           {{-- Sheet footer (phones only): filtering is live, "Done" just closes the sheet. --}}
           <div class="admin-filter-sheet__actions mt-2 grid grid-cols-2 gap-3 md:hidden">
@@ -109,7 +93,7 @@
         </div>
       </div>
 
-      <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-control bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text admin-filter--search flex-[3_1_18rem] max-md:order-1 max-md:min-w-0 max-md:flex-[1_1_0] max-md:px-4">
+      <div class="admin-filter relative flex min-h-13 items-center gap-3 rounded-control bg-surface px-6 py-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-text data-open:z-20 data-open:outline-2 data-open:outline-offset-2 data-open:outline-brand-text admin-filter--search flex-[3_1_18rem] md:max-[1279px]:flex-[1_0_100%] max-md:order-1 max-md:min-w-0 max-md:flex-[1_1_0] max-md:px-4">
         <i class="ph ph-magnifying-glass admin-filter__icon text-fluid-2xl text-ink" aria-hidden="true"></i>
         <label for="bk-search" class="sr-only">Search bookings</label>
         <input type="search" id="bk-search" class="admin-filter__input min-w-0 flex-1 border-0 bg-transparent py-2 text-fluid-sm text-ink outline-0 placeholder:text-ink-subtle placeholder:opacity-100" placeholder="Search"

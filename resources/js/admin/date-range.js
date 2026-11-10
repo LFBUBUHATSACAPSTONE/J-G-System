@@ -1,10 +1,13 @@
-// Shared by the admin Bookings and Booking History pages: the "Event date" From / To inputs, the
-// Today / Tomorrow / This week chips and the date maths behind them.
+// Shared by the admin Bookings and Booking History pages: the "Event date" pill, its From / To panel,
+// the Today / Tomorrow / This week chips and the date maths behind them (markup: components/admin/date-filter).
 //
 // Markup hooks inside the root element ([data-date-range]):
 //   [data-date-from] [data-date-to]    <input type="date">
 //   [data-date-chip="today|tomorrow|this_week"]   quick ranges (aria-pressed while that range is set)
-//   [data-date-clear]                  "Clear dates" (hidden while no range is set)
+//   [data-date-clear]                  "Clear dates" (any number; hidden while no range is set)
+//   [data-date-pill] [data-date-trigger] [data-date-value]   the pill, its button and its text
+//                                      ("All", or the range; the pill gets data-active while a range is set)
+//   [data-date-panel] [data-date-done] the From / To panel (popover from 768px, inline on phones) and its Done
 // Dates are plain YYYY-MM-DD strings, so they compare as text. "Today" is the date in Asia/Manila
 // (the business's time), and the week runs Monday to Sunday. Labels come from config/admin/*.php.
 
@@ -122,7 +125,14 @@ export function initDateRange(root, { onChange } = {}) {
     const toInput = root.querySelector("[data-date-to]");
     const chips = [...root.querySelectorAll("[data-date-chip]")];
     const clearButtons = [...root.querySelectorAll("[data-date-clear]")];
+    const pill = root.querySelector("[data-date-pill]");
+    const trigger = root.querySelector("[data-date-trigger]");
+    const valueEl = root.querySelector("[data-date-value]");
+    const panel = root.querySelector("[data-date-panel]");
+    const summary = JSON.parse(root.dataset.dateSummary || "{}");
+    const allText = root.dataset.dateAll ?? "";
     if (!fromInput || !toInput) return null;
+    const isPopover = () => window.matchMedia("(min-width: 768px)").matches;
 
     // An unfinished or invalid date reads as empty.
     const read = () => ({
@@ -141,6 +151,29 @@ export function initDateRange(root, { onChange } = {}) {
         });
         clearButtons.forEach((button) => (button.hidden = !(from || to)));
         toInput.min = from;
+        if (valueEl)
+            valueEl.textContent =
+                from || to ? dateSummary(summary, from, to) : allText;
+        pill?.toggleAttribute("data-active", Boolean(from || to));
+    }
+
+    // The panel (popover from 768px). It opens under the pill and flips to the right edge when it
+    // would run off the screen. Escape closes it without also closing the phone filter sheet.
+    function place() {
+        if (!panel || !isPopover()) return;
+        panel.removeAttribute("data-align");
+        const rect = root.getBoundingClientRect();
+        if (rect.left + panel.offsetWidth > window.innerWidth - 16)
+            panel.setAttribute("data-align", "end");
+    }
+
+    function setOpen(open, { focus = false } = {}) {
+        if (!panel || !trigger) return;
+        panel.hidden = !open;
+        trigger.setAttribute("aria-expanded", String(open));
+        pill?.toggleAttribute("data-open", open);
+        if (open) place();
+        else if (focus) trigger.focus();
     }
 
     function changed() {
@@ -165,19 +198,40 @@ export function initDateRange(root, { onChange } = {}) {
     chips.forEach((chip) =>
         chip.addEventListener("click", () => {
             // Clicking the active chip turns it off.
-            if (chip.getAttribute("aria-pressed") === "true")
-                return api.clear();
-            const range = chipRange(chip.dataset.dateChip);
-            if (range) api.set(range.from, range.to);
+            if (chip.getAttribute("aria-pressed") === "true") api.clear();
+            else {
+                const range = chipRange(chip.dataset.dateChip);
+                if (range) api.set(range.from, range.to);
+            }
+            // A preset is a finished choice: close the popover (phones keep the panel open).
+            if (isPopover()) setOpen(false, { focus: true });
         }),
     );
 
     clearButtons.forEach((button) =>
         button.addEventListener("click", () => {
             api.clear();
-            fromInput.focus();
+            (trigger ?? fromInput).focus();
         }),
     );
+
+    if (trigger && panel) {
+        trigger.addEventListener("click", () => setOpen(panel.hidden));
+        root.querySelectorAll("[data-date-done]").forEach((button) =>
+            button.addEventListener("click", () =>
+                setOpen(false, { focus: true }),
+            ),
+        );
+        root.addEventListener("keydown", (event) => {
+            if (event.key !== "Escape" || panel.hidden) return;
+            event.stopPropagation();
+            setOpen(false, { focus: true });
+        });
+        document.addEventListener("mousedown", (event) => {
+            if (!panel.hidden && !root.contains(event.target)) setOpen(false);
+        });
+        window.addEventListener("resize", place);
+    }
 
     const api = {
         get: read,

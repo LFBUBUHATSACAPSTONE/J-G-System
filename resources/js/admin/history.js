@@ -5,7 +5,7 @@
 // [data-filter-bar], so this file only has to announce each apply() (see the end of apply()).
 // Row markup comes from <x-admin.booking-row :history="true">: each <tr> carries
 //   data-status-group (ongoing | upcoming | completed | cancelled), data-rank, data-date (start),
-//   data-end-date, data-month (Y-m of the start date), data-package, data-name, data-search.
+//   data-end-date, data-package, data-name, data-search.
 
 import {
     initDateRange,
@@ -22,7 +22,6 @@ function init() {
     const tabs = [...document.querySelectorAll("[data-history-tab]")];
     const sortSelect = document.querySelector("[data-history-sort]");
     const packageSelect = document.querySelector("[data-history-package]");
-    const monthSelect = document.querySelector("[data-history-month]");
     const searchInput = document.querySelector("[data-history-search]");
     const emptyMessage = document.querySelector("[data-history-empty]");
     const count = document.querySelector("[data-history-count]");
@@ -32,7 +31,7 @@ function init() {
     let phase = "all";
 
     // Event date range. Rows carry data-date (start) and data-end-date; a booking matches when its
-    // dates overlap the range. Works together with the Month filter (both must match).
+    // dates overlap the range. Works together with the tabs, Package and Search (all must match).
     const dateRoot = document.querySelector("[data-date-range]");
     const dates = dateRoot
         ? initDateRange(dateRoot, {
@@ -108,7 +107,6 @@ function init() {
 
     function apply() {
         const pkg = packageSelect.value;
-        const month = monthSelect.value;
         const query = searchInput.value.trim().toLowerCase();
 
         const { from, to } = dates ? dates.get() : { from: "", to: "" };
@@ -118,7 +116,6 @@ function init() {
         const matchesOthers = (row) =>
             (phase === "all" || row.dataset.statusGroup === phase) &&
             (pkg === "all" || row.dataset.package === pkg) &&
-            (month === "all" || row.dataset.month === month) &&
             (!query || row.dataset.search.includes(query));
 
         const visible = new Set(
@@ -172,7 +169,7 @@ function init() {
             apply();
         }),
     );
-    [sortSelect, packageSelect, monthSelect].forEach((el) =>
+    [sortSelect, packageSelect].forEach((el) =>
         el.addEventListener("change", apply),
     );
     searchInput.addEventListener("input", apply);

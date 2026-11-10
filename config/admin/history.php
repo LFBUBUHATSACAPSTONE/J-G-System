@@ -94,6 +94,8 @@ return [
     'from'         => 'From',
     'to'           => 'To',
     'clear'        => 'Clear dates',
+    'all'          => 'All',   // pill text while no range is set ("Event date: All")
+    'done'         => 'Done',  // closes the From / To panel; filtering is already live
     'chips'        => [
       'today'     => 'Today',
       'tomorrow'  => 'Tomorrow',
