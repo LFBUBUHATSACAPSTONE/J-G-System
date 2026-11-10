@@ -114,6 +114,9 @@ function setup(el) {
                 state.opts.reason ? state.reason.value.trim() : null,
             );
             state.done = true;
+            // The hide guard below blocks dismissal while the request is pending.
+            // Clear it before Bootstrap emits hide.bs.modal for this successful close.
+            setBusy(false);
             Modal.getInstance(el)?.hide();
         } catch (error) {
             // A reason the server refused belongs under the box, anything else above the buttons.
