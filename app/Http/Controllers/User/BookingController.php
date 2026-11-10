@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Package;
+use App\Services\Notifications\BookingWorkflowNotifier;
 use App\Support\Scheduling;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -315,7 +316,7 @@ class BookingController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    public function submitBooking(Request $request): JsonResponse
+    public function submitBooking(Request $request, BookingWorkflowNotifier $notifications): JsonResponse
     {
         $rescheduleId = $request->input('reschedule_id');
         if ($rescheduleId) {
@@ -392,6 +393,7 @@ class BookingController extends Controller
             }
 
             $request->session()->forget('booking_reschedule_'.$original->id);
+            $notifications->notifyAdmins($booking, 'booking_rescheduled');
 
             return response()->json(['ok' => true, 'reference' => $booking->reference]);
         }
@@ -499,6 +501,7 @@ class BookingController extends Controller
         }
 
         $request->session()->forget('booking_draft');
+        $notifications->notifyAdmins($booking, 'booking_submitted');
 
         return response()->json(['ok' => true, 'reference' => $booking->reference]);
     }

@@ -1,11 +1,8 @@
 // Toasts between the two parties (docs/toast-notifications-phases.md, Phase 4A, 4B and 4C).
 //
-// A client message shows as a toast to the admin, an admin reply shows as a toast to the client, on pages that
-// do not already show the thread. It reads the endpoints that already exist (`admin.messages.updates`,
-// `user.messages.updates`); nothing new on the server. Fed so far: messages both ways (4B) and, for the client,
-// "your booking was approved" (4C). The other booking events (declined, payment verified, cancellation decisions,
-// admin edits, and everything the admin should hear about) wait for the backend decision recorded in
-// docs/backend-impact.md: the `bookings` list of the `updates` answers only carries APPROVED bookings.
+// Cross-page toasts read the existing `admin.messages.updates` and `user.messages.updates` feeds. Messages
+// remain in the chat feed; booking workflow events are read from persisted database notifications. Approved
+// bookings retain their existing booking-card feed, which also updates the chat timeline.
 //
 // Where the settings come from: <x-toast.region feed="admin|user" /> prints `data-toast-feed` (URL, link, texts,
 // pace). No attribute (guest, Admin Messages page) = this file does nothing.
@@ -24,11 +21,8 @@
 // sessionStorage (`jg.toast.feed.<side>`), so moving between pages neither replays nor loses a message. If storage
 // is blocked the feed still works, it just starts from a new baseline on every page.
 //
-// "Booking approved" (client side only): the `bookings` list of the same `updates` answer holds this client's
-// bookings approved after the `since` cursor. The first poll of a session is silent for it too; after that the
-// server's `bookings_synced_at` is kept as the cursor, and the ids already toasted are remembered (`seen`) so a
-// booking is never toasted twice, even when the landing-page widget and an own-poll page both saw it. The admin side
-// gets nothing from this list: it only holds approvals the admin made.
+// "Booking approved" (client side): the `bookings` list holds this client's newly approved bookings. Other
+// workflow notifications carry their own database notification id and are de-duplicated separately.
 //
 // A burst is one toast ("3 new replies from J&G", "3 of your bookings were approved"), never three.
 
@@ -47,9 +41,6 @@ function start() {
     }
     if (!cfg?.url) return;
 
-    // Account > Messages shows the thread live.
-    if (document.querySelector("[data-account-chat]")) return;
-
     const text = cfg.text || {};
     const key = `jg.toast.feed.${cfg.side}`;
     let state = {
@@ -58,12 +49,14 @@ function start() {
         base: null,
         since: null,
         seen: [],
+        workflowSeen: [],
     };
 
     try {
         const saved = JSON.parse(sessionStorage.getItem(key) || "null");
         if (saved && typeof saved === "object") state = { ...state, ...saved };
         if (!Array.isArray(state.seen)) state.seen = [];
+        if (!Array.isArray(state.workflowSeen)) state.workflowSeen = [];
     } catch {
         // storage unavailable: a fresh baseline on this page
     }
@@ -78,6 +71,14 @@ function start() {
     const widget = document.querySelector(
         "[data-chat-widget][data-chat-updates-url]",
     );
+    const adminMessages =
+        cfg.side === "admin"
+            ? document.querySelector("[data-messages][data-chat-updates-url]")
+            : null;
+    const accountMessages =
+        cfg.side === "user"
+            ? document.querySelector("[data-account-chat][data-chat-updates-url]")
+            : null;
 
     // The text for n new messages, and where the toast leads.
     const announce = (messages, { open = null } = {}) => {
@@ -132,11 +133,75 @@ function start() {
         });
     };
 
-    // ---- LISTEN: the landing chat widget already polls ----------------------------------------
-    if (widget) {
+    const announceWorkflowNotifications = (notifications, { quiet = false } = {}) => {
+        const fresh = notifications.filter(
+            (notification) =>
+                notification?.id &&
+                !state.workflowSeen.includes(String(notification.id)),
+        );
+        if (!fresh.length) return;
+
+        state.workflowSeen = [
+            ...state.workflowSeen,
+            ...fresh.map((notification) => String(notification.id)),
+        ].slice(-100);
+        save();
+        if (quiet) return;
+
+        const templates = text.workflow || {};
+        fresh.forEach((notification) => {
+            let message = templates[notification.event];
+            if (!message) return;
+
+            const reference = notification.reference
+                ? `#${notification.reference}`
+                : "";
+            message = message
+                .replaceAll(":reference", reference)
+                .replaceAll(":client", notification.client_name || "a client");
+
+            const href =
+                cfg.side === "admin" && cfg.bookingsLink
+                    ? `${cfg.bookingsLink}?booking=${encodeURIComponent(notification.booking_id)}`
+                    : cfg.bookingsLink || cfg.link;
+            const action = href
+                ? { label: text.workflow_open || text.open, href }
+                : null;
+            const tone =
+                notification.event === "booking_declined" ||
+                notification.event === "booking_cancelled"
+                    ? "warning"
+                    : "info";
+            const icon =
+                notification.event === "booking_cancelled" ||
+                notification.event === "cancellation_approved"
+                    ? "booking-cancelled"
+                    : "booking-event";
+
+            showToast({ tone, message, action, icon });
+        });
+    };
+
+    // ---- LISTEN: the landing chat widget / admin Messages already polls ------------------------
+    if (widget || adminMessages || accountMessages) {
         document.addEventListener("chat:polled", (event) => {
             const detail = event.detail || {};
-            if (!detail.widget) return;
+            if (widget && !detail.widget) return;
+            const firstWorkflowPoll = state.since === null;
+            announceWorkflowNotifications(
+                detail.workflowNotifications || [],
+                { quiet: firstWorkflowPoll },
+            );
+            const syncedAt =
+                detail.notificationsSyncedAt || detail.bookingsSyncedAt;
+            if (syncedAt) {
+                state.since = syncedAt;
+                save();
+            }
+
+            // The admin Messages page already displays incoming messages in its open thread.
+            if ((adminMessages || accountMessages) && !detail.widget) return;
+
             // The thread is open and the person is looking at it: it shows there, no toast.
             const watching =
                 detail.panelOpen && document.hasFocus() && !document.hidden;
@@ -204,11 +269,18 @@ function start() {
 
     const handle = async (data) => {
         const unread = Number(data.unread) || 0;
+        const firstWorkflowPoll = state.since === null;
+        announceWorkflowNotifications(data.workflow_notifications || [], {
+            quiet: firstWorkflowPoll,
+        });
+        if (data.notifications_synced_at) {
+            state.since = data.notifications_synced_at;
+            save();
+        }
 
         // Bookings approved since the cursor (client side). The very first poll of a session is silent.
         if (cfg.side === "user") {
-            const firstTime = state.since === null;
-            if (!firstTime) announceBookings(data.bookings || []);
+            if (!firstWorkflowPoll) announceBookings(data.bookings || []);
             if (data.bookings_synced_at) {
                 state.since = data.bookings_synced_at;
                 save();

@@ -35,6 +35,8 @@ return [
   'icons' => [
     'chat'                => 'ph-chat-circle-text',
     'booking-approved'    => 'ph-calendar-check',
+    'booking-event'       => 'ph-calendar-plus',
+    'booking-cancelled'   => 'ph-calendar-x',
     'cancellation-sent'   => 'ph-paper-plane-tilt',
     'package-saved'       => 'ph-package',
     'package-available'   => 'ph-eye',
@@ -50,8 +52,8 @@ return [
   ],
 
   // Toasts between the two parties (Phase 4, docs/toast-notifications-phases.md section 6).
-  // The browser asks the existing `updates` endpoints (admin.messages.updates / user.messages.updates);
-  // nothing here needs a new route. Fed so far: messages both ways (4B) and "booking approved" for the client (4C).
+  // The browser asks the existing `updates` endpoints (admin.messages.updates / user.messages.updates).
+  // Message toasts use the message feed; booking workflow toasts use persisted database notifications.
   'feed' => [
     // Pace of the page's own poll (pages that have no chat poller). Same idea as chat.js: slow, paused while the
     // tab is hidden, doubling after each failure up to max_ms.
@@ -64,6 +66,12 @@ return [
         'message'  => 'New message from a client',
         'messages' => ':count new client messages',
         'open'     => 'Open',
+        'workflow_open' => 'Review booking',
+        'workflow' => [
+          'booking_submitted' => 'New booking :reference from :client',
+          'booking_rescheduled' => 'Rescheduled booking :reference from :client',
+          'cancellation_requested' => 'Cancellation request for :reference from :client',
+        ],
       ],
       'user' => [
         'message'  => 'New reply from J&G',
@@ -73,6 +81,13 @@ return [
         'booking_approved'  => 'Your booking :reference was approved',
         'bookings_approved' => ':count of your bookings were approved',
         'open_bookings'     => 'My Bookings',
+        'workflow_open' => 'View booking',
+        'workflow' => [
+          'booking_declined' => 'Your booking :reference was declined',
+          'booking_cancelled' => 'Your booking :reference was cancelled',
+          'cancellation_approved' => 'Cancellation approved for :reference',
+          'cancellation_rejected' => 'Cancellation request for :reference was declined',
+        ],
       ],
     ],
   ],

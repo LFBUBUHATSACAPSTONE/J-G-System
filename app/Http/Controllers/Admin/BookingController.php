@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\BookingSchedule;
+use App\Services\Notifications\BookingWorkflowNotifier;
 use App\Support\Scheduling;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -37,7 +38,7 @@ class BookingController extends Controller
         ]);
     }
     
-    public function reviewCancellation(Request $request, string $booking): JsonResponse
+    public function reviewCancellation(Request $request, string $booking, BookingWorkflowNotifier $notifications): JsonResponse
     {
         $min = (int) config('cancellation.min', 10);
         $max = (int) config('cancellation.max', 500);
@@ -131,6 +132,11 @@ class BookingController extends Controller
             ], 409);
         }
 
+        $notifications->notifyUser(
+            (int) $booking,
+            $approve ? 'cancellation_approved' : 'cancellation_rejected',
+        );
+
         return response()->json([
             'ok' => true,
             'message' => $approve
@@ -140,7 +146,7 @@ class BookingController extends Controller
         ]);
     }
 
-    public function updateStatus(Request $request, string $booking): JsonResponse|RedirectResponse
+    public function updateStatus(Request $request, string $booking, BookingWorkflowNotifier $notifications): JsonResponse|RedirectResponse
     {
         $min = (int) config('cancellation.min', 10);
         $max = (int) config('cancellation.max', 500);
@@ -333,6 +339,16 @@ class BookingController extends Controller
 
         if (isset($result['schedule_conflict'])) {
             return $this->statusResponse($request, $result['schedule_conflict'], 409);
+        }
+
+        $notificationEvent = match ($action) {
+            'verify' => 'booking_approved',
+            'decline' => 'booking_declined',
+            'cancel' => 'booking_cancelled',
+            default => null,
+        };
+        if ($notificationEvent !== null) {
+            $notifications->notifyUser((int) $booking, $notificationEvent);
         }
 
         if (! $request->expectsJson()) {

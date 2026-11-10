@@ -857,6 +857,10 @@ export function initChatStream(root) {
                             messages: data.messages || [],
                             bookings: data.bookings || [],
                             bookingsSyncedAt: data.bookings_synced_at || "",
+                            workflowNotifications:
+                                data.workflow_notifications || [],
+                            notificationsSyncedAt:
+                                data.notifications_synced_at || "",
                             unread: data.unread || 0,
                             panelOpen: isOpen(),
                         },
