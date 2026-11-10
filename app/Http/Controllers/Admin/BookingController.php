@@ -250,9 +250,8 @@ class BookingController extends Controller
                     return ['full_dates' => $fullDates];
                 }
 
-                // The day still has room, but this clock may still clash with a booking that
-                // already holds a slot: overlapping it, or sitting inside the required break
-                // around it (same rules the client's booking flow is held to).
+                // The day still has room, but this clock may still overlap a booking that
+                // already holds a slot.
                 $conflict = $this->scheduleConflict($schedule, $counted);
                 if ($conflict) {
                     return ['schedule_conflict' => $this->scheduleConflictMessage($conflict, 'approved')];
@@ -483,7 +482,6 @@ class BookingController extends Controller
      */
     private function blockedWindows(Collection $counted, Carbon $first, Carbon $last): array
     {
-        $gap = Scheduling::minGapMinutes();
         $startIso = $first->toDateString();
         $endIso = $last->toDateString();
         $windows = [];
@@ -523,8 +521,8 @@ class BookingController extends Controller
                     $date,
                 );
                 $windows[$iso][] = [
-                    max(0, $spanFrom - $gap),
-                    min(self::DAY_MINUTES, $spanTo + $gap),
+                    $spanFrom,
+                    $spanTo,
                     $existing->reference,
                 ];
             }
@@ -572,20 +570,15 @@ class BookingController extends Controller
 
     /**
      * Wording for a rejected Approve / Verify: names the action, the conflicting booking and
-     * the busy window (required break included), so the admin knows which booking to look at.
+     * its booked time window, so the admin knows which booking to look at.
      */
     private function scheduleConflictMessage(array $conflict, string $action): string
     {
         $reference = $conflict['reference'] ? '#'.$conflict['reference'] : 'another booking';
-        $gap = Scheduling::minGapMinutes();
-        $break = $gap > 0
-            ? ' Bookings on the same day need at least '.Scheduling::humanizeMinutes($gap).' between them.'
-            : '';
-
         return 'This booking cannot be '.$action.' because its schedule conflicts with '.$reference.': '
             .Carbon::parse($conflict['date'])->format('F j, Y')
             .' is unavailable from '.Scheduling::minutesToClock($conflict['from'])
             .' to '.Scheduling::minutesToClock($conflict['to']).'.'
-            .$break;
+            .' Please check for an overlapping booking.';
     }
 }
