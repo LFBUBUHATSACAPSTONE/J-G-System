@@ -189,7 +189,12 @@ export function initCancellation(modal) {
         showFeedback(
             data.message || "The cancellation request has been updated.",
         );
-        window.setTimeout(() => window.location.reload(), 700);
+        window.setTimeout(() => {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("booking");
+            url.searchParams.set("selected_booking", String(current.id));
+            window.location.assign(url.href);
+        }, 700);
     }
 
     approveButton?.addEventListener("click", () => {

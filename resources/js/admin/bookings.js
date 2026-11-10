@@ -406,6 +406,7 @@ function initModal(modal) {
     }
 
     function fill(booking) {
+        modal.dataset.bookingId = String(booking.id);
         renderReason(booking);
         modal.querySelectorAll("[data-booking-field]").forEach((el) => {
             const value = getPath(booking, el.dataset.bookingField);
@@ -759,6 +760,17 @@ function initConfirm() {
             );
             if (!reasonMessage) delete error.field;
             throw error;
+        }
+
+        const bookingId =
+            form.closest("[data-booking-row]")?.dataset.bookingId ||
+            form.closest("#bookingModal")?.dataset.bookingId;
+        if (bookingId) {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("booking");
+            url.searchParams.set("selected_booking", bookingId);
+            window.location.assign(url.href);
+            return;
         }
 
         window.location.reload();

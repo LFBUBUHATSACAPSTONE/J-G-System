@@ -16,14 +16,9 @@ return [
   // cancellation request does not hold a slot either: the date is free until the admin decides.
   'counted_statuses' => ['pending_payment', 'approved'],
 
-  // Required break between two bookings that share a calendar day, measured from the end
-  // of one event to the start of the next (and mirrored on the other side, so a new
-  // booking may not start right before an existing one either). An event ending at 3 PM
-  // therefore keeps 3 PM - 5 PM on hold with the default 120 minutes. 0 disables the
-  // break and leaves only the overlap check.
-  'min_gap_minutes' => 120,
+  // Additional break between bookings on the same day. Zero keeps only the overlap check.
+  'min_gap_minutes' => 0,
 
-  // User bookings use the actual event times with no additional buffer. The admin
-  // scheduling flow continues to use min_gap_minutes above.
+  // User booking availability uses the event's actual times as well.
   'user_min_gap_minutes' => 0,
 ];
