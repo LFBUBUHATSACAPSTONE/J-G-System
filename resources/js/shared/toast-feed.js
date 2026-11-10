@@ -67,6 +67,12 @@ function start() {
         }
     };
 
+    // A booking of this person changed (approved, declined, cancelled, a cancellation answered ...). Pages that show
+    // booking cards listen for this and re-read them (resources/js/account/bookings.js), so a card never keeps an old
+    // state after J&G has answered. Not sent for the quiet baseline poll: a page that has just loaded is already current.
+    const notifyBookingUpdate = () =>
+        document.dispatchEvent(new CustomEvent("toast-feed:booking-update"));
+
     const widget = document.querySelector(
         "[data-chat-widget][data-chat-updates-url]",
     );
@@ -76,7 +82,9 @@ function start() {
             : null;
     const accountMessages =
         cfg.side === "user"
-            ? document.querySelector("[data-account-chat][data-chat-updates-url]")
+            ? document.querySelector(
+                  "[data-account-chat][data-chat-updates-url]",
+              )
             : null;
 
     const rememberCursor = (top) => {
@@ -88,10 +96,7 @@ function start() {
 
     const rememberMessages = (messages) =>
         rememberCursor(
-            Math.max(
-                0,
-                ...messages.map((message) => Number(message?.id) || 0),
-            ),
+            Math.max(0, ...messages.map((message) => Number(message?.id) || 0)),
         );
 
     const rememberRenderedMessages = () => {
@@ -137,6 +142,7 @@ function start() {
         state.seen = [...state.seen, ...fresh.map((b) => b.id)].slice(-50);
         save();
         if (quiet) return;
+        notifyBookingUpdate();
         const message =
             fresh.length === 1
                 ? String(text.booking_approved || "").replace(
@@ -157,7 +163,10 @@ function start() {
         });
     };
 
-    const announceWorkflowNotifications = (notifications, { quiet = false } = {}) => {
+    const announceWorkflowNotifications = (
+        notifications,
+        { quiet = false } = {},
+    ) => {
         const fresh = notifications.filter(
             (notification) =>
                 notification?.id &&
@@ -171,6 +180,7 @@ function start() {
         ].slice(-100);
         save();
         if (quiet) return;
+        notifyBookingUpdate();
 
         const templates = text.workflow || {};
         fresh.forEach((notification) => {
@@ -212,10 +222,9 @@ function start() {
             const detail = event.detail || {};
             if (widget && !detail.widget) return;
             const firstWorkflowPoll = state.since === null;
-            announceWorkflowNotifications(
-                detail.workflowNotifications || [],
-                { quiet: firstWorkflowPoll },
-            );
+            announceWorkflowNotifications(detail.workflowNotifications || [], {
+                quiet: firstWorkflowPoll,
+            });
             const syncedAt =
                 detail.notificationsSyncedAt || detail.bookingsSyncedAt;
             if (syncedAt) {

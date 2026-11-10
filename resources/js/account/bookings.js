@@ -342,6 +342,78 @@ function initBookings() {
         });
     });
 
+    // Live refresh. The page is rendered once, so when J&G answers (approves, declines, answers a cancellation
+    // request) a card would keep its old state, for example "Cancellation pending" after the request was declined,
+    // until the next reload. shared/toast-feed.js sends `toast-feed:booking-update` for each new booking event; this
+    // re-reads the page, swaps the cards and the tab counts in place and keeps the active tab. While a modal is open
+    // (details, or the cancellation reason being typed) the swap waits until it closes, so nothing is lost.
+    const listEl = root.querySelector("[data-bookings-list]");
+    let refreshing = false;
+    let waiting = false;
+    const modalOpen = () => document.querySelector(".modal.show") !== null;
+
+    async function refreshList() {
+        if (!listEl) return;
+        if (refreshing || modalOpen()) {
+            waiting = true;
+            return;
+        }
+        refreshing = true;
+        waiting = false;
+        try {
+            const res = await fetch(window.location.href, {
+                headers: {
+                    Accept: "text/html",
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+                credentials: "same-origin",
+            });
+            // A redirect means the session ended (login page): leave what is on screen.
+            if (!res.ok || res.redirected) return;
+
+            const doc = new DOMParser().parseFromString(
+                await res.text(),
+                "text/html",
+            );
+            const nextRoot = doc.querySelector("[data-account-bookings]");
+            const nextList = nextRoot?.querySelector("[data-bookings-list]");
+            if (!nextList) return;
+
+            // Keyboard focus inside a card goes back to that card's View details button after the swap.
+            const focusedId = document.activeElement
+                ?.closest?.("[data-booking-card]")
+                ?.getAttribute("data-id");
+
+            listEl.innerHTML = nextList.innerHTML;
+            nextRoot
+                .querySelectorAll("[data-bookings-count]")
+                .forEach((count) => {
+                    const mine = root.querySelector(
+                        `[data-bookings-count="${count.dataset.bookingsCount}"]`,
+                    );
+                    if (mine) mine.textContent = count.textContent;
+                });
+            applyFilter();
+
+            if (focusedId) {
+                cards()
+                    .find((card) => card.dataset.id === focusedId)
+                    ?.querySelector("[data-booking-open]")
+                    ?.focus();
+            }
+        } catch {
+            // offline or a server error: keep the cards as they are, the next event tries again
+        } finally {
+            refreshing = false;
+            if (waiting && !modalOpen()) refreshList();
+        }
+    }
+
+    document.addEventListener("toast-feed:booking-update", refreshList);
+    document.addEventListener("hidden.bs.modal", () => {
+        if (waiting) refreshList();
+    });
+
     applyFilter();
 }
 
