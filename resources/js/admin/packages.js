@@ -4,19 +4,17 @@
 // Bootstrap's modal is used through its data attributes (admin.js already loads Bootstrap).
 // The confirm() prompt on "Unavailable" is the global [data-confirm] listener in bookings.js.
 
+import { queueToast, showToast } from "../shared/toast.js";
+
 const money = (value) => `Php ${Number(value).toLocaleString("en-US")}`;
 const digitsOnly = (value) => String(value ?? "").replace(/\D/g, "");
 const EMPTY = { id: null, name: "", price: null, features: [], equipment: {} };
 
-function setStatus(message, isError = false) {
-    const status = document.querySelector("[data-package-status]");
-    if (!status) return;
-
-    status.textContent = message;
-    if (isError) status.dataset.tone = "danger";
-    else delete status.dataset.tone;
-    status.hidden = !message;
-}
+// Results are toasts (docs/toast-notifications-phases.md, Phase 2C). A save reloads the page, so its
+// message is queued for the next page; the availability toggle does not reload, so it shows at once.
+// Failures are danger toasts, which stay until closed. Field errors (422) stay under the field.
+const showResult = (message) => showToast({ tone: "success", message });
+const showFailure = (message) => showToast({ tone: "danger", message });
 
 async function sendJson(url, method, csrfToken, payload) {
     const response = await fetch(url, {
@@ -439,10 +437,13 @@ function initModal(modal) {
             if (!response.ok)
                 throw new Error(body.message || "Unable to save this package.");
 
-            setStatus(body.message || "Package saved successfully.");
-            window.setTimeout(() => window.location.reload(), 650);
+            queueToast({
+                tone: "success",
+                message: body.message || "Package saved successfully.",
+            });
+            window.location.reload();
         } catch (error) {
-            setStatus(error.message || "Unable to save this package.", true);
+            showFailure(error.message || "Unable to save this package.");
         } finally {
             saveButton.disabled = false;
         }
@@ -503,11 +504,10 @@ function initAvailabilityForms() {
                     const stateButton = stateForm.querySelector("button");
                     stateButton.setAttribute("aria-pressed", String(active));
                 });
-                setStatus(body.message);
+                showResult(body.message);
             } catch (error) {
-                setStatus(
+                showFailure(
                     error.message || "Unable to update package availability.",
-                    true,
                 );
             } finally {
                 button.disabled = false;

@@ -16,6 +16,7 @@
 
 import { openActionModal, reasonError } from "../shared/action-modal.js";
 import { getCsrfToken } from "../auth/csrf.js";
+import { queueToast } from "../shared/toast.js";
 import { paintCancellationTone } from "../shared/cancellation-tone.js";
 
 const TITLES = {
@@ -136,15 +137,6 @@ export function initCancellation(modal) {
         current = null;
     });
 
-    function showFeedback(message) {
-        const feedback = document.querySelector("[data-bookings-feedback]");
-        if (!feedback) return;
-        feedback.textContent = message;
-        delete feedback.dataset.tone;
-        feedback.hidden = false;
-        feedback.focus?.();
-    }
-
     async function review(action, reason) {
         if (!current) throw new Error("No booking selected.");
 
@@ -186,15 +178,19 @@ export function initCancellation(modal) {
             throw error;
         }
 
-        showFeedback(
-            data.message || "The cancellation request has been updated.",
-        );
-        window.setTimeout(() => {
+        // The page reloads to show the new state, so the message is queued for the next page
+        // (a failure stays in the confirmation modal's red line).
+        queueToast({
+            tone: "success",
+            message:
+                data.message || "The cancellation request has been updated.",
+        });
+        {
             const url = new URL(window.location.href);
             url.searchParams.delete("booking");
             url.searchParams.set("selected_booking", String(current.id));
             window.location.assign(url.href);
-        }, 700);
+        };
     }
 
     approveButton?.addEventListener("click", () => {
