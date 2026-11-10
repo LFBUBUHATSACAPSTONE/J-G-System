@@ -16,7 +16,7 @@
 
 <body class="app-shell bg-sidebar font-sans">
   <x-admin.sidebar />
-  <x-toast.region />
+  <x-toast.region feed="admin" />
 
   <main class="font-sans admin-content admin-bookings">
     <x-admin.page-header />

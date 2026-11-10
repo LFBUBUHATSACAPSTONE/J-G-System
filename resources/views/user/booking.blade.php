@@ -8,7 +8,7 @@
 </head>
 
 <body class="flex min-h-screen flex-col bg-auth-bg">
-  <x-toast.region />
+  <x-toast.region feed="user" />
   {{-- Page background: fixed to the viewport so it never ends where the first screen ends. --}}
   <img src="{{ asset('images/backgrounds/design/landing_bg.webp') }}" alt="" class="pointer-events-none fixed inset-0 z-0 size-full object-cover">
 

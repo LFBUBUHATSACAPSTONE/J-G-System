@@ -58,7 +58,7 @@
   <body class="app-shell bg-sidebar font-sans">
     <x-account.sidebar />
     {{-- Toasts (docs/toast-notifications.md). Not inside the sidebar: an offcanvas has a transform that breaks position: fixed. --}}
-    <x-toast.region />
+    <x-toast.region feed="user" />
 
     <main class="admin-content font-sans [--admin-max:60rem]">
       <header class="admin-page-header mb-6 font-sans min-[992px]:mb-8">

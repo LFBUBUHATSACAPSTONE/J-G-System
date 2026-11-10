@@ -26,7 +26,7 @@ $dashboardConfig = [
 
 <body class="app-shell bg-sidebar font-sans">
   <x-admin.sidebar />
-  <x-toast.region />
+  <x-toast.region feed="admin" />
 
   <main class="admin-content font-sans" data-admin-dashboard
     data-endpoint="{{ route('admin.dashboard.data') }}"
