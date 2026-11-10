@@ -16,6 +16,7 @@
 import { getCsrfToken } from "../auth/csrf.js";
 import { openActionModal, reasonError } from "../shared/action-modal.js";
 import { paintCancellationTone } from "../shared/cancellation-tone.js";
+import { queueToast } from "../shared/toast.js";
 
 const ICON_CLASS = "ph ph-";
 
@@ -328,6 +329,13 @@ function initBookings() {
 
                 // The server has saved the request. Reload My Bookings so its rendered status
                 // reflects the pending request and the cancellation reason form is closed.
+                // The message is queued so the next page shows it as a toast (a failure stays in the modal).
+                queueToast({
+                    tone: "success",
+                    message:
+                        data.message ||
+                        "Your cancellation request has been submitted and is awaiting admin review.",
+                });
                 window.location.reload();
             },
         });

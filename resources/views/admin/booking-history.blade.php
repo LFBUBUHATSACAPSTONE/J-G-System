@@ -13,13 +13,10 @@
 
 <body class="app-shell bg-sidebar font-sans">
   <x-admin.sidebar />
+  <x-toast.region feed="admin" />
 
   <main class="font-sans admin-content admin-bookings admin-history">
     <x-admin.page-header />
-
-    @if (session('status'))
-    <p class="mb-6 rounded-panel border border-success-border bg-success-soft px-6 py-3 font-medium text-success-text data-[tone=danger]:border-danger-border data-[tone=danger]:bg-danger-soft data-[tone=danger]:text-danger-text" role="status">{{ session('status') }}</p>
-    @endif
 
     {{-- State tabs. Buttons with aria-pressed (there are no tab panels to switch). Counts are filled by history.js. --}}
     <div class="admin-history__tabs -mx-(--admin-pad) mb-4 flex flex-nowrap gap-3 overflow-x-auto px-(--admin-pad) py-1 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] md:mx-0 md:flex-wrap md:overflow-x-visible md:p-0 [&::-webkit-scrollbar]:hidden" role="group" aria-label="Show bookings by state">

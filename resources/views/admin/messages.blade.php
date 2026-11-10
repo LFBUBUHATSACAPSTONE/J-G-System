@@ -12,6 +12,7 @@
 
 <body class="app-shell bg-sidebar font-sans">
   <x-admin.sidebar />
+  <x-toast.region />
 
   <main class="admin-content">
     <x-admin.page-header />

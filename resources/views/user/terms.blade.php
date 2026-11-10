@@ -19,6 +19,7 @@ $subtitleClass = 'text-[0.95rem] text-auth-text-muted [margin:0_0_2rem]';
 </head>
 
 <body class="flex min-h-svh flex-col bg-landing-base text-auth-text">
+  <x-toast.region feed="user" />
   <header class="border-b border-glass-border px-[1.25rem] py-[1rem] min-[768px]:px-[2rem]">
     <div class="mx-auto flex max-w-[52rem] items-center justify-between gap-[1rem]">
       <a href="{{ route('user.landing') }}">

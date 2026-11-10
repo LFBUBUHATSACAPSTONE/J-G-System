@@ -849,6 +849,19 @@ export function initChatStream(root) {
                 if (data.messages_synced_at)
                     changedSince = data.messages_synced_at;
                 setBadge(data.unread || 0);
+                // The toast feed (shared/toast-feed.js) reads this instead of polling a second time.
+                document.dispatchEvent(
+                    new CustomEvent("chat:polled", {
+                        detail: {
+                            widget: root.matches("[data-chat-widget]"),
+                            messages: data.messages || [],
+                            bookings: data.bookings || [],
+                            bookingsSyncedAt: data.bookings_synced_at || "",
+                            unread: data.unread || 0,
+                            panelOpen: isOpen(),
+                        },
+                    }),
+                );
                 if (added && isOpen()) markRead();
             })
             .catch(() => {

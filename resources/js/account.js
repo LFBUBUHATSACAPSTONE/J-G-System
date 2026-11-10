@@ -2,6 +2,8 @@
 import "bootstrap";
 import "@phosphor-icons/web/regular";
 
+import "./shared/toast.js"; // toasts: showToast() / queueToast() (docs/toast-notifications.md)
+import "./shared/toast-feed.js"; // messages between the two parties (Phase 4)
 import "./account/profile.js";
 import "./account/bookings.js";
 import "./account/messages.js";
