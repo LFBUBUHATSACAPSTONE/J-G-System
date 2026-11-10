@@ -2,6 +2,7 @@
 import "bootstrap";
 import "@phosphor-icons/web/regular";
 
+import "./shared/toast.js"; // toasts: showToast() and the server flash (see docs/toast-notifications.md)
 import "./admin/dropdown.js"; // enhances <select> to a styled listbox (see _dropdown.scss)
 import "./admin/dashboard.js";
 import "./admin/bookings.js";
