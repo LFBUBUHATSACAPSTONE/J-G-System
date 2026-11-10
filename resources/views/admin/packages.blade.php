@@ -13,15 +13,13 @@
 
 <body class="app-shell bg-sidebar font-sans">
   <x-admin.sidebar />
+  <x-toast.region />
 
   <main class="font-sans admin-content admin-packages">
     <div class="mb-6 [&_.admin-page-header]:mb-0">
       <x-admin.page-header />
     </div>
 
-    @if (session('status'))
-    <p class="mb-6 rounded-panel border border-success-border bg-success-soft px-6 py-3 font-medium text-success-text data-[tone=danger]:border-danger-border data-[tone=danger]:bg-danger-soft data-[tone=danger]:text-danger-text" role="status">{{ session('status') }}</p>
-    @endif
     <p class="mb-6 rounded-panel border border-success-border bg-success-soft px-6 py-3 font-medium text-success-text data-[tone=danger]:border-danger-border data-[tone=danger]:bg-danger-soft data-[tone=danger]:text-danger-text" role="status" data-package-status hidden></p>
 
     <h2 class="sr-only">Packages</h2>

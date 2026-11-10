@@ -98,6 +98,7 @@ usort($list, fn ($a, $b) => ($toneRank[$statuses[$a['status']]['tone']] ?? 99) <
 
   <body class="app-shell bg-sidebar font-sans">
     <x-admin.sidebar />
+    <x-toast.region />
 
     <main class="admin-content font-sans" data-calendar>
       <x-admin.page-header />

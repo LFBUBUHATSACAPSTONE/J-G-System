@@ -16,18 +16,11 @@
 
 <body class="app-shell bg-sidebar font-sans">
   <x-admin.sidebar />
+  <x-toast.region />
 
   <main class="font-sans admin-content admin-bookings">
     <x-admin.page-header />
 
-    @if (session('status'))
-    <p class="mb-6 rounded-panel border border-success-border bg-success-soft px-6 py-3 font-medium text-success-text data-[tone=danger]:border-danger-border data-[tone=danger]:bg-danger-soft data-[tone=danger]:text-danger-text" role="status">{{ session('status') }}</p>
-    @endif
-
-    {{-- Approve refused by the server (event limit reached). role=alert announces it at once. --}}
-    @if (session('error'))
-    <p class="mb-6 rounded-panel border border-success-border bg-success-soft px-6 py-3 font-medium text-success-text data-[tone=danger]:border-danger-border data-[tone=danger]:bg-danger-soft data-[tone=danger]:text-danger-text" data-tone="danger" role="alert">{{ session('error') }}</p>
-    @endif
     <p class="mb-6 rounded-panel border border-success-border bg-success-soft px-6 py-3 font-medium text-success-text data-[tone=danger]:border-danger-border data-[tone=danger]:bg-danger-soft data-[tone=danger]:text-danger-text" role="status" tabindex="-1" data-bookings-feedback hidden></p>
 
     {{-- Filters

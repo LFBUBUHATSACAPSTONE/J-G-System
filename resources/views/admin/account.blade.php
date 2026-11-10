@@ -31,6 +31,7 @@ $secondaryBtnClass = 'w-full min-[576px]:w-auto min-[576px]:px-6 cursor-pointer 
 
 <body class="app-shell bg-sidebar font-sans">
   <x-admin.sidebar />
+  <x-toast.region />
 
   <main class="admin-content font-sans [--admin-max:61.5rem]" data-admin-account data-profile-root>
     <x-admin.page-header />
