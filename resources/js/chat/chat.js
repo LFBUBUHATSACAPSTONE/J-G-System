@@ -855,6 +855,8 @@ export function initChatStream(root) {
                         detail: {
                             widget: root.matches("[data-chat-widget]"),
                             messages: data.messages || [],
+                            bookings: data.bookings || [],
+                            bookingsSyncedAt: data.bookings_synced_at || "",
                             unread: data.unread || 0,
                             panelOpen: isOpen(),
                         },

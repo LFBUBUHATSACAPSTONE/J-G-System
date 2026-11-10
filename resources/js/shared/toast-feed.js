@@ -1,9 +1,11 @@
-// Toasts between the two parties (docs/toast-notifications-phases.md, Phase 4A and 4B).
+// Toasts between the two parties (docs/toast-notifications-phases.md, Phase 4A, 4B and 4C).
 //
 // A client message shows as a toast to the admin, an admin reply shows as a toast to the client, on pages that
 // do not already show the thread. It reads the endpoints that already exist (`admin.messages.updates`,
-// `user.messages.updates`); nothing new on the server. Only messages for now. Booking events (4C / 4D) wait for
-// the backend decision recorded in docs/backend-impact.md.
+// `user.messages.updates`); nothing new on the server. Fed so far: messages both ways (4B) and, for the client,
+// "your booking was approved" (4C). The other booking events (declined, payment verified, cancellation decisions,
+// admin edits, and everything the admin should hear about) wait for the backend decision recorded in
+// docs/backend-impact.md: the `bookings` list of the `updates` answers only carries APPROVED bookings.
 //
 // Where the settings come from: <x-toast.region feed="admin|user" /> prints `data-toast-feed` (URL, link, texts,
 // pace). No attribute (guest, Admin Messages page) = this file does nothing.
@@ -22,7 +24,13 @@
 // sessionStorage (`jg.toast.feed.<side>`), so moving between pages neither replays nor loses a message. If storage
 // is blocked the feed still works, it just starts from a new baseline on every page.
 //
-// A burst is one toast ("3 new replies from J&G"), never three.
+// "Booking approved" (client side only): the `bookings` list of the same `updates` answer holds this client's
+// bookings approved after the `since` cursor. The first poll of a session is silent for it too; after that the
+// server's `bookings_synced_at` is kept as the cursor, and the ids already toasted are remembered (`seen`) so a
+// booking is never toasted twice, even when the landing-page widget and an own-poll page both saw it. The admin side
+// gets nothing from this list: it only holds approvals the admin made.
+//
+// A burst is one toast ("3 new replies from J&G", "3 of your bookings were approved"), never three.
 
 import { showToast } from "./toast.js";
 
@@ -44,11 +52,18 @@ function start() {
 
     const text = cfg.text || {};
     const key = `jg.toast.feed.${cfg.side}`;
-    let state = { after: null, unread: null, base: null };
+    let state = {
+        after: null,
+        unread: null,
+        base: null,
+        since: null,
+        seen: [],
+    };
 
     try {
         const saved = JSON.parse(sessionStorage.getItem(key) || "null");
         if (saved && typeof saved === "object") state = { ...state, ...saved };
+        if (!Array.isArray(state.seen)) state.seen = [];
     } catch {
         // storage unavailable: a fresh baseline on this page
     }
@@ -86,18 +101,61 @@ function start() {
         showToast({ tone: "info", message, action });
     };
 
+    // Bookings approved for this client (4C). Remembers every id it is given, so the same booking is never
+    // toasted twice. `quiet` = remember only (the person is looking at the chat that shows the card).
+    const announceBookings = (bookings, { quiet = false } = {}) => {
+        if (cfg.side !== "user") return;
+        const fresh = bookings.filter(
+            (b) => b && b.id && !state.seen.includes(b.id),
+        );
+        if (!fresh.length) return;
+        state.seen = [...state.seen, ...fresh.map((b) => b.id)].slice(-50);
+        save();
+        if (quiet) return;
+        const message =
+            fresh.length === 1
+                ? String(text.booking_approved || "").replace(
+                      ":reference",
+                      fresh[0].reference ? `#${fresh[0].reference}` : "",
+                  )
+                : String(text.bookings_approved || "").replace(
+                      ":count",
+                      fresh.length,
+                  );
+        showToast({
+            tone: "success",
+            message: message.replace(/\s{2,}/g, " ").trim(),
+            action: cfg.bookingsLink
+                ? { label: text.open_bookings, href: cfg.bookingsLink }
+                : null,
+        });
+    };
+
     // ---- LISTEN: the landing chat widget already polls ----------------------------------------
     if (widget) {
         document.addEventListener("chat:polled", (event) => {
             const detail = event.detail || {};
             if (!detail.widget) return;
+            // The thread is open and the person is looking at it: it shows there, no toast.
+            const watching =
+                detail.panelOpen && document.hasFocus() && !document.hidden;
+            const open = () => {
+                const panel = widget.querySelector("[data-chat-panel]");
+                if (panel?.hidden)
+                    widget.querySelector("[data-chat-toggle]")?.click();
+            };
+
+            const bookings = detail.bookings || [];
+            if (bookings.length) {
+                if (detail.bookingsSyncedAt)
+                    state.since = detail.bookingsSyncedAt;
+                announceBookings(bookings, { quiet: watching });
+            }
+
             const messages = (detail.messages || []).filter(
                 (m) => m && m.from !== "client",
             );
             if (!messages.length) return;
-            // The thread is open and the person is looking at it: it shows there, no toast.
-            const watching =
-                detail.panelOpen && document.hasFocus() && !document.hidden;
             if (watching) {
                 const top = Math.max(
                     0,
@@ -109,13 +167,7 @@ function start() {
                 }
                 return;
             }
-            announce(messages, {
-                open: () => {
-                    const panel = widget.querySelector("[data-chat-panel]");
-                    if (panel?.hidden)
-                        widget.querySelector("[data-chat-toggle]")?.click();
-                },
-            });
+            announce(messages, { open });
         });
         return;
     }
@@ -129,9 +181,13 @@ function start() {
 
     const get = async (after) => {
         const now = encodeURIComponent(new Date().toISOString());
-        // since / changed_since = now: the booking and edit feeds of the same answer come back empty.
+        // `since` is the booking cursor: the stored server time once known, else now (an empty booking list).
+        // changed_since = now: the edit/unsend list of the same answer comes back empty.
+        const since = encodeURIComponent(
+            state.since || new Date().toISOString(),
+        );
         const res = await fetch(
-            `${cfg.url}?after=${after}&since=${now}&changed_since=${now}`,
+            `${cfg.url}?after=${after}&since=${since}&changed_since=${now}`,
             {
                 headers: { Accept: "application/json" },
                 credentials: "same-origin",
@@ -147,6 +203,16 @@ function start() {
 
     const handle = async (data) => {
         const unread = Number(data.unread) || 0;
+
+        // Bookings approved since the cursor (client side). The very first poll of a session is silent.
+        if (cfg.side === "user") {
+            const firstTime = state.since === null;
+            if (!firstTime) announceBookings(data.bookings || []);
+            if (data.bookings_synced_at) {
+                state.since = data.bookings_synced_at;
+                save();
+            }
+        }
 
         // Cursor known: the answer holds only messages newer than it.
         if (state.after !== null) {

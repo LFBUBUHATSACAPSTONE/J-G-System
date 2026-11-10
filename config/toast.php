@@ -36,7 +36,7 @@ return [
 
   // Toasts between the two parties (Phase 4, docs/toast-notifications-phases.md section 6).
   // The browser asks the existing `updates` endpoints (admin.messages.updates / user.messages.updates);
-  // nothing here needs a new route. Only messages are fed so far (4B).
+  // nothing here needs a new route. Fed so far: messages both ways (4B) and "booking approved" for the client (4C).
   'feed' => [
     // Pace of the page's own poll (pages that have no chat poller). Same idea as chat.js: slow, paused while the
     // tab is hidden, doubling after each failure up to max_ms.
@@ -54,6 +54,10 @@ return [
         'message'  => 'New reply from J&G',
         'messages' => ':count new replies from J&G',
         'open'     => 'Open chat',
+        // 4C: a booking of this client was approved (:reference / :count are filled in by the script).
+        'booking_approved'  => 'Your booking :reference was approved',
+        'bookings_approved' => ':count of your bookings were approved',
+        'open_bookings'     => 'My Bookings',
       ],
     ],
   ],

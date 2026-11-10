@@ -36,6 +36,7 @@ $feedSettings = [
 'side' => 'user',
 'url' => route('user.messages.updates'),
 'link' => Route::has('user.account.messages') ? route('user.account.messages') : '',
+'bookingsLink' => Route::has('user.account.bookings') ? route('user.account.bookings') : '',
 ];
 }
 if ($feedSettings) {
