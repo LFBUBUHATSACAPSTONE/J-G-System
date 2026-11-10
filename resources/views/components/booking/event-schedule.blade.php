@@ -68,13 +68,13 @@ $hintClass = 'text-[0.8rem] leading-[1.5] text-auth-text-muted [margin:0]';
           <div class="{{ $calendarClass }}" data-calendar data-availability-url="{{ route('booking.availability') }}"
             @if ($reschedule) data-initial-month="{{ $reschedule['month'] }}" @endif>
             <div class="{{ $calHeaderClass }}">
-              <button type="button" class="{{ $navClass }} is-invisible" data-calendar-prev aria-label="Previous month">
+              <button type="button" class="{{ $navClass }} is-invisible" data-calendar-prev aria-label="Previous month" @if ($reschedule) hidden @endif>
                 <svg width="10" height="16" viewBox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <path d="M8.5 1.5L1.5 8L8.5 14.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </button>
               <span class="{{ $monthClass }}" data-calendar-label aria-live="polite"></span>
-              <button type="button" class="{{ $navClass }}" data-calendar-next aria-label="Next month">
+              <button type="button" class="{{ $navClass }}" data-calendar-next aria-label="Next month" @if ($reschedule) hidden @endif>
                 <svg width="10" height="16" viewBox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <path d="M1.5 1.5L8.5 8L1.5 14.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
@@ -144,7 +144,7 @@ $hintClass = 'text-[0.8rem] leading-[1.5] text-auth-text-muted [margin:0]';
         @if ($reschedule)
         <div class="{{ $emptyClass }} d-none" role="status" data-reschedule-empty>
           <strong>No available dates in this month</strong>
-          <p data-reschedule-empty-message>Try another month.</p>
+          <p data-reschedule-empty-message>Rescheduled dates must stay within the original event month.</p>
         </div>
         @endif
 
