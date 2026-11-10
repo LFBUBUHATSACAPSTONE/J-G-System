@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Account;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Services\Notifications\BookingWorkflowNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -40,7 +41,7 @@ class AccountBookingController extends Controller
         return view('user.account.bookings', ['bookings' => $rows]);
     }
 
-    public function requestCancellation(Request $request, string $booking): JsonResponse
+    public function requestCancellation(Request $request, string $booking, BookingWorkflowNotifier $notifications): JsonResponse
     {
         $min = (int) config('cancellation.min', 10);
         $max = (int) config('cancellation.max', 500);
@@ -105,6 +106,7 @@ class AccountBookingController extends Controller
 
         /** @var Booking $bookingModel */
         $bookingModel = $result['booking'];
+        $notifications->notifyAdmins($bookingModel, 'cancellation_requested');
 
         return response()->json([
             'ok' => true,

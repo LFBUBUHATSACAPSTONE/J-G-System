@@ -31,6 +31,7 @@ $feedSettings = [
 'side' => 'admin',
 'url' => route('admin.messages.updates'),
 'link' => Route::has('admin.messages') ? route('admin.messages') : '',
+'bookingsLink' => Route::has('admin.bookings') ? route('admin.bookings') : '',
 ];
 } elseif ($feed === 'user' && auth('web')->check() && Route::has('user.messages.updates')) {
 $feedSettings = [

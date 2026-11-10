@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Services\Messaging\MessageService;
+use App\Services\Notifications\BookingWorkflowNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -13,7 +14,10 @@ use Illuminate\View\View;
 
 class MessageController extends Controller
 {
-    public function __construct(private readonly MessageService $messages)
+    public function __construct(
+        private readonly MessageService $messages,
+        private readonly BookingWorkflowNotifier $notifications,
+    )
     {
     }
 
@@ -64,6 +68,7 @@ class MessageController extends Controller
         $since = $this->messages->since($request->query('since'));
         $changedSince = $this->messages->since($request->query('changed_since'));
         $syncedAt = now();
+        $workflowNotifications = $this->notifications->updatesFor($request->user(), $since);
 
         $messages = Message::with('replyTo')
             ->where('sender_type', 'client')
@@ -82,6 +87,8 @@ class MessageController extends Controller
             'messages_synced_at' => $this->messages->changedCursor(),
             'bookings' => $this->messages->updatedBookingCardsForAdmin($since),
             'bookings_synced_at' => $syncedAt->toIso8601String(),
+            'workflow_notifications' => $workflowNotifications,
+            'notifications_synced_at' => $syncedAt->toIso8601String(),
         ]);
     }
 

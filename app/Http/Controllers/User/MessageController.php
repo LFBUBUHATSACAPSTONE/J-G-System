@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Services\Messaging\MessageService;
+use App\Services\Notifications\BookingWorkflowNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -14,7 +15,10 @@ use Illuminate\View\View;
 
 class MessageController extends Controller
 {
-    public function __construct(private readonly MessageService $messages)
+    public function __construct(
+        private readonly MessageService $messages,
+        private readonly BookingWorkflowNotifier $notifications,
+    )
     {
     }
 
@@ -198,6 +202,7 @@ class MessageController extends Controller
         $changedSince = $this->messages->since($request->query('changed_since'));
         $syncedAt = now();
         $bookings = $this->messages->updatedBookingCardsForUser($user->id, $since);
+        $workflowNotifications = $this->notifications->updatesFor($user, $since);
         $conversation = $this->findConversation($user);
         $unread = $this->messages->unreadCountForUser($user);
 
@@ -210,6 +215,8 @@ class MessageController extends Controller
                 'messages_synced_at' => $this->messages->changedCursor(),
                 'bookings' => $bookings,
                 'bookings_synced_at' => $syncedAt->toIso8601String(),
+                'workflow_notifications' => $workflowNotifications,
+                'notifications_synced_at' => $syncedAt->toIso8601String(),
             ]);
         }
 
@@ -230,6 +237,8 @@ class MessageController extends Controller
             'messages_synced_at' => $this->messages->changedCursor(),
             'bookings' => $bookings,
             'bookings_synced_at' => $syncedAt->toIso8601String(),
+            'workflow_notifications' => $workflowNotifications,
+            'notifications_synced_at' => $syncedAt->toIso8601String(),
         ]);
     }
 

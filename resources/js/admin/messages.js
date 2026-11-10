@@ -275,6 +275,24 @@ if (layout) {
                     if (data.messages_synced_at)
                         changedSince = data.messages_synced_at;
 
+                    // The shared toast feed listens to this existing poll instead of sending a
+                    // duplicate request from the Admin Messages page.
+                    document.dispatchEvent(
+                        new CustomEvent("chat:polled", {
+                            detail: {
+                                widget: false,
+                                workflowNotifications:
+                                    data.workflow_notifications || [],
+                                notificationsSyncedAt:
+                                    data.notifications_synced_at || "",
+                                bookingsSyncedAt:
+                                    data.bookings_synced_at || "",
+                                messages: data.messages || [],
+                                unread: data.unread || 0,
+                            },
+                        }),
+                    );
+
                     setSidebarBadge(data.unread || 0);
 
                     // New conversation: reload once so its row and full thread render
