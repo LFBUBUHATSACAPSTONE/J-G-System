@@ -4,6 +4,7 @@ import "@phosphor-icons/web/regular"; //Icons (auth modal password toggle)
 
 // TOASTS (showToast / queueToast and the server flash: docs/toast-notifications.md)
 import "./shared/toast.js";
+import "./shared/toast-feed.js"; // messages between the two parties (Phase 4)
 
 // LANDING
 import Carousel from "./landing/coverflow-carousel.js";
